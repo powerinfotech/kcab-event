@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.miso.lxnn.dao.NoticeDao">
+
+	<select id="selectNoticeList" parameterType="com.miso.lxnn.dto.master.NoticeListSearchDto" resultType="com.miso.lxnn.dto.master.NoticeListDto">
+		SELECT
+			TBN.notice_seq,
+			TBN.ctgr_cd,
+			TBN.title,
+			TBN.content,
+			TBN.popup_flag,
+			TBN.fix_flag,
+			TBN.str_date,
+			TBN.end_date,
+			TBN.view_cnt,
+			TBN.rgst_user_id,
+			TO_CHAR(TBN.rgst_date_time,'YYYY-MM-DD') AS rgstDateTime,
+			TBN.upt_user_id,
+			TBN.upt_date_time,
+			TBN.file_seq,
+			TBN.use_flag,
+			(CASE TBN.popup_flag WHEN true THEN '사용' ELSE '미사용' END) AS popupFlagLabel,
+			(CASE TBN.fix_flag WHEN true THEN '사용' ELSE '미사용' END) AS fixFlagLabel,
+			TCC.cm_nm AS ctgrNm,
+			TU.user_name AS rgstUserNm
+		FROM tb_notice TBN
+				 LEFT OUTER JOIN tb_com_cd TCC ON TBN.ctgr_cd = TCC.cm_std_cd
+				 LEFT OUTER JOIN tb_user TU ON TBN.rgst_user_id = TU.user_id
+		WHERE 1=1
+		<if test="isChecked == false">
+			AND TBN.use_flag = true
+		</if>
+		<if test="title != null and title != ''">
+			AND TBN.title LIKE  '%'||#{title}||'%'
+		</if>
+		ORDER BY TBN.notice_seq
+	</select>
+	<insert id="insertNotice" parameterType="com.miso.lxnn.dto.master.NoticeSaveDto" useGeneratedKeys="true" keyProperty="noticeSeq">
+		INSERT INTO tb_notice (
+			ctgr_cd,
+			title,
+			content,
+			popup_flag,
+			fix_flag,
+			str_date,
+			end_date,
+			view_cnt,
+			rgst_user_id,
+			rgst_date_time,
+			upt_user_id,
+			upt_date_time,
+			file_seq,
+		    use_flag
+		)
+		VALUES (
+				   #{ctgrCd},
+				   #{title},
+				   #{content},
+				   #{popupFlag},
+				   #{fixFlag},
+				   #{strDate},
+				   #{endDate},
+				   #{viewCnt},
+				   #{rgstUserId},
+				   NOW(),
+				   #{uptUserId},
+				   NOW(),
+				   #{fileSeq},
+		        	#{useFlag}
+			   );
+	</insert>
+	<update id="updateNotice" parameterType="com.miso.lxnn.dto.master.NoticeSaveDto">
+		UPDATE tb_notice
+		SET
+			ctgr_cd = #{ctgrCd},
+			title = #{title},
+			content=#{content},
+			popup_flag=#{popupFlag},
+			fix_flag=#{fixFlag},
+			str_date=#{strDate},
+			end_date=#{endDate},
+			view_cnt=#{viewCnt},
+			upt_user_id=#{uptUserId},
+			upt_date_time=NOW(),
+			file_seq=#{fileSeq},
+			use_flag = #{useFlag}
+		WHERE notice_seq=#{noticeSeq}
+	</update>
+	<delete id="deleteNotice" parameterType="com.miso.lxnn.dto.master.NoticeSaveDto">
+		DELETE FROM tb_notice
+		WHERE notice_seq=#{noticeSeq}
+	</delete>
+
+</mapper>

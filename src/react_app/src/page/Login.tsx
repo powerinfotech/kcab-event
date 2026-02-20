@@ -1,0 +1,185 @@
+import React, {useEffect, useState} from 'react';
+import {ApiResponse} from '@interface/common';
+import CustomButton from '@component/CustomButton';
+import axios, {HttpStatusCode} from 'axios';
+import {getUserLoginInfo, getUserMenuInfo} from '@api/CommonApi';
+import {useForm} from 'react-hook-form';
+import CustomValidFormInput from '@component/form/CustomValidFormInput';
+import {useCookies} from 'react-cookie';
+import CustomValidFormCheckbox from '@component/form/CustomValidFormCheckbox';
+import {message, Modal} from "antd";
+import {types} from "sass";
+import Null = types.Null;
+import {MenuInfo} from "@interface/auth/MenuManagement";
+import FindIdPopup from "@page/auth/FindIdPopup";
+import FindPasswordPopup from "@page/auth/FindPasswordPopup";
+
+const Login = () => {
+    const {register: saveFormRegister
+        , control: saveFormControl
+        , handleSubmit: saveFormHandleSubmit
+        , setValue: saveFormSetValue
+        , getValues:saveFormGetValues} = useForm<{ userId: string, passwd: string, isRememberId:boolean,mode:string|null }>({mode:'onChange'});
+    const [cookies, setCookie, removeCookie] = useCookies(['id'], {doNotParse: true});
+    const [menuInfo, setMenuInfo] = useState<MenuInfo[]>([]);
+
+    const handleLogin = async() => {
+        const param =   {userId:saveFormGetValues('userId'), passwd:saveFormGetValues('passwd')};
+        const {data} = await axios.post<ApiResponse<boolean>>('/api/login',param);
+        if(data.code === HttpStatusCode.Ok) {
+            const ret = await getUserLoginInfo();
+            if(ret.code === HttpStatusCode.Ok) {
+                saveFormGetValues('isRememberId')?setCookie('id', saveFormGetValues('userId')): removeCookie('id');
+                //location.href = location.pathname;
+
+                getUserMenuInfo().then((res)=> {
+                    if(res.code === HttpStatusCode.Ok )
+                        if(res.item) {
+                            console.log(22);
+                            setMenuInfo(res.item);
+                            defaultMenu(res.item);
+                            if(location.href.includes("987654321"))
+                            {
+                                defaultMenu(res.item);
+                            }
+                        }
+                });
+
+            }
+
+        }
+
+        return data;
+    };
+
+    const defaultMenu = (menuList: MenuInfo[]) => {
+        const level2Menu = menuList.filter((item) => item.level === 2);
+
+        if (level2Menu.length > 0) {
+            const minumSeqMenu = level2Menu.reduce((minMenu, currentMenu) => {
+                return currentMenu.menuId < minMenu.menuId ? currentMenu : minMenu;
+            });
+
+            const defaultUrl = location.origin + minumSeqMenu.menuUri;
+            location.href = defaultUrl;
+
+        }
+    };
+
+    const AutoLogin = async() => {
+        const param =   {userId:saveFormGetValues('userId'), passwd:saveFormGetValues('passwd'), mode:"auto"};
+        const {data} = await axios.post<ApiResponse<boolean>>('/api/login',param);
+        if(data.code === HttpStatusCode.Ok) {
+            const ret = await getUserLoginInfo();
+            if(ret.code === HttpStatusCode.Ok) {
+                saveFormGetValues('isRememberId')?setCookie('id', saveFormGetValues('userId')): removeCookie('id');
+                //location.href = location.pathname;
+
+                getUserMenuInfo().then((res)=> {
+                    if(res.code === HttpStatusCode.Ok )
+                        if(res.item) {
+                            setMenuInfo(res.item);
+                            if(location.href.includes("987654321"))
+                            {
+                                defaultMenu(res.item);
+                            }
+                        }
+                });
+
+            }
+
+        }
+
+        return data;
+    };
+
+    const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
+        if (event.key === 'Enter') {
+            saveFormHandleSubmit(handleLogin)();
+        }
+    };
+    const ManageAlert = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+        event.preventDefault(); // 기본 동작 방지 (링크 이동 방지)
+        message.warning('관리자에게 문의하세요.');
+    };
+
+    useEffect(() => {
+        let sso = location.pathname;
+        sso = sso.replaceAll('/','');
+        const result = sso.split("987654321");
+        if(cookies.id) {
+            saveFormSetValue('userId',  cookies.id);
+            saveFormSetValue('isRememberId', true);
+        }
+        if(result.length === 2)
+        {
+            saveFormSetValue('userId',result[0]);
+            saveFormSetValue('passwd',result[1]);
+            AutoLogin();
+        }
+    }, []);
+
+    const [showFindIdModal,setShowFindIdModal] = useState(false);
+    const [showFindPasswordModal,setShowFindPasswordModal] = useState(false);
+    return (
+        <>
+            <div className='login-dim'></div>
+            <div className='login-wrap'>
+                <h2 className='logo'>국가지점번호 센서관리 시스템</h2>
+
+                <form className={'ant-form'} onSubmit={saveFormHandleSubmit(handleLogin)}>
+                    <div className={'ant-form-item ant-form-item-control-input'}>
+                        <CustomValidFormInput
+                            placeholder="아이디"
+                            control={saveFormControl}
+                            onChangeValue={(v) => {
+                            }}
+                            {...saveFormRegister('userId', {required: '아이디를 입력해주세요.'})}
+                        />
+                        <CustomValidFormInput
+                            type={'password'}
+                            placeholder="비밀번호"
+                            required={true}
+                            control={saveFormControl}
+                            onChangeValue={(v) => {
+                            }}
+                            {...saveFormRegister('passwd', {required: '비밀번호를 입력해주세요.'})}
+                            onKeyPress={handleKeyPress}
+                        />
+                    </div>
+
+                    <CustomButton className='btn' type="primary"
+                                  onClick={saveFormHandleSubmit(handleLogin)}>로그인</CustomButton>
+
+                    <div className='box'>
+                        <CustomValidFormCheckbox
+                            name={'isRememberId'}
+                            control={saveFormControl}
+                            onChange={(p) => {
+                                saveFormSetValue('isRememberId', p.target.checked);
+                            }}>아이디 저장</CustomValidFormCheckbox>
+
+                        <div className='find'>
+                            <a className='link' href="#" onClick={()=>setShowFindIdModal(true)}>아이디찾기</a>
+                            <a className='link' href="#" onClick={()=>setShowFindPasswordModal(true)}>비밀번호찾기</a>
+                        </div>
+                    </div>
+
+
+                    <div className='copy-right'>
+                        Copyright © 국가지점번호 센서관리 시스템. All Rights Reserved.
+                    </div>
+                </form>
+                <Modal open={showFindIdModal} onCancel={()=> setShowFindIdModal(false)} footer={null} title={"아이디찾기"} destroyOnClose>
+                    <FindIdPopup onClose={() => setShowFindIdModal(false)} />
+                </Modal>
+                <Modal open={showFindPasswordModal} onCancel={()=> setShowFindPasswordModal(false)} footer={null} title={"비밀번호찾기"} destroyOnClose>
+                    <FindPasswordPopup onClose={()=> setShowFindPasswordModal(false)}/>
+                </Modal>
+            </div>
+        </>
+    );
+
+};
+
+export default Login;

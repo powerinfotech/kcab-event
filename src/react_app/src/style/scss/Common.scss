@@ -1,0 +1,330 @@
+
+@import 'Variable.scss';
+@import 'Component.scss';
+
+@font-face { font-family: "Noto Sans Korean"; font-weight: 100; font-style: normal; src: url("/style/font/NotoSansKr/NotoSans-Thin.eot") format("eot"), url("/style/font/NotoSansKr/NotoSans-Thin.otf") format("opentype"), url("/style/font/NotoSansKr/NotoSans-Thin.woff") format("woff"), url("/style/font/NotoSansKr/NotoSans-Thin.woff2") format("woff2"); }
+@font-face { font-family: "Noto Sans Korean"; font-weight: 200; font-style: normal; src: url("/style/font/NotoSansKr/NotoSans-Light.eot") format("eot"), url("/style/font/NotoSansKr/NotoSans-Light.otf") format("opentype"), url("/style/font/NotoSansKr/NotoSans-Light.woff") format("woff"), url("/style/font/NotoSansKr/NotoSans-Light.woff2") format("woff2"); }
+@font-face { font-family: "Noto Sans Korean"; font-weight: 300; font-style: normal; src: url("/style/font/NotoSansKr/NotoSans-DemiLight.eot") format("eot"), url("/style/font/NotoSansKr/NotoSans-DemiLight.otf") format("opentype"), url("/style/font/NotoSansKr/NotoSans-DemiLight.woff") format("woff"), url("/style/font/NotoSansKr/NotoSans-DemiLight.woff2") format("woff2"); }
+@font-face { font-family: "Noto Sans Korean"; font-weight: 400; font-style: normal; src: url("/style/font/NotoSansKr/NotoSans-Regular.eot") format("eot"), url("/style/font/NotoSansKr/NotoSans-Regular.otf") format("opentype"), url("/style/font/NotoSansKr/NotoSans-Regular.woff") format("woff"), url("/style/font/NotoSansKr/NotoSans-Regular.woff2") format("woff2"); }
+@font-face { font-family: "Noto Sans Korean"; font-weight: 500; font-style: normal; src: url("/style/font/NotoSansKr/NotoSans-Medium.eot") format("eot"), url("/style/font/NotoSansKr/NotoSans-Medium.otf") format("opentype"), url("/style/font/NotoSansKr/NotoSans-Medium.woff") format("woff"), url("/style/font/NotoSansKr/NotoSans-Medium.woff2") format("woff2"); }
+@font-face { font-family: "Noto Sans Korean"; font-weight: 700; font-style: normal; src: url("/style/font/NotoSansKr/NotoSans-Black.eot") format("eot"), url("/style/font/NotoSansKr/NotoSans-Black.otf") format("opentype"), url("/style/font/NotoSansKr/NotoSans-Black.woff") format("woff"), url("/style/font/NotoSansKr/NotoSans-Black.woff2") format("woff2"); }
+@font-face { font-family: "Noto Sans Korean"; font-weight: 900; font-style: normal; src: url("/style/font/NotoSansKr/NotoSans-Bold.eot") format("eot"), url("/style/font/NotoSansKr/NotoSans-Bold.otf") format("opentype"), url("/style/font/NotoSansKr/NotoSans-Bold.woff") format("woff"), url("/style/font/NotoSansKr/NotoSans-Bold.woff2") format("woff2"); }
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100..900&display=swap');
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed,
+figure, figcaption, footer, header, hgroup,
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video, input, button {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    text-decoration: none;
+    box-sizing: border-box;
+    word-break: keep-all;
+    font-size: 14px;
+    font: inherit;
+    vertical-align: baseline;
+    font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', arial, sans-serif;
+    letter-spacing: -0.25px;
+}
+ol, ul {
+    list-style-type: none;
+}
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+a {
+    text-decoration: none;
+    background-color: transparent;
+}
+button:hover{
+    cursor: pointer;
+}
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html{
+    min-height:100vh;
+    position:relative;
+    padding-bottom:86px;
+}
+html,
+body,
+#__layout {
+    line-height: 1.5;
+    color: $gray10;
+
+    @-moz-document url-prefix() {
+        -moz-osx-font-smoothing: grayscale;
+    }
+}
+#__layout{
+    min-width:1440px;
+    padding:0 64px;
+}
+
+.popup > #__layout {
+    .header_wrap, .side_bar_wrap, .side_bar_wrap_fold {
+        display: none;
+    }
+    .container_wrap {
+        padding-top: 0;
+        height: inherit;
+    }
+
+    .comm_btn_wrap {
+        display: none;
+    }
+}
+
+html{
+    --antd-wave-shadow-color: transparent;
+    background:#F4F6F8;
+}
+
+@import 'Container.scss';
+@import 'Header.scss';
+@import 'Footer.scss';
+
+.hide {
+    display: none;
+}
+
+.show {
+    display: table-cell;
+}
+
+.w-{
+    &0 {
+        width:100px !important;
+    }
+}
+.mt {
+    &0 {
+        margin-top:0px !important;
+    }
+    &5 {
+        margin-top:5px !important;
+    }
+    &10 {
+        margin-top:10px !important;
+    }
+    &20 {
+        margin-top:20px !important;
+    }
+    &30 {
+        margin-top:30px !important;
+    }
+    &40 {
+        margin-top:40px !important;
+    }
+    &50 {
+        margin-top:50px !important;
+    }
+    &60 {
+        margin-top:60px !important;
+    }
+    &70 {
+        margin-top:70px !important;
+    }
+    &80 {
+        margin-top:80px !important;
+    }
+    &90 {
+        margin-top:90px !important;
+    }
+}
+
+.ml {
+    &0 {
+        margin-left:0px !important;
+    }
+    &5 {
+        margin-left:5px !important;
+    }
+    &8 {
+        margin-left:8px !important;
+    }
+    &10 {
+        margin-left:10px !important;
+    }
+    &20 {
+        margin-left:20px !important;
+    }
+    &30 {
+        margin-left:30px !important;
+    }
+    &40 {
+        margin-left:40px !important;
+    }
+    &50 {
+        margin-left:50px !important;
+    }
+    &60 {
+        margin-left:60px !important;
+    }
+    &70 {
+        margin-left:70px !important;
+    }
+    &80 {
+        margin-left:80px !important;
+    }
+    &90 {
+        margin-left:90px !important;
+    }
+}
+
+
+.mr {
+    &0 {
+        margin-right:0px !important;
+    }
+    &5 {
+        margin-right:5px !important;
+    }
+    &8 {
+        margin-right:8px !important;
+    }
+    &10 {
+        margin-right:10px !important;
+    }
+    &20 {
+        margin-right:20px !important;
+    }
+    &30 {
+        margin-right:30px !important;
+    }
+    &40 {
+        margin-right:40px !important;
+    }
+    &50 {
+        margin-right:50px !important;
+    }
+    &60 {
+        margin-right:60px !important;
+    }
+    &70 {
+        margin-right:70px !important;
+    }
+    &80 {
+        margin-right:80px !important;
+    }
+    &90 {
+        margin-right:90px !important;
+    }
+}
+
+
+
+.mb {
+    &0 {
+        margin-bottom:0px !important;
+    }
+    &5 {
+        margin-bottom:5px !important;
+    }
+    &8 {
+        margin-bottom:8px !important;
+    }
+    &10 {
+        margin-bottom:10px !important;
+    }
+    &20 {
+        margin-bottom:20px !important;
+    }
+    &30 {
+        margin-bottom:30px !important;
+    }
+    &40 {
+        margin-bottom:40px !important;
+    }
+    &50 {
+        margin-bottom:50px !important;
+    }
+    &60 {
+        margin-bottom:60px !important;
+    }
+    &70 {
+        margin-bottom:70px !important;
+    }
+    &80 {
+        margin-bottom:80px !important;
+    }
+    &90 {
+        margin-bottom:90px !important;
+    }
+}
+
+.tar {
+    text-align: right !important;
+}
+
+.tac {
+    text-align: center !important;
+}
+
+.tal {
+    text-align: left !important;
+}
+
+.align-box {
+    @include flexbox;
+    align-items: center;
+}
+
+.w000 { width:0px !important; }
+.w010 { width:10px !important; }
+.w020 { width:20px !important; }
+.w030 { width:30px !important; }
+.w040 { width:40px !important; }
+.w050 { width:50px !important; }
+.w060 { width:60px !important; }
+.w070 { width:70px !important; }
+.w080 { width:80px !important; }
+.w090 { width:90px !important; }
+.w095 { width:95px !important; }
+.w100 { width:100px !important; }
+.w110 { width:110px !important; }
+.w120 { width:120px !important; }
+.w130 { width:130px !important; }
+.w140 { width:140px !important; }
+.w150 { width:150px !important; }
+.w160 { width:160px !important; }
+.w170 { width:170px !important; }
+.w180 { width:180px !important; }
+.w190 { width:190px !important; }
+.w200 { width:200px !important; }
+.w240 { width:240px !important; }
+.w480 { width:480px !important; }
+
+.visible-hidden {
+    visibility: hidden;
+}
+.visible-show {
+    visibility: visible;
+}
+.display-hidden{
+    display: none;
+}
+.guide-title{
+    font-size:26px;
+    font-weight:700;
+}
+
+.selected-row {
+    background-color: lightgray;
+}

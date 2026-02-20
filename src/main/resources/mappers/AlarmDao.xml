@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.miso.lxnn.dao.AlarmDao">
+
+	<select id="selectAlarmList" resultType="com.miso.lxnn.dto.master.AlarmListDto" parameterType="com.miso.lxnn.dto.master.AlarmListSearchDto">
+		WITH TEMP AS
+		 (
+			 SELECT
+				 concat(b.ntnl_pnt_no,'-',C.cm_nm) AS alarm_text1
+				  ,concat(TO_CHAR(b.date_time,'YYYY-MM-DD HH24:MI'),' ',c.cm_nm,' ',
+						  CASE WHEN b.event_cd IN ('01') THEN concat(gps_lon,'-',gps_lat)
+							   WHEN B.event_cd IN ('02','03') THEN TEMP::TEXT
+							   WHEN B.event_cd IN ('04','05') THEN hum::text
+							   WHEN B.event_cd IN ('06','07','08') THEN slope
+							   WHEN B.event_cd IN ('09') THEN SHOCK::text
+							   WHEN B.event_cd IN ('10') THEN SOUND::text
+							   WHEN B.event_cd IN ('11') THEN battery1::text
+							   WHEN B.event_cd IN ('12') THEN battery2::text
+							   WHEN B.event_cd IN ('13') THEN battery3::TEXT END,c.refval03) AS alarm_text2
+				  ,A.chk_flag
+				  ,a.snsr_alrm_seq
+				  ,CASE WHEN A.chk_flag = '1' THEN '' ELSE 'read new' END AS read_cls
+				  ,CASE WHEN b.event_cd IN ('01') THEN 'icon type-gps'
+						WHEN B.event_cd IN ('02','03','04','05') THEN 'icon type-humidity'
+						WHEN B.event_cd IN ('06','07','08') THEN 'icon type-protractor'
+						WHEN B.event_cd IN ('09') THEN 'icon type-shock'
+						WHEN B.event_cd IN ('10') THEN 'icon type-sound'
+						WHEN B.event_cd IN ('11','12','13') THEN 'icon type-battery' END icon_cls
+				  ,CASE WHEN b.event_cd IN ('01') THEN 'IconGps'
+						WHEN B.event_cd IN ('02','03','04','05') THEN 'IconHumidity'
+						WHEN B.event_cd IN ('06','07','08') THEN 'IconProtractor'
+						WHEN B.event_cd IN ('09') THEN 'IconShock'
+						WHEN B.event_cd IN ('10') THEN 'IconSound'
+						WHEN B.event_cd IN ('11','12','13') THEN 'IconBattery' END icon_img
+				  ,b.date_time
+			 FROM tb_snsr_alrm a
+					  INNER JOIN tb_snsr_data b ON a.snsr_data_seq = b.snsr_data_seq
+					  INNER JOIN TB_COM_CD C ON B.event_cd = C.CM_CD AND REFVAL11 = '1' AND COM_GRP_CD_sEQ = '6'
+			 WHERE a.user_seq = #{userSeq}
+		 )
+		SELECT
+			alarm_text1
+			 ,alarm_text2
+			 ,snsr_alrm_seq
+			 ,read_cls
+			 ,icon_cls
+			 ,icon_img
+			 ,chk_flag
+			 ,date_time
+		FROM TEMP
+		WHERE chk_flag = false
+		<if test="allFlag">
+		UNION ALL
+		SELECT
+			alarm_text1
+			 ,alarm_text2
+			 ,snsr_alrm_seq
+			 ,read_cls
+			 ,icon_cls
+			 ,icon_img
+			 ,chk_flag
+			 ,date_time
+		FROM TEMP
+		WHERE chk_flag = true
+		</if>
+		order BY chk_flag, date_time desc
+	</select>
+
+
+	<update id="updateSensorAlarm" parameterType="com.miso.lxnn.dto.master.AlarmListDto" >
+		UPDATE tb_snsr_alrm
+		SET chk_flag = TRUE
+			,upt_date_time = now()
+		WHERE snsr_alrm_seq = #{snsrAlrmSeq}
+	</update>
+
+	<update id="updateSensorAlarmAll" parameterType="int" >
+		UPDATE tb_snsr_alrm
+		SET chk_flag = TRUE
+		  ,upt_date_time = now()
+		WHERE user_seq = #{userSeq}
+	</update>
+
+</mapper>

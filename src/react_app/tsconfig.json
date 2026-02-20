@@ -1,0 +1,84 @@
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@atom/*": [
+        "src/atom/*"
+      ],
+      "@component/*": [
+        "src/component/*"
+      ],
+      "@error/*": [
+        "src/error/*"
+      ],
+      "@hook/*": [
+        "src/hook/*"
+      ],
+      "@interface/*": [
+        "src/interface/*"
+      ],
+      "@layout/*": [
+        "src/layout/*"
+      ],
+      "@api/*": [
+        "src/api/*"
+      ],
+      "@page/*": [
+        "src/page/*"
+      ],
+      "@type/*": [
+        "src/type/*"
+      ],
+      "@provider/*": [
+        "src/provider/*"
+      ],
+      "@font/*": [
+        "src/style/font/*"
+      ],
+      "@image/*": [
+        "src/assets/images/*"
+      ],
+      "@icon/*": [
+        "src/assets/icons/*"
+      ],
+      "@scss/*": [
+        "src/style/scss/*"
+      ],
+      "@util/*": [
+        "src/util/*"
+      ]
+    },
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.miso.lxnn.dao.FileDao">
+	<select id="selectFile" parameterType="Integer" resultType="com.miso.lxnn.dto.common.FileDetailDto">
+		SELECT
+		    file_dtl_seq,
+		    file_seq,
+		    file_nm,
+		    file_path,
+		    file_type,
+		    del_yn,
+		    srt_sq,
+		    rgst_user_id,
+		    rgst_date_time,
+		    upt_user_id,
+		    upt_date_time
+		FROM tb_file_dtl
+		WHERE file_seq = #{fileSeq}
+			AND del_yn = 'N'
+		ORDER BY srt_sq
+	</select>
+
+	<select id="checkExistFileSeq" parameterType="Integer">
+		select
+		    COUNT(*)
+		FROM tb_file
+		where file_seq = #{fileSeq}
+	</select>
+
+	<insert id="insertFile" parameterType="com.miso.lxnn.dto.common.FileDetailDto" useGeneratedKeys="true" keyProperty="fileSeq">
+		INSERT INTO TB_FILE (
+		 	menu_seq,
+		    use_flag,
+		    rgst_user_id,
+			rgst_date_time,
+			upt_user_id,
+			upt_date_time
+		) VALUES(
+			#{menuSeq}
+			,true
+			,#{rgstUserId}
+			,NOW()
+			,#{uptUserId}
+			,NOW()
+	    )
+	</insert>
+
+	<insert id="insertFileDetail" parameterType="com.miso.lxnn.dto.common.FileDetailDto">
+		INSERT INTO TB_FILE_DTL (
+			file_seq,
+			file_nm,
+			file_path,
+			file_type,
+			del_yn,
+			srt_sq,
+			rgst_user_id,
+			rgst_date_time,
+			upt_user_id,
+			upt_date_time
+		) VALUES(
+			#{fileSeq}
+			,#{fileNm}
+			,#{filePath}
+			,#{fileType}
+			,'N'
+			,#{srtSq}
+			,#{rgstUserId}
+			,NOW()
+			,#{uptUserId}
+			,NOW()
+		)
+	</insert>
+
+	<update id="updateFileDetail" parameterType="com.miso.lxnn.dto.common.FileDetailDto">
+		UPDATE TB_FILE_DTL
+		SET srt_sq = #{srtSq},
+		upt_user_id = #{uptUserId},
+		upt_date_time = NOW()
+		WHERE 1=1
+		<if test="fileDtlSeq != null and fileDtlSeq != ''">
+			AND file_dtl_seq = #{fileDtlSeq}
+		</if>
+	</update>
+
+	<update id="deleteFile" parameterType="com.miso.lxnn.dto.common.FileDetailDto">
+		UPDATE TB_FILE
+		SET use_flag = false,
+			upt_user_id = #{uptUserId},
+			upt_date_time = NOW()
+		WHERE file_seq = #{fileSeq}
+	</update>
+
+	<update id="deleteFileDetail" parameterType="com.miso.lxnn.dto.common.FileDetailDto">
+		UPDATE TB_FILE_DTL
+		SET del_yn = 'Y',
+		    upt_user_id = #{uptUserId},
+		    upt_date_time = NOW()
+		WHERE 1=1
+		<if test="fileSeq != null and fileSeq != ''">
+			AND file_seq = #{fileSeq}
+		</if>
+		<if test="fileDtlSeq != null and fileDtlSeq != ''">
+			AND file_dtl_seq = #{fileDtlSeq}
+		</if>
+	</update>
+</mapper>

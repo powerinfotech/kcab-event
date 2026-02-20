@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.miso.lxnn.dao.NationAddrNoDao">
+
+    <select id="selectNationAddrNoList" resultType="com.miso.lxnn.dto.code.NationAddrNoListDto" parameterType="com.miso.lxnn.dto.code.NationAddrNoParamDto">
+        SELECT
+            tnpnm.ntnl_pnt_seq,
+            tnpnm.accdnt_area_flag,
+            tnpnm.ntnl_pnt_no,
+            tnpnm.lctn_sign_no,
+            tnpnm.snsr_srl_no,
+            tnpnm.sgg_cd,
+            tcc.cm_nm as sgg_nm,
+            tcc2.cm_nm as instlName,
+            tnpnm.instl_cd,
+            tcc3.cm_nm as instlTypeName,
+            tnpnm.instl_type_cd,
+            tnpnm.x_crdnt,
+            tnpnm.y_crdnt,
+            tnpnm.z_crdnt,
+            tnpnm.lng,
+            tnpnm.lat,
+            tnpnm.hght,
+            tsd.gps_lon_ref_value AS snsr_lng,
+            tsd.gps_lat_ref_value AS snsr_lat,
+            tnpnm.srt_sq,
+            tnpnm.use_flag,
+            tnpnm.rgst_date_time,
+            tnpnm.upt_date_time
+        FROM tb_ntnl_pnt_no_m tnpnm
+        LEFT OUTER JOIN tb_com_cd tcc ON tnpnm.sgg_cd = tcc.cm_std_cd
+        LEFT OUTER JOIN tb_com_cd tcc2 ON tnpnm.instl_cd = tcc2.cm_std_cd
+        LEFT OUTER JOIN tb_com_cd tcc3 ON tnpnm.instl_type_cd = tcc3.cm_std_cd
+        LEFT OUTER JOIN
+        (
+            SELECT
+                a.ntnl_pnt_no
+                ,a.ntnl_pnt_seq
+                ,gps_lon_ref_value
+                ,gps_lat_ref_value
+            FROM tb_snsr_data a
+            INNER JOIN
+            (
+                SELECT
+                    MAX(snsr_data_seq) AS snsr_data_seq
+                    ,ntnl_pnt_seq
+                FROM tb_snsr_data
+                GROUP BY ntnl_pnt_seq
+            ) b ON a.ntnl_pnt_seq = b.ntnl_pnt_seq AND a.snsr_data_seq = b.snsr_data_seq
+        ) tsd ON tnpnm.ntnl_pnt_seq = tsd.ntnl_pnt_seq
+        WHERE 1=1
+        <if test="sggCd != null">
+            AND tnpnm.sgg_cd = #{sggCd}
+        </if>
+        <if test="searchText != null">
+            AND (tnpnm.ntnl_pnt_no LIKE CONCAT('%',#{searchText},'%') OR tnpnm.lctn_sign_no LIKE CONCAT('%',#{searchText},'%'))
+        </if>
+        <if test="instlCd != null">
+            AND tnpnm.instl_cd = #{instlCd}
+        </if>
+        ORDER BY tnpnm.SRT_SQ
+    </select>
+
+    <update id="updateNationAddrNo" parameterType="com.miso.lxnn.dto.code.NationAddrNoSaveDto">
+        UPDATE tb_ntnl_pnt_no_m
+        SET  use_flag = #{useFlag},
+             accdnt_area_flag = #{accdntAreaFlag},
+             lctn_sign_no = #{lctnSignNo},
+             sgg_cd = #{sggCd},
+             instl_type_cd = #{instlTypeCd},
+             x_crdnt = #{xcrdnt},
+             y_crdnt = #{ycrdnt},
+             z_crdnt = #{zcrdnt},
+             lng = #{lng},
+             lat = #{lat},
+             hght = #{hght},
+             srt_sq = #{srtSq},
+             upt_user_id = #{uptUserId},
+             upt_date_time = now(),
+             instl_cd = #{instlCd}
+        WHERE ntnl_pnt_seq=#{ntnlPntSeq}
+    </update>
+</mapper>

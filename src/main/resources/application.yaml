@@ -1,0 +1,173 @@
+spring:
+  profiles:
+    active: local
+  output:
+    ansi:
+      enabled: always
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    cache: false
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      adjust-dates-to-context-time-zone: false
+
+  mail:
+    host: smtp.gmail.com
+    port: 25
+    username: lxnn.test@gmail.com
+    password: chlv lkcw orqz pbuf
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 100MB
+
+server:
+  port: 8080
+  servlet:
+    session:
+      timeout: 7200 #sec
+      persistent: true
+      cookie:
+        path: /
+        name: JSESSIONID #세션 이름 지정
+        http-only: true
+        secure: false # ssl 적용 후 true로 변경
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+  error:
+    whitelabel:
+      enabled: false
+  tomcat:
+    relaxed-query-chars: '|,{,},[,]'
+  max-http-header-size: 400KB
+
+logging.level:
+  org.springframework: DEBUG
+  com.miso.lxnn: DEBUG
+  sql: TRACE
+
+
+springdoc:
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
+  api-docs:
+    groups:
+      enabled: true
+  swagger-ui:
+    operations-sorter: alpha # alpha(알파벳 오름차순), method(HTTP메소드순)
+    tags-sorter: alpha # 태그 정렬 기준
+    path: /swagger-ui # html 문서 접속 경로
+    doc-expansion: none # tag, operation 펼치는 방식
+  #  paths-to-match: #API 허용 목록
+  #    - /example/**
+  paths-to-exclude:
+    - /error/**
+
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: local
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    # 개발
+    url: jdbc:postgresql://rds-powerkit.cmtttlmhn4wb.ap-northeast-2.rds.amazonaws.com:5432/iot_db
+    username: powerkit
+    password: power1120#$
+    # 운영
+    #url: jdbc:postgresql://localhost:15432/iot_db
+    #username: iot_user
+    #password: iot1234!@#$%
+
+springdoc:
+  swagger-ui:
+    enabled: true
+
+
+secret:
+  enc:
+    salt: e5af6017-fc35-4dd0-9c9e-41b9968f3b0e
+
+system:
+  under-construction: false
+
+file:
+  path:
+    dir: C:/upload
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://rds-powerkit.cmtttlmhn4wb.ap-northeast-2.rds.amazonaws.com:5432/iot_db
+    username: powerkit
+    password: power1120#$
+
+springdoc:
+  swagger-ui:
+    enabled: true
+
+secret:
+  enc:
+    salt: e5af6017-fc35-4dd0-9c9e-41b9968f3b0e
+
+system:
+  under-construction: false
+
+file:
+  path:
+    dir: /home/ubuntu/upload_files
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  # TBD
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url:
+    username:
+    password:
+
+springdoc:
+  swagger-ui:
+    enabled: false
+
+secret:
+  enc:
+    salt: 6670f407-d9fe-487a-a802-7fddf8a79b39
+
+system:
+  under-construction: false
+
+file:
+  path:
+    dir: C:/upload
+

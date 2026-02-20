@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.miso.lxnn.dao.RoleDao">
+	<select id="selectRoleList" resultType="com.miso.lxnn.dto.auth.RoleListDto" parameterType="com.miso.lxnn.dto.auth.RoleListSearchDto">
+		SELECT
+			 tr.role_seq
+			,tr.role_cd
+			,tr.role_nm
+			,tr.role_desc
+			,tr.use_flag
+			,tr.rgst_user_id
+			,tr.rgst_date_time
+			,tr.upt_user_id
+			,tr.upt_date_time
+		FROM tb_role tr
+		WHERE 1=1
+		<if test="roleCd != null">
+		  AND tr.role_cd LIKE '%' || #{roleCd} || '%'
+		</if>
+		<if test="roleNm != null">
+		  AND tr.role_nm LIKE '%' || #{roleNm} || '%'
+		</if>
+		<if test="useFlag != null">
+		  AND tr.use_flag = #{useFlag}
+		</if>
+		ORDER BY role_seq
+	</select>
+	<select id="selectRoleUserList" resultType="com.miso.lxnn.dto.auth.RoleUserListDto" parameterType="java.lang.Integer">
+		SELECT
+			 tru.role_user_seq
+			,tru.role_seq
+			,tru.user_seq
+		    ,tu.user_id
+		    ,tu.user_name AS user_nm
+			,tru.str_date
+			,tru.end_date
+		    ,tru.use_flag
+			,tru.rgst_user_id
+			,tru.rgst_date_time
+			,tru.upt_user_id
+			,tru.upt_date_time
+		FROM tb_role_user tru
+		INNER JOIN tb_role tr ON tru.role_seq = tr.role_seq
+		LEFT OUTER JOIN tb_user tu ON tru.user_seq = tu.user_seq
+		WHERE 1=1
+		  AND tr.role_seq = #{roleSeq}
+		ORDER BY tru.role_user_seq
+	</select>
+
+	<insert id="insertRole"  parameterType="com.miso.lxnn.domain.Role">
+		INSERT INTO tb_role
+		(
+			role_cd
+			,role_nm
+			,role_desc
+			,use_flag
+			,rgst_user_id
+			,rgst_date_time
+			,upt_user_id
+			,upt_date_time
+		)
+		values (
+			#{roleCd}
+			,#{roleNm}
+			,#{roleDesc}
+			,#{useFlag}
+			,#{rgstUserId}
+			,now()
+			,#{uptUserId}
+			,now()
+		)
+	</insert>
+
+	<update id="updateRole"  parameterType="com.miso.lxnn.domain.Role">
+		UPDATE tb_role
+		   SET role_nm = #{roleNm}
+			 , role_desc = #{roleDesc}
+			 , use_flag = #{useFlag}
+			 , upt_user_id  = #{uptUserId}
+			 , upt_date_time  = now()
+		WHERE role_seq  = #{roleSeq}
+	</update>
+
+	<delete id="deleteRole"  parameterType="java.lang.Integer">
+		DELETE FROM tb_role
+		WHERE role_seq = #{roleSeq}
+	</delete>
+
+	<insert id="insertRoleUser"  parameterType="com.miso.lxnn.domain.RoleUser">
+		INSERT INTO tb_role_user
+		(
+			role_seq
+			,user_seq
+			,str_date
+			,end_date
+			,rgst_user_id
+			,rgst_date_time
+			,upt_user_id
+			,upt_date_time
+		)
+		VALUES (
+			#{roleSeq}
+			,#{userSeq}
+			,#{strDate}
+			,#{endDate}
+			,#{rgstUserId}
+			,now()
+			,#{uptUserId}
+			,now()
+		)
+	</insert>
+
+	<update id="updateRoleUser"  parameterType="com.miso.lxnn.domain.RoleUser">
+		UPDATE tb_role_user
+		   SET str_date = #{strDate}
+			  ,end_date = #{endDate}
+		   	  ,use_flag = #{useFlag}
+		      ,upt_user_id  = #{uptUserId}
+			  ,upt_date_time  = now()
+		WHERE role_user_seq=#{roleUserSeq}
+
+	</update>
+
+	<update id="updateRoleUserUnusableByRoleSeq"  parameterType="com.miso.lxnn.domain.RoleUser">
+		UPDATE tb_role_user
+		   SET end_date = now()
+		   	  ,use_flag = false
+		   	  ,upt_user_id  = #{uptUserId}
+			  ,upt_date_time  = now()
+		WHERE role_seq=#{roleSeq}
+	</update>
+
+	<delete id="deleteRoleUser"  parameterType="com.miso.lxnn.domain.RoleUser">
+		DELETE FROM tb_role_user
+		WHERE role_seq=#{roleSeq}
+		<if test="roleUserSeq != null">
+			and role_user_seq = #{roleUserSeq}
+		</if>
+	</delete>
+
+
+</mapper>

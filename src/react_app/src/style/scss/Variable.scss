@@ -1,0 +1,142 @@
+// Background
+$loginBg: #93c3d2;
+$loginBtnBg: #222;
+$grayBg: #f0f0f0;
+$whiteBg: #ffffff;
+$dim: #000;
+$dimOpacity: 60%;
+
+//Primary Color Yellow
+$yellow100: #FFDD00;
+$yellow80: #FFE433;
+$yellow20: #FFF8CC;
+$yellow5: #FFFDF2;
+
+// Primary Color YEllow
+$brandYellow: #FFDD00;
+$brandYellowDarken : #E58800;
+
+// Primary Color Gray
+$brandGray: #555555;
+$brandGrayDarken: #3b3b3b;
+
+// Secondary Color - Grayscale
+$gray10: #1a1a1a;
+$gray20: #333333;
+$gray25: #555555;
+$gray30: #666666;
+$gray40: #808080;
+$gray41: #888888;
+$gray50: #999999;
+$gray60: #b3b3b3;
+$gray70: #cccccc;
+$gray80: #d9d9d9;
+$gray90: #e5e5e5;
+$gray92: #ebebeb;
+$gray94: #f0f0f0;
+$gray95: #f2f2f2;
+$gray96: #f5f5f5;
+$gray98: #fafafa;
+$gray100: #ffffff;
+$gray44: #4c4c4c;
+
+// Primary bg
+$PrimaryLighter : #D3FCD2;
+$PrimaryLight   : #77ED8B;
+$PrimaryMain    : #22C55E;
+$PrimaryDark    : #118D57;
+$PrimaryDarker  : #065E49;
+
+// Primary bg opacity
+$Primary08 : rgba(34, 197, 94, 0.08);
+$Primary12 : rgba(34, 197, 94, 0.12);
+$Primary16 : rgba(34, 197, 94, 0.16);
+$Primary20 : rgba(34, 197, 94, 0.20);
+$Primary24 : rgba(34, 197, 94, 0.24);
+$Primary32 : rgba(34, 197, 94, 0.32);
+$Primary48 : rgba(34, 197, 94, 0.48);
+
+// max, min width
+$MinWidth : 1376px;
+$MaxWidth : 1728px;
+
+// Primary bg opacity
+$Primary-gradient-main : linear-gradient(135deg, #77ED8B 0%, #22C55E 100%);
+$Primary-gradient-bold : linear-gradient(135deg, #22C55E 0%, #118D57 100%);
+
+// Sub Color - Red
+$red10: #f33ff0;
+$red30: #fdd0d3;
+$red60: #fba1a7;
+$red100: #f8626c;
+$red66: #ff6666;
+
+
+// font
+$fz12: 12px;
+$fz13: 13px;
+$fz14: 14px;
+$fz15: 15px;
+$fz16: 16px;
+
+
+// Vendor prefix
+@mixin transR($d) {
+  -webkit-transform: rotate($d);
+  -moz-transform: rotate($d);
+  -ms-transform: rotate($d);
+  -o-transform: rotate($d);
+  transform: rotate($d);
+}
+
+@mixin transY($y) {
+  -webkit-transform: rotate($y);
+  -moz-transform: rotate($y);
+  -ms-transform: rotate($y);
+  -o-transform: rotate($y);
+  transform: rotate($y);
+}
+
+
+@mixin transX($x) {
+  -webkit-transform: rotate($x);
+  -moz-transform: rotate($x);
+  -ms-transform: rotate($x);
+  -o-transform: rotate($x);
+  transform: rotate($x);
+}
+
+@mixin transXY($x, $y) {
+  -webkit-transform: rotate($x, $y);
+  -moz-transform: rotate($x, $y);
+  -ms-transform: rotate($x, $y);
+  -o-transform: rotate($x, $y);
+  transform: rotate($x, $y);
+}
+
+@mixin filter($fill) {
+  filter: $fill;
+  -webkit-filter:$fill;
+  -ms-filter:$fill;
+}
+
+
+@mixin flexbox{
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+}
+
+@mixin clearfix {
+  content: '';
+  display: block;
+  clear: both;
+}
+
+@mixin ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

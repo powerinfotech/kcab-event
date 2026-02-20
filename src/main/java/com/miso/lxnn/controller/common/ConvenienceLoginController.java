@@ -1,0 +1,22 @@
+package com.miso.lxnn.controller.common;
+
+import com.miso.lxnn.service.common.ConvenienceLoginService;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.*;
+
+import javax.annotation.Resource;
+
+@Profile({"local", "dev"})
+@Controller
+public class ConvenienceLoginController {
+    @Resource(name = "convenienceLoginService")
+    private ConvenienceLoginService convenienceLoginService;
+
+
+    @RequestMapping("/secure-login")
+    public String convenienceLogin(@RequestParam("LX_USER") String id) throws Exception {
+        convenienceLoginService.login(id);
+        return "redirect:/";
+    }
+}
