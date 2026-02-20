@@ -4,7 +4,7 @@ import {ConfigProvider} from 'antd';
 import locale from 'antd/lib/locale/ko_KR';
 import Container from '@layout/Container';
 import {produce} from 'immer';
-import Header from '@layout/Header';
+import Sidebar from '@layout/Sidebar';
 import Footer from '@layout/Footer';
 import '@scss/Common.scss';
 import Login from '@page/Login';
@@ -19,6 +19,7 @@ function App() {
     const [showErrorPage, setShowErrorPage] = useState(false);
     const [isLogin, setIsLogin] = useState<boolean|undefined>(undefined);
     const [menuInfo, setMenuInfo] = useState<MenuInfo[]>([]);
+    const [sidebarSubpanelOpen, setSidebarSubpanelOpen] = useState(false);
 
     const getLoginUserInfo = async() => {
         getUserLoginInfo().then((res)=> {
@@ -76,11 +77,13 @@ function App() {
     return (
           <ConfigProvider locale={locale} >
               {isLogin ? (
-                  <>
-                      {!showErrorPage && <Header menuInfo={menuInfo} />}
-                      {isLogin && <Container menuInfo={menuInfo} onChange={(flag:boolean)=> setShowErrorPage(produce(showErrorPage, ()=> flag))} />}
-                      {!showErrorPage && <Footer />}
-                  </>
+                  <div className={`app_layout ${sidebarSubpanelOpen ? 'sidebar_subpanel_open' : ''}`}>
+                      {!showErrorPage && <Sidebar menuInfo={menuInfo} onSubpanelOpenChange={setSidebarSubpanelOpen} />}
+                      <div className="app_main">
+                          {isLogin && <Container menuInfo={menuInfo} onChange={(flag:boolean)=> setShowErrorPage(produce(showErrorPage, ()=> flag))} />}
+                          {!showErrorPage && <Footer />}
+                      </div>
+                  </div>
               ) : isLogin === false ? (
                   <Login />
               ) : (

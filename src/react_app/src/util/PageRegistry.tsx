@@ -38,9 +38,15 @@ export function getPageComponent(viewPath: string): React.ComponentType<PageComp
   return pageMap[key] ?? null;
 }
 
+/** URL 경로 → pageMap 키 매핑 (경로와 키가 다를 때 사용) */
+const pathToPageKey: Record<string, string> = {
+  'menu-mgt': 'ScreenType02',
+};
+
 export function getStaticRouteKey(pathname: string): string | null {
   const p = pathname === '/' ? '/' : pathname.replace(/^\//, '');
   if (p === '/') return 'Dashboard';
+  if (pathToPageKey[p]) return pathToPageKey[p];
   if (['Guide', 'ScreenType01', 'ScreenType02', 'ScreenType03', 'ScreenType04', 'ScreenType05', 'ScreenType06', 'ScreenType07', 'ScreenType08', 'template'].includes(p)) return p;
   return null;
 }

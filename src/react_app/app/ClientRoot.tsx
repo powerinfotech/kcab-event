@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { produce } from 'immer';
-import Header from '@layout/Header';
+import Sidebar from '@layout/Sidebar';
 import Footer from '@layout/Footer';
 import Login from '@page/Login';
 import { getUserLoginInfo, getUserMenuInfo } from '@api/CommonApi';
@@ -28,6 +28,7 @@ export default function ClientRoot() {
   const [showErrorPage, setShowErrorPage] = useState(false);
   const [isLogin, setIsLogin] = useState<boolean | undefined>(undefined);
   const [menuInfo, setMenuInfo] = useState<MenuInfo[]>([]);
+  const [sidebarSubpanelOpen, setSidebarSubpanelOpen] = useState(false);
 
   const getLoginUserInfo = async () => {
     try {
@@ -69,16 +70,23 @@ export default function ClientRoot() {
 
   if (isLogin === true) {
     return (
-      <>
-        {!showErrorPage && <Header menuInfo={menuInfo} />}
-        {isLogin && (
-          <MainContent
+      <div className={`app_layout ${sidebarSubpanelOpen ? 'sidebar_subpanel_open' : ''}`}>
+        {!showErrorPage && (
+          <Sidebar
             menuInfo={menuInfo}
-            onChange={(flag: boolean) => setShowErrorPage(produce(showErrorPage, () => flag))}
+            onSubpanelOpenChange={setSidebarSubpanelOpen}
           />
         )}
-        {!showErrorPage && <Footer />}
-      </>
+        <div className="app_main">
+          {isLogin && (
+            <MainContent
+              menuInfo={menuInfo}
+              onChange={(flag: boolean) => setShowErrorPage(produce(showErrorPage, () => flag))}
+            />
+          )}
+          {!showErrorPage && <Footer />}
+        </div>
+      </div>
     );
   }
 
