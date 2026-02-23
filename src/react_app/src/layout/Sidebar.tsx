@@ -1,6 +1,7 @@
 'use client';
 
 import React, { JSX, useEffect, useState } from 'react';
+import Link from 'next/link';
 import { callLogout } from '@api/CommonApi';
 import { HttpStatusCode } from 'axios';
 import IconAlarm from '@icon/IconAlarm';
@@ -9,6 +10,7 @@ import IconAdmin from '@icon/IconAdmin';
 import { MenuInfo } from '@interface/auth/MenuManagement';
 import { useRecoilValue } from 'recoil';
 import { sessionInfoAtom } from '@atom/sessionInfoAtom';
+import { menuInfoAtom } from '@atom/menuInfoAtom';
 import { alarmItem } from '@interface/master/Alarm';
 import {
   callUpdateAlarm,
@@ -60,19 +62,13 @@ function SidebarSubpanel({
       </div>
       <nav className="sidebar_menu">
         {children.map((child) => (
-          <a
+          <Link
             key={child.menuId}
             href={child.menuUri}
             className="sidebar_menu_child"
-            onClick={(e) => {
-              e.preventDefault();
-              if (typeof window !== 'undefined' && child.menuUri) {
-                window.location.replace(child.menuUri);
-              }
-            }}
           >
             {child.menuNm}
-          </a>
+          </Link>
         ))}
       </nav>
     </div>
@@ -80,13 +76,13 @@ function SidebarSubpanel({
 }
 
 export default function Sidebar({
-  menuInfo,
   onSubpanelOpenChange,
 }: {
-  menuInfo: MenuInfo[];
+  menuInfo?: MenuInfo[];
   onSubpanelOpenChange?: (open: boolean) => void;
 }) {
   const sessionInfo = useRecoilValue(sessionInfoAtom);
+  const menuInfo = useRecoilValue(menuInfoAtom);
   const [sensorAlrmData, setSensorAlrmData] = useState<alarmItem[]>([]);
   const [alarmOpen, setAlarmOpen] = useState(false);
   const [subpanelOpen, setSubpanelOpen] = useState(false);
