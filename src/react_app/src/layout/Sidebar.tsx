@@ -1,6 +1,6 @@
 'use client';
 
-import React, { JSX, useEffect, useState } from 'react';
+import React, { JSX, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { callLogout } from '@api/CommonApi';
 import { HttpStatusCode } from 'axios';
@@ -39,11 +39,9 @@ const iconMap: { [key: string]: JSX.Element } = {
 function SidebarSubpanel({
   menuInfo,
   selectedParentId,
-  onClose,
 }: {
   menuInfo: MenuInfo[];
   selectedParentId: number | null;
-  onClose: () => void;
 }) {
   if (selectedParentId === null) return null;
 
@@ -56,9 +54,6 @@ function SidebarSubpanel({
     <div className="sidebar_subpanel">
       <div className="sidebar_subpanel_header">
         <span className="sidebar_subpanel_title">{parent?.menuNm ?? ''}</span>
-        <button type="button" className="sidebar_subpanel_close" onClick={onClose} aria-label="닫기">
-          ×
-        </button>
       </div>
       <nav className="sidebar_menu">
         {children.map((child) => (
@@ -87,6 +82,7 @@ export default function Sidebar({
   const [alarmOpen, setAlarmOpen] = useState(false);
   const [subpanelOpen, setSubpanelOpen] = useState(false);
   const [selectedParentId, setSelectedParentId] = useState<number | null>(null);
+  const sidebarWrapRef = useRef<HTMLElement>(null);
 
   const parentMenus = menuInfo.filter((item) => item.menuTypeCd === 'D' && item.useFlag);
 
@@ -162,8 +158,20 @@ export default function Sidebar({
     });
   }, []);
 
+  useEffect(() => {
+    if (!subpanelOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (sidebarWrapRef.current && !sidebarWrapRef.current.contains(target)) {
+        handleSubpanelClose();
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [subpanelOpen]);
+
   return (
-    <aside className="sidebar_wrap">
+    <aside ref={sidebarWrapRef} className="sidebar_wrap">
       <div className="sidebar_narrow">
         <nav className="sidebar_narrow_menu">
           {parentMenus.map((parent) => (
@@ -240,7 +248,6 @@ export default function Sidebar({
         <SidebarSubpanel
           menuInfo={menuInfo}
           selectedParentId={selectedParentId}
-          onClose={handleSubpanelClose}
         />
       )}
     </aside>
