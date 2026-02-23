@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import '@scss/Common.scss';
-import ClientProviders from './ClientProviders';
-import AppLayout from './AppLayout';
+import ClientProviders from './_components/ClientProviders';
+import AppLayout from './_components/AppLayout';
 
 export const metadata: Metadata = {
   title: '국가재난안전포탈 관리자',
