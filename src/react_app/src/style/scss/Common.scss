@@ -58,9 +58,9 @@ button:hover{
 }
 
 html{
-    min-height:100vh;
-    position:relative;
-    padding-bottom:86px;
+    min-height: 100vh;
+    position: relative;
+    padding-bottom: 86px;
 }
 html,
 body,
@@ -73,13 +73,30 @@ body,
     }
 }
 #__layout{
-    min-width:1440px;
-    padding:0 64px;
+    max-width: 100%;
+    padding: 0 64px;
+}
+
+.app_layout {
+    display: flex;
+    min-height: 100vh;
+}
+.app_main {
+    flex: 1;
+    min-width: 0; /* flex 자식이 내용 너비만큼 줄어들 수 있도록 */
+    margin-left: 72px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
 }
 
 .popup > #__layout {
-    .header_wrap, .side_bar_wrap, .side_bar_wrap_fold {
+    .header_wrap, .side_bar_wrap, .side_bar_wrap_fold, .sidebar_wrap {
         display: none;
+    }
+    .app_main {
+        margin-left: 0;
     }
     .container_wrap {
         padding-top: 0;
@@ -97,6 +114,7 @@ html{
 }
 
 @import 'Container.scss';
+@import 'Sidebar.scss';
 @import 'Header.scss';
 @import 'Footer.scss';
 

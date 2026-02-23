@@ -1,6 +1,6 @@
 'use client';
 
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { Breadcrumb } from 'antd';
 import IconStepArrow from '@icon/IconStepArrow';
@@ -8,9 +8,35 @@ import IconHome from '@icon/IconHome';
 import ErrorPage404 from '@error/ErrorPage404';
 import { getPageComponent, getStaticRouteKey } from '@util/PageRegistry';
 import { MenuInfo } from '@interface/auth/MenuManagement';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
+import { menuInfoAtom } from '@atom/menuInfoAtom';
+import { showErrorPageAtom } from '@atom/showErrorPageAtom';
 
-function Container({ menuInfo, onChange }: { menuInfo: MenuInfo[]; onChange: (flag: boolean) => void }) {
+function defaultMenu(menuList: MenuInfo[]) {
+  const level2Menu = menuList.filter((item) => item.level === 2);
+  if (level2Menu.length > 0 && typeof window !== 'undefined') {
+    const minumSeqMenu = level2Menu.reduce((minMenu, currentMenu) =>
+      currentMenu.menuId < minMenu.menuId ? currentMenu : minMenu
+    );
+    window.location.href = window.location.origin + minumSeqMenu.menuUri;
+  }
+}
+
+export default function MainContent() {
   const pathname = usePathname() ?? '/';
+  const menuInfo = useRecoilValue(menuInfoAtom);
+  const setShowErrorPage = useSetRecoilState(showErrorPageAtom);
+
+  useEffect(() => {
+    if (menuInfo.length === 0) return;
+    if (pathname === '/' || (typeof window !== 'undefined' && window.location.href.includes('987654321'))) {
+      defaultMenu(menuInfo);
+    }
+  }, [pathname, menuInfo]);
+
+  const onChange = React.useCallback((flag: boolean) => {
+    setShowErrorPage(flag);
+  }, [setShowErrorPage]);
 
   const staticKey = getStaticRouteKey(pathname);
   const menu = menuInfo.find((m) => m.menuTypeCd === 'V' && m.useFlag && m.menuUri === pathname);
@@ -81,5 +107,3 @@ function Container({ menuInfo, onChange }: { menuInfo: MenuInfo[]; onChange: (fl
     </div>
   );
 }
-
-export default Container;

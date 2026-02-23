@@ -38,6 +38,7 @@ export function getPageComponent(viewPath: string): React.ComponentType<PageComp
   return pageMap[key] ?? null;
 }
 
+
 export function getStaticRouteKey(pathname: string): string | null {
   const p = pathname === '/' ? '/' : pathname.replace(/^\//, '');
   if (p === '/') return 'Dashboard';

@@ -1,5 +1,5 @@
-import ClientRoot from '../ClientRoot';
+import MainContent from '../_components/MainContent';
 
 export default function CatchAllPage() {
-  return <ClientRoot />;
+  return <MainContent />;
 }

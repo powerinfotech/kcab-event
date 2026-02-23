@@ -22,6 +22,38 @@ import {callSaveCommonGrpCodeList} from "@api/master/CommonCodeManagementApi";
 
 
 
+/** 권한명 셀: setValue를 렌더 중에 호출하면 무한 루프가 발생하므로 useEffect에서 동기화 */
+const AuthGrpNmCell = ({
+    record,
+    value,
+    setValue,
+    control,
+    register,
+    onDataChange,
+}: {
+    record: AuthGroupList;
+    value: string;
+    setValue: (name: string, v: string) => void;
+    control: any;
+    register: any;
+    onDataChange: (record: AuthGroupList, key: string, value: any) => void;
+}) => {
+    const fieldName = `${record.authGrpSeq}_authGrpNm`;
+    useEffect(() => {
+        setValue(fieldName, value);
+    }, [fieldName, value, setValue]);
+    return (
+        <CustomValidFormInput
+            control={control}
+            required={true}
+            maxLength={100}
+            regExp={{value: /^[ㄱ-ㅎ가-힣a-zA-Z0-9]*$/, message: '권한명은 한글,영문,숫자만 입력가능합니다.'}}
+            onChangeValue={(e) => onDataChange(record, 'authGrpNm', e)}
+            {...register(fieldName, {required: '권한명은 필수입력입니다.'})}
+        />
+    );
+};
+
 const AuthGroupMenuManagement = () => {
     const cmCode = useCmCode(['AuthGrpType']);
     const {register: authGroupRegister
@@ -72,19 +104,17 @@ const AuthGroupMenuManagement = () => {
                 align:'center',
                 width: '20%',
                 render: (value:string, record:AuthGroupList) => {
-                    return record.rgstUserId &&  !record.useFlag ? value :
-                        <>
-                            {authGroupSetValue(`${record.authGrpSeq}_authGrpNm`, value)}
-                            <CustomValidFormInput
-                                 control={authGroupControl}
-                                 required={true}
-                                 maxLength={100}
-                                 regExp={{value:/^[ㄱ-ㅎ가-힣a-zA-Z0-9]*$/, message:'권한명은 한글,영문,숫자만 입력가능합니다.'}}
-                                 onChangeValue={(e) => handleDataChangeAuthGroup(record, 'authGrpNm', e)}
-                                 {...authGroupRegister(`${record.authGrpSeq}_authGrpNm`, {required:'권한명은 필수입력입니다.'})}/>
-                        </>
-
-                        ;
+                    if (record.rgstUserId && !record.useFlag) return value;
+                    return (
+                        <AuthGrpNmCell
+                            record={record}
+                            value={value}
+                            setValue={authGroupSetValue}
+                            control={authGroupControl}
+                            register={authGroupRegister}
+                            onDataChange={handleDataChangeAuthGroup}
+                        />
+                    );
                 }
             },
             {
