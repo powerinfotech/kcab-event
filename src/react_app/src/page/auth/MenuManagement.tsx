@@ -23,7 +23,6 @@ import CustomValidFormCheckbox from '@component/form/CustomValidFormCheckbox';
 import {IudType} from '@interface/common';
 import {HttpStatusCode} from 'axios';
 import {useMessage} from '@hook/useMessage';
-import {User, UserList} from "@interface/master/UserManagement";
 
 type DirectoryTreeProps = GetProps<typeof Tree.DirectoryTree>;
 const emptyList:EmptyMenu[] = [
@@ -414,7 +413,6 @@ const MenuManagement = () => {
     useEffect(() => {
         handleSearch();
     }, []);
-
 
 
     return Object.keys(cmCode).length > 0 && (
