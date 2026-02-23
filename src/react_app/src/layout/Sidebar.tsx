@@ -163,7 +163,7 @@ export default function Sidebar({
   }, []);
 
   return (
-    <aside className={`sidebar_wrap ${subpanelOpen ? 'sidebar_wrap--expanded' : ''}`}>
+    <aside className="sidebar_wrap">
       <div className="sidebar_narrow">
         <nav className="sidebar_narrow_menu">
           {parentMenus.map((parent) => (

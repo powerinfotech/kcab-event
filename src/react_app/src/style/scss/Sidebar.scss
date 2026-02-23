@@ -2,8 +2,8 @@
 
 $sidebar-narrow-width: 72px;
 $sidebar-subpanel-width: 280px;
-$sidebar-expanded-width: $sidebar-narrow-width + $sidebar-subpanel-width;
 
+/* 사이드바는 항상 72px. 하위메뉴 패널은 별도 레이어로 화면 위에 오버레이되어 본문 레이아웃에 관여하지 않음 */
 .sidebar_wrap {
   position: fixed;
   top: 0;
@@ -14,13 +14,8 @@ $sidebar-expanded-width: $sidebar-narrow-width + $sidebar-subpanel-width;
   color: #fff;
   z-index: 100;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
-  transition: width 0.2s ease;
-
-  &.sidebar_wrap--expanded {
-    width: $sidebar-expanded-width;
-  }
 }
 
 .sidebar_narrow {
@@ -72,14 +67,19 @@ $sidebar-expanded-width: $sidebar-narrow-width + $sidebar-subpanel-width;
   overflow-wrap: break-word;
 }
 
+/* 하위메뉴 패널: 화면을 밀지 않고 본문 위에 오버레이 (본문 CSS와 서로 관여하지 않음) */
 .sidebar_subpanel {
-  flex-shrink: 0;
+  position: fixed;
+  top: 0;
+  left: $sidebar-narrow-width;
+  z-index: 100;
   width: $sidebar-subpanel-width;
-  height: 100%;
+  height: 100vh;
   background: #1a2029;
   display: flex;
   flex-direction: column;
   border-right: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 }
 

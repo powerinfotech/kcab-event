@@ -88,10 +88,6 @@ body,
     display: flex;
     flex-direction: column;
     position: relative;
-    transition: margin-left 0.2s ease;
-}
-.app_layout.sidebar_subpanel_open .app_main {
-    margin-left: 352px;
 }
 
 .popup > #__layout {
