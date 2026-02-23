@@ -89,7 +89,7 @@ spring:
   datasource:
     driver-class-name: org.postgresql.Driver
     # 개발
-    url: jdbc:postgresql://rds-powerkit.cmtttlmhn4wb.ap-northeast-2.rds.amazonaws.com:5432/iot_db
+    url: jdbc:postgresql://rds-powerkit.cmtttlmhn4wb.ap-northeast-2.rds.amazonaws.com:5432/reactcomm
     username: powerkit
     password: power1120#$
     # 운영
