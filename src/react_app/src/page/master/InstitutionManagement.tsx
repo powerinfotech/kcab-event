@@ -158,7 +158,7 @@ const InstitutionManagement=()=>{
         setValue: saveFormSetValue,
         getValues: saveFormGetValues
     }= useForm<InstList>({mode:'onSubmit'});
-    const isAdminUser=userInfo.admFlag;
+    const isAdminUser = userInfo.admYn === 'Y';
     const [isOpen,setIsOpen] = useState(false);
     const isChangedDataSource = dataSource.some((v)=>v.iudType);
     const isEditable = isRowSelected && isAdminUser;

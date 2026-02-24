@@ -10,24 +10,26 @@ import lombok.Setter;
 public class LoginUser {
     private Integer userSeq;
     private String userId;
-    private String deptCd;
+    /** tb_user dprt_cd */
+    private String dprtCd;
     private String userName;
     private String nickName;
     private String email;
-    private Boolean useFlag;
-    private Boolean admFlag;
-    private String salt;
+    /** tb_user use_yn (Y/N) */
+    private String useYn;
+    /** tb_user adm_yn (Y/N) */
+    private String admYn;
 
     public static LoginUser covert(User user) {
         LoginUser loginUser = new LoginUser();
         loginUser.setUserSeq(user.getUserSeq());
         loginUser.setUserId(user.getUserId());
-        loginUser.setDeptCd(user.getDeptCd());
+        loginUser.setDprtCd(user.getDprtCd());
         loginUser.setUserName(user.getUserName());
         loginUser.setNickName(user.getNickName());
         loginUser.setEmail(user.getEmail());
-        loginUser.setAdmFlag(user.getAdmFlag());
-        loginUser.setUseFlag(user.getUseFlag());
+        loginUser.setUseYn(user.getUseYn());
+        loginUser.setAdmYn(user.getAdmYn());
         return loginUser;
     }
 }

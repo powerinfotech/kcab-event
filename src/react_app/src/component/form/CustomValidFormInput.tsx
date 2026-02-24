@@ -1,5 +1,5 @@
-import React, {useEffect, useState} from 'react';
-import {Input, InputProps, Tooltip} from 'antd';
+import React, {forwardRef, useEffect, useState} from 'react';
+import {Input, InputProps, InputRef, Tooltip} from 'antd';
 import {Control, Controller} from 'react-hook-form';
 
 interface CustomFormInputProps extends InputProps {
@@ -11,7 +11,7 @@ interface CustomFormInputProps extends InputProps {
     [key: string]: any;
 }
 
-const CustomValidFormInput = ({name, defaultValue, control, onChangeValue,  ...props}:CustomFormInputProps) => {
+const CustomValidFormInput = forwardRef<InputRef, CustomFormInputProps>(({name, defaultValue, control, onChangeValue,  ...props}, ref) => {
     const [focus, setFocus] = useState<boolean>(false);
     const [validError, setValidError] = useState<boolean>(false);
 
@@ -48,9 +48,10 @@ const CustomValidFormInput = ({name, defaultValue, control, onChangeValue,  ...p
                     <div className={(fieldState.error !== undefined || validError)  ? 'tooltip error' : ''}>
                         <Input
                             {...props}
-                                     id={field.name}
-                                     name={field.name}
-                                     value={field.value}
+                            ref={ref}
+                            id={field.name}
+                            name={field.name}
+                            value={field.value}
                                      onChange={(v)=>{
                                          // onChangeValue&&onChangeValue(v.target.value);
                                          handleChange(field, v);
@@ -69,6 +70,8 @@ const CustomValidFormInput = ({name, defaultValue, control, onChangeValue,  ...p
             )}
         />
     );
-};
+});
+
+CustomValidFormInput.displayName = 'CustomValidFormInput';
 
 export default CustomValidFormInput;

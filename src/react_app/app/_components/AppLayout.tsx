@@ -30,7 +30,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           setSessionInfo({
             userId: res.item.userId,
             userName: res.item.userName,
-            admFlag: res.item.admFlag,
+            admYn: res.item.admYn ?? 'N',
           });
 
         const menuRes = await getUserMenuInfo();

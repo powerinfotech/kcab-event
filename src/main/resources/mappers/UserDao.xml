@@ -6,52 +6,42 @@
 		SELECT
 		     user_seq
 			,user_id
-			,passwd
-		    ,salt
+			,password
 			,user_name
 			,user_name_eng
 			,nick_name
 			,user_cd
 			,tel_no
 			,hp_no
-			,dept_cd
+			,dprt_cd
 			,email
-			,work_cd
 			,str_date
 			,end_date
-			,login_date_time
-			,use_flag
-			,adm_flag
-			,rgst_user_id
-			,rgst_date_time
-			,upt_user_id
-			,upt_date_time
+			,login_date_time::timestamp AS login_date_time
+			,use_yn
+			,adm_yn
+			,rgst_user_seq
+			,rgst_date_time::timestamp AS rgst_date_time
+			,upt_user_seq
+			,upt_date_time::timestamp AS upt_date_time
 		FROM TB_USER
 		WHERE user_id = #{userId}
-		AND now() BETWEEN str_date AND COALESCE(end_date, '2999-12-31')
-		AND use_flag = TRUE
-		AND adm_flag = TRUE
+		AND now() BETWEEN str_date::timestamptz AND COALESCE(end_date, '2999-12-31')::timestamptz
+		AND use_yn = 'Y'
+		AND adm_yn = 'Y'
 	</select>
-
-	<select id="selectSalt" resultType="java.lang.String">
-		SELECT
-		     salt
-		FROM TB_USER
-		WHERE user_id = #{userId}
-	</select>
-
 
 	<select id="selectUserLoginCheck" parameterType="com.miso.lxnn.dto.common.LoginRequestDto" resultType="java.lang.Integer">
 		SELECT
 		     COUNT(*)
 		FROM TB_USER
 		WHERE user_id = #{userId}
-		<if test="passwd != null">
-			AND passwd = #{passwd}
+		<if test="password != null">
+			AND password = #{password}
 		</if>
-		AND now() BETWEEN str_date AND COALESCE(end_date, '2999-12-31')
-		AND use_flag = TRUE
-		AND adm_flag = TRUE
+		AND now() BETWEEN str_date::timestamptz AND COALESCE(end_date, '2999-12-31')::timestamptz
+		AND use_yn = 'Y'
+		AND adm_yn = 'Y'
 	</select>
 
 
@@ -60,37 +50,33 @@
 		SELECT DISTINCT
 			 tu.user_seq
 			,tu.user_id
-			,tu.passwd
+			,NULL AS password
 			,tu.user_name
 			,tu.user_name_eng
 			,tu.nick_name
 			,tu.user_cd
 			,tu.tel_no
 			,tu.hp_no
-			,tu.dept_cd
+			,tu.dprt_cd
 			,tu.email
-			,tu.work_cd
 			,tu.str_date
 			,tu.end_date
-			,tu.login_date_time
-			,tu.use_flag
-			,tu.adm_flag
-			,tu.rgst_user_id
-			,tu.rgst_date_time
-			,tu.upt_user_id
-			,tu.upt_date_time
+			,tu.login_date_time::timestamp AS login_date_time
+			,tu.use_yn
+			,tu.adm_yn
+			,tu.rgst_user_seq
+			,tu.rgst_date_time::timestamp AS rgst_date_time
+			,tu.upt_user_seq
+			,tu.upt_date_time::timestamp AS upt_date_time
 			,tu2.user_name AS last_modify_user_name
 		FROM TB_USER tu
- 		LEFT OUTER JOIN tb_user tu2 ON tu.upt_user_id = tu2.user_id
+ 		LEFT OUTER JOIN tb_user tu2 ON tu.upt_user_seq = tu2.user_seq
 		WHERE 1=1
-		<if test="userId != null">
-		  AND upper(tu.user_id) LIKE '%' || upper(#{userId}) || '%'
-		</if>
-		<if test="userName != null">
+		<if test="userName != null and userName != ''">
 		  AND ((upper(tu.user_name) LIKE '%' || upper(#{userName}) || '%') OR (upper(tu.user_name_eng) LIKE '%' || upper(#{userName}) || '%') OR (upper(tu.user_id) LIKE '%' || upper(#{userName}) || '%'))
 		</if>
 		<if test="!isCheck">
-			AND tu.use_flag = 'Y'
+			AND tu.use_yn = 'Y'
 		</if>
 		ORDER BY tu.user_seq
 	</select>
@@ -122,48 +108,42 @@
 		INSERT INTO TB_USER
 		(
 			 user_id
-			,passwd
-			,salt
+			,password
 			,user_name
 			,user_name_eng
 			,nick_name
 			,user_cd
 			,tel_no
 			,hp_no
-			,dept_cd
+			,dprt_cd
 			,email
-			,work_cd
 			,str_date
 			,end_date
-			,login_date_time
-			,use_flag
-			,adm_flag
-			,rgst_user_id
+			,use_yn
+			,adm_yn
+			,rgst_user_seq
 			,rgst_date_time
-			,upt_user_id
+			,upt_user_seq
 			,upt_date_time
 		)
 		VALUES (
 			#{userId}
-		    ,#{passwd}
-			,#{salt}
+		    ,#{password}
 		    ,#{userName}
 		    ,#{userNameEng}
 		    ,#{nickName}
 		    ,#{userCd}
 		    ,#{telNo}
 		    ,#{hpNo}
-			,#{deptCd}
-			,#{email}
-			,#{workCd}
+			,#{dprtCd}
+		    ,#{email}
 		    ,#{strDate}
 		    ,#{endDate}
-		    ,#{loginDateTime}
-		    ,#{useFlag}
-		    ,#{admFlag}
-			,#{rgstUserId}
+		    ,#{useYn}
+		    ,#{admYn}
+			,#{rgstUserSeq}
 			,now()
-			,#{uptUserId}
+			,#{uptUserSeq}
 			,now()
 		)
 	</insert>
@@ -177,15 +157,14 @@
 		  ,user_cd = #{userCd}
 		  ,tel_no = #{telNo}
 		  ,hp_no = #{hpNo}
-		  ,dept_cd = #{deptCd}
+			,dprt_cd = #{dprtCd}
 		  ,email = #{email}
-		  ,work_cd = #{workCd}
 		  ,str_date = #{strDate}
 		  ,end_date = #{endDate}
-		  ,adm_flag = #{admFlag}
-		  ,use_flag = #{useFlag}
+		  ,adm_yn = #{admYn}
+		  ,use_yn = #{useYn}
 		  ,upt_date_time = now()
-		  ,upt_user_id = #{uptUserId}
+		  ,upt_user_seq = #{uptUserSeq}
 		WHERE user_seq = #{userSeq}
 	</update>
 
@@ -195,9 +174,9 @@
 	</delete>
 	<update id="updatePassword" parameterType="com.miso.lxnn.domain.User" >
 		UPDATE tb_user
-		SET passwd = #{passwd}
+		SET password = #{password}
 		,upt_date_time = now()
-	    ,upt_user_id = #{uptUserId}
+	    ,upt_user_seq = #{uptUserSeq}
 		WHERE user_seq = #{userSeq}
 	</update>
 </mapper>

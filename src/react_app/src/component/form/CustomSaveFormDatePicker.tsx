@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {forwardRef, useState} from 'react';
 import {DatePicker, DatePickerProps, Tooltip} from 'antd';
 import {Control, Controller} from 'react-hook-form';
 import dayjs, {Dayjs} from 'dayjs';
@@ -12,7 +12,8 @@ interface CustomDatePickerProps extends DatePickerProps {
     [key: string]: any;
 };
 
-const CustomSaveFormDatePicker = ({name, control, onChange, onChangeValue,...props}:CustomDatePickerProps) => {
+const CustomSaveFormDatePicker = forwardRef<HTMLDivElement, CustomDatePickerProps>(
+    ({name, control, onChange, onChangeValue,...props}, ref) => {
     const [focus, setFocus] = useState<boolean>(false);
 
     return (
@@ -20,7 +21,7 @@ const CustomSaveFormDatePicker = ({name, control, onChange, onChangeValue,...pro
             name={name}
             control={control}
             render={({ field, fieldState }) => (
-                <p>
+                <div ref={ref}>
                     <span className="tit">{props.title}{props.required ? <em>*</em> : <></>}</span>
                     <div className="box-inp">
                         <Tooltip title={fieldState.error?.message ?? ''} open={fieldState.error !== undefined && focus}>
@@ -40,10 +41,12 @@ const CustomSaveFormDatePicker = ({name, control, onChange, onChangeValue,...pro
                             </div>
                         </Tooltip>
                     </div>
-                </p>
+                </div>
             )}
         />
     );
-};
+});
+
+CustomSaveFormDatePicker.displayName = 'CustomSaveFormDatePicker';
 
 export default CustomSaveFormDatePicker;

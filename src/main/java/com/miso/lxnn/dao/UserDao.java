@@ -13,7 +13,6 @@ import java.util.List;
 @Mapper("userDao")
 public interface UserDao {
 	User selectUser(@Param("userId") String userId) throws Exception;
-    String selectSalt(@Param("userId") String userId) throws Exception;
 	Integer selectUserLoginCheck(LoginRequestDto loginRequestDto) throws Exception;
 	List<UserListDto> selectUserList(UserListSearchDto param) throws Exception;
     List<UserComboListDto> selectUserComboList(@Param("searchText") String searchText) throws Exception;

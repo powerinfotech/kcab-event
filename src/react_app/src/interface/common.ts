@@ -32,7 +32,8 @@ export interface CodeResponse {
 export interface SessionUserInfo  {
     userId: string;
     userName: string;
-    admFlag: boolean;
+    /** tb_user adm_yn (Y/N) */
+    admYn: string;
 }
 
 export interface CommonCode {

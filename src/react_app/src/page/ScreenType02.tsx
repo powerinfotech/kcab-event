@@ -200,7 +200,7 @@ const MenuManagement = () => {
     const [saveForm] = Form.useForm<any>();
     const [dataSource, setDataSource] = useState<any[]>([]);
     const [orgDataSource, setOrgDataSource] = useState<any[]>([]);
-    const isAdminUser = userInfo.admFlag; // 세션추가후 로컬스토리지에서 읽어와서 처리
+    const isAdminUser = userInfo.admYn === 'Y'; // 세션추가후 로컬스토리지에서 읽어와서 처리
     const [isRowSelected, setIsRowSelected] = useState<boolean>(false);
     const isEditable = isRowSelected && isAdminUser;
 

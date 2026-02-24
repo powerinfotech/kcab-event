@@ -11,21 +11,29 @@ import java.time.format.DateTimeFormatter;
 @Getter
 @Setter
 public class UserListDto extends User {
-    private String lastModifyUserName;
-    private Boolean useFlag;
+    private static final DateTimeFormatter VARCHAR8 = DateTimeFormatter.ofPattern("yyyyMMdd");
 
-     public LocalDate getLastUpdateDate() {
-         return LocalDate.parse(this.getUptDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+    private String lastModifyUserName;
+
+     /** 사용기간 기준 유효 사용여부 (use_yn + str_date/end_date) */
+     public Boolean getUseFlag() {
+         if (!"Y".equals(this.getUseYn()))
+             return false;
+         LocalDate str = parseStrDate(this.getStrDate());
+         LocalDate end = parseStrDate(this.getEndDate());
+         if (str == null || !str.isBefore(LocalDate.now().plusDays(1)))
+             return false;
+         return end == null || end.isAfter(LocalDate.now().minusDays(1));
      }
 
-     public Boolean getUseFlag() {
-         if(this.useFlag == null||!this.useFlag)
-             return false;
-
-         if(this.getStrDate().isBefore(LocalDate.now().plusDays(1))) {
-             if(this.getEndDate() == null || this.getEndDate().isAfter(LocalDate.now().minusDays(1)))
-                 return true;
+     private static LocalDate parseStrDate(String dateStr) {
+         if (dateStr == null || dateStr.isEmpty()) return null;
+         try {
+             return dateStr.length() == 8
+                 ? LocalDate.parse(dateStr, VARCHAR8)
+                 : LocalDate.parse(dateStr, DateTimeFormatter.ISO_LOCAL_DATE);
+         } catch (Exception e) {
+             return null;
          }
-         return false;
      }
 }

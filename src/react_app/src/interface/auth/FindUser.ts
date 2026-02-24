@@ -13,6 +13,6 @@ export interface findUserInfo{
 export interface ChangePassword {
     userSeq: number;
     userId: string;
-    passwd?: string;
+    password?: string;
     password_retry?: string;
 }

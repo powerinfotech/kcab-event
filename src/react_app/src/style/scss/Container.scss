@@ -302,14 +302,17 @@
         }
         > div{
             display:flex;
+            flex-direction:column;
             border-bottom:1px solid #F4F6F8;
 
             &:last-child{
                 border-bottom:none;
             }
-            > p{
+            > p,
+            > div{
                 position:relative;
-                width: 50%;
+                width: 100%;
+                min-height:52px;
                 padding-left:120px;
 
                 &.no-title {
@@ -338,7 +341,17 @@
                     width:100%;
                     height: 100%;
                     padding:6px 16px;
+                    display: flex;
+                    align-items: center;
 
+                    > div{
+                        width: 100%;
+                        min-width: 0;
+                    }
+                    .ant-select{
+                        width: 100% !important;
+                        min-width: 0;
+                    }
 
                     &.flex{
                         display: flex;
@@ -350,10 +363,6 @@
                             margin:0 8px;
                         }
                     }
-                    .ant-select{
-                        width:100%;
-                    }
-
                 }
                 .box-check{
                     padding-left:0;

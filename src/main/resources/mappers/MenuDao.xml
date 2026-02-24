@@ -3,73 +3,60 @@
 <mapper namespace="com.miso.lxnn.dao.MenuDao">
 	<select id="selectMenuList" resultType="com.miso.lxnn.dto.auth.MenuListDto" >
 		WITH RECURSIVE menu_record (
-									menu_seq, menu_id, up_menu_id, menu_nm, menu_type_cd,
-									menu_view_path, menu_uri, use_flag, sort_seq, level,
+									menu_seq, up_menu_seq, menu_nm, menu_type_cd,
+									menu_view_path, menu_url, use_yn, sort_seq, level,
 									menu_name_path, menu_id_path, sort_seq_path, path, cycle
 			) AS (
 			SELECT
 				tm.menu_seq,
-				tm.menu_id,
-				tm.up_menu_id,
+				tm.up_menu_seq,
 				tm.menu_nm,
 				tm.menu_type_cd,
 				tm.menu_view_path,
-				tm.menu_uri,
-				tm.use_flag,
+				tm.menu_url,
+				tm.use_yn,
 				tm.sort_seq,
 				0,
 				tm.menu_nm || '' AS menu_name_path,
-				tm.menu_id || '' AS menu_id_path,
-				tm.menu_id || '' AS sort_seq_path,
-				ARRAY[tm.menu_id],
+				tm.menu_seq::text || '' AS menu_id_path,
+				tm.menu_seq::text || '' AS sort_seq_path,
+				ARRAY[tm.menu_seq],
 				FALSE
 			FROM tb_menu tm
-			WHERE tm.up_menu_id IS NULL
+			WHERE tm.up_menu_seq IS NULL
+			  AND tm.use_yn = 'Y'
 
 			UNION ALL
 
 			SELECT
 				tm.menu_seq,
-				tm.menu_id,
-				tm.up_menu_id,
+				tm.up_menu_seq,
 				tm.menu_nm,
 				tm.menu_type_cd,
 				tm.menu_view_path,
-				tm.menu_uri,
-				tm.use_flag,
+				tm.menu_url,
+				tm.use_yn,
 				tm.sort_seq,
 				level + 1,
 				mr.menu_name_path || ' > ' || tm.menu_nm,
-				mr.menu_id_path || ' > ' || tm.menu_id,
-				mr.sort_seq_path || '-' || tm.sort_seq || '-' || tm.menu_id,
-				mr.path || tm.menu_id,
-				tm.menu_id = ANY(path)
+				mr.menu_id_path || ' > ' || tm.menu_seq::text,
+				mr.sort_seq_path || '-' || tm.sort_seq || '-' || tm.menu_seq::text,
+				mr.path || tm.menu_seq,
+				tm.menu_seq = ANY(path)
 			FROM tb_menu tm
-					 INNER JOIN menu_record mr ON tm.up_menu_id = mr.menu_id
-			WHERE 1=1
-			  AND EXISTS (
-				SELECT DISTINCT tagm.menu_seq
-				FROM tb_user tu
-						 INNER JOIN tb_role_user tru ON tu.user_seq = tru.user_seq
-						 INNER JOIN tb_auth_grp_role tagr ON tru.role_seq = tagr.role_seq
-						 INNER JOIN tb_auth_grp_menu tagm ON tagr.auth_grp_seq = tagm.auth_grp_seq
-				WHERE
-					tu.user_id = #{userId}
-				  AND tagm.use_flag = TRUE
-				  AND tagr.use_flag = TRUE
-				  AND tagm.menu_seq = tm.menu_seq
-			)
+					 INNER JOIN menu_record mr ON tm.up_menu_seq = mr.menu_seq
+			WHERE tm.use_yn = 'Y'
 			  AND NOT CYCLE
 		)
 		SELECT
 			mr.menu_seq,
-			mr.menu_id,
-			mr.up_menu_id,
+			mr.menu_seq AS menu_id,
+			mr.up_menu_seq AS up_menu_id,
 			mr.menu_nm,
 			mr.menu_type_cd,
 			mr.menu_view_path,
-			mr.menu_uri,
-			mr.use_flag,
+			mr.menu_url AS menu_uri,
+			(mr.use_yn = 'Y') AS use_flag,
 			mr.sort_seq,
 			mr.menu_name_path,
 			mr.menu_id_path,
@@ -77,34 +64,34 @@
 			mr.path,
 			mr.level,
 			tu.user_name AS rgst_user_name,
-			tm.rgst_date_time,
+			tm.rgst_date_time::timestamp AS rgst_date_time,
 			tu2.user_name AS upt_user_name,
-			tm.upt_date_time
+			tm.upt_date_time::timestamp AS upt_date_time
 		FROM menu_record mr
-				 LEFT OUTER JOIN tb_menu tm ON mr.menu_id = tm.menu_id
-				 LEFT OUTER JOIN tb_user tu ON tm.rgst_user_id = tu.user_id
-				 LEFT OUTER JOIN tb_user tu2 ON tm.upt_user_id = tu2.user_id
+				 LEFT OUTER JOIN tb_menu tm ON mr.menu_seq = tm.menu_seq
+				 LEFT OUTER JOIN tb_user tu ON tm.rgst_user_seq = tu.user_seq
+				 LEFT OUTER JOIN tb_user tu2 ON tm.upt_user_seq = tu2.user_seq
 		ORDER BY mr.sort_seq_path
 	</select>
 
 	<insert id="insertMenu" parameterType="com.miso.lxnn.domain.Menu" >
 		INSERT INTO tb_menu
 		(
-			 menu_id
-			,up_menu_id
+			 menu_seq
+			,up_menu_seq
 			,menu_nm
 			,menu_type_cd
 			,menu_view_path
-			,menu_uri
-			,use_flag
+			,menu_url
+			,use_yn
 			,sort_seq
-			,rgst_user_id
+			,rgst_user_seq
 			,rgst_date_time
-			,upt_user_id
+			,upt_user_seq
 			,upt_date_time
 		)
 		VALUES (
-			 (SELECT coalesce(max(menu_id), 0)+1 FROM tb_menu)
+			 (SELECT coalesce(max(menu_seq), 0)+1 FROM tb_menu)
 			 ,#{upMenuId}
 			 ,#{menuNm}
 			 ,#{menuTypeCd}
@@ -121,14 +108,14 @@
 	<update id="updateMenu" parameterType="com.miso.lxnn.domain.Menu" >
 		UPDATE tb_menu
 		SET
-			 up_menu_id = #{upMenuId}
+			 up_menu_seq = #{upMenuId}
 			,menu_nm = #{menuNm}
 			,menu_type_cd = #{menuTypeCd}
 			,menu_view_path = #{menuViewPath}
-			,menu_uri = #{menuUri}
-			,use_flag = #{useFlag}
+			,menu_url = #{menuUri}
+			,use_yn = #{useFlag}
 			,sort_seq = #{sortSeq}
-			,upt_user_id = #{uptUserId}
+			,upt_user_seq = #{uptUserId}
 			,upt_date_time = now()
 		WHERE menu_seq = #{menuSeq}
 	</update>

@@ -20,11 +20,11 @@ const ChangePasswordPopup = (props:ChangePasswordPopupProps) => {
         , reset: changePasswordFormReset
         , setError: changePasswordFormSetError
     } = useForm<ChangePassword>({mode:'onSubmit'});
-    const [info, setInfo] = useState<ChangePassword>({userSeq:props.userInfo?.userSeq, userId: props.userInfo?.userId, passwd:'', password_retry:''});
+    const [info, setInfo] = useState<ChangePassword>({userSeq:props.userInfo?.userSeq, userId: props.userInfo?.userId, password:'', password_retry:''});
     const formRef = useRef<HTMLButtonElement>(null);
 
     const handleSave = async(value:ChangePassword) => {
-        if(value.passwd != value.password_retry) {
+        if(value.password != value.password_retry) {
             changePasswordFormSetError('password_retry', { message:'패스워드가 일치하지 않습니다.'});
             return;
         }
@@ -40,7 +40,7 @@ const ChangePasswordPopup = (props:ChangePasswordPopupProps) => {
     };
 
     const handleReset = () => {
-        setInfo({userSeq:-1, userId: '', passwd:'', password_retry:''});
+        setInfo({userSeq:-1, userId: '', password:'', password_retry:''});
         changePasswordFormReset();
     };
 
@@ -67,8 +67,8 @@ const ChangePasswordPopup = (props:ChangePasswordPopupProps) => {
                         type={'password'}
                         control={changePasswordFormControl}
                         required={true}
-                        onChangeValue={(v)=>setInfo({...info, passwd:v})}
-                        {...changePasswordFormRegister('passwd', {required:'비밀번호를 입력하세요.'})}
+                        onChangeValue={(v)=>setInfo({...info, password:v})}
+                        {...changePasswordFormRegister('password', {required:'비밀번호를 입력하세요.'})}
                     />
                     <CustomSaveFormInput
                         title={'비밀번호 확인'}

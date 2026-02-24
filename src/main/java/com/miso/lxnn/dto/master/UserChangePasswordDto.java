@@ -8,7 +8,6 @@ import lombok.Setter;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import java.security.NoSuchAlgorithmException;
 
 
 @Getter
@@ -18,17 +17,15 @@ public class UserChangePasswordDto {
     private Integer userSeq;
     private String userId;
     @NotEmpty
-    private String passwd;
-    private String salt;
-    private Boolean passwdSetFlag;
-    private String uptUserId;
+    private String password;
+    private Boolean passwordSetFlag;
 
-    public static User from(UserChangePasswordDto userChangePasswordDto, LoginUser LoginUser) throws NoSuchAlgorithmException {
+    public static User from(UserChangePasswordDto userChangePasswordDto, LoginUser LoginUser) {
         User user = new User();
         user.setUserSeq(userChangePasswordDto.getUserSeq());
         user.setUserId(userChangePasswordDto.getUserId());
-        user.setPasswd(CryptoUtil.encryptSha256(userChangePasswordDto.getPasswd(), userChangePasswordDto.getSalt()));
-        user.setUptUserId(LoginUser.getUserId());
+        user.setPassword(CryptoUtil.encodePassword(userChangePasswordDto.getPassword()));
+        user.setUptUserSeq(LoginUser.getUserSeq());
         return user;
     }
 }

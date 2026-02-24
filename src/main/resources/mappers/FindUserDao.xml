@@ -11,7 +11,7 @@
 	</select>
 
 	<select id="findUserPassword" resultType="com.miso.lxnn.domain.User" parameterType="com.miso.lxnn.domain.User">
-		SELECT passwd , user_id, user_seq
+		SELECT password, user_id, user_seq
 		FROM tb_user
 		WHERE user_id = #{userId} AND hp_no = #{hpNo} AND user_name=#{userName}
 		  AND now() BETWEEN str_date AND COALESCE(end_date, '2999-12-31')
@@ -20,8 +20,8 @@
 
 	<update id="updatePassword" parameterType="com.miso.lxnn.dto.master.UserChangePasswordDto" >
 		UPDATE tb_user
-		SET passwd = #{passwd}
-		  ,passwd_set_flag = #{passwdSetFlag}
+		SET password = #{password}
+		  ,passwd_set_flag = #{passwordSetFlag}
 		  ,upt_date_time = now()
 		  ,upt_user_id = #{uptUserId}
 		WHERE user_seq = #{userSeq}

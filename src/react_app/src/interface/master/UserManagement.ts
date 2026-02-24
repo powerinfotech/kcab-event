@@ -1,42 +1,46 @@
 import {IudType} from '@interface/common';
 
 export interface UserListSearchParam  {
-    userId: string;
-    userName: string;
-    isCheck?:boolean;
+    userId?: string;
+    userName?: string;
+    idOrName?: string;
+    isCheck?: boolean;
 }
 
-export interface User  {
+export interface User {
     userSeq: number;
     userId: string;
-    passwd: string;
+    password: string;
     userName: string;
     userNameEng: string;
     nickName: string;
     userCd: string;
     telNo: string;
     hpNo: string;
-    deptCd: string;
+    dprtCd: string;
     email: string;
-    workCd: string;
     strDate: string | undefined;
     endDate: string | undefined;
     loginDateTime: string | undefined;
-    useFlag: boolean;
-    admFlag: boolean;
-    [key: string]: any; // User 인터페이스가 모든 키 값을 가질 수 있도록 수정
+    useYn: string;
+    admYn: string;
+    rgstUserSeq?: number;
+    rgstDateTime?: string;
+    uptUserSeq?: number;
+    uptDateTime?: string;
+    [key: string]: any;
 }
 
 export interface UserList extends User {
     lastUpdateDate: string | undefined;
     lastModifyUserName: string;
-    iudType?:IudType;
+    iudType?: IudType;
 }
 
 export interface ChangePassword {
     userSeq: number;
     userId: string;
-    passwd?: string;
+    password?: string;
     password_retry?: string;
 }
 

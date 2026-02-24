@@ -36,8 +36,9 @@ public class FindUserServiceImpl implements FindUserService {
     @Override
     public void changePassword(UserChangePasswordDto userChangePasswordDto) throws Exception {
         User user = userDao.selectUser(userChangePasswordDto.getUserId());
-        user.setPasswdSetFlag(true);
-        user.setPasswd(CryptoUtil.encryptSha256(userChangePasswordDto.getPasswd(), userDao.selectSalt(userChangePasswordDto.getUserId())));
+        user.setPasswordSetFlag(true);
+        user.setPassword(CryptoUtil.encodePassword(userChangePasswordDto.getPassword()));
+        user.setUptUserSeq(user.getUserSeq() != null ? user.getUserSeq() : null);
 
         userDao.updatePassword(user);
     }

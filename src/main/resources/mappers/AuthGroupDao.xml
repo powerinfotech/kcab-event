@@ -45,8 +45,8 @@
 			 ,tm.menu_seq
 			 ,tm.menu_nm
 			 ,tagm.use_flag
-			 ,tm.menu_id
-			 ,tm.up_menu_id
+			 ,tm.menu_seq AS menu_id
+			 ,tm.up_menu_seq AS up_menu_id
 			 ,tm.menu_type_cd
 			 ,tagm.rgst_user_id
 		FROM tb_menu tm
@@ -86,8 +86,8 @@
 		SELECT
 			tag.auth_grp_seq
 			,tagm.menu_seq
-			,tm.menu_id
-			,tm.up_menu_id
+			,tm.menu_seq AS menu_id
+			,tm.up_menu_seq AS up_menu_id
 			,tm.menu_nm
 			,tm.menu_type_cd
 			,tagm.use_flag

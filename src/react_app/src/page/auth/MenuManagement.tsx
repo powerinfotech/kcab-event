@@ -62,7 +62,7 @@ const MenuManagement = () => {
     const [orgTreeData, setOrgTreeData] = useState<MenuTree[]>();
     const [parentMenuCombo, setParentMenuCombo] = useState<DefaultOptionType[]>([]);
     const [expandedKey, setExpandedKey] = useState<React.Key[]>();
-    const isAdminUser = userInfo.admFlag;
+    const isAdminUser = userInfo.admYn === 'Y';
     const [isRowSelected, setIsRowSelected] = useState<boolean>(false);
     const [dataSource, setDataSource] = useState<MenuInfo[]>([]);
     const [orgDataSource, setOrgDataSource] = useState<MenuInfo[]>([]);

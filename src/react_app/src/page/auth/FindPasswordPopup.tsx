@@ -42,7 +42,7 @@ const FindPasswordPopup = (props:ChangePasswordPopupProps) => {
     const [changeInfo, SetChangeInfo] = useState<ChangePassword>({
         userId: '',
         userSeq: 0,
-        passwd: '',
+        password: '',
         password_retry: ''
     });
     const {alert} = useMessage();
@@ -72,7 +72,7 @@ const FindPasswordPopup = (props:ChangePasswordPopupProps) => {
     };
 
     const handleSave = async(value:ChangePassword) => {
-        if(value.passwd != value.password_retry) {
+        if(value.password != value.password_retry) {
             changePasswordSetError('password_retry', { message:'패스워드가 일치하지 않습니다.'});
             return;
         }
@@ -157,8 +157,8 @@ const FindPasswordPopup = (props:ChangePasswordPopupProps) => {
         type={'password'}
         control={changePasswordControl}
         required={true}
-        onChangeValue={(v) => SetChangeInfo({...changeInfo, passwd: v})}
-        {...changePasswordRegister('passwd', {required: '비밀번호를 입력하세요.'})}
+        onChangeValue={(v) => SetChangeInfo({...changeInfo, password: v})}
+        {...changePasswordRegister('password', {required: '비밀번호를 입력하세요.'})}
         />
         </div>
 

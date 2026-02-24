@@ -19,12 +19,12 @@ const Login = () => {
         , control: saveFormControl
         , handleSubmit: saveFormHandleSubmit
         , setValue: saveFormSetValue
-        , getValues:saveFormGetValues} = useForm<{ userId: string, passwd: string, isRememberId:boolean,mode:string|null }>({mode:'onChange'});
+        , getValues:saveFormGetValues} = useForm<{ userId: string, password: string, isRememberId:boolean,mode:string|null }>({mode:'onChange'});
     const [cookies, setCookie, removeCookie] = useCookies(['id'], {doNotParse: true});
     const [menuInfo, setMenuInfo] = useState<MenuInfo[]>([]);
 
     const handleLogin = async() => {
-        const param =   {userId:saveFormGetValues('userId'), passwd:saveFormGetValues('passwd')};
+        const param =   {userId:saveFormGetValues('userId'), password:saveFormGetValues('password')};
         const {data} = await axios.post<ApiResponse<boolean>>('/api/login',param);
         if(data.code === HttpStatusCode.Ok) {
             const ret = await getUserLoginInfo();
@@ -67,7 +67,7 @@ const Login = () => {
     };
 
     const AutoLogin = async() => {
-        const param =   {userId:saveFormGetValues('userId'), passwd:saveFormGetValues('passwd'), mode:"auto"};
+        const param =   {userId:saveFormGetValues('userId'), password:saveFormGetValues('password'), mode:"auto"};
         const {data} = await axios.post<ApiResponse<boolean>>('/api/login',param);
         if(data.code === HttpStatusCode.Ok) {
             const ret = await getUserLoginInfo();
@@ -114,7 +114,7 @@ const Login = () => {
         if(result.length === 2)
         {
             saveFormSetValue('userId',result[0]);
-            saveFormSetValue('passwd',result[1]);
+            saveFormSetValue('password',result[1]);
             AutoLogin();
         }
     }, []);
@@ -143,7 +143,7 @@ const Login = () => {
                             control={saveFormControl}
                             onChangeValue={(v) => {
                             }}
-                            {...saveFormRegister('passwd', {required: '비밀번호를 입력해주세요.'})}
+                            {...saveFormRegister('password', {required: '비밀번호를 입력해주세요.'})}
                             onKeyPress={handleKeyPress}
                         />
                     </div>
@@ -170,10 +170,10 @@ const Login = () => {
                         Copyright © 국가지점번호 센서관리 시스템. All Rights Reserved.
                     </div>
                 </form>
-                <Modal open={showFindIdModal} onCancel={()=> setShowFindIdModal(false)} footer={null} title={"아이디찾기"} destroyOnClose>
+                <Modal open={showFindIdModal} onCancel={()=> setShowFindIdModal(false)} footer={null} title={"아이디찾기"} destroyOnHidden>
                     <FindIdPopup onClose={() => setShowFindIdModal(false)} />
                 </Modal>
-                <Modal open={showFindPasswordModal} onCancel={()=> setShowFindPasswordModal(false)} footer={null} title={"비밀번호찾기"} destroyOnClose>
+                <Modal open={showFindPasswordModal} onCancel={()=> setShowFindPasswordModal(false)} footer={null} title={"비밀번호찾기"} destroyOnHidden>
                     <FindPasswordPopup onClose={()=> setShowFindPasswordModal(false)}/>
                 </Modal>
             </div>

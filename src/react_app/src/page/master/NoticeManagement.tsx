@@ -142,7 +142,7 @@ const NoticeManagement =({menuInfo}:props)=>{
     const {control: searchFormControl,
         getValues:searchFormGetValues,
         handleSubmit: searchFormHandleSubmit} =  useForm<NoticeListSearchParam>();
-    const isAdminUser=userInfo.admFlag;
+    const isAdminUser = userInfo.admYn === 'Y';
     const [isRowSelected, setIsRowSelected] = useState<boolean>(false);
     const isEditable = isRowSelected && isAdminUser;
     const [dataSource,setDataSource] = useState<NoticeList[]>([]);

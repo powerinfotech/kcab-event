@@ -47,14 +47,16 @@ public class UserManagementServiceImpl extends EgovAbstractServiceImpl implement
             if(userDao.selectUserIdValidation(user.getUserId())){
                 throw new BusinessException("중복된 아이디입니다.");
             }
-            user.setRgstUserId(loginUser.getUserId());
-            user.setUptUserId(loginUser.getUserId());
-            user.setSalt(CryptoUtil.getSalt());
-            user.setPasswd(CryptoUtil.encryptSha256("1", user.getSalt()));
+            if(user.getPassword() == null || user.getPassword().trim().isEmpty()) {
+                throw new BusinessException("비밀번호를 입력하세요.");
+            }
+            user.setRgstUserSeq(loginUser.getUserSeq());
+            user.setUptUserSeq(loginUser.getUserSeq());
+            user.setPassword(CryptoUtil.encodePassword(user.getPassword().trim()));
             userDao.insertUser(user);
         }
         else if (user.getIudType() == IudType.U) {
-            user.setUptUserId(loginUser.getUserId());
+            user.setUptUserSeq(loginUser.getUserSeq());
             userDao.updateUser(user);
         }
     }
@@ -66,7 +68,6 @@ public class UserManagementServiceImpl extends EgovAbstractServiceImpl implement
 
     @Override
     public void changePassword(UserChangePasswordDto userChangePasswordDto, LoginUser LoginUser) throws Exception {
-        userChangePasswordDto.setSalt(userDao.selectSalt(userChangePasswordDto.getUserId()));
         userDao.updatePassword(UserChangePasswordDto.from(userChangePasswordDto, LoginUser));
     }
 }

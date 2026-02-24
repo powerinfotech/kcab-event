@@ -12,6 +12,7 @@ import com.miso.lxnn.dto.master.UserListDto;
 import com.miso.lxnn.dto.master.UserListSearchDto;
 import com.miso.lxnn.service.auth.MenuManagementService;
 import com.miso.lxnn.service.auth.impl.RoleManagementServiceImpl;
+import com.miso.lxnn.domain.User;
 import com.miso.lxnn.service.master.UserManagementService;
 import com.miso.lxnn.service.master.AlarmService;
 import lombok.extern.slf4j.Slf4j;
@@ -41,9 +42,14 @@ public class CommonController {
 
     @GetMapping("/login-info")
     public ApiResponse<LoginUser> loginInfo(@MisoSession LoginUser loginUser) throws Exception {
-        if(loginUser ==null)
+        if (loginUser == null)
             return ApiResponse.ok(null);
-        return ApiResponse.ok(LoginUser.covert(userManagementService.selectUserInfo(loginUser.getUserId())));
+        return ApiResponse.ok(resolveLoginInfoResponse(loginUser));
+    }
+
+    private LoginUser resolveLoginInfoResponse(LoginUser loginUser) throws Exception {
+        User user = userManagementService.selectUserInfo(loginUser.getUserId());
+        return user != null ? LoginUser.covert(user) : null;
     }
 
     @GetMapping("/menu-info")

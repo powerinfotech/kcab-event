@@ -2,10 +2,10 @@ import {SessionUserInfo} from '@interface/common';
 import {atom} from 'recoil';
 
 
-const defaultUserInfo:SessionUserInfo = {
+const defaultUserInfo: SessionUserInfo = {
     userId: '',
     userName: '',
-    admFlag: false
+    admYn: 'N',
 };
 
 export const sessionInfoAtom = atom<SessionUserInfo>({
