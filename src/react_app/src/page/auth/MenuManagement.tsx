@@ -218,10 +218,6 @@ const MenuManagement = () => {
         markMenuUpdatedByButtonChange();
     };
 
-    useEffect(() => {
-        console.log('dataSource', dataSource);
-    }, [dataSource]);
-
     const handleSave = async (value: MenuInfo) => {
         if (!isRowSelected) {
             message.info('선택한 메뉴가 없습니다.');
