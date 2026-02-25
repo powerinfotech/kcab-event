@@ -28,7 +28,6 @@
 		WHERE user_id = #{userId}
 		AND now() BETWEEN str_date::timestamptz AND COALESCE(end_date, '2999-12-31')::timestamptz
 		AND use_yn = 'Y'
-		AND adm_yn = 'Y'
 	</select>
 
 	<select id="selectUserLoginCheck" parameterType="com.miso.lxnn.dto.common.LoginRequestDto" resultType="java.lang.Integer">

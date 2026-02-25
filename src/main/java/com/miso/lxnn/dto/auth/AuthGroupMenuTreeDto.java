@@ -16,8 +16,8 @@ import java.util.List;
 public class AuthGroupMenuTreeDto {
      private Integer authGrpMenuSeq;
      private Integer authGrpSeq;
-     private Integer menuId;
-     private Integer upMenuId;
+     private Integer menuSeq;
+     private Integer upMenuSeq;
      private String menuNm;
      private MenuType menuTypeCd;
      private Boolean useFlag;
@@ -26,11 +26,11 @@ public class AuthGroupMenuTreeDto {
 
 
      @Builder
-     public AuthGroupMenuTreeDto(Integer authGrpMenuSeq, Integer authGrpSeq, Integer menuId, Integer upMenuId, String menuNm, MenuType menuTypeCd, Boolean useFlag, List<AuthGroupMenuTreeDto> children) {
+     public AuthGroupMenuTreeDto(Integer authGrpMenuSeq, Integer authGrpSeq, Integer menuSeq, Integer upMenuSeq, String menuNm, MenuType menuTypeCd, Boolean useFlag, List<AuthGroupMenuTreeDto> children) {
           this.authGrpMenuSeq = authGrpMenuSeq;
           this.authGrpSeq = authGrpSeq;
-          this.menuId = menuId;
-          this.upMenuId = upMenuId;
+          this.menuSeq = menuSeq;
+          this.upMenuSeq = upMenuSeq;
           this.menuNm = menuNm;
           this.menuTypeCd = menuTypeCd;
           this.useFlag = useFlag;

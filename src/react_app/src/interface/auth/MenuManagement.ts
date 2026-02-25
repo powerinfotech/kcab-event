@@ -14,13 +14,12 @@ export enum MenuType {
 }
 export interface Menu  {
     menuSeq: number;
-    menuId: number ;
-    upMenuId: number;
+    upMenuSeq: number;
     menuNm: string;
     menuTypeCd: MenuType;
     menuViewPath: string;
-    menuUri: string;
-    useFlag: boolean;
+    menuUrl: string;
+    useYn: string;
     sortSeq: number;
 }
 
@@ -29,32 +28,55 @@ export interface MenuInfo extends Menu {
     menuIdPath: string;
     level: number;
     iudType?:IudType;
-
-    rgstUserNm: string;
-    rgstDate: string;
+    rgstUserName: string;
+    rgstDateTime: string;
     uptUserName?: string;
-    uptDate?: string;
+    uptDateTime?: string;
 }
 
 
 export interface EmptyMenu {
     menuSeq:  number | undefined;
-    menuId: number | undefined ;
-    upMenuId: number | undefined;
+    upMenuSeq: number | undefined;
     menuNm: string;
     menuTypeCd: MenuType | undefined;
     menuViewPath: string | undefined;
-    menuUri: string | undefined;
-    useFlag: boolean | undefined;
+    menuUrl: string | undefined;
+    useYn: string | undefined;
     sortSeq: number | undefined;
 }
 
 export interface MenuTree extends TreeDataNode {
-    useFlag?:boolean;
+    useYn?: string;
 }
 
 export interface FolderTree  {
     value: string;
     label: string;
     children?: FolderTree[];
+}
+
+export interface BtnInfo {
+    btnSeq: number;
+    sortSeq: number;
+    btnNm: string;
+    useYn: string;
+}
+
+export interface MenuBtnInfo {
+    menuBtnSeq?: number;
+    menuSeq?: number;
+    btnSeq: number;
+    btnNm: string;
+    useYn: string;
+}
+
+export interface MenuSavePayload extends MenuInfo {
+    menuBtnList?: MenuBtnSaveItem[];
+}
+
+export interface MenuBtnSaveItem {
+    btnSeq: number;
+    btnNm: string;
+    useYn: string;
 }

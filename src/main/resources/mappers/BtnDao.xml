@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.miso.lxnn.dao.BtnDao">
+    <select id="selectBtnList" resultType="com.miso.lxnn.domain.Btn">
+        SELECT btn_seq AS btnSeq,
+               sort_seq AS sortSeq,
+               btn_nm AS btnNm,
+               use_yn AS useYn
+        FROM tb_btn
+        WHERE sort_seq BETWEEN 1 AND 9
+           OR sort_seq BETWEEN 11 AND 15
+        ORDER BY sort_seq
+    </select>
+</mapper>

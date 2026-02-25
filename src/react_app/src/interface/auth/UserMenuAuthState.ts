@@ -23,8 +23,7 @@ export interface UserMenuAuthGroupList {
 export interface UserMenuAuthMenuList {
     authGrpSeq: number;
     menuSeq: number;
-    menuId: number;
-    upMenuId: number;
+    upMenuSeq: number;
     menuNm: string;
     menuTypeCd: MenuType;
     useFlag: boolean;
@@ -34,8 +33,7 @@ export interface UserMenuAuthMenuList {
 export interface UserMenuAuthMenuTree {
     menuSeq: React.ReactNode;
     authGrpSeq: number;
-    menuId: number;
-    upMenuId: number;
+    upMenuSeq: number;
     menuNm: string;
     menuTypeCd: MenuType;
     useFlag: boolean;

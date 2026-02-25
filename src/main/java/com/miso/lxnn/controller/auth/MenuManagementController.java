@@ -1,6 +1,8 @@
 package com.miso.lxnn.controller.auth;
 
 import com.miso.lxnn.annotation.MisoSession;
+import com.miso.lxnn.domain.Btn;
+import com.miso.lxnn.domain.MenuBtn;
 import com.miso.lxnn.dto.common.ApiResponse;
 import com.miso.lxnn.dto.common.LoginUser;
 import com.miso.lxnn.dto.auth.MenuListDto;
@@ -22,9 +24,19 @@ public class MenuManagementController {
 
     @Parameter(name = "loginUser", hidden = true)
     @GetMapping("/menu-list")
-    public ApiResponse<List<MenuListDto> > selectMenuList(@MisoSession LoginUser loginUser) throws Exception {
+    public ApiResponse<List<MenuListDto>> selectMenuList(@MisoSession LoginUser loginUser) throws Exception {
         String userId = loginUser.getUserId();
         return ApiResponse.ok(menuManagementService.selectMenuInfo(userId));
+    }
+
+    @GetMapping("/btn-list")
+    public ApiResponse<List<Btn>> selectBtnList() throws Exception {
+        return ApiResponse.ok(menuManagementService.selectBtnList());
+    }
+
+    @GetMapping("/menu-btn-list")
+    public ApiResponse<List<MenuBtn>> selectMenuBtnList(@RequestParam("menuSeq") Long menuSeq) throws Exception {
+        return ApiResponse.ok(menuManagementService.selectMenuBtnList(menuSeq));
     }
 
     @Parameter(name = "loginUser", hidden = true)
@@ -36,10 +48,8 @@ public class MenuManagementController {
 
     @Parameter(name = "loginUser", hidden = true)
     @DeleteMapping("/delete/{menuSeq}")
-    public ApiResponse<Void> saveMenu(@PathVariable("menuSeq") @NotNull Integer menuSeq) throws Exception {
+    public ApiResponse<Void> deleteMenu(@PathVariable("menuSeq") @NotNull Integer menuSeq) throws Exception {
         menuManagementService.deleteMenu(menuSeq);
         return ApiResponse.ok();
     }
-
-
 }

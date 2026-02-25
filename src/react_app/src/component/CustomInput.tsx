@@ -12,14 +12,15 @@ const CustomInput = forwardRef<any, CustomInputProps>((props, ref) => {
     const [validError, setValidError] = useState<boolean>(false);
     const handleChange = (v: React.ChangeEvent<HTMLInputElement>) => {
         setValidError(false);
-        if (regExp && !regExp?.value.test(v.target.value))
+        if (regExp && regExp.value && !regExp.value.test(v.target.value)) {
             setValidError(true);
-        else
-            props.onChange && props.onChange(v);
+            return;
+        }
+        props.onChange && props.onChange(v);
     };
 
     return (
-        <Tooltip title={regExp ? regExp.message : ''} open={validError && regExp?.message !== undefined}>
+        <Tooltip title={validError && regExp?.message ? regExp.message : ''} open={validError && regExp?.message !== undefined}>
             <div className={validError && regExp?.message !== undefined ? 'tooltip error' : ''}>
                 <Input
                     {...restProps}

@@ -57,7 +57,7 @@ public class CommonController {
         if(loginUser ==null)
             return ApiResponse.ok(null);
         String userId=loginUser.getUserId();
-        return ApiResponse.ok(menuManagementService.selectMenuInfo(userId).stream().filter(v->v.getUpMenuId() != null).collect(Collectors.toList()));
+        return ApiResponse.ok(menuManagementService.selectMenuInfo(userId).stream().filter(v->v.getUpMenuSeq() != null).collect(Collectors.toList()));
     }
 
     @GetMapping("/user-list")

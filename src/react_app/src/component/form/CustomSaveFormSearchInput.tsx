@@ -24,17 +24,15 @@ const CustomSaveFormSearchInput = ({name, defaultValue, control, onChangeValue, 
 
     const handleChange = (field:any, v: React.ChangeEvent<HTMLInputElement>) => {
         setValidError(false);
+        if(props.regExp && props.regExp.value && !props.regExp?.value.test(v.target.value)){
+            setValidError(true);
+            return;
+        }
         if(v.target.value.length === 1) {
             field.onChange('');
         }
-
-        if(props.regExp && props.regExp.value && !props.regExp?.value.test(v.target.value)){
-            setValidError(true);
-        }
-        else {
-            field.onChange(v);
-            props.onChangeValue && props.onChangeValue(v);
-        }
+        field.onChange(v);
+        props.onChangeValue && props.onChangeValue(v);
     };
 
     useEffect(() => {
@@ -51,7 +49,7 @@ const CustomSaveFormSearchInput = ({name, defaultValue, control, onChangeValue, 
                 <p className={singleRow ?'full': props.isNoTitle === true ? 'no-title' : ''}>
                     { props.isNoTitle === true ? <></> : <span className="tit" style={{ marginTop: '0px'}}>{props.title}{props.required? <em>*</em> : <></>}</span>}
                     <div className="box-inp">
-                        <Tooltip title={fieldState.error?.message ?? (props.regExp ?props.regExp.message: '')}
+                        <Tooltip title={validError && props.regExp?.message ? props.regExp.message : (fieldState.error?.message ?? (props.regExp ? props.regExp.message : ''))}
                                  open={(fieldState.error !== undefined || validError) && focus}>
                             <div className={(fieldState.error !== undefined || validError)  ? 'tooltip error' : ''}>
                                 <Input.Search {...props}

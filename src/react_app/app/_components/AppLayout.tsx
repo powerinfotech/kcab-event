@@ -53,7 +53,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     setSidebarSubpanelOpen(open);
   }, []);
 
-  if (isLogin === true) {
+  if (isLogin === true || sessionInfo.userId) {
     return (
       <div className={`app_layout ${sidebarSubpanelOpen ? 'sidebar_subpanel_open' : ''}`}>
         {!showErrorPage && (

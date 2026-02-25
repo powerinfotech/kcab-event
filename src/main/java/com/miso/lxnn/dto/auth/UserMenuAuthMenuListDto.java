@@ -9,8 +9,7 @@ import lombok.Setter;
 public class UserMenuAuthMenuListDto {
     private Integer authGrpSeq;
     private Integer menuSeq;
-    private Integer menuId;
-    private Integer upMenuId;
+    private Integer upMenuSeq;
     private String menuNm;
     private MenuType menuTypeCd;
     private Boolean useFlag;

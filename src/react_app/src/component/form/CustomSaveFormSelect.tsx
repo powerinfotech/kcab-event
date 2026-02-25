@@ -6,13 +6,14 @@ interface CustomFormSelectProps extends SelectProps {
     name:string;
     defaultValue?:string;
     control:Control<any>;
+    rules?: any;
     onChangeValueback?:(v:any)=>void;
     nullFlag?:boolean;
     nullText?:string;
     [key: string]: any;
 }
 
-const CustomSaveFormSelect = forwardRef<any, CustomFormSelectProps>(({ name, defaultValue, control, onChangeValueback, ...props }, ref) => {
+const CustomSaveFormSelect = forwardRef<any, CustomFormSelectProps>(({ name, defaultValue, control, rules, onChangeValueback, ...props }, ref) => {
     const [focus, setFocus] = useState<boolean>(false);
     const options = props.nullFlag ? [{ label: '', value: '' }, ...(props.options ?? [])] : props.options;
     return (
@@ -20,6 +21,7 @@ const CustomSaveFormSelect = forwardRef<any, CustomFormSelectProps>(({ name, def
             name={name}
             defaultValue={defaultValue}
             control={control}
+            rules={rules}
             render={({ field, fieldState }) => (
                 <div>
                     <span className="tit" style={{ marginTop: '0px' }}>{props.title}{props.required ? <em>*</em> : null}</span>

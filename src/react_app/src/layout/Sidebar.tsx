@@ -45,9 +45,9 @@ function SidebarSubpanel({
 }) {
   if (selectedParentId === null) return null;
 
-  const parent = menuInfo.find((m) => m.menuId === selectedParentId && m.menuTypeCd === 'D');
+  const parent = menuInfo.find((m) => m.menuSeq === selectedParentId && m.menuTypeCd === 'D');
   const children = parent
-    ? menuInfo.filter((m) => m.upMenuId === parent.menuId && m.useFlag)
+    ? menuInfo.filter((m) => m.upMenuSeq === parent.menuSeq && m.useYn === 'Y')
     : [];
 
   return (
@@ -58,8 +58,8 @@ function SidebarSubpanel({
       <nav className="sidebar_menu">
         {children.map((child) => (
           <Link
-            key={child.menuId}
-            href={child.menuUri}
+            key={child.menuSeq}
+            href={child.menuUrl}
             className="sidebar_menu_child"
           >
             {child.menuNm}
@@ -84,7 +84,7 @@ export default function Sidebar({
   const [selectedParentId, setSelectedParentId] = useState<number | null>(null);
   const sidebarWrapRef = useRef<HTMLElement>(null);
 
-  const parentMenus = menuInfo.filter((item) => item.menuTypeCd === 'D' && item.useFlag);
+  const parentMenus = menuInfo.filter((item) => item.menuTypeCd === 'D' && item.useYn === 'Y');
 
   const handleParentClick = (menuId: number) => {
     if (selectedParentId === menuId) {
@@ -145,9 +145,9 @@ export default function Sidebar({
     const level2Menu = menuList.filter((item) => item.level === 2);
     if (level2Menu.length > 0) {
       const minumSeqMenu = level2Menu.reduce((minMenu, currentMenu) =>
-        currentMenu.menuId < minMenu.menuId ? currentMenu : minMenu
+        currentMenu.menuSeq < minMenu.menuSeq ? currentMenu : minMenu
       );
-      const defaultUrl = location.origin + minumSeqMenu.menuUri;
+      const defaultUrl = location.origin + minumSeqMenu.menuUrl;
       location.href = defaultUrl;
     }
   };
@@ -176,10 +176,10 @@ export default function Sidebar({
         <nav className="sidebar_narrow_menu">
           {parentMenus.map((parent) => (
             <button
-              key={parent.menuId}
+              key={parent.menuSeq}
               type="button"
-              className={`sidebar_narrow_item ${selectedParentId === parent.menuId ? 'is-active' : ''}`}
-              onClick={() => handleParentClick(parent.menuId)}
+              className={`sidebar_narrow_item ${selectedParentId === parent.menuSeq ? 'is-active' : ''}`}
+              onClick={() => handleParentClick(parent.menuSeq)}
             >
               <span className="sidebar_narrow_label">{parent.menuNm}</span>
             </button>

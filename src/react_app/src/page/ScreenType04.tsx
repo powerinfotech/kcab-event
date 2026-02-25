@@ -252,7 +252,7 @@ const MenuManagement = () => {
     };
 
     const getCurrentRowDataSourceById = (id : number) => {
-        return dataSource.filter((v)=>v.menuId === id)[0];
+        return dataSource.filter((v)=>v.menuSeq === id)[0];
     };
 
 
@@ -276,7 +276,7 @@ const MenuManagement = () => {
     };
 
     const createany = (menuList:any[]) => {
-        const any:any = {title:menuList[0].menuNm, key:menuList[0].menuId , icon: () => (<IconFolder />),  children:[]};
+        const any:any = {title:menuList[0].menuNm, key:menuList[0].menuSeq , icon: () => (<IconFolder />),  children:[]};
         setChild(any,  menuList[0], menuList);
         setTreeData([any]);
     }
@@ -284,8 +284,8 @@ const MenuManagement = () => {
 
     const setChild = (parentTreeNode:any, parentMenuObject:any, menuList:any[]) => {
         menuList.map((v:any)=> {
-            if(parentMenuObject.menuId === v.upMenuId) {
-                  let childTreeNode : any = {title:v.menuNm, key:v.menuId};
+            if(parentMenuObject.menuSeq === v.upMenuSeq) {
+                  let childTreeNode : any = {title:v.menuNm, key:v.menuSeq};
                  if(MenuType.V === v.menuTypeCd) {
                      childTreeNode = {
                          ...childTreeNode,

@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {forwardRef, useState} from 'react';
 import {Radio, RadioProps, Tooltip} from 'antd';
 import {Control, Controller} from 'react-hook-form';
 
@@ -8,10 +8,11 @@ interface CustomRadioProps extends RadioProps {
     defaultValue?:any;
     onChangeValue?: (v:string) => void;
     options?: {value:any, label:string }[];
+    rules?: any;
     [key: string]: any;
 };
 
-const CustomSaveFormRadio = ({name, control, defaultValue, onChangeValue, options, ...props}:CustomRadioProps) => {
+const CustomSaveFormRadio = forwardRef<HTMLDivElement, CustomRadioProps>(({name, control, defaultValue, onChangeValue, options, rules, ...props}, ref) => {
     const [focus, setFocus] = useState<boolean>(false);
 
     return (
@@ -19,8 +20,9 @@ const CustomSaveFormRadio = ({name, control, defaultValue, onChangeValue, option
             name={name}
             defaultValue={defaultValue}
             control={control}
+            rules={rules}
             render={({ field, fieldState }) => (
-                <p>
+                <div ref={ref}>
                     <span className="tit">{props.title}{props.required ? <em>*</em> : <></>}</span>
                     <div className="box-inp">
                         <Tooltip title={(field.value === undefined && fieldState.error?.message) ?fieldState.error?.message :  ''}
@@ -35,10 +37,7 @@ const CustomSaveFormRadio = ({name, control, defaultValue, onChangeValue, option
                                           field.onChange(v);
                                           onChangeValue&&onChangeValue(v.target.value);
                                       }}
-                                      onBlur={(v)=>{
-                                          field.onChange(v);
-                                          // onChangeValue&&onChangeValue(v.target.value);
-                                      }}
+                                      onBlur={field.onBlur}
                                       onMouseEnter={() => setFocus(true)}
                                       onMouseLeave={() => setFocus(false)}
                                   >
@@ -49,10 +48,12 @@ const CustomSaveFormRadio = ({name, control, defaultValue, onChangeValue, option
                             </div>
                         </Tooltip>
                     </div>
-                </p>
+                </div>
             )}
         />
     );
-};
+});
+
+CustomSaveFormRadio.displayName = 'CustomSaveFormRadio';
 
 export default CustomSaveFormRadio;

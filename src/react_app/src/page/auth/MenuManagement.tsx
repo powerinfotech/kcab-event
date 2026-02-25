@@ -1,7 +1,7 @@
 import {GetProps, message, Tree} from 'antd';
 import React, {useEffect, useState} from 'react';
-import {callDeleteMenu, callGetMenuInfo, callSaveMenu} from '@api/auth/MenuManagementApi';
-import {EmptyMenu, FolderTree, MenuInfo, MenuListSearchParam, MenuTree, MenuType} from '@interface/auth/MenuManagement';
+import {callDeleteMenu, callGetBtnList, callGetMenuBtnList, callGetMenuInfo, callSaveMenu} from '@api/auth/MenuManagementApi';
+import {BtnInfo, EmptyMenu, FolderTree, MenuBtnInfo, MenuInfo, MenuListSearchParam, MenuTree, MenuType} from '@interface/auth/MenuManagement';
 import {CheckCircleOutlined, FolderOpenOutlined, PlusCircleOutlined} from '@ant-design/icons';
 import CustomInput from '@component/CustomInput';
 import {useRecoilValue} from 'recoil';
@@ -28,13 +28,12 @@ type DirectoryTreeProps = GetProps<typeof Tree.DirectoryTree>;
 const emptyList:EmptyMenu[] = [
     {
         menuSeq: undefined,
-        menuId: undefined,
-        upMenuId: undefined,
+        upMenuSeq: undefined,
         menuNm: '',
         menuTypeCd: undefined,
         menuViewPath: '',
-        menuUri: '',
-        useFlag: undefined,
+        menuUrl: '',
+        useYn: undefined,
         sortSeq: undefined
     }
 ];
@@ -54,6 +53,8 @@ const MenuManagement = () => {
         , reset: saveFormReset
         , getValues: saveFormGetValues
         , setValue: saveFormSetValue
+        , clearErrors: saveFormClearErrors
+        , watch: saveFormWatch
     } = useForm<MenuInfo>({mode:'all'});
 
     const { DirectoryTree } = Tree;
@@ -69,12 +70,14 @@ const MenuManagement = () => {
     const [selectable, setSelectable] = useState<boolean>(true);
     const [selectedKeys, setSelectedKeys] = useState<any[]>([]);
     const isEditable = isRowSelected && isAdminUser;
-    const isViewMenu = saveFormGetValues('menuTypeCd') === 'V';
+    const isViewMenu = saveFormWatch('menuTypeCd') === 'V';
     const isSaveFormErrors =  Object.keys(saveFormErros).length > 0;
     const isChangedDataSource = dataSource.some((v)=>v.iudType);
 
-    const [rowSeq,setRowSeq] = useState<any[]>([]);
-    const [rowIndex,setRowIndex] = useState(-1);
+    const [rowSeq, setRowSeq] = useState<any[]>([]);
+    const [rowIndex, setRowIndex] = useState(-1);
+    const [btnList, setBtnList] = useState<BtnInfo[]>([]);
+    const [menuBtnState, setMenuBtnState] = useState<Array<{ btnSeq: number; sortSeq: number; btnNm: string; useYn: string }>>([]);
 
     const onSelect: DirectoryTreeProps['onSelect'] = async (keys:any[], info?:any) => {
         if(isChangedDataSource)  {
@@ -87,11 +90,39 @@ const MenuManagement = () => {
         onSelectChange(keys);
     };
 
-    const onSelectChange = (keys:any[]) => {
+    const onSelectChange = async (keys: any[]) => {
         setSelectedKeys(keys);
-        saveFormReset(getCurrentRowDataSourceById(keys[0]));
+        const row = getCurrentRowDataSourceBySeq(keys[0]);
+        saveFormReset(row);
         setIsRowSelected(true);
         createParentMenuCombo();
+
+        // 기존 메뉴 선택 시: tb_menu_btn 기준으로 버튼 정보 세팅
+        if (row?.menuSeq != null && row.menuSeq > 0 && row.iudType !== IudType.I) {
+            const res = await callGetMenuBtnList(row.menuSeq);
+            const list = res?.item ?? [];
+            const merged = (btnList.length ? btnList : []).map((btn) => {
+                const found = list.find((mb: MenuBtnInfo) => Number(mb.btnSeq) === Number(btn.btnSeq));
+                return {
+                    btnSeq: btn.btnSeq,
+                    sortSeq: btn.sortSeq,
+                    btnNm: found?.btnNm ?? '',
+                    useYn: found?.useYn ?? '',
+                };
+            });
+            setMenuBtnState(merged.length ? merged : []);
+        } else if (row?.iudType === IudType.I) {
+            // 추가버튼으로 생성된 신규 메뉴 선택 시
+            // - 모든 버튼 기본값: 미사용(N)
+            // - 커스텀 버튼 입력란 기본값: 공백('')
+            const defaultBtns = btnList.map((btn) => ({
+                btnSeq: btn.btnSeq,
+                sortSeq: btn.sortSeq,
+                btnNm: '',
+                useYn: 'N',
+            }));
+            setMenuBtnState(defaultBtns);
+        }
     };
 
     const onExpand: DirectoryTreeProps['onExpand'] = (keys:any[], info) => {
@@ -99,33 +130,30 @@ const MenuManagement = () => {
        info.node.expanded && expandedKey&& setExpandedKey(expandedKey.filter((v)=>v !== info.node.key));
     };
 
-    const getCurrentRowDataSourceById = (menuId : number) => dataSource.filter((v)=>v.menuId === menuId)[0];
-
-    const getOrgRowDataSourceById = (menuId : number) => orgDataSource.filter((v)=>v.menuId === menuId)[0];
+    const getCurrentRowDataSourceBySeq = (menuSeq : number | React.Key) => {
+        if (typeof menuSeq === 'string' && menuSeq.startsWith('_new_')) {
+            const parts = menuSeq.split('_');
+            const idx = parts[3] !== undefined ? Number(parts[3]) : -1;
+            if (idx >= 0 && dataSource[idx]?.menuSeq == null) return dataSource[idx];
+            const upMenuSeq = parts[2] !== undefined ? Number(parts[2]) : undefined;
+            return dataSource.filter((v) => v.menuSeq == null && v.upMenuSeq === upMenuSeq)[0];
+        }
+        return dataSource.filter((v)=>v.menuSeq === menuSeq)[0];
+    };
 
     const handleDataChanged = () => {
         const formData  = saveFormGetValues();
         const changedDataSource = dataSource.map((item)=> {
             if (item.menuSeq === formData.menuSeq) {
                 if(isItemChanged(item,formData)) {
-                    const orgMenuTypeCd = item.menuTypeCd;
                     item = {...item, ...formData};
                     item.iudType = item.iudType ?? IudType.U;
 
-                    if (orgMenuTypeCd !== formData.menuTypeCd) {
-                        if (formData.menuTypeCd === 'D') {
-                            item.upMenuId = 1000;
-                        } else {
-                            item.upMenuId = 1001;
-                        }
-                    }
-
                     if (item.menuTypeCd === MenuType.D) {
-                        item.menuUri = '';
+                        item.menuUrl = '';
                         item.menuViewPath = '';
                     }
                 }
-                 //saveFormReset(item);
             }
             return item;
         });
@@ -142,27 +170,92 @@ const MenuManagement = () => {
         return false;
     };
 
+    /**
+     * 버튼정보가 변경된 경우, 현재 선택된 메뉴의 IUD 타입을 업데이트(U)로 설정한다.
+     * - 신규(I) 상태인 메뉴는 그대로 두고, 기존 메뉴(undefined 또는 U 등)만 U로 변경한다.
+     */
+    const markMenuUpdatedByButtonChange = () => {
+        const selectedKey = rowSeq?.[0] ?? selectedKeys?.[0];
+        if (selectedKey == null) return;
+
+        const current = getCurrentRowDataSourceBySeq(selectedKey);
+        if (!current) return;
+        if (current.iudType === IudType.I) return;
+
+        setDataSource((prev) =>
+            prev.map((item) =>
+                item.menuSeq === current.menuSeq
+                    ? {
+                          ...item,
+                          iudType: IudType.U,
+                      }
+                    : item
+            )
+        );
+    };
+
+    const updateMenuBtnUseYn = (btnSeq: number, useYn: string, prevUseYn: string) => {
+        if (prevUseYn === useYn) return;
+
+        setMenuBtnState((prev) =>
+            prev.map((b) =>
+                Number(b.btnSeq) === Number(btnSeq) ? { ...b, useYn } : b
+            )
+        );
+
+        markMenuUpdatedByButtonChange();
+    };
+
+    const updateMenuBtnNm = (btnSeq: number, btnNm: string, prevBtnNm: string) => {
+        if (prevBtnNm === btnNm) return;
+
+        setMenuBtnState((prev) =>
+            prev.map((b) =>
+                Number(b.btnSeq) === Number(btnSeq) ? { ...b, btnNm } : b
+            )
+        );
+
+        markMenuUpdatedByButtonChange();
+    };
+
+    useEffect(() => {
+        console.log('dataSource', dataSource);
+    }, [dataSource]);
 
     const handleSave = async (value: MenuInfo) => {
-        if(!isChangedDataSource)
-        {
+        if (!isRowSelected) {
+            message.info('선택한 메뉴가 없습니다.');
+            return;
+        }
+        if (!isChangedDataSource && menuBtnState.length === 0) {
             message.info('변경된 내용이 없습니다.');
             return;
         }
         const result = await confirm('저장 하시겠습니까?');
-        if(result) {
-            const result = await callSaveMenu(getCurrentRowDataSourceById(value.menuId));
-            if (result.code === HttpStatusCode.Ok)
+        if (result) {
+            const selectedKey = rowSeq?.[0] ?? selectedKeys?.[0];
+            const menu = selectedKey != null ? getCurrentRowDataSourceBySeq(selectedKey) : undefined;
+            if (!menu) {
+                message.info('선택한 메뉴 정보를 찾을 수 없습니다.');
+                return;
+            }
+            const menuBtnList = menuBtnState.map((b) => ({
+                btnSeq: b.btnSeq,
+                btnNm: b.btnNm,
+                useYn: b.useYn,
+            }));
+            const payload = { ...menu, menuBtnList };
+            const res = await callSaveMenu(payload);
+            if (res.code === HttpStatusCode.Ok) {
+                message.success('저장이 완료되었습니다.');
                 saveFormReset(emptyList[0]);
-                // setSelectedKeys([]);
-                // setSelectedKeys(rowSeq);
-
-                callGetMenuInfo().then((res)=> {
+                callGetMenuInfo().then((res) => {
                     setIsRowSelected(true);
                     setDataSource(JSON.parse(JSON.stringify(res.item)));
                     setOrgDataSource(JSON.parse(JSON.stringify(res.item)));
                 });
                 onSelectChange(rowSeq);
+            }
         }
     };
 
@@ -191,13 +284,10 @@ const MenuManagement = () => {
         }
 
         const addList:MenuInfo[] = JSON.parse(JSON.stringify(emptyList));
-        addList[0].menuSeq=orgDataSource&&orgDataSource.length>0 ? Math.max(...orgDataSource.map((v:MenuInfo) => v.menuSeq+1)):0;
-        // addList[0].menuId=dataSource&&dataSource.length>0 ? Math.max(...dataSource.map((v:MenuInfo) => v.menuId+1)):0;
-        addList[0].menuId=9999;
-        addList[0].upMenuId=orgDataSource&&orgDataSource.length>0 ? orgDataSource?.filter((v)=>v.upMenuId=== null)[0].menuId:0;
+        addList[0].upMenuSeq=orgDataSource&&orgDataSource.length>0 ? orgDataSource?.filter((v)=>v.upMenuSeq=== null)[0].menuSeq:0;
         addList[0].menuNm='';
         addList[0].menuTypeCd=MenuType.D;
-        addList[0].useFlag = true;
+        addList[0].useYn = 'Y';
         addList[0].iudType = IudType.I;
         const addedDataSource = orgDataSource.concat(addList);
         setDataSource(addedDataSource);
@@ -212,7 +302,7 @@ const MenuManagement = () => {
             return;
         }
         if(saveFormGetValues('menuTypeCd') === MenuType.D
-        && dataSource.filter((v)=>v.upMenuId===saveFormGetValues('menuId')).length > 0 )  {
+        && dataSource.filter((v)=>v.upMenuSeq===saveFormGetValues('menuSeq')).length > 0 )  {
             message.error('하위에 포함된 메뉴가 존재할 경우 삭제할 수 없습니다.');
             return;
         }
@@ -251,8 +341,8 @@ const MenuManagement = () => {
         setIsRowSelected(false);
     };
 
-    const resetSaveForm = () =>{
-        saveFormReset(orgDataSource.filter((v)=>v.menuSeq===saveFormGetValues('menuSeq')??{})[0]);
+    const resetSaveForm = () => {
+        saveFormReset(orgDataSource.filter((v) => v.menuSeq === saveFormGetValues('menuSeq'))[0] ?? emptyList[0]);
     };
     const handleFilter =  () => {
         if(!searchFormGetValues('menuNm') && !searchFormGetValues('isExceptUnused')) {
@@ -269,7 +359,7 @@ const MenuManagement = () => {
         directoryTree.forEach((item:MenuTree)=> {
           if(item) {
               if(searchParam && searchParam.isExceptUnused) {
-                  if(item.useFlag)
+                  if(item.useYn === 'Y')
                       searchView({...item, icon: () => (<IconFolder />), children:[]}, root[0], item.children as [], searchParam);
               }
               else {
@@ -283,14 +373,14 @@ const MenuManagement = () => {
     const searchView = (parent:MenuTree, root:MenuTree, viewList:MenuTree[], searchParam?:MenuListSearchParam) => {
           if(searchParam && searchParam.menuNm && viewList) {
                viewList.filter((v)=>v&&v.title&&v.title.toString().indexOf(searchParam?.menuNm) > -1) .map((v)=> {
-                   if(searchParam.isExceptUnused && v.useFlag)
+                   if(searchParam.isExceptUnused && v.useYn === 'Y')
                        parent&& parent.children&&parent.children.push({...v,  icon: () => (<IconFile />)});
-                   else if(!searchParam.isExceptUnused)
+                  else if(!searchParam.isExceptUnused)
                        parent&& parent.children&&parent.children.push({...v,  icon: () => (<IconFile />)});
-               });
+              });
           }
           else if(searchParam && searchParam.isExceptUnused && viewList){
-              viewList.filter((v)=>v &&v.useFlag).map((v)=> {
+              viewList.filter((v)=>v &&v.useYn === 'Y').map((v)=> {
                   parent&& parent.children&&parent.children.push({...v,  icon: () => (<IconFile />)});
               });
           }
@@ -301,7 +391,7 @@ const MenuManagement = () => {
 
     const findParentMenuNm = (menuList:MenuInfo[], menu:MenuInfo, menuPath: string):any => {
           const parent: MenuInfo =  menuList
-              .filter((parent)=>parent.menuId === menu.upMenuId).map((parent) => parent)[0];
+              .filter((parent)=>parent.menuSeq === menu.upMenuSeq).map((parent) => parent)[0];
           if(parent) {
               return findParentMenuNm(menuList, parent, parent.menuNm + ' > '  + menuPath);
           }
@@ -310,26 +400,31 @@ const MenuManagement = () => {
 
     const createMenuTree = (menuList:MenuInfo[]) => {
         if(menuList.length < 1) return;
-        const menuTree:MenuTree = {title:menuList[0].menuNm, key:menuList[0].menuId , icon: () => (<FolderOpenOutlined />),  children:[]};
+        const rootKey = menuList[0].menuSeq ?? 0;
+        const menuTree:MenuTree = {title:menuList[0].menuNm, key: rootKey, icon: () => (<FolderOpenOutlined />),  children:[]};
         setChild(menuTree,  menuList[0], menuList);
         setTreeData([menuTree]);
         setOrgTreeData([menuTree]);
     };
 
     const createExpandedKey = (menuList:MenuInfo[]) =>
-        setExpandedKey(menuList.filter((v)=>v.menuTypeCd===MenuType.D).map((v)=>v.menuId));
+        setExpandedKey(menuList.filter((v)=>v.menuTypeCd===MenuType.D && v.menuSeq != null).map((v)=>v.menuSeq as React.Key));
 
     const expandTree = () => {
-        setExpandedKey(dataSource.filter((v)=>v.menuTypeCd===MenuType.D).map((v)=>v.menuId));
+        setExpandedKey(dataSource.filter((v)=>v.menuTypeCd===MenuType.D && v.menuSeq != null).map((v)=>v.menuSeq as React.Key));
     };
 
     const foldTree = () => {
-        setExpandedKey(dataSource.filter((v)=>v.upMenuId===null).map((v)=>v.menuId));
+        setExpandedKey(dataSource.filter((v)=>v.upMenuSeq===null && v.menuSeq != null).map((v)=>v.menuSeq as React.Key));
     };
+    const getTreeKey = (v: MenuInfo, menuList: MenuInfo[]) =>
+        v.menuSeq != null ? v.menuSeq : (`_new_${v.upMenuSeq}_${menuList.indexOf(v)}` as React.Key);
+
     const setChild = (parentTreeNode:MenuTree, parentMenuObject:MenuInfo, menuList:MenuInfo[]) => {
         menuList.map((v:MenuInfo)=> {
-            if(parentMenuObject.menuId === v.upMenuId) {
-                  let childTreeNode : MenuTree = {title:v.menuNm, key:v.menuId, useFlag: v.useFlag};
+            if(parentMenuObject.menuSeq === v.upMenuSeq) {
+                  const nodeKey = getTreeKey(v, menuList);
+                  let childTreeNode : MenuTree = {title:v.menuNm, key: nodeKey, useYn: v.useYn};
                  if(MenuType.V === v.menuTypeCd) {
                      childTreeNode = {
                          ...childTreeNode,
@@ -352,8 +447,8 @@ const MenuManagement = () => {
 
     const setFolderChild = (parentTreeNode:FolderTree, parentMenuObject:MenuInfo, menuList:MenuInfo[]) => {
         menuList.map((v:MenuInfo)=> {
-            if(parentMenuObject.menuId === v.upMenuId) {
-                  let childTreeNode : FolderTree = {label:v.menuNm, value:v.menuId+''};
+            if(parentMenuObject.menuSeq === v.upMenuSeq) {
+                  let childTreeNode : FolderTree = {label:v.menuNm, value:v.menuSeq+''};
                 if(MenuType.D === v.menuTypeCd) {
 
                      childTreeNode = {
@@ -368,18 +463,14 @@ const MenuManagement = () => {
     };
 
     const createParentMenuCombo = () => {
-         const directory = dataSource.filter((v)=>v.menuTypeCd == MenuType.D);
-        const menuComboList:DefaultOptionType[]= directory.map((v)=>{
-            const parentMenuNm = findParentMenuNm(directory, v, v.menuNm);
-            return {value: v.menuId, label : parentMenuNm, level:v.level};
-        });
+        const menuComboList: DefaultOptionType[] = dataSource.filter((v) => {return v.menuSeq != null;})
+                                                                .map((v) => ({
+                                                                    value: v.menuSeq as any,
+                                                                    label: v.menuNm,
+                                                                    level: v.level,
+                                                                }));
 
-         if(saveFormGetValues('menuTypeCd') === 'V') {
-             setParentMenuCombo(menuComboList.filter((v)=>v['level'] >0));
-             return;
-         }
-
-         setParentMenuCombo(menuComboList.filter((v)=>v['level'] < 1));
+        setParentMenuCombo(menuComboList);
     };
 
 
@@ -401,10 +492,11 @@ const MenuManagement = () => {
 
     useEffect(() => {
         if(dataSource.some((v)=>v.iudType===IudType.I) ){
-            const menuId = dataSource.filter((v)=>v.iudType===IudType.I).map((v)=>v.menuId)[0];
-            if(treeData && treeData.length>0 && treeData[0].children?.filter((v)=>v.key === menuId)) {
-                onSelectChange(dataSource.filter((v)=>v.iudType === IudType.I).map((v)=>v.menuId));
-                treeData&&treeData.length&&setSelectable(true);
+            const newItems = dataSource.filter((v)=>v.iudType===IudType.I);
+            if(treeData && treeData.length > 0 && newItems.length > 0) {
+                const keysToSelect = newItems.map((v) => getTreeKey(v, dataSource));
+                onSelectChange(keysToSelect);
+                setSelectable(true);
             }
         }
 
@@ -413,6 +505,18 @@ const MenuManagement = () => {
     useEffect(() => {
         handleSearch();
     }, []);
+
+    useEffect(() => {
+        callGetBtnList().then((res) => {
+            if (res?.item?.length) setBtnList(res.item);
+        });
+    }, []);
+
+    useEffect(() => {
+        if (btnList.length > 0 && selectedKeys?.length > 0 && menuBtnState.length === 0) {
+            onSelectChange(selectedKeys);
+        }
+    }, [btnList.length]);
 
 
     return Object.keys(cmCode).length > 0 && (
@@ -433,10 +537,10 @@ const MenuManagement = () => {
                     <CustomValidFormInput name={'menuNm'}
                                           placeholder="검색할 ID를 입력해 주세요."
                                           control={searchFormControl}
-                                          onChangeValue={(v)=>{handleFilter();}}
+                                          onChangeValue={(_v: string) => { handleFilter(); }}
                                             />
                     <CustomValidFormCheckbox name={'isExceptUnused'} control={searchFormControl}
-                                             onChange={(v)=>searchFormHandleSubmit(handleFilter)} />
+                                             onChange={() => searchFormHandleSubmit(handleFilter)} />
                     <span>미사용제외</span>
                 </form>
             </section>
@@ -474,125 +578,282 @@ const MenuManagement = () => {
                     </div>
                 </div>
 
-                <div>
-                    <div className="board-title-wrap">
-                        <h3 className="title">
-                            <IconTitle/>
-                            상세정보
-                        </h3>
-                    </div>
-                    <div className="board-cont-wrap">
-                        <form onSubmit={saveFormHandleSubmit(handleSave)}>
-                             <CustomInput style={{display: 'none'}} className={'hide'} {...saveFormRegister('menuSeq')}/>
-                             <CustomInput style={{display: 'none'}} className={'hide'} {...saveFormRegister('iudType')}/>
-                            <div className="board-detail-info">
-                                <div>
-                                    <CustomSaveFormInput
-                                        title={'메뉴ID'}
-                                        control={saveFormControl}
-                                        name="menuId"
-                                        disabled={true}
-                                        onChange={handleDataChanged}
-                                    />
-                                    <CustomSaveFormSelect
-                                        title={'상위메뉴'}
-                                        control={saveFormControl}
-                                        required={true}
-                                        disabled={!isEditable}
-                                        options={parentMenuCombo}
-                                        style={{width:'200px'}}
-                                       {...saveFormRegister('upMenuId', {required:'상위메뉴가 선택되지 않았습니다.', onChange:handleDataChanged})}
-                                />
-                                </div>
+                <div className="right-panel">
+                    <form onSubmit={saveFormHandleSubmit(handleSave)} style={{ height: '100%' }}>
+                        <div className="top-right">
+                            <div className="board-title-wrap">
+                                <h3 className="title">
+                                    <IconTitle/>
+                                    상세정보
+                                </h3>
+                            </div>
+                            <div className="board-cont-wrap">
+                                <CustomInput style={{display: 'none'}} className={'hide'} {...saveFormRegister('menuSeq')}/>
+                                <CustomInput style={{display: 'none'}} className={'hide'} {...saveFormRegister('iudType')}/>
+                                <div className="board-detail-info menu-detail-two-column">
+                                        <div>
+                                            <CustomSaveFormInput
+                                                title={'메뉴일련번호'}
+                                                control={saveFormControl}
+                                                name="menuSeq"
+                                                disabled={true}
+                                                onChange={handleDataChanged}
+                                            />
+                                            <CustomSaveFormSelect
+                                                title={'상위메뉴'}
+                                                name="upMenuSeq"
+                                                control={saveFormControl}
+                                                rules={{ required: '상위메뉴를 선택해 주세요.' }}
+                                                required={true}
+                                                disabled={!isEditable}
+                                                options={parentMenuCombo}
+                                                style={{width: '200px'}}
+                                                showSearch
+                                                optionFilterProp="label"
+                                                onChangeValueback={() => handleDataChanged()}
+                                            />
+                                        </div>
 
-                                <div>
-                                    <CustomSaveFormInput
-                                        title={'메뉴명'}
-                                        required={true}
-                                        disabled={!isEditable}
-                                        control={saveFormControl}
-                                         {...saveFormRegister('menuNm', {required: '메뉴명이 입력되지 않았습니다.', onChange:handleDataChanged})}
-                                    />
+                                        <div>
+                                            <CustomSaveFormInput
+                                                title={'메뉴명'}
+                                                required={true}
+                                                disabled={!isEditable}
+                                                control={saveFormControl}
+                                                name="menuNm"
+                                                rules={{ required: '메뉴명이 입력되지 않았습니다.' }}
+                                                onChangeValue={handleDataChanged}
+                                            />
+                                            <CustomSaveFormInput
+                                                title={'URL'}
+                                                required={isViewMenu}
+                                                disabled={!isEditable || !isViewMenu}
+                                                control={saveFormControl}
+                                                name="menuUrl"
+                                                rules={{
+                                                    validate: (value: string) => {
+                                                        const type = saveFormGetValues('menuTypeCd');
+                                                        if (type === MenuType.V && (!value || value.trim() === '')) {
+                                                            return '메뉴 URL이 입력되지 않았습니다.';
+                                                        }
+                                                        return true;
+                                                    },
+                                                }}
+                                                onChangeValue={handleDataChanged}
+                                            />
+                                        </div>
 
-                                     <CustomSaveFormInput
-                                        title={'URL'}
-                                        required={isViewMenu}
-                                        disabled={!isEditable || !isViewMenu}
-                                        control={saveFormControl}
-                                        {...saveFormRegister('menuUri',isViewMenu? {required: '메뉴 URL이 입력되지 않았습니다.', onChange:handleDataChanged}:{onChange:handleDataChanged})}
-                                    />
-                                </div>
-                                <div>
-                                    <CustomSaveFormRadio
-                                        title={'메뉴타입'}
-                                        required={true}
-                                        disabled={!isEditable}
-                                        control={saveFormControl}
-                                        onChangeValue={createParentMenuCombo}
-                                        options={Object.keys(cmCode['MenuType']).map((key)  => ({'value': key,'label':cmCode['MenuType'][key]}))}
-                                         {...saveFormRegister('menuTypeCd', {required: '메뉴타입이 선택되지 않았습니다.', onChange:handleDataChanged})}
-                                    />
+                                        <div>
+                                            <CustomSaveFormRadio
+                                                title={'메뉴타입'}
+                                                required={true}
+                                                disabled={!isEditable}
+                                                control={saveFormControl}
+                                                name="menuTypeCd"
+                                                rules={{ required: '메뉴타입이 선택되지 않았습니다.' }}
+                                                onChangeValue={(value: MenuType) => {
+                                                    if (value === MenuType.D) {
+                                                        saveFormClearErrors(['menuUrl', 'menuViewPath']);
+                                                    }
+                                                    setTimeout(() => {
+                                                        handleDataChanged();
+                                                        createParentMenuCombo();
+                                                    }, 0);
+                                                }}
+                                                options={Object.keys(cmCode['MenuType']).map((key)  => ({'value': key,'label':cmCode['MenuType'][key]}))}
+                                            />
+                                            <CustomSaveFormInput
+                                                title={'메뉴 View Path'}
+                                                required={isViewMenu}
+                                                disabled={!isEditable || !isViewMenu}
+                                                control={saveFormControl}
+                                                name="menuViewPath"
+                                                rules={{
+                                                    validate: (value: string) => {
+                                                        const type = saveFormGetValues('menuTypeCd');
+                                                        if (type === MenuType.V && (!value || value.trim() === '')) {
+                                                            return '메뉴 View Path가 입력되지 않았습니다.';
+                                                        }
+                                                        return true;
+                                                    },
+                                                }}
+                                                onChangeValue={handleDataChanged}
+                                            />
+                                        </div>
 
-                                    <CustomSaveFormInput
-                                        title={'메뉴 View Path'}
-                                        required={isViewMenu}
-                                        disabled={!isEditable || !isViewMenu}
-                                        control={saveFormControl}
-                                        {...saveFormRegister('menuViewPath', isViewMenu ? {required: '메뉴 View Path가 입력되지 않았습니다.', onChange:handleDataChanged}:{onChange:handleDataChanged})}
-                                    />
-                                </div>
-                                <div>
-                                    <CustomSaveFormRadio
-                                        title={'사용여부'}
-                                        required={true}
-                                        disabled={!isEditable}
-                                        control={saveFormControl}
-                                        options={[{value:true, label:'예'},{value:false, label:'아니오'}]}
-                                         {...saveFormRegister('useFlag', {required: '사용여부가 선택되지 않았습니다.', onChange:handleDataChanged})}
-                                    />
+                                        <div>
+                                            <CustomSaveFormRadio
+                                                title={'사용여부'}
+                                                required={true}
+                                                disabled={!isEditable}
+                                                control={saveFormControl}
+                                                name="useYn"
+                                                rules={{ required: '사용여부가 선택되지 않았습니다.' }}
+                                                onChangeValue={() => setTimeout(handleDataChanged, 0)}
+                                                options={[{value:'Y', label:'예'},{value:'N', label:'아니오'}]}
+                                            />
 
-                                    <CustomSaveFormInput
-                                        title={'조회순서'}
-                                        required={true}
-                                        disabled={!isEditable}
-                                        control={saveFormControl}
-                                        name="sortSeq"
-                                        onChangeValue={handleDataChanged}
-                                    />
-                                </div>
-                                <div>
-                                     <CustomSaveFormInput
-                                        title={'등록자'}
-                                        control={saveFormControl}
-                                        name="rgstUserName"
-                                        disabled={true}
-                                    />
+                                            <CustomSaveFormInput
+                                                title={'조회순서'}
+                                                required={true}
+                                                disabled={!isEditable}
+                                                control={saveFormControl}
+                                                name="sortSeq"
+                                                regExp={{ value: /^\d*$/, message: '숫자만 입력 가능합니다.' }}
+                                                rules={{ required: '조회순서를 입력해 주세요.' }}
+                                                onChangeValue={handleDataChanged}
+                                            />
+                                        </div>
 
-                                    <CustomSaveFormInput
-                                        title={'수정자'}
-                                        control={saveFormControl}
-                                        name="uptUserName"
-                                        disabled={true}
-                                    />
-                                </div>
-                                <div>
-                                    <CustomSaveFormInput
-                                        title={'등록일자'}
-                                        control={saveFormControl}
-                                        name={'rgstDate'}
-                                        disabled={true}
-                                    />
+                                        <div>
+                                            <CustomSaveFormInput
+                                                title={'등록자'}
+                                                control={saveFormControl}
+                                                name="rgstUserName"
+                                                disabled={true}
+                                            />
 
-                                    <CustomSaveFormInput
-                                        title={'수정일자'}
-                                        control={saveFormControl}
-                                        name={'uptDate'}
-                                        disabled={true}
-                                    />
+                                            <CustomSaveFormInput
+                                                title={'수정자'}
+                                                control={saveFormControl}
+                                                name="uptUserName"
+                                                disabled={true}
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <CustomSaveFormInput
+                                                title={'등록일자'}
+                                                control={saveFormControl}
+                                                name={'rgstDateTime'}
+                                                disabled={true}
+                                            />
+
+                                            <CustomSaveFormInput
+                                                title={'수정일자'}
+                                                control={saveFormControl}
+                                                name={'uptDateTime'}
+                                                disabled={true}
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </form>
-                    </div>
+
+                        <div className="bottom-right">
+                            <div className="board-title-wrap" style={{ marginTop: 16 }}>
+                                <h3 className="title">
+                                    <IconTitle />
+                                    버튼정보
+                                </h3>
+                            </div>
+                            <div className="board-cont-wrap button-info-two-column">
+                                <div className="button-info-box">
+                                    <div className="button-info-header">기본버튼(권한설정)</div>
+                                    <table className="tbl type02">
+                                        <colgroup>
+                                            <col style={{ width: '120px' }} />
+                                            <col style={{ width: '80px' }} />
+                                            <col style={{ width: '80px' }} />
+                                        </colgroup>
+                                        <thead>
+                                            <tr>
+                                                <th>버튼명</th>
+                                                <th>사용</th>
+                                                <th>미사용</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {(btnList.filter((b) => b.sortSeq >= 11 && b.sortSeq <= 15)).map((btn) => {
+                                                const state = menuBtnState.find((s) => Number(s.btnSeq) === Number(btn.btnSeq));
+                                                const useYn = state?.useYn ?? 'N';
+                                                return (
+                                                    <tr key={btn.btnSeq}>
+                                                        <td>{btn.btnNm}</td>
+                                                        <td>
+                                                            <input
+                                                                type="radio"
+                                                                name={`btn_use_${btn.btnSeq}`}
+                                                                checked={useYn === 'Y'}
+                                                                onChange={() => updateMenuBtnUseYn(btn.btnSeq, 'Y', useYn)}
+                                                                disabled={!isEditable}
+                                                            />
+                                                        </td>
+                                                        <td>
+                                                            <input
+                                                                type="radio"
+                                                                name={`btn_use_${btn.btnSeq}`}
+                                                                checked={useYn === 'N'}
+                                                                onChange={() => updateMenuBtnUseYn(btn.btnSeq, 'N', useYn)}
+                                                                disabled={!isEditable}
+                                                            />
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div className="button-info-box">
+                                    <div className="button-info-header">커스텀버튼(권한설정)</div>
+                                    <table className="tbl type02">
+                                        <colgroup>
+                                            <col style={{ width: '120px' }} />
+                                            <col style={{ width: '200px' }} />
+                                            <col style={{ width: '80px' }} />
+                                            <col style={{ width: '80px' }} />
+                                        </colgroup>
+                                        <thead>
+                                            <tr>
+                                                <th>버튼명</th>
+                                                <th></th>
+                                                <th>사용</th>
+                                                <th>미사용</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {(btnList.filter((b) => b.sortSeq >= 1 && b.sortSeq <= 9)).map((btn) => {
+                                                const state = menuBtnState.find((s) => Number(s.btnSeq) === Number(btn.btnSeq));
+                                                const btnNm = state?.btnNm ?? '';
+                                                const useYn = state?.useYn ?? 'N';
+                                                return (
+                                                    <tr key={btn.btnSeq}>
+                                                        <td>{btn.btnNm}</td>
+                                                        <td>
+                                                            <CustomInput
+                                                                value={btnNm}
+                                                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateMenuBtnNm(btn.btnSeq, e.target.value, btnNm)}
+                                                                disabled={!isEditable}
+                                                                style={{ width: '100%' }}
+                                                            />
+                                                        </td>
+                                                        <td>
+                                                            <input
+                                                                type="radio"
+                                                                name={`btn_custom_use_${btn.btnSeq}`}
+                                                                checked={useYn === 'Y'}
+                                                                onChange={() => updateMenuBtnUseYn(btn.btnSeq, 'Y', useYn)}
+                                                                disabled={!isEditable}
+                                                            />
+                                                        </td>
+                                                        <td>
+                                                            <input
+                                                                type="radio"
+                                                                name={`btn_custom_use_${btn.btnSeq}`}
+                                                                checked={useYn === 'N'}
+                                                                onChange={() => updateMenuBtnUseYn(btn.btnSeq, 'N', useYn)}
+                                                                disabled={!isEditable}
+                                                            />
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </section>
         </>

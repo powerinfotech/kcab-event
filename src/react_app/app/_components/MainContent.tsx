@@ -1,7 +1,7 @@
 'use client';
 
-import React, { Suspense, useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+import React, { Suspense, useEffect, useRef } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { Breadcrumb } from 'antd';
 import IconStepArrow from '@icon/IconStepArrow';
 import IconHome from '@icon/IconHome';
@@ -12,34 +12,43 @@ import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { menuInfoAtom } from '@atom/menuInfoAtom';
 import { showErrorPageAtom } from '@atom/showErrorPageAtom';
 
-function defaultMenu(menuList: MenuInfo[]) {
+function getDefaultMenuPath(menuList: MenuInfo[]): string | null {
   const level2Menu = menuList.filter((item) => item.level === 2);
-  if (level2Menu.length > 0 && typeof window !== 'undefined') {
-    const minumSeqMenu = level2Menu.reduce((minMenu, currentMenu) =>
-      currentMenu.menuId < minMenu.menuId ? currentMenu : minMenu
-    );
-    window.location.href = window.location.origin + minumSeqMenu.menuUri;
-  }
+  if (level2Menu.length === 0) return null;
+  const minumSeqMenu = level2Menu.reduce((minMenu, currentMenu) =>
+    currentMenu.menuSeq < minMenu.menuSeq ? currentMenu : minMenu
+  );
+  const path = minumSeqMenu.menuUrl?.startsWith('/') ? minumSeqMenu.menuUrl : `/${minumSeqMenu.menuUrl || ''}`;
+  return path && path !== '/' ? path : null;
 }
 
 export default function MainContent() {
   const pathname = usePathname() ?? '/';
+  const router = useRouter();
   const menuInfo = useRecoilValue(menuInfoAtom);
   const setShowErrorPage = useSetRecoilState(showErrorPageAtom);
+  const hasRedirected = useRef(false);
 
   useEffect(() => {
     if (menuInfo.length === 0) return;
-    if (pathname === '/' || (typeof window !== 'undefined' && window.location.href.includes('987654321'))) {
-      defaultMenu(menuInfo);
+    const shouldRedirect =
+      pathname === '/' ||
+      (typeof window !== 'undefined' && window.location.href.includes('987654321'));
+    if (!shouldRedirect) return;
+
+    const defaultPath = getDefaultMenuPath(menuInfo);
+    if (defaultPath && !hasRedirected.current) {
+      hasRedirected.current = true;
+      router.replace(defaultPath);
     }
-  }, [pathname, menuInfo]);
+  }, [pathname, menuInfo, router]);
 
   const onChange = React.useCallback((flag: boolean) => {
     setShowErrorPage(flag);
   }, [setShowErrorPage]);
 
   const staticKey = getStaticRouteKey(pathname);
-  const menu = menuInfo.find((m) => m.menuTypeCd === 'V' && m.useFlag && m.menuUri === pathname);
+  const menu = menuInfo.find((m) => m.menuTypeCd === 'V' && m.useYn === 'Y' && m.menuUrl === pathname);
 
   let Comp: React.ComponentType<{ onChange: (flag: boolean) => void; menuInfo?: MenuInfo }> | null = null;
   let menuItem: MenuInfo | null = null;

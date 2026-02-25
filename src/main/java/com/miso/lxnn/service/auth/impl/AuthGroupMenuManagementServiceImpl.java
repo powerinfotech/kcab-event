@@ -77,16 +77,16 @@ public class AuthGroupMenuManagementServiceImpl extends EgovAbstractServiceImpl 
     }
 
     private void createAuthGroupMenuTree(List<AuthGroupMenuListDto> authMenuList, AuthGroupMenuTreeDto parent) {
-        authMenuList.stream().filter(v->v.getUpMenuId() != null
-                        && v.getUpMenuId().equals(parent.getMenuId()))
+        authMenuList.stream().filter(v->v.getUpMenuSeq() != null
+                        && v.getUpMenuSeq().equals(parent.getMenuSeq()))
                 .forEach(v-> {
                     parent.getChildren().add(
                             AuthGroupMenuTreeDto
                                     .builder()
                                     .authGrpMenuSeq(v.getAuthGrpMenuSeq())
                                     .authGrpSeq(v.getAuthGrpSeq())
-                                    .menuId(v.getMenuSeq())
-                                    .upMenuId(v.getUpMenuId())
+                                    .menuSeq(v.getMenuSeq())
+                                    .upMenuSeq(v.getUpMenuSeq())
                                     .menuNm(v.getMenuNm())
                                     .menuTypeCd(v.getMenuTypeCd())
                                     .children(v.getMenuTypeCd() == MenuType.D ? new ArrayList<>() : null)

@@ -24,7 +24,6 @@
 				FALSE
 			FROM tb_menu tm
 			WHERE tm.up_menu_seq IS NULL
-			  AND tm.use_yn = 'Y'
 
 			UNION ALL
 
@@ -45,18 +44,17 @@
 				tm.menu_seq = ANY(path)
 			FROM tb_menu tm
 					 INNER JOIN menu_record mr ON tm.up_menu_seq = mr.menu_seq
-			WHERE tm.use_yn = 'Y'
+			WHERE 1=1
 			  AND NOT CYCLE
 		)
 		SELECT
 			mr.menu_seq,
-			mr.menu_seq AS menu_id,
-			mr.up_menu_seq AS up_menu_id,
+			mr.up_menu_seq AS up_menu_seq,
 			mr.menu_nm,
 			mr.menu_type_cd,
 			mr.menu_view_path,
-			mr.menu_url AS menu_uri,
-			(mr.use_yn = 'Y') AS use_flag,
+			mr.menu_url,
+			mr.use_yn,
 			mr.sort_seq,
 			mr.menu_name_path,
 			mr.menu_id_path,
@@ -74,11 +72,10 @@
 		ORDER BY mr.sort_seq_path
 	</select>
 
-	<insert id="insertMenu" parameterType="com.miso.lxnn.domain.Menu" >
+	<insert id="insertMenu" parameterType="com.miso.lxnn.domain.Menu" useGeneratedKeys="true" keyProperty="menuSeq">
 		INSERT INTO tb_menu
 		(
-			 menu_seq
-			,up_menu_seq
+			up_menu_seq
 			,menu_nm
 			,menu_type_cd
 			,menu_view_path
@@ -91,31 +88,30 @@
 			,upt_date_time
 		)
 		VALUES (
-			 (SELECT coalesce(max(menu_seq), 0)+1 FROM tb_menu)
-			 ,#{upMenuId}
+			 #{upMenuSeq}
 			 ,#{menuNm}
 			 ,#{menuTypeCd}
 			 ,#{menuViewPath}
-			 ,#{menuUri}
-			 ,#{useFlag}
+			 ,#{menuUrl}
+			 ,#{useYn}
 			 ,#{sortSeq}
-			 ,#{rgstUserId}
+			 ,#{rgstUserSeq}
 			 ,now()
-			 ,#{uptUserId}
+			 ,#{uptUserSeq}
 			 ,now()
 		)
 	</insert>
 	<update id="updateMenu" parameterType="com.miso.lxnn.domain.Menu" >
 		UPDATE tb_menu
 		SET
-			 up_menu_seq = #{upMenuId}
+			 up_menu_seq = #{upMenuSeq}
 			,menu_nm = #{menuNm}
 			,menu_type_cd = #{menuTypeCd}
 			,menu_view_path = #{menuViewPath}
-			,menu_url = #{menuUri}
-			,use_yn = #{useFlag}
+			,menu_url = #{menuUrl}
+			,use_yn = #{useYn}
 			,sort_seq = #{sortSeq}
-			,upt_user_seq = #{uptUserId}
+			,upt_user_seq = #{uptUserSeq}
 			,upt_date_time = now()
 		WHERE menu_seq = #{menuSeq}
 	</update>

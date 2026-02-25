@@ -8,20 +8,24 @@ import CustomValidFormInput from '@component/form/CustomValidFormInput';
 import {useCookies} from 'react-cookie';
 import CustomValidFormCheckbox from '@component/form/CustomValidFormCheckbox';
 import {message, Modal} from "antd";
-import {types} from "sass";
-import Null = types.Null;
 import {MenuInfo} from "@interface/auth/MenuManagement";
 import FindIdPopup from "@page/auth/FindIdPopup";
 import FindPasswordPopup from "@page/auth/FindPasswordPopup";
+import { useRouter } from 'next/navigation';
+import { useSetRecoilState } from 'recoil';
+import { sessionInfoAtom } from '@atom/sessionInfoAtom';
+import { menuInfoAtom } from '@atom/menuInfoAtom';
 
 const Login = () => {
+    const router = useRouter();
+    const setSessionInfo = useSetRecoilState(sessionInfoAtom);
+    const setMenuInfoRecoil = useSetRecoilState(menuInfoAtom);
     const {register: saveFormRegister
         , control: saveFormControl
         , handleSubmit: saveFormHandleSubmit
         , setValue: saveFormSetValue
         , getValues:saveFormGetValues} = useForm<{ userId: string, password: string, isRememberId:boolean,mode:string|null }>({mode:'onChange'});
     const [cookies, setCookie, removeCookie] = useCookies(['id'], {doNotParse: true});
-    const [menuInfo, setMenuInfo] = useState<MenuInfo[]>([]);
 
     const handleLogin = async() => {
         const param =   {userId:saveFormGetValues('userId'), password:saveFormGetValues('password')};
@@ -30,23 +34,21 @@ const Login = () => {
             const ret = await getUserLoginInfo();
             if(ret.code === HttpStatusCode.Ok) {
                 saveFormGetValues('isRememberId')?setCookie('id', saveFormGetValues('userId')): removeCookie('id');
-                //location.href = location.pathname;
+                if (ret.item) {
+                    setSessionInfo({
+                        userId: ret.item.userId,
+                        userName: ret.item.userName,
+                        admYn: ret.item.admYn ?? 'N',
+                    });
+                }
 
                 getUserMenuInfo().then((res)=> {
-                    if(res.code === HttpStatusCode.Ok )
-                        if(res.item) {
-                            console.log(22);
-                            setMenuInfo(res.item);
-                            defaultMenu(res.item);
-                            if(location.href.includes("987654321"))
-                            {
-                                defaultMenu(res.item);
-                            }
-                        }
+                    if(res.code === HttpStatusCode.Ok && res.item) {
+                        setMenuInfoRecoil(res.item);
+                        defaultMenu(res.item);
+                    }
                 });
-
             }
-
         }
 
         return data;
@@ -57,12 +59,13 @@ const Login = () => {
 
         if (level2Menu.length > 0) {
             const minumSeqMenu = level2Menu.reduce((minMenu, currentMenu) => {
-                return currentMenu.menuId < minMenu.menuId ? currentMenu : minMenu;
+                return currentMenu.menuSeq < minMenu.menuSeq ? currentMenu : minMenu;
             });
 
-            const defaultUrl = location.origin + minumSeqMenu.menuUri;
-            location.href = defaultUrl;
-
+            const path = minumSeqMenu.menuUrl?.startsWith('/') ? minumSeqMenu.menuUrl : `/${minumSeqMenu.menuUrl}`;
+            if (path && path !== '/') {
+                router.replace(path);
+            }
         }
     };
 
@@ -73,21 +76,21 @@ const Login = () => {
             const ret = await getUserLoginInfo();
             if(ret.code === HttpStatusCode.Ok) {
                 saveFormGetValues('isRememberId')?setCookie('id', saveFormGetValues('userId')): removeCookie('id');
-                //location.href = location.pathname;
+                if (ret.item) {
+                    setSessionInfo({
+                        userId: ret.item.userId,
+                        userName: ret.item.userName,
+                        admYn: ret.item.admYn ?? 'N',
+                    });
+                }
 
                 getUserMenuInfo().then((res)=> {
-                    if(res.code === HttpStatusCode.Ok )
-                        if(res.item) {
-                            setMenuInfo(res.item);
-                            if(location.href.includes("987654321"))
-                            {
-                                defaultMenu(res.item);
-                            }
-                        }
+                    if(res.code === HttpStatusCode.Ok && res.item) {
+                        setMenuInfoRecoil(res.item);
+                        defaultMenu(res.item);
+                    }
                 });
-
             }
-
         }
 
         return data;

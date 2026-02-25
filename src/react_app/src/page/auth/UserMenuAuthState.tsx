@@ -119,13 +119,12 @@ const handleSearchUserComboList = async (searchText : string) => {
 };
 
 const createMenuTree = (authMenuTree:UserMenuAuthMenuList[], parent:UserMenuAuthMenuTree) => {
-    const menuTree:UserMenuAuthMenuTree[] = authMenuTree.filter((v)=>v.upMenuId === parent.menuId).map((v)=> {
+    const menuTree:UserMenuAuthMenuTree[] = authMenuTree.filter((v)=>v.upMenuSeq === parent.menuSeq).map((v)=> {
         if(v.menuTypeCd === MenuType.D) {
             return {
                 menuSeq: v.menuSeq,
                 authGrpSeq: v.authGrpSeq,
-                menuId: v.menuId,
-                upMenuId: v.upMenuId,
+                upMenuSeq: v.upMenuSeq,
                 menuNm: v.menuNm,
                 menuTypeCd:v.menuTypeCd,
                 useFlag: v.useFlag,
@@ -136,8 +135,7 @@ const createMenuTree = (authMenuTree:UserMenuAuthMenuList[], parent:UserMenuAuth
             return {
                 menuSeq: v.menuSeq,
                 authGrpSeq: v.authGrpSeq,
-                menuId: v.menuId,
-                upMenuId: v.upMenuId,
+                upMenuSeq: v.upMenuSeq,
                 menuNm: v.menuNm,
                 menuTypeCd:v.menuTypeCd,
                 useFlag: v.useFlag
@@ -157,12 +155,11 @@ const createMenuTree = (authMenuTree:UserMenuAuthMenuList[], parent:UserMenuAuth
 
 const makeTree = () =>{
     if(userAuthGroupMenuList) {
-        const root:UserMenuAuthMenuTree[] = userAuthGroupMenuList.filter((v)=> v.upMenuId == null).map((v)=>{
+        const root:UserMenuAuthMenuTree[] = userAuthGroupMenuList.filter((v)=> v.upMenuSeq == null).map((v)=>{
             return {
                 menuSeq: v.menuSeq,
                 authGrpSeq: v.authGrpSeq,
-                menuId: v.menuId,
-                upMenuId: v.upMenuId,
+                upMenuSeq: v.upMenuSeq,
                 menuNm: v.menuNm,
                 menuTypeCd: v.menuTypeCd,
                 useFlag: v.useFlag,

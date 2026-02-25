@@ -7,39 +7,39 @@ interface CustomFormInputProps extends InputProps {
     name:string;
     defaultValue?:string;
     control:Control<any>;
+    rules?: any;
     onChangeValue?:(v:string)=>void;
     singleRow?:boolean;
     isNoTitle?: boolean;
     [key: string]: any;
 }
 
-const CustomSaveFormInput = forwardRef<any, CustomFormInputProps>(({ name, defaultValue, control, onChangeValue, singleRow = false, regExp, ...props }, ref) => {
+const CustomSaveFormInput = forwardRef<any, CustomFormInputProps>(({ name, defaultValue, control, rules, onChangeValue, singleRow = false, regExp, ...props }, ref) => {
     const [focus, setFocus] = useState<boolean>(false);
     const [validError, setValidError] = useState<boolean>(false);
 
     const handleChange = (field: any, v: React.ChangeEvent<HTMLInputElement>) => {
         setValidError(false);
+        if (regExp && regExp.value && !regExp.value.test(v.target.value)) {
+            setValidError(true);
+            return;
+        }
         if (v.target.value.length === 1) {
             field.onChange('');
         }
-
-        if (regExp && regExp.value && !regExp?.value.test(v.target.value)) {
-            setValidError(true);
-        } else {
-            field.onChange(v);
-            onChangeValue && onChangeValue(v);
-        }
+        field.onChange(v);
+        onChangeValue && onChangeValue(v);
     };
 
     useEffect(() => {
         setValidError(false);
     }, [control._fields]);
-
     return (
         <Controller
             name={name}
             defaultValue={defaultValue}
             control={control}
+            rules={rules}
             render={({ field, fieldState }) => (
                 <div className={singleRow ? 'full' : props.isNoTitle === true ? 'no-title' : ''}>
                     {props.isNoTitle !== true && (
@@ -47,7 +47,7 @@ const CustomSaveFormInput = forwardRef<any, CustomFormInputProps>(({ name, defau
                     )}
                     <div className="box-inp">
                         <Tooltip
-                            title={fieldState.error?.message ?? (regExp ? regExp.message : '')}
+                            title={validError && regExp?.message ? regExp.message : (fieldState.error?.message ?? (regExp ? regExp.message : ''))}
                             open={(fieldState.error !== undefined || validError) && focus}
                         >
                             <div className={(fieldState.error !== undefined || validError) ? 'tooltip error' : ''}>

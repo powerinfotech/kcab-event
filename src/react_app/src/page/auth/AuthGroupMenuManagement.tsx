@@ -81,7 +81,7 @@ const AuthGroupMenuManagement = () => {
              align:'center',
              render: (value:boolean, record:AuthGroupMenuTree) => {
 
-                 if (!record || record.upMenuId == null) return '';
+                 if (!record || record.upMenuSeq == null) return '';
 
                  const disabled = !isEditableAuthGroup(); // 편집 불가면 비활성화만
                  return (
@@ -102,7 +102,7 @@ const AuthGroupMenuManagement = () => {
                              }
 
                              if (record.menuTypeCd === MenuType.V && next) {
-                                 findParent(authGroupMenuTree, record.upMenuId);
+                                 findParent(authGroupMenuTree, record.upMenuSeq);
                              }
                          }}
                      />
@@ -112,16 +112,16 @@ const AuthGroupMenuManagement = () => {
          }
     ];
 
-    const findParent = (authGroupMenuTree:AuthGroupMenuTree[], upMenuId:number) :any=> {
-        if(!authGroupMenuTree.some(v=>v.menuId === upMenuId))
+    const findParent = (authGroupMenuTree:AuthGroupMenuTree[], upMenuSeq:number) :any=> {
+        if(!authGroupMenuTree.some(v=>v.menuSeq === upMenuSeq))
             return authGroupMenuTree.forEach((v)=>{
-               return v?.children&&findParent(v?.children, upMenuId);
+               return v?.children&&findParent(v?.children, upMenuSeq);
           });
 
-        const parent =authGroupMenuTree.filter(v=>v.menuId === upMenuId)[0];
+        const parent =authGroupMenuTree.filter(v=>v.menuSeq === upMenuSeq)[0];
         const child = parent.children;
         if(child && child.every(item => item.useFlag)) {
-            !parent.useFlag && handleChangeUseFlagAuthGroupMenu(authGroupMenuTree, authGroupMenuTree.filter(v => v.menuId === upMenuId)[0], true);
+            !parent.useFlag && handleChangeUseFlagAuthGroupMenu(authGroupMenuTree, authGroupMenuTree.filter(v => v.menuSeq === upMenuSeq)[0], true);
         }
     };
 
@@ -142,7 +142,7 @@ const AuthGroupMenuManagement = () => {
        }
        else {
             dataSource.map((item:any) => {
-                if (record.menuId === item.menuId) {
+                if (record.menuSeq === item.menuSeq) {
                     item.useFlag = value;
                     item.iudType = editCheckIud(record);
                 }
@@ -154,13 +154,12 @@ const AuthGroupMenuManagement = () => {
     };
 
     const createMenuTree = (authMenuTree:AuthGroupMenuList[], parent:AuthGroupMenuTree) => {
-        const menuTree:AuthGroupMenuTree[] = authMenuTree.filter((v)=>v.upMenuId === parent.menuId).map((v)=> {
+        const menuTree:AuthGroupMenuTree[] = authMenuTree.filter((v)=>v.upMenuSeq === parent.menuSeq).map((v)=> {
             if(v.menuTypeCd === MenuType.D) {
                 return {
                     authGrpMenuSeq: v.authGrpMenuSeq,
                     menuSeq: v.menuSeq,
-                    menuId: v.menuId,
-                    upMenuId: v.upMenuId,
+                    upMenuSeq: v.upMenuSeq,
                     menuNm: v.menuNm,
                     menuTypeCd:v.menuTypeCd,
                     useFlag: v.useFlag,
@@ -172,8 +171,7 @@ const AuthGroupMenuManagement = () => {
                 return {
                     authGrpMenuSeq: v.authGrpMenuSeq,
                     menuSeq: v.menuSeq,
-                    menuId: v.menuId,
-                    upMenuId: v.upMenuId,
+                    upMenuSeq: v.upMenuSeq,
                     menuNm: v.menuNm,
                     menuTypeCd:v.menuTypeCd,
                     useFlag: v.useFlag,
@@ -212,10 +210,10 @@ const AuthGroupMenuManagement = () => {
 
     const makeTree = () =>{
          if(authGroupMenuList) {
-            const root:AuthGroupMenuTree[] = authGroupMenuList.filter((v)=> v.upMenuId == null).map((v)=>{
+            const root:AuthGroupMenuTree[] = authGroupMenuList.filter((v)=> v.upMenuSeq == null).map((v)=>{
                 return { authGrpMenuSeq: v.authGrpMenuSeq,
-                        menuId: v.menuId,
-                        upMenuId: v.upMenuId,
+                        menuSeq: v.menuSeq,
+                        upMenuSeq: v.upMenuSeq,
                         menuNm: v.menuNm,
                         menuTypeCd: v.menuTypeCd,
                         useFlag: v.useFlag,

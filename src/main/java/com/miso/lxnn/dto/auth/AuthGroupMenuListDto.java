@@ -9,8 +9,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class AuthGroupMenuListDto extends AuthGroupMenu {
-    private Integer menuId;
-    private Integer upMenuId;
+    private Integer upMenuSeq;
     private String menuNm;
     private MenuType menuTypeCd;
 

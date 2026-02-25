@@ -28,14 +28,14 @@ import IconEmergency from "@icon/IconEmergency";
 
 function ParentMenu({parentMenu}:{parentMenu:MenuInfo}) {
     return (
-        <p key={parentMenu.menuId} className='menu-main-link'><a href="#">{parentMenu.menuNm}</a></p>
+        <p key={parentMenu.menuSeq} className='menu-main-link'><a href="#">{parentMenu.menuNm}</a></p>
     );
 }
 
 function ChildMenu({parentMenu, menuList}:{parentMenu:MenuInfo, menuList:MenuInfo[]}) {
     return (<div className='menu-sub-link'>
-            {menuList.filter((menu) => menu.upMenuId === parentMenu.menuId && menu.useFlag).map((menu) => {
-               return <p key={menu.menuId} style={{cursor:'pointer'}}><a onClick={()=>window.location.replace(menu.menuUri)}>{menu.menuNm}</a></p>;
+            {menuList.filter((menu) => menu.upMenuSeq === parentMenu.menuSeq && menu.useYn === 'Y').map((menu) => {
+               return <p key={menu.menuSeq} style={{cursor:'pointer'}}><a onClick={()=>window.location.replace(menu.menuUrl)}>{menu.menuNm}</a></p>;
             })}
         </div>
     );
@@ -46,14 +46,14 @@ function Menu({menuInfo}: { menuInfo: MenuInfo[] }) {
     return (
         <>
             {menuInfo.filter((item) => item.menuTypeCd === 'D').map((parentMenu) => {
-                return <div key={parentMenu.menuId}>
+                return <div key={parentMenu.menuSeq}>
                            <ParentMenu parentMenu={parentMenu}/>
                       </div>;
             })}
 
             <div className='menu-sub'>
             {menuInfo.filter((item) => item.menuTypeCd === 'D').map((parentMenu) => {
-                return <div key={parentMenu.menuId}>
+                return <div key={parentMenu.menuSeq}>
                     <div className='menu-sub-link'>
                         <ChildMenu parentMenu={parentMenu} menuList={menuInfo}/>
                     </div>
@@ -139,10 +139,10 @@ const Header = ({menuInfo}: { menuInfo: MenuInfo[] }) => {
 
         if (level2Menu.length > 0) {
             const minumSeqMenu = level2Menu.reduce((minMenu, currentMenu) => {
-                return currentMenu.menuId < minMenu.menuId ? currentMenu : minMenu;
+                return currentMenu.menuSeq < minMenu.menuSeq ? currentMenu : minMenu;
             });
 
-            const defaultUrl = location.origin + minumSeqMenu.menuUri;
+            const defaultUrl = location.origin + minumSeqMenu.menuUrl;
             location.href = defaultUrl;
 
         }

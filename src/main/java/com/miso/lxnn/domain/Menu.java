@@ -15,21 +15,18 @@ import java.time.LocalDateTime;
 @ToString
 public class Menu {
     private Integer menuSeq;
-    private Integer menuId;
     @NotNull
-    private Integer upMenuId;
+    private Integer upMenuSeq;
     @NotEmpty
     private String menuNm;
     @NotNull
     private MenuType menuTypeCd;
-    @NotEmpty
     private String menuViewPath;
-    @NotEmpty
-    private String menuUri;
-    private Boolean useFlag;
+    private String menuUrl;
+    private String useYn;
     private Integer sortSeq;
-    private String rgstUserId;
+    private Integer rgstUserSeq;
     private LocalDateTime rgstDateTime;
-    private String uptUserId;
+    private Integer uptUserSeq;
     private LocalDateTime uptDateTime;
 }

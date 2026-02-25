@@ -89,6 +89,7 @@ body,
     display: flex;
     flex-direction: column;
     position: relative;
+    padding-bottom: 86px; /* footer 높이만큼 여백 확보 */
 }
 
 .popup > #__layout {
