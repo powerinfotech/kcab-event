@@ -1,43 +1,57 @@
+/// <reference types="webpack-env" />
 import dynamic from 'next/dynamic';
 import { MenuInfo } from '@interface/auth/MenuManagement';
 
 type PageComponentProps = { onChange: (flag: boolean) => void; menuInfo?: MenuInfo };
 
-const pageMap: Record<string, React.ComponentType<PageComponentProps>> = {
-  'Dashboard': dynamic(() => import('@page/Dashboard'), { ssr: false }),
-  'Guide': dynamic(() => import('@page/Guide'), { ssr: false }),
-  'ScreenType01': dynamic(() => import('@page/ScreenType01'), { ssr: false }),
-  'ScreenType02': dynamic(() => import('@page/ScreenType02'), { ssr: false }),
-  'ScreenType03': dynamic(() => import('@page/ScreenType03'), { ssr: false }),
-  'ScreenType04': dynamic(() => import('@page/ScreenType04'), { ssr: false }),
-  'ScreenType05': dynamic(() => import('@page/ScreenType05'), { ssr: false }),
-  'ScreenType06': dynamic(() => import('@page/ScreenType06'), { ssr: false }),
-  'ScreenType07': dynamic(() => import('@page/ScreenType07'), { ssr: false }),
-  'ScreenType08': dynamic(() => import('@page/ScreenType08'), { ssr: false }),
-  'template': dynamic(() => import('@page/Template'), { ssr: false }),
-  'master/UserManagement': dynamic(() => import('@page/master/UserManagement'), { ssr: false }),
-  'master/InstitutionManagement': dynamic(() => import('@page/master/InstitutionManagement'), { ssr: false }),
-  'master/SetupManagement': dynamic(() => import('@page/master/SetupManagement'), { ssr: false }),
-  'master/NoticeManagement': dynamic(() => import('@page/master/NoticeManagement'), { ssr: false }),
-  'master/CommonGroupCodeManagement': dynamic(() => import('@page/master/CommonGroupCodeManagement'), { ssr: false }),
-  'master/CommonCodeManagement': dynamic(() => import('@page/master/CommonCodeManagement'), { ssr: false }),
-  'auth/MenuManagement': dynamic(() => import('@page/auth/MenuManagement'), { ssr: false }),
-  'auth/RoleManagement': dynamic(() => import('@page/auth/RoleManagement'), { ssr: false }),
-  'auth/AuthGroupManagement': dynamic(() => import('@page/auth/AuthGroupManagement'), { ssr: false }),
-  'auth/AuthGroupRoleManagement': dynamic(() => import('@page/auth/AuthGroupRoleManagement'), { ssr: false }),
-  'auth/AuthGroupMenuManagement': dynamic(() => import('@page/auth/AuthGroupMenuManagement'), { ssr: false }),
-  'auth/UserMenuAuthState': dynamic(() => import('@page/auth/UserMenuAuthState'), { ssr: false }),
-  'stats/AccessLog': dynamic(() => import('@page/stats/AccessLog'), { ssr: false }),
-  'code/SensorState': dynamic(() => import('@page/code/SensorState'), { ssr: false }),
-  'code/NationAddrNoState': dynamic(() => import('@page/code/NationAddrNoState'), { ssr: false }),
-  'code/EventState': dynamic(() => import('@page/code/EventState'), { ssr: false }),
+/**
+ * require.context를 사용하여 src/page 디렉토리의 컴포넌트를 menu_view_path 기반으로 동적 로드
+ * - menu_view_path 예: 'auth/MenuManagement', 'Dashboard', 'master/UserManagement'
+ * - DB의 menu_view_path 칼럼 값과 파일 경로가 일치해야 함
+ */
+type PageContext = {
+  keys: () => string[];
+  (id: string): Promise<{ default: React.ComponentType<PageComponentProps> }>;
+};
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const pageContext: PageContext = require.context('../page', true, /\.tsx$/, 'lazy');
+
+/** menu_view_path와 실제 파일명이 다른 경우 매핑 (예: template -> Template.tsx) */
+const pathAliases: Record<string, string> = {
+  template: 'Template',
 };
 
-export function getPageComponent(viewPath: string): React.ComponentType<PageComponentProps> | null {
-  const key = viewPath.replace(/^\//, '');
-  return pageMap[key] ?? null;
+const componentCache: Record<string, React.ComponentType<PageComponentProps>> = {};
+
+function getContextKey(viewPath: string): string | null {
+  const key = viewPath.replace(/^\//, '').trim();
+  if (!key) return null;
+
+  const resolvedPath = pathAliases[key] ?? key;
+  const contextKey = `./${resolvedPath}.tsx`;
+
+  if (pageContext.keys().includes(contextKey)) {
+    return contextKey;
+  }
+  return null;
 }
 
+export function getPageComponent(viewPath: string): React.ComponentType<PageComponentProps> | null {
+  const contextKey = getContextKey(viewPath);
+  if (!contextKey) return null;
+
+  if (componentCache[contextKey]) {
+    return componentCache[contextKey];
+  }
+
+  const LoadedComponent = dynamic(
+    () => pageContext(contextKey).then((mod) => mod.default),
+    { ssr: false }
+  );
+
+  componentCache[contextKey] = LoadedComponent;
+  return LoadedComponent;
+}
 
 export function getStaticRouteKey(pathname: string): string | null {
   const p = pathname === '/' ? '/' : pathname.replace(/^\//, '');

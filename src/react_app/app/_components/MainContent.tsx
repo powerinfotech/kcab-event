@@ -55,12 +55,12 @@ export default function MainContent() {
 
   if (pathname === '/') {
     Comp = getPageComponent('Dashboard');
-  } else if (staticKey) {
-    Comp = getPageComponent(staticKey);
-  } else if (menu) {
+  } else if (menu?.menuViewPath) {
     menuItem = menu;
     const viewPath = menu.menuViewPath.replace(/^\//, '');
     Comp = getPageComponent(viewPath);
+  } else if (staticKey) {
+    Comp = getPageComponent(staticKey);
   }
 
   if (menuInfo.length && !Comp && pathname !== '/') {
