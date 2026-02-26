@@ -1,7 +1,7 @@
 import {GetProps, message, Tree} from 'antd';
 import React, {useEffect, useState} from 'react';
 import {callDeleteMenu, callGetBtnList, callGetMenuBtnList, callGetMenuInfo, callSaveMenu} from '@api/auth/MenuManagementApi';
-import {BtnInfo, EmptyMenu, FolderTree, MenuBtnInfo, MenuInfo, MenuListSearchParam, MenuTree, MenuType} from '@interface/auth/MenuManagement';
+import {BtnInfo, EmptyMenu, MenuBtnInfo, MenuInfo, MenuListSearchParam, MenuTree, MenuType} from '@interface/auth/MenuManagement';
 import {CheckCircleOutlined, FolderOpenOutlined, PlusCircleOutlined} from '@ant-design/icons';
 import CustomInput from '@component/CustomInput';
 import {useRecoilValue} from 'recoil';
@@ -10,8 +10,6 @@ import CustomButton from '@component/CustomButton';
 import IconTitle from '@image/icon_title.svg';
 import IconFile from '@icon/IconFile';
 import IconFolder from '@icon/IconFolder';
-import IconBtnRefresh from '@icon/IconBtnRefresh';
-import IconBtnSearch from '@icon/IconBtnSearch';
 import {useCmCode} from '@hook/useCmCode';
 import {useForm} from 'react-hook-form';
 import CustomSaveFormInput from '@component/form/CustomSaveFormInput';
@@ -25,39 +23,91 @@ import {HttpStatusCode} from 'axios';
 import {useMessage} from '@hook/useMessage';
 
 type DirectoryTreeProps = GetProps<typeof Tree.DirectoryTree>;
-const emptyList:EmptyMenu[] = [
-    {
-        menuSeq: undefined,
-        upMenuSeq: undefined,
-        menuNm: '',
-        menuTypeCd: undefined,
-        menuViewPath: '',
-        menuUrl: '',
-        useYn: undefined,
-        sortSeq: undefined
+const {DirectoryTree} = Tree;
+
+const EMPTY_MENU: EmptyMenu = {
+    menuSeq: undefined,
+    upMenuSeq: undefined,
+    menuNm: '',
+    menuTypeCd: undefined,
+    menuViewPath: '',
+    menuUrl: '',
+    useYn: undefined,
+    sortSeq: undefined
+};
+
+const getTreeKey = (v: MenuInfo, menuList: MenuInfo[]): React.Key =>
+    v.menuSeq != null ? v.menuSeq : `_new_${v.upMenuSeq}_${menuList.indexOf(v)}`;
+
+const isItemChanged = (originalItem: MenuInfo, newItem: MenuInfo): boolean => {
+    for (const key of Object.keys(newItem) as (keyof MenuInfo)[]) {
+        if (originalItem[key] !== newItem[key]) return true;
     }
-];
+    return false;
+};
+
+const getMenuIcon = (v: MenuInfo, isLeaf: boolean) => {
+    if (v.iudType === IudType.I) return () => <PlusCircleOutlined />;
+    if (v.iudType === IudType.U) return () => <CheckCircleOutlined />;
+    return isLeaf ? () => <IconFile /> : () => <IconFolder />;
+};
+
+const buildChildNodes = (parentTreeNode: MenuTree, parentMenuObject: MenuInfo, menuList: MenuInfo[]) => {
+    menuList.forEach((v: MenuInfo) => {
+        if (parentMenuObject.menuSeq !== v.upMenuSeq) return;
+
+        const nodeKey = getTreeKey(v, menuList);
+        const baseNode: MenuTree = {title: v.menuNm, key: nodeKey, useYn: v.useYn};
+
+        if (v.menuTypeCd === MenuType.V) {
+            parentTreeNode.children?.push({...baseNode, icon: getMenuIcon(v, true)});
+        } else if (v.menuTypeCd === MenuType.D) {
+            const dirNode: MenuTree = {...baseNode, icon: getMenuIcon(v, false), children: []};
+            parentTreeNode.children?.push(dirNode);
+            buildChildNodes(dirNode, v, menuList);
+        }
+    });
+};
+
+const filterSearchView = (parent: MenuTree, root: MenuTree, viewList: MenuTree[], searchParam?: MenuListSearchParam) => {
+    if (searchParam?.menuNm && viewList) {
+        viewList
+            .filter(v => v?.title?.toString().includes(searchParam.menuNm))
+            .forEach(v => {
+                if (searchParam.isExceptUnused && v.useYn !== 'Y') return;
+                parent?.children?.push({...v, icon: () => (<IconFile />)});
+            });
+    } else if (searchParam?.isExceptUnused && viewList) {
+        viewList
+            .filter(v => v?.useYn === 'Y')
+            .forEach(v => {
+                parent?.children?.push({...v, icon: () => (<IconFile />)});
+            });
+    }
+    root?.children?.push(parent);
+};
 
 const MenuManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menuInfo?: any; handlersRef?: React.MutableRefObject<PageButtonHandlers>}) => {
     const {confirm} = useMessage();
     const userInfo = useRecoilValue(sessionInfoAtom);
-    const {register: searchFormRegister
-        , control: searchFormControl
-        , handleSubmit: searchFormHandleSubmit
-        , watch: searchFormWatch
-        , getValues: searchFormGetValues} = useForm<MenuListSearchParam>({mode:'all'});
-    const {register: saveFormRegister
-        , control: saveFormControl
-        , handleSubmit: saveFormHandleSubmit
-        , formState:{errors:saveFormErros}
-        , reset: saveFormReset
-        , getValues: saveFormGetValues
-        , setValue: saveFormSetValue
-        , clearErrors: saveFormClearErrors
-        , watch: saveFormWatch
-    } = useForm<MenuInfo>({mode:'all'});
+    const {
+        control: searchFormControl,
+        handleSubmit: searchFormHandleSubmit,
+        watch: searchFormWatch,
+        getValues: searchFormGetValues,
+    } = useForm<MenuListSearchParam>({mode: 'all'});
+    const {
+        register: saveFormRegister,
+        control: saveFormControl,
+        handleSubmit: saveFormHandleSubmit,
+        formState: {errors: saveFormErrors},
+        reset: saveFormReset,
+        getValues: saveFormGetValues,
+        setValue: saveFormSetValue,
+        clearErrors: saveFormClearErrors,
+        watch: saveFormWatch,
+    } = useForm<MenuInfo>({mode: 'all'});
 
-    const { DirectoryTree } = Tree;
     const cmCode = useCmCode(['MenuType']);
     const [treeData, setTreeData] = useState<MenuTree[]>();
     const [orgTreeData, setOrgTreeData] = useState<MenuTree[]>();
@@ -71,23 +121,30 @@ const MenuManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
     const [selectedKeys, setSelectedKeys] = useState<any[]>([]);
     const isEditable = isRowSelected && isAdminUser;
     const isViewMenu = saveFormWatch('menuTypeCd') === 'V';
-    const isSaveFormErrors =  Object.keys(saveFormErros).length > 0;
-    const isChangedDataSource = dataSource.some((v)=>v.iudType);
+    const isSaveFormErrors = Object.keys(saveFormErrors).length > 0;
+    const isChangedDataSource = dataSource.some(v => v.iudType);
 
     const [rowSeq, setRowSeq] = useState<any[]>([]);
-    const [rowIndex, setRowIndex] = useState(-1);
     const [btnList, setBtnList] = useState<BtnInfo[]>([]);
-    const [menuBtnState, setMenuBtnState] = useState<Array<{ btnSeq: number; sortSeq: number; btnNm: string; useYn: string }>>([]);
+    const [menuBtnState, setMenuBtnState] = useState<Array<{btnSeq: number; sortSeq: number; btnNm: string; useYn: string}>>([]);
 
-    const onSelect: DirectoryTreeProps['onSelect'] = async (keys:any[], info?:any) => {
-        if(isChangedDataSource)  {
-            const result = await confirm('저장하지 않은 정보는 초기화 됩니다. 계속 하시겠습니까?');
-            if(!result) return;
-
-            setDataSource(JSON.parse(JSON.stringify(orgDataSource)));
+    const getCurrentRowDataSourceBySeq = (menuSeq: number | React.Key) => {
+        if (typeof menuSeq === 'string' && menuSeq.startsWith('_new_')) {
+            const parts = menuSeq.split('_');
+            const idx = parts[3] !== undefined ? Number(parts[3]) : -1;
+            if (idx >= 0 && dataSource[idx]?.menuSeq == null) return dataSource[idx];
+            const upMenuSeq = parts[2] !== undefined ? Number(parts[2]) : undefined;
+            return dataSource.find(v => v.menuSeq == null && v.upMenuSeq === upMenuSeq);
         }
-        setRowSeq(keys);
-        onSelectChange(keys);
+        return dataSource.find(v => v.menuSeq === menuSeq);
+    };
+
+    const createParentMenuCombo = () => {
+        setParentMenuCombo(
+            dataSource
+                .filter(v => v.menuSeq != null)
+                .map(v => ({value: v.menuSeq as any, label: v.menuNm, level: v.level}))
+        );
     };
 
     const onSelectChange = async (keys: any[]) => {
@@ -97,11 +154,10 @@ const MenuManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
         setIsRowSelected(true);
         createParentMenuCombo();
 
-        // 기존 메뉴 선택 시: tb_menu_btn 기준으로 버튼 정보 세팅
         if (row?.menuSeq != null && row.menuSeq > 0 && row.iudType !== IudType.I) {
             const res = await callGetMenuBtnList(row.menuSeq);
             const list = res?.item ?? [];
-            const merged = (btnList.length ? btnList : []).map((btn) => {
+            const merged = (btnList.length ? btnList : []).map(btn => {
                 const found = list.find((mb: MenuBtnInfo) => Number(mb.btnSeq) === Number(btn.btnSeq));
                 return {
                     btnSeq: btn.btnSeq,
@@ -112,109 +168,79 @@ const MenuManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
             });
             setMenuBtnState(merged.length ? merged : []);
         } else if (row?.iudType === IudType.I) {
-            // 추가버튼으로 생성된 신규 메뉴 선택 시
-            // - 모든 버튼 기본값: 미사용(N)
-            // - 커스텀 버튼 입력란 기본값: 공백('')
-            const defaultBtns = btnList.map((btn) => ({
-                btnSeq: btn.btnSeq,
-                sortSeq: btn.sortSeq,
-                btnNm: '',
-                useYn: 'N',
-            }));
-            setMenuBtnState(defaultBtns);
+            setMenuBtnState(
+                btnList.map(btn => ({
+                    btnSeq: btn.btnSeq,
+                    sortSeq: btn.sortSeq,
+                    btnNm: '',
+                    useYn: 'N',
+                }))
+            );
         }
     };
 
-    const onExpand: DirectoryTreeProps['onExpand'] = (keys:any[], info) => {
-       !info.node.expanded && expandedKey&& setExpandedKey([...expandedKey, info.node.key]);
-       info.node.expanded && expandedKey&& setExpandedKey(expandedKey.filter((v)=>v !== info.node.key));
+    const onSelect: DirectoryTreeProps['onSelect'] = async (keys: any[]) => {
+        if (isChangedDataSource) {
+            const result = await confirm('저장하지 않은 정보는 초기화 됩니다. 계속 하시겠습니까?');
+            if (!result) return;
+            setDataSource(structuredClone(orgDataSource));
+        }
+        setRowSeq(keys);
+        onSelectChange(keys);
     };
 
-    const getCurrentRowDataSourceBySeq = (menuSeq : number | React.Key) => {
-        if (typeof menuSeq === 'string' && menuSeq.startsWith('_new_')) {
-            const parts = menuSeq.split('_');
-            const idx = parts[3] !== undefined ? Number(parts[3]) : -1;
-            if (idx >= 0 && dataSource[idx]?.menuSeq == null) return dataSource[idx];
-            const upMenuSeq = parts[2] !== undefined ? Number(parts[2]) : undefined;
-            return dataSource.filter((v) => v.menuSeq == null && v.upMenuSeq === upMenuSeq)[0];
+    const onExpand: DirectoryTreeProps['onExpand'] = (keys: any[], info) => {
+        if (!info.node.expanded && expandedKey) {
+            setExpandedKey([...expandedKey, info.node.key]);
         }
-        return dataSource.filter((v)=>v.menuSeq === menuSeq)[0];
+        if (info.node.expanded && expandedKey) {
+            setExpandedKey(expandedKey.filter(v => v !== info.node.key));
+        }
     };
 
     const handleDataChanged = () => {
-        const formData  = saveFormGetValues();
-        const changedDataSource = dataSource.map((item)=> {
-            if (item.menuSeq === formData.menuSeq) {
-                if(isItemChanged(item,formData)) {
-                    item = {...item, ...formData};
-                    item.iudType = item.iudType ?? IudType.U;
+        const formData = saveFormGetValues();
+        const changedDataSource = dataSource.map(item => {
+            if (item.menuSeq !== formData.menuSeq) return item;
+            if (!isItemChanged(item, formData)) return item;
 
-                    if (item.menuTypeCd === MenuType.D) {
-                        item.menuUrl = '';
-                        item.menuViewPath = '';
-                    }
-                }
+            const updated = {...item, ...formData, iudType: item.iudType ?? IudType.U};
+            if (updated.menuTypeCd === MenuType.D) {
+                updated.menuUrl = '';
+                updated.menuViewPath = '';
             }
-            return item;
+            return updated;
         });
-
-       changedDataSource&&setDataSource(changedDataSource);
+        setDataSource(changedDataSource);
     };
 
-    const isItemChanged = (originalItem: MenuInfo, newItem: MenuInfo): boolean => {
-        for (const key of Object.keys(newItem) as (keyof MenuInfo)[]) {
-            if (originalItem[key] !== newItem[key]) {
-                return true;
-            }
-        }
-        return false;
-    };
-
-    /**
-     * 버튼정보가 변경된 경우, 현재 선택된 메뉴의 IUD 타입을 업데이트(U)로 설정한다.
-     * - 신규(I) 상태인 메뉴는 그대로 두고, 기존 메뉴(undefined 또는 U 등)만 U로 변경한다.
-     */
     const markMenuUpdatedByButtonChange = () => {
         const selectedKey = rowSeq?.[0] ?? selectedKeys?.[0];
         if (selectedKey == null) return;
 
         const current = getCurrentRowDataSourceBySeq(selectedKey);
-        if (!current) return;
-        if (current.iudType === IudType.I) return;
+        if (!current || current.iudType === IudType.I) return;
 
-        setDataSource((prev) =>
-            prev.map((item) =>
-                item.menuSeq === current.menuSeq
-                    ? {
-                          ...item,
-                          iudType: IudType.U,
-                      }
-                    : item
+        setDataSource(prev =>
+            prev.map(item =>
+                item.menuSeq === current.menuSeq ? {...item, iudType: IudType.U} : item
             )
         );
     };
 
     const updateMenuBtnUseYn = (btnSeq: number, useYn: string, prevUseYn: string) => {
         if (prevUseYn === useYn) return;
-
-        setMenuBtnState((prev) =>
-            prev.map((b) =>
-                Number(b.btnSeq) === Number(btnSeq) ? { ...b, useYn } : b
-            )
+        setMenuBtnState(prev =>
+            prev.map(b => Number(b.btnSeq) === Number(btnSeq) ? {...b, useYn} : b)
         );
-
         markMenuUpdatedByButtonChange();
     };
 
     const updateMenuBtnNm = (btnSeq: number, btnNm: string, prevBtnNm: string) => {
         if (prevBtnNm === btnNm) return;
-
-        setMenuBtnState((prev) =>
-            prev.map((b) =>
-                Number(b.btnSeq) === Number(btnSeq) ? { ...b, btnNm } : b
-            )
+        setMenuBtnState(prev =>
+            prev.map(b => Number(b.btnSeq) === Number(btnSeq) ? {...b, btnNm} : b)
         );
-
         markMenuUpdatedByButtonChange();
     };
 
@@ -227,277 +253,180 @@ const MenuManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
             message.info('변경된 내용이 없습니다.');
             return;
         }
-        const result = await confirm('저장 하시겠습니까?');
-        if (result) {
-            const selectedKey = rowSeq?.[0] ?? selectedKeys?.[0];
-            const menu = selectedKey != null ? getCurrentRowDataSourceBySeq(selectedKey) : undefined;
-            if (!menu) {
-                message.info('선택한 메뉴 정보를 찾을 수 없습니다.');
-                return;
-            }
-            const menuBtnList = menuBtnState.map((b) => ({
-                btnSeq: b.btnSeq,
-                btnNm: b.btnNm,
-                useYn: b.useYn,
-            }));
-            const payload = { ...menu, menuBtnList };
-            const res = await callSaveMenu(payload);
-            if (res.code === HttpStatusCode.Ok) {
-                message.success('저장이 완료되었습니다.');
-                saveFormReset(emptyList[0]);
-                callGetMenuInfo().then((res) => {
-                    setIsRowSelected(true);
-                    setDataSource(JSON.parse(JSON.stringify(res.item)));
-                    setOrgDataSource(JSON.parse(JSON.stringify(res.item)));
-                });
-                onSelectChange(rowSeq);
-            }
+        if (!await confirm('저장 하시겠습니까?')) return;
+
+        const selectedKey = rowSeq?.[0] ?? selectedKeys?.[0];
+        const menu = selectedKey != null ? getCurrentRowDataSourceBySeq(selectedKey) : undefined;
+        if (!menu) {
+            message.info('선택한 메뉴 정보를 찾을 수 없습니다.');
+            return;
+        }
+
+        const menuBtnList = menuBtnState.map(b => ({
+            btnSeq: b.btnSeq,
+            btnNm: b.btnNm,
+            useYn: b.useYn,
+        }));
+        const res = await callSaveMenu({...menu, menuBtnList});
+        if (res.code === HttpStatusCode.Ok) {
+            message.success('저장이 완료되었습니다.');
+            saveFormReset(EMPTY_MENU);
+            callGetMenuInfo().then(menuRes => {
+                setIsRowSelected(true);
+                setDataSource(structuredClone(menuRes.item));
+                setOrgDataSource(structuredClone(menuRes.item));
+            });
+            onSelectChange(rowSeq);
         }
     };
-
 
     const handleSearch = async () => {
-        if(isChangedDataSource) {
+        if (isChangedDataSource) {
             const result = await confirm('저장하지 않은 내용은 초기화 됩니다. 조회 하시겠습니까?');
-            if(!result) return;
+            if (!result) return;
         }
-        saveFormReset(emptyList[0]);
+        saveFormReset(EMPTY_MENU);
         setSelectedKeys([]);
         setRowSeq([]);
-        callGetMenuInfo().then((res)=> {
-            setIsRowSelected(false);
-            setDataSource(JSON.parse(JSON.stringify(res.item)));
-            setOrgDataSource(JSON.parse(JSON.stringify(res.item)));
-        });
+        const res = await callGetMenuInfo();
+        setIsRowSelected(false);
+        setDataSource(structuredClone(res.item));
+        setOrgDataSource(structuredClone(res.item));
     };
 
-    const handleAdd = async() => {
-        if(isSaveFormErrors)
-            return true;
+    const handleAdd = async () => {
+        if (isSaveFormErrors) return true;
 
-        if(isChangedDataSource) {
+        if (isChangedDataSource) {
             const result = await confirm('저장하지 않은 정보는 초기화 됩니다. 계속 하시겠습니까?');
             if (!result) return;
         }
 
-        const addList:MenuInfo[] = JSON.parse(JSON.stringify(emptyList));
-        addList[0].upMenuSeq=orgDataSource&&orgDataSource.length>0 ? orgDataSource?.filter((v)=>v.upMenuSeq=== null)[0].menuSeq:0;
-        addList[0].menuNm='';
-        addList[0].menuTypeCd=MenuType.D;
-        addList[0].useYn = 'Y';
-        addList[0].iudType = IudType.I;
-        const addedDataSource = orgDataSource.concat(addList);
-        setDataSource(addedDataSource);
-        // handleRowSelection(addList[0], addedDataSource.length-1).then();
+        const newMenu: MenuInfo = {
+            ...structuredClone(EMPTY_MENU),
+            upMenuSeq: orgDataSource.length > 0
+                ? orgDataSource.find(v => v.upMenuSeq === null)?.menuSeq ?? 0
+                : 0,
+            menuNm: '',
+            menuTypeCd: MenuType.D,
+            useYn: 'Y',
+            iudType: IudType.I,
+        } as MenuInfo;
+        setDataSource(orgDataSource.concat([newMenu]));
     };
 
-
     const handleDelete = async () => {
-        if(!isRowSelected)
-        {
+        if (!isRowSelected) {
             message.info('선택한 메뉴가 없습니다.');
             return;
         }
-        if(saveFormGetValues('menuTypeCd') === MenuType.D
-        && dataSource.filter((v)=>v.upMenuSeq===saveFormGetValues('menuSeq')).length > 0 )  {
+        const menuSeq = saveFormGetValues('menuSeq');
+        if (saveFormGetValues('menuTypeCd') === MenuType.D && dataSource.some(v => v.upMenuSeq === menuSeq)) {
             message.error('하위에 포함된 메뉴가 존재할 경우 삭제할 수 없습니다.');
             return;
         }
 
-        const check = await confirm('삭제하시겠습니까?');
-        if(!check) return;
+        if (!await confirm('삭제하시겠습니까?')) return;
 
-        const menuSeq = saveFormGetValues('menuSeq');
         const result = await callDeleteMenu(menuSeq);
-        if(result.code === HttpStatusCode.Ok)
+        if (result.code === HttpStatusCode.Ok) {
             handleSearch();
+        }
     };
 
     const handleReset = async () => {
-        const result = await confirm('저장하지 않은 정보는 초기화됩니다. 계속 하시겠습니까?');
-        if (!result) return;
+        if (!await confirm('저장하지 않은 정보는 초기화됩니다. 계속 하시겠습니까?')) return;
 
-        const changedDataSource = dataSource.map((item)=> {
-            if (item.menuSeq === saveFormGetValues('menuSeq')) {
-                if(orgDataSource.some((v) => v.menuSeq === saveFormGetValues('menuSeq'))) {
-                    const ret = orgDataSource.filter((v) => v.menuSeq === saveFormGetValues('menuSeq'))[0];
-                    ret.iudType = item.iudType !== IudType.I ? undefined: item.iudType;
-                    return ret;
-                }
-                else {
-                    const ret = dataSource.filter((v) => v.menuSeq === saveFormGetValues('menuSeq'))[0];
-                    ret.iudType = item.iudType !== IudType.I ? undefined: item.iudType;
-                    return ret;
-                }
+        const currentMenuSeq = saveFormGetValues('menuSeq');
+        const changedDataSource = dataSource.map(item => {
+            if (item.menuSeq !== currentMenuSeq) return item;
+            const original = orgDataSource.find(v => v.menuSeq === currentMenuSeq);
+            if (original) {
+                return {...original, iudType: item.iudType !== IudType.I ? undefined : item.iudType};
             }
-            return item;
+            return {...item, iudType: item.iudType !== IudType.I ? undefined : item.iudType};
         });
         setDataSource(changedDataSource);
         onSelectChange([]);
-        saveFormReset(emptyList[0]);
+        saveFormReset(EMPTY_MENU);
         setIsRowSelected(false);
         setRowSeq([]);
     };
 
-    const resetSaveForm = () => {
-        saveFormReset(orgDataSource.filter((v) => v.menuSeq === saveFormGetValues('menuSeq'))[0] ?? emptyList[0]);
-    };
-    const handleFilter =  () => {
-        if(!searchFormGetValues('menuNm') && !searchFormGetValues('isExceptUnused')) {
+    const handleFilter = () => {
+        const menuNm = searchFormGetValues('menuNm');
+        const isExceptUnused = searchFormGetValues('isExceptUnused');
+
+        if (!menuNm && !isExceptUnused) {
             createMenuTree(orgDataSource);
             return;
         }
-        const searchParam =  {menuNm:searchFormGetValues('menuNm'), isExceptUnused:searchFormGetValues('isExceptUnused')??false};
-        const root:MenuTree[] = [];
-        orgTreeData && root.push({...orgTreeData[0], icon: () => (<FolderOpenOutlined />), children:[]});
-        orgTreeData &&  searchDirectory(root, JSON.parse(JSON.stringify(orgTreeData[0].children)), searchParam);
+
+        const searchParam: MenuListSearchParam = {menuNm, isExceptUnused: isExceptUnused ?? false};
+        const root: MenuTree[] = [];
+        if (orgTreeData?.length) {
+            root.push({...orgTreeData[0], icon: () => (<FolderOpenOutlined />), children: []});
+            searchDirectory(root, structuredClone(orgTreeData[0].children as MenuTree[]), searchParam);
+        }
     };
 
-    const searchDirectory = (root:MenuTree[], directoryTree:MenuTree[], searchParam?:MenuListSearchParam) => {
-        directoryTree.forEach((item:MenuTree)=> {
-          if(item) {
-              if(searchParam && searchParam.isExceptUnused) {
-                  if(item.useYn === 'Y')
-                      searchView({...item, icon: () => (<IconFolder />), children:[]}, root[0], item.children as [], searchParam);
-              }
-              else {
-                searchView({...item, icon: () => (<IconFolder />), children:[]}, root[0], item.children as [], searchParam);
-              }
-          }
+    const searchDirectory = (root: MenuTree[], directoryTree: MenuTree[], searchParam?: MenuListSearchParam) => {
+        directoryTree.forEach((item: MenuTree) => {
+            if (!item) return;
+            if (searchParam?.isExceptUnused && item.useYn !== 'Y') return;
+
+            filterSearchView(
+                {...item, icon: () => (<IconFolder />), children: []},
+                root[0],
+                item.children as MenuTree[],
+                searchParam
+            );
         });
         setTreeData(root);
     };
 
-    const searchView = (parent:MenuTree, root:MenuTree, viewList:MenuTree[], searchParam?:MenuListSearchParam) => {
-          if(searchParam && searchParam.menuNm && viewList) {
-               viewList.filter((v)=>v&&v.title&&v.title.toString().indexOf(searchParam?.menuNm) > -1) .map((v)=> {
-                   if(searchParam.isExceptUnused && v.useYn === 'Y')
-                       parent&& parent.children&&parent.children.push({...v,  icon: () => (<IconFile />)});
-                  else if(!searchParam.isExceptUnused)
-                       parent&& parent.children&&parent.children.push({...v,  icon: () => (<IconFile />)});
-              });
-          }
-          else if(searchParam && searchParam.isExceptUnused && viewList){
-              viewList.filter((v)=>v &&v.useYn === 'Y').map((v)=> {
-                  parent&& parent.children&&parent.children.push({...v,  icon: () => (<IconFile />)});
-              });
-          }
-           root&&root.children&&root.children.push(parent);
-    };
-
-
-
-    const findParentMenuNm = (menuList:MenuInfo[], menu:MenuInfo, menuPath: string):any => {
-          const parent: MenuInfo =  menuList
-              .filter((parent)=>parent.menuSeq === menu.upMenuSeq).map((parent) => parent)[0];
-          if(parent) {
-              return findParentMenuNm(menuList, parent, parent.menuNm + ' > '  + menuPath);
-          }
-          return menuPath;
-    };
-
-    const createMenuTree = (menuList:MenuInfo[]) => {
-        if(menuList.length < 1) return;
+    const createMenuTree = (menuList: MenuInfo[]) => {
+        if (menuList.length < 1) return;
         const rootKey = menuList[0].menuSeq ?? 0;
-        const menuTree:MenuTree = {title:menuList[0].menuNm, key: rootKey, icon: () => (<FolderOpenOutlined />),  children:[]};
-        setChild(menuTree,  menuList[0], menuList);
+        const menuTree: MenuTree = {title: menuList[0].menuNm, key: rootKey, icon: () => (<FolderOpenOutlined />), children: []};
+        buildChildNodes(menuTree, menuList[0], menuList);
         setTreeData([menuTree]);
         setOrgTreeData([menuTree]);
     };
 
-    const createExpandedKey = (menuList:MenuInfo[]) =>
-        setExpandedKey(menuList.filter((v)=>v.menuTypeCd===MenuType.D && v.menuSeq != null).map((v)=>v.menuSeq as React.Key));
+    const createExpandedKey = (menuList: MenuInfo[]) =>
+        setExpandedKey(menuList.filter(v => v.menuTypeCd === MenuType.D && v.menuSeq != null).map(v => v.menuSeq as React.Key));
 
-    const expandTree = () => {
-        setExpandedKey(dataSource.filter((v)=>v.menuTypeCd===MenuType.D && v.menuSeq != null).map((v)=>v.menuSeq as React.Key));
-    };
+    const expandTree = () =>
+        setExpandedKey(dataSource.filter(v => v.menuTypeCd === MenuType.D && v.menuSeq != null).map(v => v.menuSeq as React.Key));
 
-    const foldTree = () => {
-        setExpandedKey(dataSource.filter((v)=>v.upMenuSeq===null && v.menuSeq != null).map((v)=>v.menuSeq as React.Key));
-    };
-    const getTreeKey = (v: MenuInfo, menuList: MenuInfo[]) =>
-        v.menuSeq != null ? v.menuSeq : (`_new_${v.upMenuSeq}_${menuList.indexOf(v)}` as React.Key);
-
-    const setChild = (parentTreeNode:MenuTree, parentMenuObject:MenuInfo, menuList:MenuInfo[]) => {
-        menuList.map((v:MenuInfo)=> {
-            if(parentMenuObject.menuSeq === v.upMenuSeq) {
-                  const nodeKey = getTreeKey(v, menuList);
-                  let childTreeNode : MenuTree = {title:v.menuNm, key: nodeKey, useYn: v.useYn};
-                 if(MenuType.V === v.menuTypeCd) {
-                     childTreeNode = {
-                         ...childTreeNode,
-                         icon: () => (v.iudType===IudType.I?<PlusCircleOutlined />:v.iudType===IudType.U?<CheckCircleOutlined />:<IconFile />),
-                     };
-                     parentTreeNode.children?.push(childTreeNode);
-                 }else if(MenuType.D === v.menuTypeCd) {
-
-                     childTreeNode = {
-                         ...childTreeNode,
-                         icon: () => (v.iudType===IudType.I?<PlusCircleOutlined />:v.iudType===IudType.U?<CheckCircleOutlined />:<IconFolder />),
-                         children: [],
-                     };
-                    parentTreeNode.children?.push(childTreeNode);
-                    setChild(childTreeNode, v, menuList);
-                }
-            }
-        });
-    };
-
-    const setFolderChild = (parentTreeNode:FolderTree, parentMenuObject:MenuInfo, menuList:MenuInfo[]) => {
-        menuList.map((v:MenuInfo)=> {
-            if(parentMenuObject.menuSeq === v.upMenuSeq) {
-                  let childTreeNode : FolderTree = {label:v.menuNm, value:v.menuSeq+''};
-                if(MenuType.D === v.menuTypeCd) {
-
-                     childTreeNode = {
-                         ...childTreeNode,
-                         children: [],
-                     };
-                    parentTreeNode.children?.push(childTreeNode);
-                    setFolderChild(childTreeNode, v, menuList);
-                }
-            }
-        });
-    };
-
-    const createParentMenuCombo = () => {
-        const menuComboList: DefaultOptionType[] = dataSource.filter((v) => {return v.menuSeq != null;})
-                                                                .map((v) => ({
-                                                                    value: v.menuSeq as any,
-                                                                    label: v.menuNm,
-                                                                    level: v.level,
-                                                                }));
-
-        setParentMenuCombo(menuComboList);
-    };
-
+    const foldTree = () =>
+        setExpandedKey(dataSource.filter(v => v.upMenuSeq === null && v.menuSeq != null).map(v => v.menuSeq as React.Key));
 
     useEffect(() => {
-        dataSource&&dataSource.length&&createMenuTree(dataSource);
-        dataSource&&dataSource.length&&createParentMenuCombo();
-        dataSource&&dataSource.length&&createExpandedKey(dataSource);
-
+        if (!dataSource.length) return;
+        createMenuTree(dataSource);
+        createParentMenuCombo();
+        createExpandedKey(dataSource);
     }, [dataSource]);
 
     useEffect(() => {
-       if(searchFormGetValues('menuNm')||searchFormGetValues('isExceptUnused'))
-           handleFilter();
+        if (searchFormGetValues('menuNm') || searchFormGetValues('isExceptUnused'))
+            handleFilter();
     }, [orgDataSource]);
 
     useEffect(() => {
-       handleFilter();
+        handleFilter();
     }, [searchFormWatch('menuNm'), searchFormWatch('isExceptUnused')]);
 
     useEffect(() => {
-        if(dataSource.some((v)=>v.iudType===IudType.I) ){
-            const newItems = dataSource.filter((v)=>v.iudType===IudType.I);
-            if(treeData && treeData.length > 0 && newItems.length > 0) {
-                const keysToSelect = newItems.map((v) => getTreeKey(v, dataSource));
-                onSelectChange(keysToSelect);
-                setSelectable(true);
-            }
+        if (!dataSource.some(v => v.iudType === IudType.I)) return;
+        const newItems = dataSource.filter(v => v.iudType === IudType.I);
+        if (treeData?.length && newItems.length > 0) {
+            const keysToSelect = newItems.map(v => getTreeKey(v, dataSource));
+            onSelectChange(keysToSelect);
+            setSelectable(true);
         }
-
     }, [treeData]);
 
     useEffect(() => {
@@ -505,7 +434,7 @@ const MenuManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
     }, []);
 
     useEffect(() => {
-        callGetBtnList().then((res) => {
+        callGetBtnList().then(res => {
             if (res?.item?.length) setBtnList(res.item);
         });
     }, []);
@@ -515,7 +444,6 @@ const MenuManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
             onSelectChange(selectedKeys);
         }
     }, [btnList.length]);
-
 
     useEffect(() => {
         if (handlersRef) {
@@ -533,7 +461,9 @@ const MenuManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
         return () => { if (handlersRef) handlersRef.current = {}; };
     }, []);
 
-    return Object.keys(cmCode).length > 0 && (
+    if (Object.keys(cmCode).length === 0) return null;
+
+    return (
         <>
             <section className="search-wrap">
                 <form>
@@ -541,8 +471,8 @@ const MenuManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
                     <CustomValidFormInput name={'menuNm'}
                                           placeholder="검색할 ID를 입력해 주세요."
                                           control={searchFormControl}
-                                          onChangeValue={(_v: string) => { handleFilter(); }}
-                                            />
+                                          onChangeValue={() => handleFilter()}
+                    />
                     <CustomValidFormCheckbox name={'isExceptUnused'} control={searchFormControl}
                                              onChange={() => searchFormHandleSubmit(handleFilter)} />
                     <span>미사용제외</span>
@@ -562,7 +492,7 @@ const MenuManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
                         </div>
                     </div>
                     <div className="board-cont-wrap">
-                        {treeData ?
+                        {treeData ? (
                             <DirectoryTree
                                 showLine
                                 multiple
@@ -575,15 +505,13 @@ const MenuManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
                                 treeData={treeData}
                                 selectable={selectable}
                                 selectedKeys={selectedKeys}
-                                // filterTreeNode={filterTreeNode}
-
                             />
-                            : <></>}
+                        ) : null}
                     </div>
                 </div>
 
                 <div className="right-panel">
-                    <form onSubmit={saveFormHandleSubmit(handleSave)} style={{ height: '100%' }}>
+                    <form onSubmit={saveFormHandleSubmit(handleSave)} style={{height: '100%'}}>
                         <div className="top-right">
                             <div className="board-title-wrap">
                                 <h3 className="title">
@@ -607,7 +535,7 @@ const MenuManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
                                                 title={'상위메뉴'}
                                                 name="upMenuSeq"
                                                 control={saveFormControl}
-                                                rules={{ required: '상위메뉴를 선택해 주세요.' }}
+                                                rules={{required: '상위메뉴를 선택해 주세요.'}}
                                                 required={true}
                                                 disabled={!isEditable}
                                                 options={parentMenuCombo}
@@ -625,7 +553,7 @@ const MenuManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
                                                 disabled={!isEditable}
                                                 control={saveFormControl}
                                                 name="menuNm"
-                                                rules={{ required: '메뉴명이 입력되지 않았습니다.' }}
+                                                rules={{required: '메뉴명이 입력되지 않았습니다.'}}
                                                 onChangeValue={handleDataChanged}
                                             />
                                             <CustomSaveFormInput
@@ -654,7 +582,7 @@ const MenuManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
                                                 disabled={!isEditable}
                                                 control={saveFormControl}
                                                 name="menuTypeCd"
-                                                rules={{ required: '메뉴타입이 선택되지 않았습니다.' }}
+                                                rules={{required: '메뉴타입이 선택되지 않았습니다.'}}
                                                 onChangeValue={(value: MenuType) => {
                                                     if (value === MenuType.D) {
                                                         saveFormClearErrors(['menuUrl', 'menuViewPath']);
@@ -664,7 +592,7 @@ const MenuManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
                                                         createParentMenuCombo();
                                                     }, 0);
                                                 }}
-                                                options={Object.keys(cmCode['MenuType']).map((key)  => ({'value': key,'label':cmCode['MenuType'][key]}))}
+                                                options={Object.keys(cmCode['MenuType']).map(key => ({value: key, label: cmCode['MenuType'][key]}))}
                                             />
                                             <CustomSaveFormInput
                                                 title={'메뉴 View Path'}
@@ -692,9 +620,9 @@ const MenuManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
                                                 disabled={!isEditable}
                                                 control={saveFormControl}
                                                 name="useYn"
-                                                rules={{ required: '사용여부가 선택되지 않았습니다.' }}
+                                                rules={{required: '사용여부가 선택되지 않았습니다.'}}
                                                 onChangeValue={() => setTimeout(handleDataChanged, 0)}
-                                                options={[{value:'Y', label:'예'},{value:'N', label:'아니오'}]}
+                                                options={[{value: 'Y', label: '예'}, {value: 'N', label: '아니오'}]}
                                             />
 
                                             <CustomSaveFormInput
@@ -703,8 +631,8 @@ const MenuManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
                                                 disabled={!isEditable}
                                                 control={saveFormControl}
                                                 name="sortSeq"
-                                                regExp={{ value: /^\d*$/, message: '숫자만 입력 가능합니다.' }}
-                                                rules={{ required: '조회순서를 입력해 주세요.' }}
+                                                regExp={{value: /^\d*$/, message: '숫자만 입력 가능합니다.'}}
+                                                rules={{required: '조회순서를 입력해 주세요.'}}
                                                 onChangeValue={handleDataChanged}
                                             />
                                         </div>
@@ -745,7 +673,7 @@ const MenuManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
                             </div>
 
                         <div className="bottom-right">
-                            <div className="board-title-wrap" style={{ marginTop: 16 }}>
+                            <div className="board-title-wrap" style={{marginTop: 16}}>
                                 <h3 className="title">
                                     <IconTitle />
                                     버튼정보
@@ -756,9 +684,9 @@ const MenuManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
                                     <div className="button-info-header">기본버튼(권한설정)</div>
                                     <table className="tbl type02">
                                         <colgroup>
-                                            <col style={{ width: '120px' }} />
-                                            <col style={{ width: '80px' }} />
-                                            <col style={{ width: '80px' }} />
+                                            <col style={{width: '120px'}} />
+                                            <col style={{width: '80px'}} />
+                                            <col style={{width: '80px'}} />
                                         </colgroup>
                                         <thead>
                                             <tr>
@@ -768,8 +696,8 @@ const MenuManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {(btnList.filter((b) => b.sortSeq >= 11 && b.sortSeq <= 15)).map((btn) => {
-                                                const state = menuBtnState.find((s) => Number(s.btnSeq) === Number(btn.btnSeq));
+                                            {btnList.filter(b => b.sortSeq >= 11 && b.sortSeq <= 15).map(btn => {
+                                                const state = menuBtnState.find(s => Number(s.btnSeq) === Number(btn.btnSeq));
                                                 const useYn = state?.useYn ?? 'N';
                                                 return (
                                                     <tr key={btn.btnSeq}>
@@ -802,10 +730,10 @@ const MenuManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
                                     <div className="button-info-header">커스텀버튼(권한설정)</div>
                                     <table className="tbl type02">
                                         <colgroup>
-                                            <col style={{ width: '120px' }} />
-                                            <col style={{ width: '200px' }} />
-                                            <col style={{ width: '80px' }} />
-                                            <col style={{ width: '80px' }} />
+                                            <col style={{width: '120px'}} />
+                                            <col style={{width: '200px'}} />
+                                            <col style={{width: '80px'}} />
+                                            <col style={{width: '80px'}} />
                                         </colgroup>
                                         <thead>
                                             <tr>
@@ -816,8 +744,8 @@ const MenuManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {(btnList.filter((b) => b.sortSeq >= 1 && b.sortSeq <= 9)).map((btn) => {
-                                                const state = menuBtnState.find((s) => Number(s.btnSeq) === Number(btn.btnSeq));
+                                            {btnList.filter(b => b.sortSeq >= 1 && b.sortSeq <= 9).map(btn => {
+                                                const state = menuBtnState.find(s => Number(s.btnSeq) === Number(btn.btnSeq));
                                                 const btnNm = state?.btnNm ?? '';
                                                 const useYn = state?.useYn ?? 'N';
                                                 return (
@@ -828,7 +756,7 @@ const MenuManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
                                                                 value={btnNm}
                                                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateMenuBtnNm(btn.btnSeq, e.target.value, btnNm)}
                                                                 disabled={!isEditable}
-                                                                style={{ width: '100%' }}
+                                                                style={{width: '100%'}}
                                                             />
                                                         </td>
                                                         <td>

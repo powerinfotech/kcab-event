@@ -3,6 +3,7 @@ package com.miso.lxnn.service.auth.impl;
 import com.miso.lxnn.dao.BtnDao;
 import com.miso.lxnn.dao.MenuBtnDao;
 import com.miso.lxnn.dao.MenuDao;
+import com.miso.lxnn.domain.Btn;
 import com.miso.lxnn.domain.MenuBtn;
 import com.miso.lxnn.dto.auth.MenuBtnSaveDto;
 import com.miso.lxnn.dto.auth.MenuListDto;
@@ -17,9 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service("menuManagementService")
@@ -37,7 +36,7 @@ public class MenuManagementServiceImpl extends EgovAbstractServiceImpl implement
     }
 
     @Override
-    public List<com.miso.lxnn.domain.Btn> selectBtnList() throws Exception {
+    public List<Btn> selectBtnList() throws Exception {
         return btnDao.selectBtnList();
     }
 
