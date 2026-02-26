@@ -145,21 +145,22 @@ const CustomTable = (props: CustomTableProps) => {
             <Table
                 {...props}
                 scroll={props.scroll??{y:tableHeight}}
-                onRow={(record,index) => ({
-                    ...props.onRow,
-                    onClick: async () => {
-                        if (props.onRow && (props.onRow?.(record,index) as any).onClick) {
-                            const result = await (props.onRow?.(record, index) as any).onClick();
-
-                            if (result !== false &&  props.rowSelectedFlag) {
+                onRow={(record,index) => {
+                    const rowProps = props.onRow?.(record, index) as any;
+                    return {
+                        ...rowProps,
+                        onClick: async () => {
+                            if (rowProps?.onClick) {
+                                const result = await rowProps.onClick();
+                                if (result !== false && props.rowSelectedFlag) {
+                                    setSelectRowIndex(index);
+                                }
+                            } else if (props.rowSelectedFlag) {
                                 setSelectRowIndex(index);
                             }
-                        } else if (props.rowSelectedFlag){
-                            setSelectRowIndex(index);
-                        }
-
-                    },
-                })}
+                        },
+                    };
+                }}
                 dropdownPrefixCls={props.dropdownPrefixCls}
                 components={props.components}
                 columns={targetColumns}

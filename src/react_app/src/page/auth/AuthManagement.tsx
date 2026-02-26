@@ -6,15 +6,53 @@ import CustomInput from '@component/CustomInput';
 import CustomCheckbox from '@component/CustomCheckbox';
 import CustomDatePicker from '@component/CustomDatePicker';
 import {HttpStatusCode} from 'axios';
-import {message, Modal} from 'antd';
+import {message} from 'antd';
 import IconTitle from '@icon/IconTitle';
 import {AuthGrpList, AuthInfoList, AuthUserInfoList, UserSearchResult} from '@interface/auth/AuthManagement';
+import UserSearchPopup from '@component/popup/UserSearchPopup';
 import {IudType, PageButtonHandlers} from '@interface/common';
-import {callGetAuthGrpList, callGetAuthList, callGetAuthUserList, callSaveAuthManagement, callSearchUsers} from '@api/auth/AuthManagementApi';
+import {callGetAuthGrpList, callGetAuthList, callGetAuthUserList, callSaveAuthManagement} from '@api/auth/AuthManagementApi';
 import {useForm} from 'react-hook-form';
 import CustomValidFormInput from '@component/form/CustomValidFormInput';
 import {useMessage} from '@hook/useMessage';
 import dayjs from 'dayjs';
+
+function applyDataChange<T extends Record<string, any>>(
+    setter: React.Dispatch<React.SetStateAction<T[]>>,
+    keyField: keyof T,
+    record: T,
+    field: string,
+    value: any,
+) {
+    setter(prev => prev.map(item =>
+        item[keyField] === record[keyField]
+            ? {...item, [field]: value, iudType: item.iudType !== IudType.I ? IudType.U : item.iudType}
+            : item
+    ));
+}
+
+function applyDeleteRows<T extends { iudType?: IudType }>(
+    dataSource: T[],
+    setter: React.Dispatch<React.SetStateAction<T[]>>,
+    selectedKeys: React.Key[],
+    setSelectedKeys: React.Dispatch<React.SetStateAction<React.Key[]>>,
+    keyField: keyof T,
+): React.Key[] | null {
+    if (selectedKeys.length === 0) {
+        message.info('선택한 내용이 없습니다.');
+        return null;
+    }
+    const newRowKeys = dataSource
+        .filter(v => selectedKeys.includes(v[keyField] as React.Key) && v.iudType === IudType.I)
+        .map(v => v[keyField] as React.Key);
+    setter(
+        dataSource
+            .filter(v => !(selectedKeys.includes(v[keyField] as React.Key) && v.iudType === IudType.I))
+            .map(v => selectedKeys.includes(v[keyField] as React.Key) ? {...v, iudType: IudType.D} : v)
+    );
+    setSelectedKeys(prev => prev.filter(key => !newRowKeys.includes(key)));
+    return newRowKeys;
+}
 
 const AuthGrpNmCell = ({
     record, value, setValue, control, register, onDataChange,
@@ -37,35 +75,29 @@ const AuthGrpNmCell = ({
 const AuthManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menuInfo?: any; handlersRef?: React.MutableRefObject<PageButtonHandlers>}) => {
     const {
         register: authGrpRegister, unregister: authGrpUnregister,
-        control: authGrpControl, handleSubmit: authGrpHandleSubmit, setValue: authGrpSetValue
+        control: authGrpControl, handleSubmit: authGrpHandleSubmit, setValue: authGrpSetValue,
     } = useForm<any>({mode: 'onSubmit'});
     const {confirm} = useMessage();
     const tempSeqRef = useRef(-1);
+    const autoSelectAuthGrpRef = useRef(true);
 
-    // ── Auth Group State (tb_auth_grp) ──
+    // ── Auth Group State ──
     const [authGrpDataSource, setAuthGrpDataSource] = useState<AuthGrpList[]>([]);
     const [orgAuthGrpDataSource, setOrgAuthGrpDataSource] = useState<AuthGrpList[]>([]);
     const [selectedAuthGrpRowIndex, setSelectedAuthGrpRowIndex] = useState(-1);
     const [selectedAuthGrpRowKeys, setSelectedAuthGrpRowKeys] = useState<React.Key[]>([]);
-    const [isIncludeUnusable, setIsIncludeUnusable] = useState<boolean>(false);
 
-    // ── Auth State (tb_auth) ──
+    // ── Auth State ──
     const [authDataSource, setAuthDataSource] = useState<AuthInfoList[]>([]);
-    const [orgAuthDataSource, setOrgAuthDataSource] = useState<AuthInfoList[]>([]);
     const [selectedAuthRowIndex, setSelectedAuthRowIndex] = useState(-1);
     const [selectedAuthRowKeys, setSelectedAuthRowKeys] = useState<React.Key[]>([]);
 
-    // ── Auth User State (tb_auth_user) ──
+    // ── Auth User State ──
     const [authUserDataSource, setAuthUserDataSource] = useState<AuthUserInfoList[]>([]);
-    const [orgAuthUserDataSource, setOrgAuthUserDataSource] = useState<AuthUserInfoList[]>([]);
     const [selectedAuthUserRowKeys, setSelectedAuthUserRowKeys] = useState<React.Key[]>([]);
 
     // ── User Popup State ──
     const [isUserPopupOpen, setIsUserPopupOpen] = useState(false);
-    const [userSearchList, setUserSearchList] = useState<UserSearchResult[]>([]);
-    const [userSearchText, setUserSearchText] = useState('');
-    const [excludeUnused, setExcludeUnused] = useState(true);
-    const [selectedUserRowIndex, setSelectedUserRowIndex] = useState(-1);
 
     // ── Derived ──
     const isAuthGrpChanged = authGrpDataSource.some(v => v.iudType);
@@ -75,13 +107,45 @@ const AuthManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
     const selectedAuthGrp = selectedAuthGrpRowIndex >= 0 ? authGrpDataSource[selectedAuthGrpRowIndex] : null;
     const selectedAuth = selectedAuthRowIndex >= 0 ? authDataSource[selectedAuthRowIndex] : null;
 
-    // ══════════════════════════════════════════
-    //  AUTH GRP HANDLERS (tb_auth_grp)
-    // ══════════════════════════════════════════
+    // ── Data Change Handlers ──
+    const handleDataChangeAuthGrp = (record: AuthGrpList, key: string, value: any) =>
+        applyDataChange(setAuthGrpDataSource, 'authGrpSeq', record, key, value);
+    const handleDataChangeAuth = (record: AuthInfoList, key: string, value: any) =>
+        applyDataChange(setAuthDataSource, 'authSeq', record, key, value);
+    const handleDataChangeAuthUser = (record: AuthUserInfoList, key: string, value: any) =>
+        applyDataChange(setAuthUserDataSource, 'authUserSeq', record, key, value);
+
+    // ── Fetch Helpers ──
+    const fetchAuthUserList = async (authGrpSeq: number, authSeq: number) => {
+        const res = await callGetAuthUserList(authGrpSeq, authSeq);
+        if (res.code === HttpStatusCode.Ok) {
+            setAuthUserDataSource(structuredClone(res.item));
+        }
+    };
+
+    const fetchAuthWithAutoSelect = async (authGrpSeq: number) => {
+        const res = await callGetAuthList(authGrpSeq);
+        if (res.code !== HttpStatusCode.Ok) return;
+        const authList = structuredClone(res.item);
+        setAuthDataSource(authList);
+        if (authList.length > 0) {
+            setSelectedAuthRowIndex(0);
+            const first = authList[0];
+            if (first.rgstUserSeq && first.authSeq) {
+                await fetchAuthUserList(first.authGrpSeq, first.authSeq);
+            }
+        }
+    };
+
+    const resetAuthUserState = () => {
+        setAuthUserDataSource([]);
+        setSelectedAuthUserRowKeys([]);
+    };
+
+    // ── Auth Group Handlers ──
     const handleSearchAuthGrpList = async () => {
         if (isAnyChanged) {
-            const result = await confirm('저장하지 않은 내용은 초기화 됩니다. 조회 하시겠습니까?');
-            if (!result) return;
+            if (!await confirm('저장하지 않은 내용은 초기화 됩니다. 조회 하시겠습니까?')) return;
         }
         const res = await callGetAuthGrpList();
         if (res.code === HttpStatusCode.Ok) {
@@ -92,46 +156,28 @@ const AuthManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
         setSelectedAuthGrpRowKeys([]);
     };
 
-    const handleDataChangeAuthGrp = (record: AuthGrpList, key: string, value: any) => {
-        const updated = authGrpDataSource.map((item) => {
-            if (record.authGrpSeq === item.authGrpSeq) {
-                return {...item, [key]: value, iudType: item.iudType !== IudType.I ? IudType.U : item.iudType};
-            }
-            return item;
-        });
-        setAuthGrpDataSource(updated);
-    };
-
     const handleAddRowAuthGrp = () => {
         const tempSeq = tempSeqRef.current--;
-        setAuthGrpDataSource([...authGrpDataSource, {
+        setAuthGrpDataSource(prev => [...prev, {
             authGrpSeq: tempSeq, authGrpNm: '', authGrpExpl: '',
-            useYn: 'Y', iudType: IudType.I
+            useYn: 'Y', iudType: IudType.I,
         }]);
     };
 
     const handleDeleteRowAuthGrp = () => {
-        if (authGrpDataSource.filter((v) => selectedAuthGrpRowKeys.includes(v.authGrpSeq)).length === 0) {
-            message.info('선택한 내용이 없습니다.');
-            return;
-        }
-        const removedKeys = authGrpDataSource
-            .filter((v) => selectedAuthGrpRowKeys.includes(v.authGrpSeq) && v.iudType === IudType.I)
-            .map((v) => v.authGrpSeq);
-        removedKeys.forEach((seq) => { authGrpUnregister(`${seq}_authGrpNm`); });
-        setAuthGrpDataSource(authGrpDataSource
-            .filter((v) => !(selectedAuthGrpRowKeys.includes(v.authGrpSeq) && v.iudType === IudType.I))
-            .map((v) => selectedAuthGrpRowKeys.includes(v.authGrpSeq) ? {...v, iudType: IudType.D} : v)
+        const removedKeys = applyDeleteRows(
+            authGrpDataSource, setAuthGrpDataSource,
+            selectedAuthGrpRowKeys, setSelectedAuthGrpRowKeys, 'authGrpSeq',
         );
-        setSelectedAuthGrpRowKeys((prev) => prev.filter((key) => !removedKeys.includes(key as number)));
+        if (!removedKeys) return;
+        removedKeys.forEach(seq => authGrpUnregister(`${seq}_authGrpNm`));
         setSelectedAuthGrpRowIndex(-1);
     };
 
     const handleAuthGrpRowClick = async (record: AuthGrpList, index: number) => {
         if (index === selectedAuthGrpRowIndex) return;
         if (isAuthChanged || isAuthUserChanged) {
-            const result = await confirm('저장하지 않은 내용은 초기화 됩니다. 계속 하시겠습니까?');
-            if (!result) return;
+            if (!await confirm('저장하지 않은 내용은 초기화 됩니다. 계속 하시겠습니까?')) return;
         }
         setSelectedAuthGrpRowIndex(index);
         resetAuthUserState();
@@ -141,123 +187,50 @@ const AuthManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
             await fetchAuthWithAutoSelect(record.authGrpSeq);
         } else {
             setAuthDataSource([]);
-            setOrgAuthDataSource([]);
         }
     };
 
-    const fetchAuthWithAutoSelect = async (authGrpSeq: number) => {
-        const res = await callGetAuthList(authGrpSeq);
-        if (res.code !== HttpStatusCode.Ok) return;
-        const authList = structuredClone(res.item);
-        setAuthDataSource(authList);
-        setOrgAuthDataSource(authList);
-        if (authList.length > 0) {
-            setSelectedAuthRowIndex(0);
-            const firstAuth = authList[0];
-            if (firstAuth.rgstUserSeq && firstAuth.authSeq) {
-                const userRes = await callGetAuthUserList(firstAuth.authGrpSeq, firstAuth.authSeq);
-                if (userRes.code === HttpStatusCode.Ok) {
-                    setAuthUserDataSource(structuredClone(userRes.item));
-                    setOrgAuthUserDataSource(structuredClone(userRes.item));
-                }
-            }
-        }
-    };
-
-    // ══════════════════════════════════════════
-    //  AUTH HANDLERS (tb_auth)
-    // ══════════════════════════════════════════
-
-    const handleDataChangeAuth = (record: AuthInfoList, key: string, value: any) => {
-        const updated = authDataSource.map((item) => {
-            if (record.authSeq === item.authSeq) {
-                return {...item, [key]: value, iudType: item.iudType !== IudType.I ? IudType.U : item.iudType};
-            }
-            return item;
-        });
-        setAuthDataSource(updated);
-    };
-
+    // ── Auth Handlers ──
     const handleAddRowAuth = () => {
-        if (!selectedAuthGrp || !selectedAuthGrp.rgstUserSeq) {
+        if (!selectedAuthGrp?.rgstUserSeq) {
             message.info('저장된 권한그룹을 선택해 주세요.');
             return;
         }
         const tempSeq = tempSeqRef.current--;
-        setAuthDataSource([...authDataSource, {
+        setAuthDataSource(prev => [...prev, {
             authSeq: tempSeq, authGrpSeq: selectedAuthGrp.authGrpSeq,
-            authNm: '', authExpl: '', useYn: 'Y', iudType: IudType.I
+            authNm: '', authExpl: '', useYn: 'Y', iudType: IudType.I,
         }]);
     };
 
     const handleDeleteRowAuth = () => {
-        if (selectedAuthRowKeys.length === 0) {
-            message.info('선택한 내용이 없습니다.');
-            return;
-        }
-        const removedKeys = authDataSource
-            .filter((v) => selectedAuthRowKeys.includes(v.authSeq) && v.iudType === IudType.I)
-            .map((v) => v.authSeq);
-        setAuthDataSource(authDataSource
-            .filter((v) => !(selectedAuthRowKeys.includes(v.authSeq) && v.iudType === IudType.I))
-            .map((v) => selectedAuthRowKeys.includes(v.authSeq) ? {...v, iudType: IudType.D} : v)
-        );
-        setSelectedAuthRowKeys((prev) => prev.filter((key) => !removedKeys.includes(key as number)));
+        if (!applyDeleteRows(
+            authDataSource, setAuthDataSource,
+            selectedAuthRowKeys, setSelectedAuthRowKeys, 'authSeq',
+        )) return;
         setSelectedAuthRowIndex(-1);
     };
 
     const handleAuthRowClick = async (record: AuthInfoList, index: number) => {
         if (index === selectedAuthRowIndex) return;
         if (isAuthUserChanged) {
-            const result = await confirm('저장하지 않은 내용은 초기화 됩니다. 계속 하시겠습니까?');
-            if (!result) return;
+            if (!await confirm('저장하지 않은 내용은 초기화 됩니다. 계속 하시겠습니까?')) return;
         }
         setSelectedAuthRowIndex(index);
         setSelectedAuthUserRowKeys([]);
         if (record.rgstUserSeq && record.authSeq) {
-            const res = await callGetAuthUserList(record.authGrpSeq, record.authSeq);
-            if (res.code === HttpStatusCode.Ok) {
-                setAuthUserDataSource(structuredClone(res.item));
-                setOrgAuthUserDataSource(structuredClone(res.item));
-            }
+            await fetchAuthUserList(record.authGrpSeq, record.authSeq);
         } else {
             setAuthUserDataSource([]);
-            setOrgAuthUserDataSource([]);
         }
     };
 
-    // ══════════════════════════════════════════
-    //  AUTH USER HANDLERS (tb_auth_user)
-    // ══════════════════════════════════════════
-    const resetAuthUserState = () => {
-        setAuthUserDataSource([]);
-        setOrgAuthUserDataSource([]);
-        setSelectedAuthUserRowKeys([]);
-    };
-
-    const handleDataChangeAuthUser = (record: AuthUserInfoList, key: string, value: any) => {
-        const updated = authUserDataSource.map((item) => {
-            if (record.authUserSeq === item.authUserSeq) {
-                return {...item, [key]: value, iudType: item.iudType !== IudType.I ? IudType.U : item.iudType};
-            }
-            return item;
-        });
-        setAuthUserDataSource(updated);
-    };
-
+    // ── Auth User Handlers ──
     const handleDeleteRowAuthUser = () => {
-        if (selectedAuthUserRowKeys.length === 0) {
-            message.info('선택한 내용이 없습니다.');
-            return;
-        }
-        const removedKeys = authUserDataSource
-            .filter((v) => selectedAuthUserRowKeys.includes(v.authUserSeq) && v.iudType === IudType.I)
-            .map((v) => v.authUserSeq);
-        setAuthUserDataSource(authUserDataSource
-            .filter((v) => !(selectedAuthUserRowKeys.includes(v.authUserSeq) && v.iudType === IudType.I))
-            .map((v) => selectedAuthUserRowKeys.includes(v.authUserSeq) ? {...v, iudType: IudType.D} : v)
+        applyDeleteRows(
+            authUserDataSource, setAuthUserDataSource,
+            selectedAuthUserRowKeys, setSelectedAuthUserRowKeys, 'authUserSeq',
         );
-        setSelectedAuthUserRowKeys((prev) => prev.filter((key) => !removedKeys.includes(key as number)));
     };
 
     const handleAddUserFromPopup = (user: UserSearchResult) => {
@@ -270,7 +243,7 @@ const AuthManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
             return;
         }
         const tempSeq = tempSeqRef.current--;
-        setAuthUserDataSource([...authUserDataSource, {
+        setAuthUserDataSource(prev => [...prev, {
             authUserSeq: tempSeq,
             authGrpSeq: selectedAuth.authGrpSeq,
             authSeq: selectedAuth.authSeq,
@@ -280,48 +253,20 @@ const AuthManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
             strDt: dayjs().format('YYYYMMDD'),
             endDt: '29991231',
             useYn: 'Y',
-            iudType: IudType.I
+            iudType: IudType.I,
         }]);
     };
 
-    // ══════════════════════════════════════════
-    //  USER POPUP HANDLERS
-    // ══════════════════════════════════════════
+    // ── User Popup Handlers ──
     const handleOpenUserPopup = () => {
-        if (!selectedAuth || !selectedAuth.rgstUserSeq) {
+        if (!selectedAuth?.rgstUserSeq) {
             message.info('저장된 권한을 선택해 주세요.');
             return;
         }
-        setUserSearchText('');
-        setExcludeUnused(true);
-        setSelectedUserRowIndex(-1);
         setIsUserPopupOpen(true);
-        callSearchUsers('', true).then(res => {
-            if (res.code === HttpStatusCode.Ok) setUserSearchList(res.item);
-        });
     };
 
-    const handleSearchUser = () => {
-        callSearchUsers(userSearchText, excludeUnused).then(res => {
-            if (res.code === HttpStatusCode.Ok) setUserSearchList(res.item);
-        });
-    };
-
-    const handleUserPopupOk = () => {
-        if (selectedUserRowIndex >= 0 && userSearchList[selectedUserRowIndex]) {
-            handleAddUserFromPopup(userSearchList[selectedUserRowIndex]);
-        }
-        setIsUserPopupOpen(false);
-    };
-
-    const handleUserDoubleClick = (record: UserSearchResult) => {
-        handleAddUserFromPopup(record);
-        setIsUserPopupOpen(false);
-    };
-
-    // ══════════════════════════════════════════
-    //  SAVE & RESET
-    // ══════════════════════════════════════════
+    // ── Save ──
     const handleSave = async () => {
         if (!isAnyChanged) {
             message.info('변경된 내용이 없습니다.');
@@ -337,10 +282,9 @@ const AuthManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
                 ) as AuthInfoList[],
                 authUserList: authUserDataSource.map(v =>
                     v.iudType === IudType.I ? {...v, authUserSeq: undefined} : v
-                ) as AuthUserInfoList[]
+                ) as AuthUserInfoList[],
             });
             if (res.code !== HttpStatusCode.Ok) return;
-
             message.success('저장이 완료 되었습니다.');
 
             const grpRes = await callGetAuthGrpList();
@@ -351,24 +295,17 @@ const AuthManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
                 const authRes = await callGetAuthList(selectedAuthGrp.authGrpSeq);
                 if (authRes.code === HttpStatusCode.Ok) {
                     setAuthDataSource(structuredClone(authRes.item));
-                    setOrgAuthDataSource(structuredClone(authRes.item));
                 }
             }
             if (selectedAuth?.authSeq && selectedAuth?.rgstUserSeq && selectedAuthGrp?.authGrpSeq) {
-                const userRes = await callGetAuthUserList(selectedAuthGrp.authGrpSeq, selectedAuth.authSeq);
-                if (userRes.code === HttpStatusCode.Ok) {
-                    setAuthUserDataSource(structuredClone(userRes.item));
-                    setOrgAuthUserDataSource(structuredClone(userRes.item));
-                }
+                await fetchAuthUserList(selectedAuthGrp.authGrpSeq, selectedAuth.authSeq);
             }
         } catch {
             // handled by axios interceptor
         }
     };
 
-    // ══════════════════════════════════════════
-    //  COLUMNS
-    // ══════════════════════════════════════════
+    // ── Columns ──
     const authGrpColumn: ColumnsType<AuthGrpList> = [
         IUD_COLUMN,
         {
@@ -378,23 +315,21 @@ const AuthManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
                 if (record.rgstUserSeq && record.useYn !== 'Y') return value;
                 return <AuthGrpNmCell record={record} value={value} setValue={authGrpSetValue}
                     control={authGrpControl} register={authGrpRegister} onDataChange={handleDataChangeAuthGrp}/>;
-            }
+            },
         },
         {
             title: '설명', key: 'authGrpExpl', dataIndex: 'authGrpExpl', align: 'center', width: '40%',
-            render: (value: string, record: AuthGrpList) => {
-                return record.rgstUserSeq && record.useYn !== 'Y' ? value :
+            render: (value: string, record: AuthGrpList) =>
+                record.rgstUserSeq && record.useYn !== 'Y' ? value :
                     <CustomInput name={`${record.authGrpSeq}_authGrpExpl`} value={value} maxLength={200}
-                        onChange={(e) => handleDataChangeAuthGrp(record, 'authGrpExpl', e.target.value)}/>;
-            }
+                        onChange={(e) => handleDataChangeAuthGrp(record, 'authGrpExpl', e.target.value)}/>,
         },
         {
             title: '사용여부', key: 'useYn', dataIndex: 'useYn', align: 'center', width: '15%',
-            render: (value: string, record: AuthGrpList) => {
-                return <CustomCheckbox name={`${record.authGrpSeq}_useYn`} checked={value === 'Y'}
-                    onChange={(e) => handleDataChangeAuthGrp(record, 'useYn', e.target.checked ? 'Y' : 'N')}/>;
-            }
-        }
+            render: (value: string, record: AuthGrpList) =>
+                <CustomCheckbox name={`${record.authGrpSeq}_useYn`} checked={value === 'Y'}
+                    onChange={(e) => handleDataChangeAuthGrp(record, 'useYn', e.target.checked ? 'Y' : 'N')}/>,
+        },
     ];
 
     const authColumn: ColumnsType<AuthInfoList> = [
@@ -402,25 +337,22 @@ const AuthManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
         {
             title: <span className="tit">권한명<em>*</em></span>,
             key: 'authNm', dataIndex: 'authNm', align: 'center', width: '30%',
-            render: (value: string, record: AuthInfoList) => {
-                return <CustomInput value={value} maxLength={100}
-                    onChange={(e) => handleDataChangeAuth(record, 'authNm', e.target.value)}/>;
-            }
+            render: (value: string, record: AuthInfoList) =>
+                <CustomInput value={value} maxLength={100}
+                    onChange={(e) => handleDataChangeAuth(record, 'authNm', e.target.value)}/>,
         },
         {
             title: '권한설명', key: 'authExpl', dataIndex: 'authExpl', align: 'center', width: '35%',
-            render: (value: string, record: AuthInfoList) => {
-                return <CustomInput value={value} maxLength={2000}
-                    onChange={(e) => handleDataChangeAuth(record, 'authExpl', e.target.value)}/>;
-            }
+            render: (value: string, record: AuthInfoList) =>
+                <CustomInput value={value} maxLength={2000}
+                    onChange={(e) => handleDataChangeAuth(record, 'authExpl', e.target.value)}/>,
         },
         {
             title: '사용여부', key: 'useYn', dataIndex: 'useYn', align: 'center', width: '15%',
-            render: (value: string, record: AuthInfoList) => {
-                return <CustomCheckbox checked={value === 'Y'}
-                    onChange={(e) => handleDataChangeAuth(record, 'useYn', e.target.checked ? 'Y' : 'N')}/>;
-            }
-        }
+            render: (value: string, record: AuthInfoList) =>
+                <CustomCheckbox checked={value === 'Y'}
+                    onChange={(e) => handleDataChangeAuth(record, 'useYn', e.target.checked ? 'Y' : 'N')}/>,
+        },
     ];
 
     const authUserColumn: ColumnsType<AuthUserInfoList> = [
@@ -429,59 +361,42 @@ const AuthManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
         {title: '사용자명', key: 'userName', dataIndex: 'userName', align: 'center', width: '15%'},
         {
             title: '사용여부', key: 'useYn', dataIndex: 'useYn', align: 'center', width: '13%',
-            render: (value: string, record: AuthUserInfoList) => {
-                return <CustomCheckbox checked={value === 'Y'}
-                    onChange={(e) => handleDataChangeAuthUser(record, 'useYn', e.target.checked ? 'Y' : 'N')}/>;
-            }
+            render: (value: string, record: AuthUserInfoList) =>
+                <CustomCheckbox checked={value === 'Y'}
+                    onChange={(e) => handleDataChangeAuthUser(record, 'useYn', e.target.checked ? 'Y' : 'N')}/>,
         },
         {
             title: '시작일', key: 'strDt', dataIndex: 'strDt', align: 'center', width: '18%',
-            render: (value: string, record: AuthUserInfoList) => {
-                return <CustomDatePicker
+            render: (value: string, record: AuthUserInfoList) =>
+                <CustomDatePicker
                     value={value ? dayjs(value, 'YYYYMMDD') : null}
                     onChange={(date) => handleDataChangeAuthUser(record, 'strDt', date ? date.format('YYYYMMDD') : '')}
-                    style={{width: '100%'}}
-                />;
-            }
+                    style={{width: '100%'}}/>,
         },
         {
             title: '종료일', key: 'endDt', dataIndex: 'endDt', align: 'center', width: '18%',
-            render: (value: string, record: AuthUserInfoList) => {
-                return <CustomDatePicker
+            render: (value: string, record: AuthUserInfoList) =>
+                <CustomDatePicker
                     value={value ? dayjs(value, 'YYYYMMDD') : null}
                     onChange={(date) => handleDataChangeAuthUser(record, 'endDt', date ? date.format('YYYYMMDD') : '')}
-                    style={{width: '100%'}}
-                />;
-            }
-        }
+                    style={{width: '100%'}}/>,
+        },
     ];
 
-    const userPopupColumn: ColumnsType<UserSearchResult> = [
-        {title: '사용자 ID', key: 'userId', dataIndex: 'userId', align: 'center', width: '50%'},
-        {title: '사용자명', key: 'userName', dataIndex: 'userName', align: 'center', width: '50%'}
-    ];
-
-    // ══════════════════════════════════════════
-    //  EFFECTS
-    // ══════════════════════════════════════════
-    const autoSelectAuthGrpRef = useRef(true);
+    // ── Effects ──
     useEffect(() => {
-        if (orgAuthGrpDataSource) {
-            const filtered = isIncludeUnusable
-                ? structuredClone(orgAuthGrpDataSource)
-                : structuredClone(orgAuthGrpDataSource).filter((v: AuthGrpList) => v.useYn === 'Y' || v.iudType !== null);
-            setAuthGrpDataSource(filtered);
+        const cloned = structuredClone(orgAuthGrpDataSource);
+        setAuthGrpDataSource(cloned);
 
-            if (autoSelectAuthGrpRef.current && filtered.length > 0) {
-                autoSelectAuthGrpRef.current = false;
-                setSelectedAuthGrpRowIndex(0);
-                const firstRow = filtered[0];
-                if (firstRow.rgstUserSeq && firstRow.authGrpSeq) {
-                    fetchAuthWithAutoSelect(firstRow.authGrpSeq);
-                }
+        if (autoSelectAuthGrpRef.current && cloned.length > 0) {
+            autoSelectAuthGrpRef.current = false;
+            setSelectedAuthGrpRowIndex(0);
+            const first = cloned[0];
+            if (first.rgstUserSeq && first.authGrpSeq) {
+                fetchAuthWithAutoSelect(first.authGrpSeq);
             }
         }
-    }, [orgAuthGrpDataSource, isIncludeUnusable]);
+    }, [orgAuthGrpDataSource]);
 
     useEffect(() => {
         callGetAuthGrpList().then(res => {
@@ -505,13 +420,11 @@ const AuthManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
         return () => { if (handlersRef) handlersRef.current = {}; };
     }, []);
 
-    // ══════════════════════════════════════════
-    //  RENDER
-    // ══════════════════════════════════════════
+    // ── Render ──
     return (
         <>
             <section className="board-wrap" style={{display: 'flex', gap: '16px', alignItems: 'flex-start'}}>
-                {/* ── LEFT: 권한그룹정보 (tb_auth_grp) ── */}
+                {/* 권한그룹정보 */}
                 <div style={{flex: '0 0 38%', minWidth: 0}}>
                     <div className="board-title-wrap">
                         <h3 className="title"><IconTitle/>권한그룹정보</h3>
@@ -539,9 +452,8 @@ const AuthManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
                     </div>
                 </div>
 
-                {/* ── RIGHT ── */}
+                {/* 권한정보 + 권한사용자정보 */}
                 <div style={{flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '16px'}}>
-                    {/* ── RIGHT TOP: 권한정보 (tb_auth) ── */}
                     <div>
                         <div className="board-title-wrap">
                             <h3 className="title"><IconTitle/>권한정보</h3>
@@ -569,7 +481,6 @@ const AuthManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
                         </div>
                     </div>
 
-                    {/* ── RIGHT BOTTOM: 사용자정보 (tb_auth_user) ── */}
                     <div>
                         <div className="board-title-wrap">
                             <h3 className="title"><IconTitle/>권한사용자정보</h3>
@@ -593,34 +504,11 @@ const AuthManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
                 </div>
             </section>
 
-            {/* ── USER SEARCH POPUP ── */}
-            <Modal title="사용자 팝업" open={isUserPopupOpen} onOk={handleUserPopupOk}
-                onCancel={() => setIsUserPopupOpen(false)} width={650} okText="확인" cancelText="취소"
-                maskClosable={false}>
-                <div style={{display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px'}}>
-                    <span>← ID/사용자명</span>
-                    <CustomInput value={userSearchText} style={{width: 180}}
-                        onChange={(e) => setUserSearchText(e.target.value)}
-                        onKeyDown={(e: React.KeyboardEvent) => { if (e.key === 'Enter') handleSearchUser(); }}/>
-                    <CustomCheckbox checked={excludeUnused} onChange={(e) => setExcludeUnused(e.target.checked)}/>
-                    <span>미사용자 제외</span>
-                    <CustomButton type="primary" size="small" onClick={handleSearchUser}>조회</CustomButton>
-                </div>
-                <div className="board-title-wrap" style={{marginBottom: '4px'}}>
-                    <h3 className="title" style={{fontSize: '13px'}}><IconTitle/>사용자 ID 조회내역</h3>
-                    <span className="total-count">Total {userSearchList.length}</span>
-                </div>
-                <CustomTable
-                    onRow={(record: any, index?: number) => ({
-                        onClick: () => setSelectedUserRowIndex(index ?? -1),
-                        onDoubleClick: () => handleUserDoubleClick(record),
-                    })}
-                    rowKey={'userSeq'} pagination={false} rowNoFlag={true} rowSelectedFlag={true}
-                    columns={userPopupColumn} dataSource={userSearchList}
-                    selectedRowIndex={selectedUserRowIndex}
-                    scroll={{y: 300}}
-                />
-            </Modal>
+            <UserSearchPopup
+                open={isUserPopupOpen}
+                onClose={() => setIsUserPopupOpen(false)}
+                onSelect={handleAddUserFromPopup}
+            />
         </>
     );
 };
