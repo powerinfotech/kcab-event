@@ -263,6 +263,7 @@ const MenuManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
         }
         saveFormReset(emptyList[0]);
         setSelectedKeys([]);
+        setRowSeq([]);
         callGetMenuInfo().then((res)=> {
             setIsRowSelected(false);
             setDataSource(JSON.parse(JSON.stringify(res.item)));
@@ -335,6 +336,7 @@ const MenuManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
         onSelectChange([]);
         saveFormReset(emptyList[0]);
         setIsRowSelected(false);
+        setRowSeq([]);
     };
 
     const resetSaveForm = () => {

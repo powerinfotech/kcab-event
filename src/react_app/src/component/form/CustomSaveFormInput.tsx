@@ -56,7 +56,7 @@ const CustomSaveFormInput = forwardRef<any, CustomFormInputProps>(({ name, defau
                                     ref={ref}
                                     id={field.name}
                                     name={field.name}
-                                    value={field.value}
+                                    value={field.value ?? ''}
                                     onChange={(v) => handleChange(field, v)}
                                     onBlur={(v) => {
                                         field.onChange(v);

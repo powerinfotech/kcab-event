@@ -48,7 +48,7 @@ const CustomValidFormInput = forwardRef<InputRef, CustomFormInputProps>(({name, 
                             ref={ref}
                             id={field.name}
                             name={field.name}
-                            value={field.value}
+                            value={field.value ?? ''}
                                      onChange={(v)=>{
                                          // onChangeValue&&onChangeValue(v.target.value);
                                          handleChange(field, v);
