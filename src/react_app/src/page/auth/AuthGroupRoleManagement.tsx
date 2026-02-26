@@ -11,7 +11,7 @@ import {getRoleListByRoleName} from '@api/CommonApi';
 import {HttpStatusCode} from 'axios';
 import {message} from 'antd';
 import IconTitle from '@icon/IconTitle';
-import {IudType} from '@interface/common';
+import {IudType, PageButtonHandlers} from '@interface/common';
 import {callGetAuthGroupRoleList, callSaveAuthGroupRole} from '@api/auth/AuthGroupRoleManagementApi';
 import {callGetAuthGroupList} from '@api/auth/AuthGroupManagementApi';
 import {AuthGroupList} from '@interface/auth/AuthGroupManagement';
@@ -22,7 +22,7 @@ import CustomValidDatePicker from '@component/form/CustomValidDatePicker';
 import {RoleUserList} from "@interface/auth/RoleManagement";
 
 
-const AuthGroupRoleMenuManagement = () => {
+const AuthGroupRoleMenuManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menuInfo?: any; handlersRef?: React.MutableRefObject<PageButtonHandlers>}) => {
     const {confirm} = useMessage();
     const {register: authGroupRoleRegister
         , unregister: authGroupRoleUnregister
@@ -424,16 +424,22 @@ const AuthGroupRoleMenuManagement = () => {
 
 
 
+    useEffect(() => {
+        if (handlersRef) {
+            handlersRef.current = {
+                cfmInit: handleReset,
+                cfmSearch: handleSearchAuthGroupList,
+                cfmSave: authGroupRoleHandleSubmit(handleSave),
+            };
+        }
+    });
+
+    useEffect(() => {
+        return () => { if (handlersRef) handlersRef.current = {}; };
+    }, []);
+
     return (
         <>
-        <section className="button-wrap">
-            <div className="box-btn">
-                <CustomButton type="primary" onClick={handleReset}><IconBtnRefresh />초기화</CustomButton>
-                <CustomButton type="primary" onClick={handleSearchAuthGroupList}><IconBtnSearch />조회</CustomButton>
-                <CustomButton type="primary" onClick={authGroupRoleHandleSubmit(handleSave)}>저장</CustomButton>
-            </div>
-        </section>
-
         <section className="board-wrap half-wrap type02">
             <div>
                 <div className="board-title-wrap">

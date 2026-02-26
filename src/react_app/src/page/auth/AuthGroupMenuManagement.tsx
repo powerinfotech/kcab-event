@@ -7,7 +7,7 @@ import CustomTable from '@component/CustomTable';
 import {ColumnsType} from 'antd/es/table';
 import {AuthGroupList} from '@interface/auth/AuthGroupManagement';
 import CustomCheckbox from '@component/CustomCheckbox';
-import {IudType} from '@interface/common';
+import {IudType, PageButtonHandlers} from '@interface/common';
 import {MenuType} from '@interface/auth/MenuManagement';
 import {callGetAuthGroupList} from '@api/auth/AuthGroupManagementApi';
 import {AuthGroupMenuList, AuthGroupMenuTree} from '@interface/auth/AuthGroupMenuManagement';
@@ -16,7 +16,7 @@ import {HttpStatusCode} from 'axios';
 import {message} from 'antd';
 
 
-const AuthGroupMenuManagement = () => {
+const AuthGroupMenuManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menuInfo?: any; handlersRef?: React.MutableRefObject<PageButtonHandlers>}) => {
     const [selectedAuthGroupRowIndex, setSelectedAuthGroupRowIndex] = useState(-1);
     const [authGroupDataSource, setAuthGroupDataSource] = useState<AuthGroupList[]>([]);
     const [orgAuthGroupDataSource, setOrgAuthGroupDataSource] = useState<AuthGroupList[]>([]);
@@ -320,16 +320,22 @@ const AuthGroupMenuManagement = () => {
     }, [isIncludeUnusableAuth]);
 
 
+    useEffect(() => {
+        if (handlersRef) {
+            handlersRef.current = {
+                cfmInit: handleReset,
+                cfmSearch: () => { handleReset(); handleSearchAuthGroupList(); },
+                cfmSave: handleSave,
+            };
+        }
+    });
+
+    useEffect(() => {
+        return () => { if (handlersRef) handlersRef.current = {}; };
+    }, []);
+
     return (
         <>
-            <section className="button-wrap">
-                <div className="box-btn">
-                    <CustomButton type="primary" onClick={handleReset}><IconBtnRefresh/>초기화</CustomButton>
-                    <CustomButton type="primary" onClick={()=>{handleReset();handleSearchAuthGroupList();}}><IconBtnSearch/>조회</CustomButton>
-                    <CustomButton type="primary" onClick={handleSave}>저장</CustomButton>
-                </div>
-            </section>
-
             <section className="board-wrap half-wrap type03">
             <div>
                 <div className="board-title-wrap">

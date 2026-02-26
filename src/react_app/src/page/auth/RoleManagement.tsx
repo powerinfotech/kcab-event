@@ -11,7 +11,7 @@ import {useMessage} from '@hook/useMessage';
 import {callGetRoleList, callGetRoleUserList, callSaveRole} from '@api/auth/RoleManagementApi';
 import CustomInput from '@component/CustomInput';
 import CustomCheckbox from '@component/CustomCheckbox';
-import {IudType} from '@interface/common';
+import {IudType, PageButtonHandlers} from '@interface/common';
 import dayjs from 'dayjs';
 import {HttpStatusCode} from 'axios';
 import {getUserListByUserName} from '@api/CommonApi';
@@ -22,7 +22,7 @@ import CustomValidAutocomplete from '@component/form/CustomValidAutocomplete';
 import {CommonGrpCodeListItem} from "@interface/master/CommonGroupCodeManagement";
 
 
-const RoleManagement = () => {
+const RoleManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menuInfo?: any; handlersRef?: React.MutableRefObject<PageButtonHandlers>}) => {
     const {confirm} = useMessage();
     const {register: roleRegister
         , unregister: roleUnregister
@@ -522,16 +522,22 @@ const RoleManagement = () => {
         }
     }, [isIncludeUnusableRole]);
 
+    useEffect(() => {
+        if (handlersRef) {
+            handlersRef.current = {
+                cfmInit: handleReset,
+                cfmSearch: handleSearchRoleList,
+                cfmSave: roleHandleSubmit(handleSave),
+            };
+        }
+    });
+
+    useEffect(() => {
+        return () => { if (handlersRef) handlersRef.current = {}; };
+    }, []);
+
     return (
         <>
-        <section className="button-wrap">
-            <div className="box-btn">
-                <CustomButton type="primary" onClick={handleReset}><IconBtnRefresh />초기화</CustomButton>
-                <CustomButton type="primary" onClick={handleSearchRoleList}><IconBtnSearch />조회</CustomButton>
-                <CustomButton type="primary" onClick={roleHandleSubmit(handleSave)}>저장</CustomButton>
-            </div>
-        </section>
-
         <section className="board-wrap half-wrap type03">
             <div>
                 <div className="board-title-wrap">

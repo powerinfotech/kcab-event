@@ -1,14 +1,13 @@
-package com.miso.lxnn.domain;
+package com.miso.lxnn.dto.common;
 
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class Btn {
+public class MenuBtnDetailDto {
     private Long btnSeq;
-    private Integer sortSeq;
     private String btnNm;
     private String btnFuncCd;
-    private String useYn;
+    private Integer sortSeq;
 }

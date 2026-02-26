@@ -47,3 +47,12 @@ export interface CommonCodeMap {
 
 export interface AutoCompleteOption extends DefaultOptionType {
 }
+
+export interface MenuBtnDetail {
+    btnSeq: number;
+    btnNm: string;
+    btnFuncCd: string;
+    sortSeq: number;
+}
+
+export type PageButtonHandlers = Record<string, (() => void) | undefined>;

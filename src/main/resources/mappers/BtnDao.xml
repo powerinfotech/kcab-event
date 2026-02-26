@@ -5,6 +5,7 @@
         SELECT btn_seq AS btnSeq,
                sort_seq AS sortSeq,
                btn_nm AS btnNm,
+               btn_func_cd AS btnFuncCd,
                use_yn AS useYn
         FROM tb_btn
         WHERE sort_seq BETWEEN 1 AND 9

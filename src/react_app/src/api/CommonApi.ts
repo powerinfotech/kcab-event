@@ -1,6 +1,6 @@
 import axios from 'axios';
 import {User} from '@interface/master/UserManagement';
-import {ApiResponse, CommonCodeMap, IudType} from '@interface/common';
+import {ApiResponse, CommonCodeMap, IudType, MenuBtnDetail} from '@interface/common';
 import {MenuInfo} from '@interface/auth/MenuManagement';
 import {Role} from '@interface/auth/RoleManagement';
 import {FileDetailType} from "@component/CustomFile";
@@ -41,6 +41,11 @@ export const getUserMenuInfo = async () => {
 };
 
 
+
+export const callGetMenuBtnList = async (menuSeq: number) => {
+    const {data} = await axios.get<ApiResponse<MenuBtnDetail[]>>('/api/common/menu-btn-list', {params: {menuSeq}, headers: {showLoading: false}});
+    return data;
+};
 
 export const callLogout = async () => {
    const {data} = await axios.post<ApiResponse<boolean>>('/api/logout');

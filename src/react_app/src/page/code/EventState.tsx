@@ -11,9 +11,10 @@ import {EventStateListItem, EventStateSearchParam} from '@interface/code/EventSt
 import {useForm} from 'react-hook-form';
 import CustomValidFormInput from '@component/form/CustomValidFormInput';
 import CustomValidFormSelect from '@component/form/CustomValidFormSelect';
+import {PageButtonHandlers} from '@interface/common';
 
 
-const EventState = () => {
+const EventState = ({handlersRef}: {onChange?: (flag: boolean) => void; menuInfo?: any; handlersRef?: React.MutableRefObject<PageButtonHandlers>}) => {
     const {control: searchFormControl, handleSubmit: searchFormHandleSubmit} = useForm<EventStateSearchParam>({mode:'all'});
     const [eventStateDataSource, setEventStateDataSource] = useState<EventStateListItem[]>(eventStateList);
 
@@ -84,14 +85,20 @@ const EventState = () => {
         }
     ];
 
+    useEffect(() => {
+        if (handlersRef) {
+            handlersRef.current = {
+                cfmSearch: searchFormHandleSubmit(onSearch),
+            };
+        }
+    });
+
+    useEffect(() => {
+        return () => { if (handlersRef) handlersRef.current = {}; };
+    }, []);
+
     return (
         <>
-            <section className="button-wrap">
-                <div className="box-btn">
-                    <CustomButton type="primary"><IconBtnRefresh/>초기화</CustomButton>
-                    <CustomButton type="primary" onClick={searchFormHandleSubmit(onSearch)}><IconBtnSearch/>조회</CustomButton>
-                </div>
-            </section>
             <section className="search-wrap">
                 <form>
                     <span>국가지점/다목적위치표지판 번호</span>

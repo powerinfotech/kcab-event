@@ -8,6 +8,7 @@ import com.miso.lxnn.dto.auth.MenuBtnSaveDto;
 import com.miso.lxnn.dto.auth.MenuListDto;
 import com.miso.lxnn.dto.auth.MenuSaveDto;
 import com.miso.lxnn.dto.common.LoginUser;
+import com.miso.lxnn.dto.common.MenuBtnDetailDto;
 import com.miso.lxnn.enums.IudType;
 import com.miso.lxnn.service.auth.MenuManagementService;
 import lombok.extern.slf4j.Slf4j;
@@ -43,6 +44,11 @@ public class MenuManagementServiceImpl extends EgovAbstractServiceImpl implement
     @Override
     public List<MenuBtn> selectMenuBtnList(Long menuSeq) throws Exception {
         return menuBtnDao.selectByMenuSeq(menuSeq);
+    }
+
+    @Override
+    public List<MenuBtnDetailDto> selectActiveMenuBtnList(Long menuSeq) throws Exception {
+        return menuBtnDao.selectActiveByMenuSeq(menuSeq);
     }
 
     @Override

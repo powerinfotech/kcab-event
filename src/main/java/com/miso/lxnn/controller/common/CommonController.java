@@ -6,6 +6,7 @@ import com.miso.lxnn.dto.common.ApiResponse;
 import com.miso.lxnn.dto.common.LoginUser;
 import com.miso.lxnn.dto.auth.MenuListDto;
 import com.miso.lxnn.dto.auth.RoleListSearchDto;
+import com.miso.lxnn.dto.common.MenuBtnDetailDto;
 import com.miso.lxnn.dto.master.AlarmListDto;
 import com.miso.lxnn.dto.master.AlarmListSearchDto;
 import com.miso.lxnn.dto.master.UserListDto;
@@ -80,6 +81,13 @@ public class CommonController {
             return ApiResponse.ok(null);
         AlarmListSearchDto.setUserSeq(loginUser.getUserSeq());
         return ApiResponse.ok(alarmService.selectAlarmList(AlarmListSearchDto));
+    }
+
+    @GetMapping("/menu-btn-list")
+    public ApiResponse<List<MenuBtnDetailDto>> menuBtnList(@MisoSession LoginUser loginUser, @RequestParam("menuSeq") Long menuSeq) throws Exception {
+        if(loginUser == null)
+            return ApiResponse.ok(null);
+        return ApiResponse.ok(menuManagementService.selectActiveMenuBtnList(menuSeq));
     }
 
     @PostMapping("/update-alarm")

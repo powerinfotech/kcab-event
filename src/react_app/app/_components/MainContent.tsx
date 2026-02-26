@@ -1,6 +1,6 @@
 'use client';
 
-import React, { Suspense, useEffect, useRef } from 'react';
+import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Breadcrumb } from 'antd';
 import IconStepArrow from '@icon/IconStepArrow';
@@ -8,9 +8,13 @@ import IconHome from '@icon/IconHome';
 import ErrorPage404 from '@error/ErrorPage404';
 import { getPageComponent, getStaticRouteKey } from '@util/PageRegistry';
 import { MenuInfo } from '@interface/auth/MenuManagement';
+import { MenuBtnDetail, PageButtonHandlers } from '@interface/common';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { menuInfoAtom } from '@atom/menuInfoAtom';
 import { showErrorPageAtom } from '@atom/showErrorPageAtom';
+import { callGetMenuBtnList } from '@api/CommonApi';
+import { HttpStatusCode } from 'axios';
+import MenuButtonBar from '@component/MenuButtonBar';
 
 function getDefaultMenuPath(menuList: MenuInfo[]): string | null {
   const level2Menu = menuList.filter((item) => item.level === 2);
@@ -28,6 +32,8 @@ export default function MainContent() {
   const menuInfo = useRecoilValue(menuInfoAtom);
   const setShowErrorPage = useSetRecoilState(showErrorPageAtom);
   const hasRedirected = useRef(false);
+  const handlersRef = useRef<PageButtonHandlers>({});
+  const [menuBtnList, setMenuBtnList] = useState<MenuBtnDetail[]>([]);
 
   useEffect(() => {
     if (menuInfo.length === 0) return;
@@ -43,14 +49,30 @@ export default function MainContent() {
     }
   }, [pathname, menuInfo, router]);
 
-  const onChange = React.useCallback((flag: boolean) => {
+  const menu = menuInfo.find((m) => m.menuTypeCd === 'V' && m.useYn === 'Y' && m.menuUrl === pathname);
+
+  useEffect(() => {
+    handlersRef.current = {};
+    if (menu?.menuSeq) {
+      callGetMenuBtnList(menu.menuSeq).then((res) => {
+        if (res?.code === HttpStatusCode.Ok && res.item) {
+          setMenuBtnList(res.item);
+        } else {
+          setMenuBtnList([]);
+        }
+      }).catch(() => setMenuBtnList([]));
+    } else {
+      setMenuBtnList([]);
+    }
+  }, [menu?.menuSeq]);
+
+  const onChange = useCallback((flag: boolean) => {
     setShowErrorPage(flag);
   }, [setShowErrorPage]);
 
   const staticKey = getStaticRouteKey(pathname);
-  const menu = menuInfo.find((m) => m.menuTypeCd === 'V' && m.useYn === 'Y' && m.menuUrl === pathname);
 
-  let Comp: React.ComponentType<{ onChange: (flag: boolean) => void; menuInfo?: MenuInfo }> | null = null;
+  let Comp: React.ComponentType<{ onChange: (flag: boolean) => void; menuInfo?: MenuInfo; handlersRef?: React.MutableRefObject<PageButtonHandlers> }> | null = null;
   let menuItem: MenuInfo | null = null;
 
   if (pathname === '/') {
@@ -99,7 +121,8 @@ export default function MainContent() {
                 />
               </div>
             </section>
-            <Comp onChange={onChange} menuInfo={menuItem} />
+            <MenuButtonBar menuBtnList={menuBtnList} handlersRef={handlersRef} />
+            <Comp onChange={onChange} menuInfo={menuItem} handlersRef={handlersRef} />
           </Suspense>
         </div>
       </div>

@@ -12,8 +12,9 @@ import {useForm} from 'react-hook-form';
 import dayjs from "dayjs";
 import CustomValidAutoComplete from '@component/form/CustomValidAutocomplete';
 import CustomValidFormCheckbox from '@component/form/CustomValidFormCheckbox';
+import {PageButtonHandlers} from '@interface/common';
 
-const AccessLog = () => {
+const AccessLog = ({handlersRef}: {onChange?: (flag: boolean) => void; menuInfo?: any; handlersRef?: React.MutableRefObject<PageButtonHandlers>}) => {
     const [open, setOpen] = useState(false);
     const {control: searchFormControl, handleSubmit: searchFormHandleSubmit,reset:searchFormReset,setValue, getValues} = useForm<AccessLogListParam>({mode:'all'});
     const [tableHeight, setTableHeight] = useState(600);
@@ -109,19 +110,20 @@ const AccessLog = () => {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
+    useEffect(() => {
+        if (handlersRef) {
+            handlersRef.current = {
+                cfmInit: () => { selectAccessLogList(initParam); setSelectUser(null); searchFormReset(); },
+                cfmSearch: searchFormHandleSubmit(onFinish),
+            };
+        }
+    });
+
+    useEffect(() => {
+        return () => { if (handlersRef) handlersRef.current = {}; };
+    }, []);
+
     return <>
-        <section className="button-wrap">
-            <div className="box-btn">
-                <CustomButton type="primary" onClick={() => {
-                    selectAccessLogList(initParam);
-                    setSelectUser(null);
-                    searchFormReset();
-
-                }}><IconBtnRefresh />초기화</CustomButton>
-                <CustomButton type="primary" onClick={searchFormHandleSubmit(onFinish)}><IconBtnSearch />조회</CustomButton>
-            </div>
-        </section>
-
         <section className="search-wrap">
             <form>
                 <span>기간</span>&nbsp;&nbsp;

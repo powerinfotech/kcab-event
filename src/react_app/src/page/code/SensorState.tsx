@@ -15,9 +15,10 @@ import {useForm} from "react-hook-form";
 import {EventStateSearchParam} from "@interface/code/EventState";
 import {NationAddrNoSearchInfo} from "@interface/code/NationAddrNoState";
 import {callGetNationAddrNoStateList, callGetNationAddrNoStateSearch} from "@api/code/NationAddrNoStateApi";
+import {PageButtonHandlers} from '@interface/common';
 
 
-const SensorState = () => {
+const SensorState = ({handlersRef}: {onChange?: (flag: boolean) => void; menuInfo?: any; handlersRef?: React.MutableRefObject<PageButtonHandlers>}) => {
     const {control: searchFormControl, handleSubmit: searchFormHandleSubmit, setValue, getValues: searchFormGetValues} = useForm<SensorPackSearchParam>({mode:'all'});
     const [sensorPackStateDataSource, setSensorPackStateDataSource] = useState<SensorPackListItem[]>([]);
     const [sensorStateDataSource, setSensorStateDataSource] = useState<SensorListItem[]>([]);
@@ -208,13 +209,20 @@ const SensorState = () => {
     useEffect(() => {
         searchInfo();
     }, []);
+    useEffect(() => {
+        if (handlersRef) {
+            handlersRef.current = {
+                cfmSearch: onSearch,
+            };
+        }
+    });
+
+    useEffect(() => {
+        return () => { if (handlersRef) handlersRef.current = {}; };
+    }, []);
+
     return (
         <>
-            <section className="button-wrap">
-                <div className="box-btn">
-                    <CustomButton type="primary" onClick={onSearch}><IconBtnSearch/>조회</CustomButton>
-                </div>
-            </section>
             <section className="search-wrap">
                 <form onSubmit={searchFormHandleSubmit(onSearch)}>
                     <span>국가지점/다목적위치표지판 번호</span>

@@ -11,7 +11,7 @@ import {
     NationAddrNoStateListItem,
     NationAddrNoStateSearchParam
 } from '@interface/code/NationAddrNoState';
-import {IudType} from '@interface/common';
+import {IudType, PageButtonHandlers} from '@interface/common';
 import {Option} from 'antd/lib/mentions';
 import CustomModal from '@component/CustomModal';
 import {useForm} from 'react-hook-form';
@@ -30,7 +30,7 @@ import CustomSaveFormCheckbox from "@component/form/CustomSaveFormCheckbox";
 import CustomSaveFormSelect from "@component/form/CustomSaveFormSelect";
 
 
-const NationAddrNoState = () => {
+const NationAddrNoState = ({handlersRef}: {onChange?: (flag: boolean) => void; menuInfo?: any; handlersRef?: React.MutableRefObject<PageButtonHandlers>}) => {
     const {control: searchFormControl, handleSubmit: searchFormHandleSubmit,setValue, getValues: searchFormGetValues, reset:searchFormReset} = useForm<NationAddrNoStateSearchParam>({mode:'all'});
     const [nationAddrDataSource, setNationAddrDataSource] = useState<NationAddrNoStateListItem[]>([]);
     const [nationAddrOrgDataSource, setNationAddrOrgDataSource] = useState<NationAddrNoStateListItem[]>([]);
@@ -338,15 +338,22 @@ const NationAddrNoState = () => {
         searchInfo();
     }, []);
 
+    useEffect(() => {
+        if (handlersRef) {
+            handlersRef.current = {
+                cfmInit: handleReset,
+                cfmSearch: onSearch,
+                cfmSave: onSave,
+            };
+        }
+    });
+
+    useEffect(() => {
+        return () => { if (handlersRef) handlersRef.current = {}; };
+    }, []);
+
     return (
         <>
-            <section className="button-wrap">
-                <div className="box-btn">
-                    <CustomButton type="primary" onClick={handleReset}><IconBtnRefresh/>초기화</CustomButton>
-                    <CustomButton type="primary" onClick={onSearch}><IconBtnSearch/>조회</CustomButton>
-                    <CustomButton type="primary" onClick={onSave}>저장</CustomButton>
-                </div>
-            </section>
             <section className="search-wrap">
                     <form onSubmit={searchFormHandleSubmit(onSearch)}>
                         <span>국가지점/다목적위치표지판 번호</span>

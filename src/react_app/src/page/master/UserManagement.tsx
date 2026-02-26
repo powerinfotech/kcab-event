@@ -5,7 +5,7 @@ import CustomButton from '@component/CustomButton';
 import CustomTable, {IUD_COLUMN} from '@component/CustomTable';
 import {callDeleteUser, callGetUserList, callSaveUser} from '@api/master/UserManagementApi';
 import {User, UserList, UserListSearchParam} from '@interface/master/UserManagement';
-import {IudType} from '@interface/common';
+import {IudType, PageButtonHandlers} from '@interface/common';
 import {HttpStatusCode} from 'axios';
 import {ColumnsType} from 'antd/es/table';
 import {useCmCode} from '@hook/useCmCode';
@@ -124,7 +124,7 @@ const emptyList: UserList[] = [
 ];
 
 
-const UserManagement = () => {
+const UserManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menuInfo?: any; handlersRef?: React.MutableRefObject<PageButtonHandlers>}) => {
     const userInfo = useRecoilValue(sessionInfoAtom);
     const {control: searchFormControl
         , getValues: searchFormGetValues
@@ -309,6 +309,22 @@ const UserManagement = () => {
         handleSearchList();
     }, []);
 
+    useEffect(() => {
+        if (handlersRef) {
+            handlersRef.current = {
+                cfmInit: handleReset,
+                cfmSearch: handleSearchList,
+                cfmAdd: () => handleAdd(),
+                cfmDelete: () => handleDelete(),
+                cfmSave: saveFormHandleSubmit(handleSave),
+            };
+        }
+    });
+
+    useEffect(() => {
+        return () => { if (handlersRef) handlersRef.current = {}; };
+    }, []);
+
     const handleDataChanged = () => {
         const formDate  = saveFormGetValues();
         const changedDataSource = dataSource.map((item)=> {
@@ -334,23 +350,6 @@ const UserManagement = () => {
 
     return  (
         <>
-        <section className={'button-wrap'}>
-            <div className="box-btn">
-                <CustomButton type="primary" onClick={() => {
-                    handleReset();
-                }} disabled={!isEditable || currentDataSource?.iudType === IudType.I}><IconBtnRefresh/>{'초기화'}
-                </CustomButton>
-                <CustomButton type="primary" onClick={handleSearchList}><IconBtnSearch/>조회</CustomButton>
-                <CustomButton type="primary" onClick={() => {
-                    handleAdd().then();
-                }} disabled={!isAdminUser}>{'추가'}</CustomButton>
-                <CustomButton type="primary" onClick={() => {
-                    handleDelete().then();
-                }} disabled={!isEditable}>{'삭제'}</CustomButton>
-                <CustomButton type="primary" onClick={saveFormHandleSubmit(handleSave)}
-                              disabled={!isEditable}>{'저장'}</CustomButton>
-            </div>
-        </section>
         <section className="search-wrap">
             <form onSubmit={searchFormHandleSubmit(handleSearchList)}>
                 <span>ID/성명</span>

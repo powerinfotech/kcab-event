@@ -1,7 +1,7 @@
 import {message, Table, TableColumnsType, TableProps} from 'antd';
 import React, {useEffect, useState} from 'react';
 import CustomButton from '@component/CustomButton';
-import {IudType} from '@interface/common';
+import {IudType, PageButtonHandlers} from '@interface/common';
 import CustomCheckbox from '@component/CustomCheckbox';
 
 import CustomInput from '@component/CustomInput';
@@ -17,7 +17,7 @@ import {HttpStatusCode} from 'axios';
 import {useMessage} from '@hook/useMessage';
 import {callGetUserList} from "@api/master/UserManagementApi";
 
-const CommonGroupCodeManagement = () => {
+const CommonGroupCodeManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menuInfo?: any; handlersRef?: React.MutableRefObject<PageButtonHandlers>}) => {
     const {control: searchFormControl, getValues: searchFormGetValues, handleSubmit: searchFormHandleSubmit} = useForm<CommonGepCodeSearchParam>({mode:'all'});
 
     const {register: comGrpCodeRegister
@@ -471,15 +471,21 @@ const CommonGroupCodeManagement = () => {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    return <>
-        <section className="button-wrap">
-            <div className="box-btn">
-                <CustomButton type="primary" onClick={handleReset}><IconBtnRefresh />초기화</CustomButton>
-                <CustomButton type="primary" onClick={selectCommonGrpCodeList}><IconBtnSearch />조회</CustomButton>
-                <CustomButton type="primary" onClick={comGrpCodeHandleSubmit(saveCode)}>저장</CustomButton>
-            </div>
-        </section>
+    useEffect(() => {
+        if (handlersRef) {
+            handlersRef.current = {
+                cfmInit: handleReset,
+                cfmSearch: selectCommonGrpCodeList,
+                cfmSave: comGrpCodeHandleSubmit(saveCode),
+            };
+        }
+    });
 
+    useEffect(() => {
+        return () => { if (handlersRef) handlersRef.current = {}; };
+    }, []);
+
+    return <>
         <section className="search-wrap">
             <form onSubmit={searchFormHandleSubmit(selectCommonGrpCodeList)}>
                 <span>분류코드/명</span>

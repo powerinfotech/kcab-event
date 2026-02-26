@@ -10,7 +10,7 @@ import {HttpStatusCode} from 'axios';
 import {message} from 'antd';
 import IconTitle from '@icon/IconTitle';
 import {AuthGroupList} from '@interface/auth/AuthGroupManagement';
-import {CommonCodeMap, IudType} from '@interface/common';
+import {CommonCodeMap, IudType, PageButtonHandlers} from '@interface/common';
 import {callGetAuthGroupList, callSaveAuthGroup} from '@api/auth/AuthGroupManagementApi';
 import CustomSelect from '@component/CustomSelect';
 import {useCmCode} from '@hook/useCmCode';
@@ -54,7 +54,7 @@ const AuthGrpNmCell = ({
     );
 };
 
-const AuthGroupMenuManagement = () => {
+const AuthGroupMenuManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menuInfo?: any; handlersRef?: React.MutableRefObject<PageButtonHandlers>}) => {
     const cmCode = useCmCode(['AuthGrpType']);
     const {register: authGroupRegister
         , unregister: authGroupUnregister
@@ -299,16 +299,22 @@ const AuthGroupMenuManagement = () => {
         handleSearchAuthGroupList();
     }, []);
 
+    useEffect(() => {
+        if (handlersRef) {
+            handlersRef.current = {
+                cfmInit: handleReset,
+                cfmSearch: handleSearchAuthGroupList,
+                cfmSave: authGroupHandleSubmit(handleSave),
+            };
+        }
+    });
+
+    useEffect(() => {
+        return () => { if (handlersRef) handlersRef.current = {}; };
+    }, []);
+
     return (
         <>
-            <section className="button-wrap">
-                <div className="box-btn">
-                    <CustomButton type="primary" onClick={handleReset}><IconBtnRefresh/>초기화</CustomButton>
-                    <CustomButton type="primary" onClick={handleSearchAuthGroupList}><IconBtnSearch/>조회</CustomButton>
-                    <CustomButton type="primary" onClick={authGroupHandleSubmit(handleSave)}>저장</CustomButton>
-                </div>
-            </section>
-
             <section className="board-wrap">
                 <div>
                     <div className="board-title-wrap">

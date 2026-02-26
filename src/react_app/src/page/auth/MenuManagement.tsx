@@ -20,7 +20,7 @@ import CustomSaveFormSelect from '@component/form/CustomSaveFormSelect';
 import {DefaultOptionType} from 'rc-select/lib/Select';
 import CustomValidFormInput from '@component/form/CustomValidFormInput';
 import CustomValidFormCheckbox from '@component/form/CustomValidFormCheckbox';
-import {IudType} from '@interface/common';
+import {IudType, PageButtonHandlers} from '@interface/common';
 import {HttpStatusCode} from 'axios';
 import {useMessage} from '@hook/useMessage';
 
@@ -38,7 +38,7 @@ const emptyList:EmptyMenu[] = [
     }
 ];
 
-const MenuManagement = () => {
+const MenuManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menuInfo?: any; handlersRef?: React.MutableRefObject<PageButtonHandlers>}) => {
     const {confirm} = useMessage();
     const userInfo = useRecoilValue(sessionInfoAtom);
     const {register: searchFormRegister
@@ -515,18 +515,24 @@ const MenuManagement = () => {
     }, [btnList.length]);
 
 
+    useEffect(() => {
+        if (handlersRef) {
+            handlersRef.current = {
+                cfmInit: handleReset,
+                cfmSearch: () => handleSearch().then(handleFilter),
+                cfmAdd: handleAdd,
+                cfmDelete: handleDelete,
+                cfmSave: saveFormHandleSubmit(handleSave),
+            };
+        }
+    });
+
+    useEffect(() => {
+        return () => { if (handlersRef) handlersRef.current = {}; };
+    }, []);
+
     return Object.keys(cmCode).length > 0 && (
         <>
-            <section className="button-wrap">
-                <div className="box-btn">
-                    <CustomButton type="primary" onClick={handleReset}><IconBtnRefresh/>초기화</CustomButton>
-                    <CustomButton type="primary" onClick={()=>handleSearch().then(handleFilter)}><IconBtnSearch/>조회</CustomButton>
-                    <CustomButton type="primary" onClick={handleAdd}>추가</CustomButton>
-                    <CustomButton type="primary" onClick={handleDelete}>삭제</CustomButton>
-                    <CustomButton type="primary" onClick={saveFormHandleSubmit(handleSave)}>{'저장'}</CustomButton>
-                </div>
-            </section>
-
             <section className="search-wrap">
                 <form>
                     <span>메뉴명</span>

@@ -1,7 +1,7 @@
 import {message, Table, TableColumnsType, TableProps} from 'antd';
 import React, {useEffect, useState} from 'react';
 import CustomButton from '@component/CustomButton';
-import {IudType} from '@interface/common';
+import {IudType, PageButtonHandlers} from '@interface/common';
 import CustomCheckbox from '@component/CustomCheckbox';
 
 import CustomInput from '@component/CustomInput';
@@ -21,7 +21,7 @@ import {useForm} from 'react-hook-form';
 import CustomValidFormInput from '@component/form/CustomValidFormInput';
 import {HttpStatusCode} from 'axios';
 
-const CommonCodeManagement = () => {
+const CommonCodeManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menuInfo?: any; handlersRef?: React.MutableRefObject<PageButtonHandlers>}) => {
     const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
     const [searchComGrpCdSeq,setSearchComGrpCdSeq] = useState<number|undefined>(undefined);
     const [searchGrpCd,setSearchGrpCd] = useState<string>('');
@@ -535,15 +535,21 @@ const CommonCodeManagement = () => {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    return <>
-        <section className="button-wrap">
-            <div className="box-btn">
-                <CustomButton type="primary" onClick={()=>handleCodeRowSelection()}><IconBtnRefresh />초기화</CustomButton>
-                <CustomButton type="primary" onClick={selectCommonGrpCodeList}><IconBtnSearch />조회</CustomButton>
-                <CustomButton type="primary" onClick={comCodeHandleSubmit(saveCode)}>저장</CustomButton>
-            </div>
-        </section>
+    useEffect(() => {
+        if (handlersRef) {
+            handlersRef.current = {
+                cfmInit: () => handleCodeRowSelection(),
+                cfmSearch: selectCommonGrpCodeList,
+                cfmSave: comCodeHandleSubmit(saveCode),
+            };
+        }
+    });
 
+    useEffect(() => {
+        return () => { if (handlersRef) handlersRef.current = {}; };
+    }, []);
+
+    return <>
         <section className="board-wrap half-wrap type02">
             <div>
                 <div className="board-title-wrap">

@@ -3,7 +3,7 @@ import {message} from 'antd';
 import CustomInput from '@component/CustomInput';
 import CustomButton from '@component/CustomButton';
 import CustomTable, {IUD_COLUMN} from '@component/CustomTable';
-import {CodeResponse, IudType} from '@interface/common';
+import {CodeResponse, IudType, PageButtonHandlers} from '@interface/common';
 import {HttpStatusCode} from 'axios';
 import {ColumnsType} from 'antd/es/table';
 import CustomCheckbox from '@component/CustomCheckbox';
@@ -129,7 +129,7 @@ const emptyAreaData:AreaDataType = {
     };
 
 
-const SetupManagement = () => {
+const SetupManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menuInfo?: any; handlersRef?: React.MutableRefObject<PageButtonHandlers>}) => {
     const {
         watch: watchSearchParam
         , control: controlAreaSearchForm
@@ -358,34 +358,24 @@ const SetupManagement = () => {
         }
     }, [selectedAreaRowIndex]);
 
+    useEffect(() => {
+        if (handlersRef) {
+            handlersRef.current = {
+                cfmInit: () => handleReset(),
+                cfmSearch: () => handleSearchAreaList(watchSearchParam()),
+                cfmAdd: () => handleAdd(),
+                cfmDelete: () => handleDelete(),
+                cfmSave: handleSubmitAreaForm(handleSave),
+            };
+        }
+    });
+
+    useEffect(() => {
+        return () => { if (handlersRef) handlersRef.current = {}; };
+    }, []);
+
     return  (
         <>
-        <section className={'button-wrap'}>
-            <div className="box-btn">
-                <CustomButton type="primary"
-                              onClick={() => {handleReset();}}
-                              disabled={!isEditable || currentAreaDataSource?.iudType === IudType.I}>
-                    <IconBtnRefresh/>초기화
-                </CustomButton>
-                <CustomButton type="primary"
-                              onClick={() => {handleSearchAreaList(watchSearchParam());}}>
-                    <IconBtnSearch/>조회
-                </CustomButton>
-                <CustomButton type="primary"
-                              onClick={() => {handleAdd();}}>
-                    추가
-                </CustomButton>
-                <CustomButton type="primary"
-                              onClick={() => {handleDelete();}}
-                              disabled={!isEditable}>
-                    삭제
-                </CustomButton>
-                <CustomButton type="primary" onClick={handleSubmitAreaForm(handleSave)}
-                              disabled={!isEditable}>
-                    저장
-                </CustomButton>
-            </div>
-        </section>
         <section className="search-wrap">
         <form onSubmit={handleSubmitAreaSearchForm(handleSearchAreaList)}>
             <span>구역 명</span>

@@ -12,6 +12,17 @@
         ORDER BY btn_seq
     </select>
 
+    <select id="selectActiveByMenuSeq" resultType="com.miso.lxnn.dto.common.MenuBtnDetailDto">
+        SELECT mb.btn_seq AS btnSeq,
+               COALESCE(NULLIF(mb.btn_nm, ''), b.btn_nm) AS btnNm,
+               b.btn_func_cd AS btnFuncCd,
+               b.sort_seq AS sortSeq
+        FROM tb_menu_btn mb
+        JOIN tb_btn b ON mb.btn_seq = b.btn_seq
+        WHERE mb.menu_seq = #{menuSeq} AND mb.use_yn = 'Y'
+        ORDER BY b.sort_seq
+    </select>
+
     <delete id="deleteByMenuSeq">
         DELETE FROM tb_menu_btn
         WHERE menu_seq = #{menuSeq}

@@ -4,7 +4,7 @@ import React, {useEffect, useRef, useState} from "react";
 
 import {Notice, NoticeList, NoticeListSearchParam} from "@interface/master/NoticeManagement";
 import CustomButton from "@component/CustomButton";
-import {IudType} from "@interface/common";
+import {IudType, PageButtonHandlers} from "@interface/common";
 import IconBtnRefresh from "@icon/IconBtnRefresh";
 import {Controller, useForm} from "react-hook-form";
 import CustomInput from "@component/CustomInput";
@@ -130,7 +130,7 @@ interface props{
     menuInfo:MenuInfo;
 }
 
-const NoticeManagement =({menuInfo}:props)=>{
+const NoticeManagement =({menuInfo, handlersRef}:props & {handlersRef?: React.MutableRefObject<PageButtonHandlers>})=>{
     const userInfo = useRecoilValue(sessionInfoAtom);
     const {register : saveFormRegister,
         control: saveFormControl,
@@ -380,19 +380,24 @@ const NoticeManagement =({menuInfo}:props)=>{
         searchInfo();
     }, []);
 
+    useEffect(() => {
+        if (handlersRef) {
+            handlersRef.current = {
+                cfmInit: handleReset,
+                cfmSearch: handleSearchList,
+                cfmAdd: handleAdd,
+                cfmDelete: handleDelete,
+                cfmSave: () => saveFormHandleSubmit(handleSave)(),
+            };
+        }
+    });
+
+    useEffect(() => {
+        return () => { if (handlersRef) handlersRef.current = {}; };
+    }, []);
+
     return(
         <>
-            <section className={'button-wrap'}>
-                <div className="box-btn">
-                    <CustomButton type="primary" onClick={handleReset} disabled={!isEditable||currentDataSource?.iudType === IudType.I}><IconBtnRefresh/>{'초기화'}</CustomButton>
-                    <CustomButton type="primary" onClick={handleSearchList}>{'조회'}</CustomButton>
-                    <CustomButton type="primary" onClick={handleAdd} disabled={!isAdminUser}>{'추가'}</CustomButton>
-                    <CustomButton type="primary" onClick={handleDelete} disabled={!isEditable}>{'삭제'}</CustomButton>
-                    <CustomButton type="primary"   onClick={() => {  saveFormHandleSubmit(handleSave)();
-                    }} disabled={!isEditable}>{'저장'}</CustomButton>
-                </div>
-            </section>
-
             <section className="search-wrap">
                 <form onSubmit={searchFormHandleSubmit(handleSearchList)}>
                     <span>제목</span>

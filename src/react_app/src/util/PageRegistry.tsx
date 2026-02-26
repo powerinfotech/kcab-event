@@ -1,8 +1,13 @@
 /// <reference types="webpack-env" />
 import dynamic from 'next/dynamic';
 import { MenuInfo } from '@interface/auth/MenuManagement';
+import { PageButtonHandlers } from '@interface/common';
 
-type PageComponentProps = { onChange: (flag: boolean) => void; menuInfo?: MenuInfo };
+type PageComponentProps = {
+  onChange: (flag: boolean) => void;
+  menuInfo?: MenuInfo;
+  handlersRef?: React.MutableRefObject<PageButtonHandlers>;
+};
 
 /**
  * require.context를 사용하여 src/page 디렉토리의 컴포넌트를 menu_view_path 기반으로 동적 로드
