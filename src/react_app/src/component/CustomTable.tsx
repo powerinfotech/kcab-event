@@ -71,6 +71,9 @@ const CustomTable = (props: CustomTableProps) => {
 
 
     const setSelectedClassName = (record:any, index:number) => {
+        if (props.selectedRowIndex !== undefined) {
+            return index === props.selectedRowIndex ? 'selected-row' : '';
+        }
         return index === selectRowIndex ? 'selected-row' : '';
     };
 

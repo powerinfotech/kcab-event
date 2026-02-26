@@ -11,13 +11,13 @@ interface CustomFormInputProps extends InputProps {
     [key: string]: any;
 }
 
-const CustomValidFormInput = forwardRef<InputRef, CustomFormInputProps>(({name, defaultValue, control, onChangeValue,  ...props}, ref) => {
+const CustomValidFormInput = forwardRef<InputRef, CustomFormInputProps>(({name, defaultValue, control, onChangeValue, regExp, ...props}, ref) => {
     const [focus, setFocus] = useState<boolean>(false);
     const [validError, setValidError] = useState<boolean>(false);
 
     const handleChange = (field:any, v: React.ChangeEvent<HTMLInputElement>) => {
          setValidError(false);
-         if(props.regExp && props.regExp.value && !props.regExp?.value.test(v.target.value)){
+         if(regExp && regExp.value && !regExp.value.test(v.target.value)){
             setValidError(true);
             return;
          }
@@ -25,7 +25,7 @@ const CustomValidFormInput = forwardRef<InputRef, CustomFormInputProps>(({name, 
              field.onChange('');
          }
          field.onChange(v);
-         props.onChangeValue && props.onChangeValue(v);
+         onChangeValue && onChangeValue(v.target.value);
     };
 
 
@@ -40,7 +40,7 @@ const CustomValidFormInput = forwardRef<InputRef, CustomFormInputProps>(({name, 
             control={control}
             render={({ field, fieldState }) => (
                 <>
-                <Tooltip title={validError && props.regExp?.message ? props.regExp.message : (fieldState.error?.message ?? (props.regExp ? props.regExp.message : ''))}
+                <Tooltip title={validError && regExp?.message ? regExp.message : (fieldState.error?.message ?? (regExp ? regExp.message : ''))}
                          open={(fieldState.error !== undefined || validError) && focus}>
                     <div className={(fieldState.error !== undefined || validError)  ? 'tooltip error' : ''}>
                         <Input
