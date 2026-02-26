@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.miso.lxnn.dao.AuthManagementDao">
+
+	<!-- ═══ tb_auth_grp ═══ -->
+	<select id="selectAuthGrpList" resultType="com.miso.lxnn.dto.auth.AuthGrpListDto">
+		SELECT
+			 auth_grp_seq
+			,auth_grp_nm
+			,auth_grp_expl
+			,use_yn
+			,rgst_user_seq
+			,rgst_date_time::timestamp AS rgst_date_time
+			,upt_user_seq
+			,upt_date_time::timestamp AS upt_date_time
+		FROM tb_auth_grp
+		ORDER BY auth_grp_seq
+	</select>
+
+	<insert id="insertAuthGrp" parameterType="com.miso.lxnn.domain.AuthGrp" useGeneratedKeys="true" keyProperty="authGrpSeq">
+		INSERT INTO tb_auth_grp
+		(
+			 auth_grp_nm
+			,auth_grp_expl
+			,use_yn
+			,rgst_user_seq
+			,rgst_date_time
+			,upt_user_seq
+			,upt_date_time
+		)
+		VALUES (
+			 #{authGrpNm}
+			,#{authGrpExpl}
+			,#{useYn}
+			,#{rgstUserSeq}
+			,now()
+			,#{uptUserSeq}
+			,now()
+		)
+	</insert>
+
+	<update id="updateAuthGrp" parameterType="com.miso.lxnn.domain.AuthGrp">
+		UPDATE tb_auth_grp
+		SET auth_grp_nm = #{authGrpNm}
+		   ,auth_grp_expl = #{authGrpExpl}
+		   ,use_yn = #{useYn}
+		   ,upt_user_seq = #{uptUserSeq}
+		   ,upt_date_time = now()
+		WHERE auth_grp_seq = #{authGrpSeq}
+	</update>
+
+	<delete id="deleteAuthGrp" parameterType="java.lang.Integer">
+		DELETE FROM tb_auth_grp
+		WHERE auth_grp_seq = #{authGrpSeq}
+	</delete>
+
+	<!-- ═══ tb_auth ═══ -->
+	<select id="selectAuthList" parameterType="java.lang.Integer" resultType="com.miso.lxnn.dto.auth.AuthListDto">
+		SELECT
+			 auth_seq
+			,auth_grp_seq
+			,auth_nm
+			,auth_expl
+			,use_yn
+			,rgst_user_seq
+			,rgst_date_time::timestamp AS rgst_date_time
+			,upt_user_seq
+			,upt_date_time::timestamp AS upt_date_time
+		FROM tb_auth
+		WHERE auth_grp_seq = #{authGrpSeq}
+		ORDER BY auth_seq
+	</select>
+
+	<insert id="insertAuth" parameterType="com.miso.lxnn.domain.Auth" useGeneratedKeys="true" keyProperty="authSeq">
+		INSERT INTO tb_auth
+		(
+			 auth_grp_seq
+			,auth_nm
+			,auth_expl
+			,use_yn
+			,rgst_user_seq
+			,rgst_date_time
+			,upt_user_seq
+			,upt_date_time
+		)
+		VALUES (
+			 #{authGrpSeq}
+			,#{authNm}
+			,#{authExpl}
+			,#{useYn}
+			,#{rgstUserSeq}
+			,now()
+			,#{uptUserSeq}
+			,now()
+		)
+	</insert>
+
+	<update id="updateAuth" parameterType="com.miso.lxnn.domain.Auth">
+		UPDATE tb_auth
+		SET auth_nm = #{authNm}
+		   ,auth_expl = #{authExpl}
+		   ,use_yn = #{useYn}
+		   ,upt_user_seq = #{uptUserSeq}
+		   ,upt_date_time = now()
+		WHERE auth_seq = #{authSeq}
+	</update>
+
+	<delete id="deleteAuth" parameterType="java.lang.Integer">
+		DELETE FROM tb_auth
+		WHERE auth_seq = #{authSeq}
+	</delete>
+
+	<delete id="deleteAuthByAuthGrpSeq" parameterType="java.lang.Integer">
+		DELETE FROM tb_auth
+		WHERE auth_grp_seq = #{authGrpSeq}
+	</delete>
+
+	<!-- ═══ tb_auth_user ═══ -->
+	<select id="selectAuthUserList" resultType="com.miso.lxnn.dto.auth.AuthUserListDto">
+		SELECT
+			 tau.auth_user_seq
+			,tau.auth_grp_seq
+			,tau.auth_seq
+			,tau.user_seq
+			,tu.user_id
+			,tu.user_name
+			,tau.str_dt
+			,tau.end_dt
+			,tau.use_yn
+			,tau.rgst_user_seq
+			,tau.rgst_date_time::timestamp AS rgst_date_time
+			,tau.upt_user_seq
+			,tau.upt_date_time::timestamp AS upt_date_time
+		FROM tb_auth_user tau
+		INNER JOIN tb_user tu ON tau.user_seq = tu.user_seq
+		WHERE tau.auth_grp_seq = #{authGrpSeq}
+		  AND tau.auth_seq = #{authSeq}
+		ORDER BY tau.auth_user_seq
+	</select>
+
+	<insert id="insertAuthUser" parameterType="com.miso.lxnn.domain.AuthUser" useGeneratedKeys="true" keyProperty="authUserSeq">
+		INSERT INTO tb_auth_user
+		(
+			 auth_grp_seq
+			,auth_seq
+			,user_seq
+			,str_dt
+			,end_dt
+			,use_yn
+			,rgst_user_seq
+			,rgst_date_time
+			,upt_user_seq
+			,upt_date_time
+		)
+		VALUES (
+			 #{authGrpSeq}
+			,#{authSeq}
+			,#{userSeq}
+			,#{strDt}
+			,#{endDt}
+			,#{useYn}
+			,#{rgstUserSeq}
+			,now()
+			,#{uptUserSeq}
+			,now()
+		)
+	</insert>
+
+	<update id="updateAuthUser" parameterType="com.miso.lxnn.domain.AuthUser">
+		UPDATE tb_auth_user
+		SET use_yn = #{useYn}
+		   ,str_dt = #{strDt}
+		   ,end_dt = #{endDt}
+		   ,upt_user_seq = #{uptUserSeq}
+		   ,upt_date_time = now()
+		WHERE auth_user_seq = #{authUserSeq}
+	</update>
+
+	<delete id="deleteAuthUser" parameterType="java.lang.Integer">
+		DELETE FROM tb_auth_user
+		WHERE auth_user_seq = #{authUserSeq}
+	</delete>
+
+	<delete id="deleteAuthUserByAuthSeq" parameterType="java.lang.Integer">
+		DELETE FROM tb_auth_user
+		WHERE auth_seq = #{authSeq}
+	</delete>
+
+	<delete id="deleteAuthUserByAuthGrpSeq" parameterType="java.lang.Integer">
+		DELETE FROM tb_auth_user
+		WHERE auth_grp_seq = #{authGrpSeq}
+	</delete>
+
+	<!-- ═══ user search ═══ -->
+	<select id="selectUserSearchList" resultType="com.miso.lxnn.dto.auth.UserSearchDto">
+		SELECT
+			 tu.user_seq
+			,tu.user_id
+			,tu.user_name
+		FROM tb_user tu
+		WHERE 1=1
+		<if test="searchText != null and searchText != ''">
+			AND ((upper(tu.user_id) LIKE '%' || upper(#{searchText}) || '%')
+			OR (upper(tu.user_name) LIKE '%' || upper(#{searchText}) || '%'))
+		</if>
+		<if test="excludeUnused">
+			AND tu.use_yn = 'Y'
+		</if>
+		ORDER BY tu.user_seq
+	</select>
+
+</mapper>
