@@ -46,6 +46,12 @@ const isItemChanged = (originalItem: MenuInfo, newItem: MenuInfo): boolean => {
     return false;
 };
 
+const cloneTreeWithoutIcon = (nodes: MenuTree[]): MenuTree[] =>
+    nodes.map(({icon, children, ...rest}) => ({
+        ...rest,
+        ...(children ? {children: cloneTreeWithoutIcon(children)} : {}),
+    }));
+
 const getMenuIcon = (v: MenuInfo, isLeaf: boolean) => {
     if (v.iudType === IudType.I) return () => <PlusCircleOutlined />;
     if (v.iudType === IudType.U) return () => <CheckCircleOutlined />;
@@ -366,7 +372,7 @@ const MenuManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
         const root: MenuTree[] = [];
         if (orgTreeData?.length) {
             root.push({...orgTreeData[0], icon: () => (<FolderOpenOutlined />), children: []});
-            searchDirectory(root, structuredClone(orgTreeData[0].children as MenuTree[]), searchParam);
+            searchDirectory(root, cloneTreeWithoutIcon(orgTreeData[0].children as MenuTree[]), searchParam);
         }
     };
 
