@@ -142,6 +142,26 @@ const AuthManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
         setSelectedAuthUserRowKeys([]);
     };
 
+    // ── 초기화 ──
+    const handleReset = async () => {
+        if (isAnyChanged) {
+            if (!await confirm('저장하지 않은 정보는 초기화됩니다. 계속 하시겠습니까?')) return;
+        }
+        setAuthGrpDataSource(structuredClone(orgAuthGrpDataSource));
+        if (selectedAuthGrp?.rgstUserSeq && selectedAuthGrp?.authGrpSeq) {
+            const res = await callGetAuthList(selectedAuthGrp.authGrpSeq);
+            if (res.code === HttpStatusCode.Ok) setAuthDataSource(structuredClone(res.item));
+            if (selectedAuth?.rgstUserSeq && selectedAuth?.authSeq) {
+                await fetchAuthUserList(selectedAuthGrp.authGrpSeq, selectedAuth.authSeq);
+            } else {
+                setAuthUserDataSource([]);
+            }
+        } else {
+            setAuthDataSource([]);
+            setAuthUserDataSource([]);
+        }
+    };
+
     // ── Auth Group Handlers ──
     const handleSearchAuthGrpList = async () => {
         if (isAnyChanged) {
@@ -409,7 +429,7 @@ const AuthManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
     useEffect(() => {
         if (handlersRef) {
             handlersRef.current = {
-                cfmInit: handleSearchAuthGrpList,
+                cfmInit: handleReset,
                 cfmSearch: handleSearchAuthGrpList,
                 cfmSave: authGrpHandleSubmit(handleSave),
             };
