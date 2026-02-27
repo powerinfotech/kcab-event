@@ -8,7 +8,7 @@ import com.miso.lxnn.dto.common.LoginUser;
 import java.util.List;
 
 public interface AuthMenuManagementService {
-    List<AuthMenuMgtAuthListDto> selectAuthListWithGroup() throws Exception;
+    List<AuthMenuMgtAuthListDto> selectAuthListWithGroup(String authNm) throws Exception;
 
     List<AuthMenuBtnListDto> selectAuthMenuBtnList(Integer authGrpSeq, Integer authSeq) throws Exception;
 

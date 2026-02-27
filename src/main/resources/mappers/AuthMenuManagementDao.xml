@@ -13,6 +13,9 @@
 			,ta.use_yn
 		FROM tb_auth ta
 		INNER JOIN tb_auth_grp tag ON ta.auth_grp_seq = tag.auth_grp_seq
+		<if test="authNm != null and authNm != ''">
+		WHERE ta.auth_nm LIKE '%' || #{authNm} || '%'
+		</if>
 		ORDER BY tag.auth_grp_seq, ta.auth_seq
 	</select>
 

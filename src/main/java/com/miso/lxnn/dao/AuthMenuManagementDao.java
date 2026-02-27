@@ -10,7 +10,7 @@ import java.util.List;
 
 @Mapper("authMenuManagementDao")
 public interface AuthMenuManagementDao {
-    List<AuthMenuMgtAuthListDto> selectAuthListWithGroup() throws Exception;
+    List<AuthMenuMgtAuthListDto> selectAuthListWithGroup(@Param("authNm") String authNm) throws Exception;
 
     List<AuthMenuBtnListDto> selectAuthMenuBtnList(
             @Param("authGrpSeq") Integer authGrpSeq,

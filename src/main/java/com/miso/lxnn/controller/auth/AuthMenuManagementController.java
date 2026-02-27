@@ -22,8 +22,9 @@ public class AuthMenuManagementController {
 
     @GetMapping("/auth-list")
     public ApiResponse<List<AuthMenuMgtAuthListDto>> selectAuthList(
-            @MisoSession LoginUser loginUser) throws Exception {
-        return ApiResponse.ok(authMenuManagementService.selectAuthListWithGroup());
+            @MisoSession LoginUser loginUser,
+            @RequestParam(value = "authNm", required = false) String authNm) throws Exception {
+        return ApiResponse.ok(authMenuManagementService.selectAuthListWithGroup(authNm));
     }
 
     @GetMapping("/auth-menu-btn-list")

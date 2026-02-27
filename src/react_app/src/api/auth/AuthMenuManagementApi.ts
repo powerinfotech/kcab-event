@@ -2,8 +2,10 @@ import axios from 'axios';
 import {ApiResponse} from '@interface/common';
 import {AuthMenuBtnItem, AuthMenuBtnSaveParam, AuthMenuMgtAuth} from '@interface/auth/AuthMenuManagement';
 
-export const callGetAuthMenuMgtAuthList = async () => {
-    const {data} = await axios.get<ApiResponse<AuthMenuMgtAuth[]>>('/api/auth-menu-mgt/auth-list');
+export const callGetAuthMenuMgtAuthList = async (authNm?: string) => {
+    const {data} = await axios.get<ApiResponse<AuthMenuMgtAuth[]>>('/api/auth-menu-mgt/auth-list', {
+        params: {authNm: authNm || undefined}
+    });
     return data;
 };
 

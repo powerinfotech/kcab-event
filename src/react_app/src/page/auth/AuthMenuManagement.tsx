@@ -30,7 +30,6 @@ const AuthMenuManagement = ({handlersRef}: {
 
     // 좌측: 권한정보
     const [authDataSource, setAuthDataSource] = useState<AuthMenuMgtAuth[]>([]);
-    const [orgAuthDataSource, setOrgAuthDataSource] = useState<AuthMenuMgtAuth[]>([]);
     const [selectedAuthRowIndex, setSelectedAuthRowIndex] = useState(-1);
     const [searchAuthNm, setSearchAuthNm] = useState('');
 
@@ -259,24 +258,15 @@ const AuthMenuManagement = ({handlersRef}: {
     };
 
     // ──────────────────────────── 권한 목록 조회 ────────────────────────────
-    const handleSearchAuthList = () => {
-        callGetAuthMenuMgtAuthList().then(res => {
+    const handleSearchAuthList = (authNm?: string) => {
+        callGetAuthMenuMgtAuthList(authNm !== undefined ? authNm : searchAuthNm).then(res => {
             if (res.code === HttpStatusCode.Ok) {
                 setRowAuthSeq(-1);
                 setRowAuthGrpSeq(-1);
-                setOrgAuthDataSource(JSON.parse(JSON.stringify(res.item)));
+                setAuthDataSource(res.item);
+                setSelectedAuthRowIndex(-1);
             }
         });
-    };
-
-    // ──────────────────────────── 권한 목록 필터 적용 ────────────────────────────
-    const applyAuthFilter = () => {
-        if (!orgAuthDataSource) return;
-        const filtered = orgAuthDataSource.filter(v =>
-            !searchAuthNm || v.authNm.includes(searchAuthNm)
-        );
-        setAuthDataSource(JSON.parse(JSON.stringify(filtered)));
-        setSelectedAuthRowIndex(-1);
     };
 
     // ──────────────────────────── 메뉴버튼 권한 조회 ────────────────────────────
@@ -351,15 +341,10 @@ const AuthMenuManagement = ({handlersRef}: {
             if (!result) return;
         }
         setSearchAuthNm('');
-        setTreeDataSource(JSON.parse(JSON.stringify(orgTreeDataSource)));
+        handleSearchAuthList('');
     };
 
     // ──────────────────────────── Effects ────────────────────────────
-
-    // 권한 원본 데이터 → 필터 적용
-    useEffect(() => {
-        applyAuthFilter();
-    }, [orgAuthDataSource, searchAuthNm]);
 
     // 초기 로드
     useEffect(() => {
@@ -395,7 +380,7 @@ const AuthMenuManagement = ({handlersRef}: {
         <>
             {/* ③ 조회조건: 권한명 검색 */}
             <section className="search-wrap">
-                <form>
+                <form onSubmit={(e) => { e.preventDefault(); handleSearch(); }}>
                     <span>권한명</span>
                     <Input
                         placeholder="권한명을 입력해 주세요."

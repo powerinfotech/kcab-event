@@ -24,8 +24,8 @@ public class AuthMenuManagementServiceImpl extends EgovAbstractServiceImpl imple
     private AuthMenuManagementDao authMenuManagementDao;
 
     @Override
-    public List<AuthMenuMgtAuthListDto> selectAuthListWithGroup() throws Exception {
-        return authMenuManagementDao.selectAuthListWithGroup();
+    public List<AuthMenuMgtAuthListDto> selectAuthListWithGroup(String authNm) throws Exception {
+        return authMenuManagementDao.selectAuthListWithGroup(authNm);
     }
 
     @Override
