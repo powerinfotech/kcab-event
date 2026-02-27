@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.miso.lxnn.dao.AuthMenuManagementDao">
+
+	<!-- 좌측 grid: 권한 목록 (tb_auth + tb_auth_grp JOIN) -->
+	<select id="selectAuthListWithGroup" resultType="com.miso.lxnn.dto.auth.AuthMenuMgtAuthListDto">
+		SELECT
+			 ta.auth_seq
+			,ta.auth_grp_seq
+			,tag.auth_grp_nm
+			,ta.auth_nm
+			,ta.auth_expl
+			,ta.use_yn
+		FROM tb_auth ta
+		INNER JOIN tb_auth_grp tag ON ta.auth_grp_seq = tag.auth_grp_seq
+		ORDER BY tag.auth_grp_seq, ta.auth_seq
+	</select>
+
+	<!-- 우측 tree: 메뉴 트리 + 버튼별 권한 (MenuDao.xml CTE 패턴 재사용) -->
+	<select id="selectAuthMenuBtnList" resultType="com.miso.lxnn.dto.auth.AuthMenuBtnListDto">
+		WITH RECURSIVE menu_record (
+			menu_seq, up_menu_seq, menu_nm, menu_type_cd,
+			use_yn, sort_seq, level, sort_seq_path, path, cycle
+		) AS (
+			SELECT
+				tm.menu_seq,
+				tm.up_menu_seq,
+				tm.menu_nm,
+				tm.menu_type_cd,
+				tm.use_yn,
+				tm.sort_seq,
+				0,
+				tm.sort_seq::text || '-' || tm.menu_seq::text,
+				ARRAY[tm.menu_seq],
+				FALSE
+			FROM tb_menu tm
+			WHERE tm.up_menu_seq IS NULL
+
+			UNION ALL
+
+			SELECT
+				tm.menu_seq,
+				tm.up_menu_seq,
+				tm.menu_nm,
+				tm.menu_type_cd,
+				tm.use_yn,
+				tm.sort_seq,
+				level + 1,
+				mr.sort_seq_path || '-' || tm.sort_seq || '-' || tm.menu_seq::text,
+				mr.path || tm.menu_seq,
+				tm.menu_seq = ANY(path)
+			FROM tb_menu tm
+			INNER JOIN menu_record mr ON tm.up_menu_seq = mr.menu_seq
+			WHERE NOT CYCLE
+		)
+		SELECT
+			 mr.menu_seq
+			,mr.up_menu_seq
+			,mr.menu_nm
+			,mr.menu_type_cd
+			,mr.use_yn          AS menu_use_yn
+			,mr.sort_seq
+			,mr.level
+			,mr.sort_seq_path
+			,tb.btn_seq
+			,tb.sort_seq        AS btn_sort_seq
+			,COALESCE(NULLIF(tmb.btn_nm, ''), tb.btn_nm) AS btn_nm
+			,tmb.use_yn         AS menu_btn_use_yn
+			,tamb.auth_menu_btn_seq
+			,tamb.use_yn        AS auth_menu_btn_use_yn
+		FROM menu_record mr
+		CROSS JOIN tb_btn tb
+		LEFT JOIN tb_menu_btn tmb
+			ON mr.menu_seq = tmb.menu_seq
+			AND tb.btn_seq = tmb.btn_seq
+		LEFT JOIN tb_auth_menu_btn tamb
+			ON mr.menu_seq = tamb.menu_seq
+			AND tb.btn_seq = tamb.btn_seq
+			AND tamb.auth_grp_seq = #{authGrpSeq}
+			AND tamb.auth_seq = #{authSeq}
+		WHERE (tb.sort_seq BETWEEN 1 AND 9 OR tb.sort_seq BETWEEN 11 AND 15)
+		ORDER BY mr.sort_seq_path, tb.sort_seq
+	</select>
+
+	<insert id="insertAuthMenuBtn" parameterType="com.miso.lxnn.domain.AuthMenuBtn" useGeneratedKeys="true" keyProperty="authMenuBtnSeq">
+		INSERT INTO tb_auth_menu_btn (
+			 auth_grp_seq
+			,auth_seq
+			,menu_seq
+			,btn_seq
+			,use_yn
+			,rgst_user_seq
+			,rgst_date_time
+			,upt_user_seq
+			,upt_date_time
+		) VALUES (
+			 #{authGrpSeq}
+			,#{authSeq}
+			,#{menuSeq}
+			,#{btnSeq}
+			,#{useYn}
+			,#{rgstUserSeq}
+			,now()
+			,#{uptUserSeq}
+			,now()
+		)
+	</insert>
+
+	<update id="updateAuthMenuBtn" parameterType="com.miso.lxnn.domain.AuthMenuBtn">
+		UPDATE tb_auth_menu_btn
+		SET use_yn = #{useYn}
+		   ,upt_user_seq = #{uptUserSeq}
+		   ,upt_date_time = now()
+		WHERE auth_menu_btn_seq = #{authMenuBtnSeq}
+	</update>
+
+</mapper>
