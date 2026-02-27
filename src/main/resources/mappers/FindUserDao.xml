@@ -6,25 +6,16 @@
 		SELECT user_id
 		FROM tb_user
 		WHERE hp_no = #{hpNo} AND user_name=#{userName}
-		  AND now() BETWEEN str_date AND COALESCE(end_date, '2999-12-31')
-		  AND use_flag = TRUE
+		  AND TO_CHAR(now(), 'YYYYMMDD') BETWEEN str_date AND COALESCE(end_date, '29991231')
+		  AND use_yn = 'Y'
 	</select>
 
 	<select id="findUserPassword" resultType="com.miso.lxnn.domain.User" parameterType="com.miso.lxnn.domain.User">
 		SELECT password, user_id, user_seq
 		FROM tb_user
 		WHERE user_id = #{userId} AND hp_no = #{hpNo} AND user_name=#{userName}
-		  AND now() BETWEEN str_date AND COALESCE(end_date, '2999-12-31')
-		  AND use_flag = TRUE
+		  AND TO_CHAR(now(), 'YYYYMMDD') BETWEEN str_date AND COALESCE(end_date, '29991231')
+		  AND use_yn = 'Y'
 	</select>
-
-	<update id="updatePassword" parameterType="com.miso.lxnn.dto.master.UserChangePasswordDto" >
-		UPDATE tb_user
-		SET password = #{password}
-		  ,passwd_set_flag = #{passwordSetFlag}
-		  ,upt_date_time = now()
-		  ,upt_user_id = #{uptUserId}
-		WHERE user_seq = #{userSeq}
-	</update>
 
 </mapper>
