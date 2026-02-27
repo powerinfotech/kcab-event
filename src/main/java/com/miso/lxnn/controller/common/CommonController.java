@@ -1,23 +1,19 @@
 package com.miso.lxnn.controller.common;
 
 import com.miso.lxnn.annotation.MisoSession;
-import com.miso.lxnn.dto.auth.RoleListDto;
 import com.miso.lxnn.dto.common.ApiResponse;
 import com.miso.lxnn.dto.common.LoginUser;
 import com.miso.lxnn.dto.auth.MenuListDto;
-import com.miso.lxnn.dto.auth.RoleListSearchDto;
 import com.miso.lxnn.dto.common.MenuBtnDetailDto;
 import com.miso.lxnn.dto.master.AlarmListDto;
 import com.miso.lxnn.dto.master.AlarmListSearchDto;
 import com.miso.lxnn.dto.master.UserListDto;
 import com.miso.lxnn.dto.master.UserListSearchDto;
 import com.miso.lxnn.service.auth.MenuManagementService;
-import com.miso.lxnn.service.auth.impl.RoleManagementServiceImpl;
 import com.miso.lxnn.domain.User;
 import com.miso.lxnn.service.master.UserManagementService;
 import com.miso.lxnn.service.master.AlarmService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -34,8 +30,6 @@ public class CommonController {
 
     @Resource(name = "menuManagementService")
     private MenuManagementService menuManagementService;
-    @Autowired
-    private RoleManagementServiceImpl roleManagementService;
 
     @Resource(name = "alarmService")
     private AlarmService alarmService;
@@ -66,13 +60,6 @@ public class CommonController {
         if(loginUser ==null)
             return ApiResponse.ok(null);
         return ApiResponse.ok(userManagementService.selectUserList(userListSearchDto));
-    }
-
-    @GetMapping("/role-list")
-    public ApiResponse<List<RoleListDto>> userList(@MisoSession LoginUser loginUser, RoleListSearchDto roleListSearchDto) throws Exception {
-        if(loginUser ==null)
-            return ApiResponse.ok(null);
-        return ApiResponse.ok(roleManagementService.selectRoleList(roleListSearchDto));
     }
 
     @GetMapping("/alarm-list")

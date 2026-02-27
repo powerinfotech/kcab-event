@@ -21,10 +21,7 @@ type PageContext = {
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const pageContext: PageContext = require.context('../page', true, /\.tsx$/, 'lazy');
 
-/** menu_view_path와 실제 파일명이 다른 경우 매핑 (예: template -> Template.tsx) */
-const pathAliases: Record<string, string> = {
-  template: 'Template',
-};
+const pathAliases: Record<string, string> = {};
 
 const componentCache: Record<string, React.ComponentType<PageComponentProps>> = {};
 
@@ -61,6 +58,5 @@ export function getPageComponent(viewPath: string): React.ComponentType<PageComp
 export function getStaticRouteKey(pathname: string): string | null {
   const p = pathname === '/' ? '/' : pathname.replace(/^\//, '');
   if (p === '/') return 'Dashboard';
-  if (['Guide', 'ScreenType01', 'ScreenType02', 'ScreenType03', 'ScreenType04', 'ScreenType05', 'ScreenType06', 'ScreenType07', 'ScreenType08', 'template'].includes(p)) return p;
   return null;
 }

@@ -1,6 +1,5 @@
 package com.miso.lxnn.service.auth.impl;
 
-import com.miso.lxnn.dao.AuthGroupDao;
 import com.miso.lxnn.dao.FindUserDao;
 import com.miso.lxnn.dao.UserDao;
 import com.miso.lxnn.domain.User;

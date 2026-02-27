@@ -1,41 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.miso.lxnn.dao.LoginLogDao">
-    <select id="selectUserList" resultType="com.miso.lxnn.dto.stats.AccessLogSearchUserListDto" parameterType="java.lang.String">
-        SELECT user_seq,
-               user_id,
-               user_name
-        FROM tb_user
-        WHERE 1=1
-        <if test="searchText != null">
-           AND (user_name LIKE CONCAT('%',#{searchText},'%') OR user_id LIKE CONCAT('%',#{searchText},'%'))
-        </if>
-    </select>
-
-    <select id="selectLogList" resultType="com.miso.lxnn.dto.stats.AccessLogListDto" parameterType="com.miso.lxnn.dto.stats.AccessLogListParam">
-        SELECT tll.login_log_seq,
-               tu.user_id,
-               tll.user_seq,
-               tll.login_date_time,
-               tll.access_ip,
-               tll.user_agent,
-               tu.user_name,
-               tcd.cm_nm as access_nm
-        FROM tb_login_log tll
-        INNER JOIN tb_user tu ON tll.user_seq = tu.user_seq
-        LEFT OUTER JOIN TB_COM_CD TCD ON tll.access_cd = tcd.cm_std_cd
-        WHERE 1=1
-        <if test="startDate != null and endDate != null">
-            AND tll.login_date_time BETWEEN TO_TIMESTAMP(#{startDate}::TEXT || ' 00:00:01', 'YYYY-MM-DD HH24:MI:SS')AND TO_TIMESTAMP(#{endDate}::TEXT || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
-        </if>
-        <if test="userId != null">
-            AND tu.user_id = #{userId}
-        </if>
-        <if test="useFlag != null">
-            AND tu.use_flag = #{useFlag}
-        </if>
-        ORDER BY tll.login_date_time DESC
-    </select>
     <insert id="insertLoginLog" parameterType="com.miso.lxnn.domain.LoginLog">
         INSERT INTO tb_login_log
         (
