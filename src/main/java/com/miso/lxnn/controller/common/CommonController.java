@@ -5,14 +5,11 @@ import com.miso.lxnn.dto.common.ApiResponse;
 import com.miso.lxnn.dto.common.LoginUser;
 import com.miso.lxnn.dto.auth.MenuListDto;
 import com.miso.lxnn.dto.common.MenuBtnDetailDto;
-import com.miso.lxnn.dto.master.AlarmListDto;
-import com.miso.lxnn.dto.master.AlarmListSearchDto;
 import com.miso.lxnn.dto.master.UserListDto;
 import com.miso.lxnn.dto.master.UserListSearchDto;
 import com.miso.lxnn.service.auth.MenuManagementService;
 import com.miso.lxnn.domain.User;
 import com.miso.lxnn.service.master.UserManagementService;
-import com.miso.lxnn.service.master.AlarmService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,9 +27,6 @@ public class CommonController {
 
     @Resource(name = "menuManagementService")
     private MenuManagementService menuManagementService;
-
-    @Resource(name = "alarmService")
-    private AlarmService alarmService;
 
 
     @GetMapping("/login-info")
@@ -62,31 +56,11 @@ public class CommonController {
         return ApiResponse.ok(userManagementService.selectUserList(userListSearchDto));
     }
 
-    @GetMapping("/alarm-list")
-    public ApiResponse<List<AlarmListDto>> selectAlarmList(@MisoSession LoginUser loginUser, AlarmListSearchDto AlarmListSearchDto) throws Exception {
-        if(loginUser ==null)
-            return ApiResponse.ok(null);
-        AlarmListSearchDto.setUserSeq(loginUser.getUserSeq());
-        return ApiResponse.ok(alarmService.selectAlarmList(AlarmListSearchDto));
-    }
-
     @GetMapping("/menu-btn-list")
     public ApiResponse<List<MenuBtnDetailDto>> menuBtnList(@MisoSession LoginUser loginUser, @RequestParam("menuSeq") Long menuSeq) throws Exception {
         if(loginUser == null)
             return ApiResponse.ok(null);
         return ApiResponse.ok(menuManagementService.selectActiveMenuBtnList(menuSeq));
-    }
-
-    @PostMapping("/update-alarm")
-    public ApiResponse<Void> updateSensorAlarm(@RequestBody AlarmListDto AlarmListDto) throws Exception {
-        alarmService.updateSensorAlarm(AlarmListDto);
-        return ApiResponse.ok();
-    }
-
-    @PostMapping("/update-alarm-all")
-    public ApiResponse<Void> updateSensorAlarmAll(@MisoSession LoginUser loginUser) throws Exception {
-        alarmService.updateSensorAlarmAll(loginUser);
-        return ApiResponse.ok();
     }
 
 }

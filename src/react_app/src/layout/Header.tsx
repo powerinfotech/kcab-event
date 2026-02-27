@@ -1,30 +1,13 @@
-import React, {JSX, useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {callLogout} from '@api/CommonApi';
 import {HttpStatusCode} from 'axios';
 
-import IconAlarm from '@icon/IconAlarm';
 import IconLogout from '@icon/IconLogout';
 import IconAdmin from '@icon/IconAdmin';
 import LogoImage from '../assets/images/logo.png';
 import {MenuInfo} from '@interface/auth/MenuManagement';
 import {useRecoilValue} from 'recoil';
 import {sessionInfoAtom} from '@atom/sessionInfoAtom';
-import {
-    alarmItem
-    ,alarmSearchCondition
-} from "@interface/master/Alarm";
-import {
-    callUpdateAlarm, callUpdateAlarmAll,
-    getSensorAlarmList
-} from "@api/master/AlarmApi";
-
-import IconHumidity from "@icon/IconHumidity";
-import IconBattery from "@icon/IconBattery";
-import IconGps from "@icon/IconGps";
-import IconProtractor from "@icon/IconProtractor";
-import IconShock from "@icon/IconShock";
-import IconSound from "@icon/IconSound";
-import IconEmergency from "@icon/IconEmergency";
 
 function ParentMenu({parentMenu}:{parentMenu:MenuInfo}) {
     return (
@@ -71,67 +54,10 @@ const Header = ({menuInfo}: { menuInfo: MenuInfo[] }) => {
     const handleMouseEnter = () => { setIsMenuHovered(true); };
     const handleMouseLeave = () => { setIsMenuHovered(false); };
 
-    const [sensorAlrmData, setSensorAlrmData] = useState<alarmItem[]>([]);
-    const [alarmSearchCondition, setAlarmSearchCondition] = useState<alarmSearchCondition>({allFlag:false});
-    const iconMap: { [key: string]: JSX.Element }= {
-        'IconGps': <IconGps />,
-        'IconHumidity': <IconHumidity />,
-        'IconProtractor': <IconProtractor />,
-        'IconShock': <IconShock />,
-        'IconSound': <IconSound />,
-        'IconBattery': <IconBattery />,
-    };
-
     const logout = async () => {
        const data = await callLogout();
        if(data.code === HttpStatusCode.Ok)
            location.href = location.pathname;
-    };
-
-    const [isOn, setIsOn] = useState(false);
-
-    const handleToggle = () => {
-        if(!isOn)
-        {
-            getSensorAlarmList(false).then((res) => {
-                if (res.code === HttpStatusCode.Ok && res.item) {
-                    setSensorAlrmData(res.item);
-                    setIsOn(!isOn);
-                }
-            });
-        }
-        else
-        {
-            setIsOn(!isOn);
-        }
-    };
-
-    const dataSearch = async (allFlag:boolean) => {
-        getSensorAlarmList(allFlag).then((res) => {
-            if (res.code === HttpStatusCode.Ok && res.item) {
-                setSensorAlrmData(res.item);
-            }
-        });
-    };
-
-    const updateChk = (snsrAlrmSeq: number) => {
-        setSensorAlrmData(prevItems =>
-            prevItems.map(item =>
-                item.snsrAlrmSeq === snsrAlrmSeq ? { ...item, readCls: '', chkFlag : true } : item
-            )
-        );
-        const saveSensorAlrmData = sensorAlrmData.find(item => item.snsrAlrmSeq === snsrAlrmSeq);
-        if (saveSensorAlrmData) {
-            callUpdateAlarm(saveSensorAlrmData).then(res => {
-            });
-        }
-    };
-
-    const readAll = () => {
-        setSensorAlrmData(prevItems =>
-            prevItems.map(item => ({ ...item, chkFlag: true, readCls: '' }))
-        );
-        callUpdateAlarmAll().then();
     };
 
     const defaultMenu = (menuList: MenuInfo[]) => {
@@ -147,10 +73,6 @@ const Header = ({menuInfo}: { menuInfo: MenuInfo[] }) => {
 
         }
     };
-
-    useEffect(() => {
-        dataSearch(false);
-    }, []);
 
     return (
         <div className='header_wrap' >
@@ -179,42 +101,6 @@ const Header = ({menuInfo}: { menuInfo: MenuInfo[] }) => {
                             <IconAdmin/>
                         </div>
                         <div className='name'>{(sessionInfo && sessionInfo.userName) ?? ''}님</div>
-                    </div>
-
-                    <div className='alarm' onClick={handleToggle}>
-                        <IconAlarm />
-                        <span className='num'>{sensorAlrmData.filter(item => !item.chkFlag).length}</span>
-                    </div>
-
-                    <div className={`alarm-pop ${isOn ? "on" : ""}`}>
-                        <p className='tit'>
-                            알림
-                            <button className='btn btn-read' type='button'>전체 읽음</button>
-                        </p>
-
-                        {isOn && (
-                            <ul className='list' >
-                                {sensorAlrmData.map((item) => {
-                                    return (
-                                        <li key={item.snsrAlrmSeq}>
-                                            <a className={item.readCls} onClick={() => {
-                                                updateChk(item.snsrAlrmSeq);
-                                            }}>
-                                                    <span className={item.iconCls}>
-                                                        {iconMap[item.iconImg]}
-                                                    </span>
-                                                <div>
-                                                    <p>{item.alarmText1}</p>
-                                                    <p>{item.alarmText2}</p>
-                                                </div>
-                                            </a>
-                                        </li>
-                                    );
-                                })}
-                            </ul>
-                        )}
-
-                        <button className='btn btn-more'>이전 알람 보기</button>
                     </div>
 
                     <div className='logout' onClick={logout}>
