@@ -191,6 +191,16 @@
 		WHERE auth_grp_seq = #{authGrpSeq}
 	</delete>
 
+	<delete id="deleteAuthMenuBtnByAuthSeq" parameterType="java.lang.Integer">
+		DELETE FROM tb_auth_menu_btn
+		WHERE auth_seq = #{authSeq}
+	</delete>
+
+	<delete id="deleteAuthMenuBtnByAuthGrpSeq" parameterType="java.lang.Integer">
+		DELETE FROM tb_auth_menu_btn
+		WHERE auth_grp_seq = #{authGrpSeq}
+	</delete>
+
 	<!-- ═══ user search ═══ -->
 	<select id="selectUserSearchList" resultType="com.miso.lxnn.dto.auth.UserSearchDto">
 		SELECT

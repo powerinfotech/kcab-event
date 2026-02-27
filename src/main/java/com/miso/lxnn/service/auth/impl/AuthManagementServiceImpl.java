@@ -62,6 +62,7 @@ public class AuthManagementServiceImpl extends EgovAbstractServiceImpl implement
                         authManagementDao.updateAuthGrp(grp);
                         break;
                     case D:
+                        authManagementDao.deleteAuthMenuBtnByAuthGrpSeq(grp.getAuthGrpSeq());
                         authManagementDao.deleteAuthUserByAuthGrpSeq(grp.getAuthGrpSeq());
                         authManagementDao.deleteAuthByAuthGrpSeq(grp.getAuthGrpSeq());
                         authManagementDao.deleteAuthGrp(grp.getAuthGrpSeq());
@@ -84,6 +85,7 @@ public class AuthManagementServiceImpl extends EgovAbstractServiceImpl implement
                         authManagementDao.updateAuth(auth);
                         break;
                     case D:
+                        authManagementDao.deleteAuthMenuBtnByAuthSeq(auth.getAuthSeq());
                         authManagementDao.deleteAuthUserByAuthSeq(auth.getAuthSeq());
                         authManagementDao.deleteAuth(auth.getAuthSeq());
                         break;

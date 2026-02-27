@@ -31,6 +31,8 @@ public interface AuthManagementDao {
     void deleteAuthUserByAuthSeq(@Param("authSeq") Integer authSeq) throws Exception;
     void deleteAuthByAuthGrpSeq(@Param("authGrpSeq") Integer authGrpSeq) throws Exception;
     void deleteAuthUserByAuthGrpSeq(@Param("authGrpSeq") Integer authGrpSeq) throws Exception;
+    void deleteAuthMenuBtnByAuthSeq(@Param("authSeq") Integer authSeq) throws Exception;
+    void deleteAuthMenuBtnByAuthGrpSeq(@Param("authGrpSeq") Integer authGrpSeq) throws Exception;
 
     List<UserSearchDto> selectUserSearchList(@Param("searchText") String searchText, @Param("excludeUnused") Boolean excludeUnused) throws Exception;
 }
