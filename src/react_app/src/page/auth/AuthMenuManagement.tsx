@@ -1,10 +1,11 @@
 import React, {useEffect, useState} from 'react';
-import {message} from 'antd';
+import {Input, message} from 'antd';
 import {ColumnsType} from 'antd/es/table';
 import {HttpStatusCode} from 'axios';
 import IconTitle from '@icon/IconTitle';
 import CustomTable from '@component/CustomTable';
 import CustomCheckbox from '@component/CustomCheckbox';
+import CustomButton from '@component/CustomButton';
 import {IudType, PageButtonHandlers} from '@interface/common';
 import {useMessage} from '@hook/useMessage';
 import {
@@ -31,7 +32,7 @@ const AuthMenuManagement = ({handlersRef}: {
     const [authDataSource, setAuthDataSource] = useState<AuthMenuMgtAuth[]>([]);
     const [orgAuthDataSource, setOrgAuthDataSource] = useState<AuthMenuMgtAuth[]>([]);
     const [selectedAuthRowIndex, setSelectedAuthRowIndex] = useState(-1);
-    const [isIncludeUnusableAuth, setIsIncludeUnusableAuth] = useState(false);
+    const [searchAuthNm, setSearchAuthNm] = useState('');
 
     // 우측: 메뉴버튼권한
     const [treeDataSource, setTreeDataSource] = useState<AuthMenuBtnRow[]>([]);
@@ -39,7 +40,6 @@ const AuthMenuManagement = ({handlersRef}: {
     const [btnColumns, setBtnColumns] = useState<BtnColumnInfo[]>([]);
     const [defaultExpandRowKeys, setDefaultExpandRowKeys] = useState<React.Key[]>([]);
 
-    const [rowIndex, setRowIndex] = useState(-1);
     const [rowAuthGrpSeq, setRowAuthGrpSeq] = useState(-1);
     const [rowAuthSeq, setRowAuthSeq] = useState(-1);
 
@@ -126,6 +126,21 @@ const AuthMenuManagement = ({handlersRef}: {
         return roots;
     };
 
+    // ──────────────────────────── 접기/펼치기 ────────────────────────────
+    const getAllExpandKeys = (nodes: AuthMenuBtnRow[]): React.Key[] => {
+        const keys: React.Key[] = [];
+        nodes.forEach(n => {
+            if (n.children && n.children.length > 0) {
+                keys.push(n.menuSeq);
+                keys.push(...getAllExpandKeys(n.children));
+            }
+        });
+        return keys;
+    };
+
+    const expandTree = () => setDefaultExpandRowKeys(getAllExpandKeys(treeDataSource));
+    const foldTree = () => setDefaultExpandRowKeys([]);
+
     // ──────────────────────────── 동적 칼럼 생성 ────────────────────────────
     const buildDynamicColumns = (): ColumnsType<AuthMenuBtnRow> => {
         const menuNmColumn = {
@@ -144,13 +159,13 @@ const AuthMenuManagement = ({handlersRef}: {
                 if (record.upMenuSeq == null) return '';
 
                 const enabled = record[`btn_${btn.btnSeq}_enabled`] as boolean;
-                const checked = record[`btn_${btn.btnSeq}_checked`] as boolean;
-                const disabled = !enabled || !isEditableAuth();
+                if (!enabled) return '';
 
+                const checked = record[`btn_${btn.btnSeq}_checked`] as boolean;
                 return (
                     <CustomCheckbox
                         checked={!!checked}
-                        disabled={disabled}
+                        disabled={!isEditableAuth()}
                         onChange={(e: any) => handleCheckboxChange(record.menuSeq, btn.btnSeq, e.target.checked)}
                     />
                 );
@@ -232,6 +247,16 @@ const AuthMenuManagement = ({handlersRef}: {
         });
     };
 
+    // ──────────────────────────── 권한 목록 필터 적용 ────────────────────────────
+    const applyAuthFilter = () => {
+        if (!orgAuthDataSource) return;
+        const filtered = orgAuthDataSource.filter(v =>
+            !searchAuthNm || v.authNm.includes(searchAuthNm)
+        );
+        setAuthDataSource(JSON.parse(JSON.stringify(filtered)));
+        setSelectedAuthRowIndex(-1);
+    };
+
     // ──────────────────────────── 메뉴버튼 권한 조회 ────────────────────────────
     const handleSearchAuthMenuBtn = (authGrpSeq: number, authSeq: number) => {
         callGetAuthMenuBtnList(authGrpSeq, authSeq).then(res => {
@@ -253,19 +278,9 @@ const AuthMenuManagement = ({handlersRef}: {
         }
 
         setSelectedAuthRowIndex(index);
-        setRowIndex(index);
         setRowAuthGrpSeq(record.authGrpSeq);
         setRowAuthSeq(record.authSeq);
         handleSearchAuthMenuBtn(record.authGrpSeq, record.authSeq);
-    };
-
-    // ──────────────────────────── 미사용 권한포함 토글 ────────────────────────────
-    const handleToggleUnusable = async (checked: boolean) => {
-        if (isChanged()) {
-            const result = await confirm('저장하지 않은 정보는 초기화 됩니다. 계속 하시겠습니까?');
-            if (!result) return;
-        }
-        setIsIncludeUnusableAuth(checked);
     };
 
     // ──────────────────────────── 저장 ────────────────────────────
@@ -313,6 +328,7 @@ const AuthMenuManagement = ({handlersRef}: {
             const result = await confirm('저장하지 않은 정보는 초기화됩니다. 계속 하시겠습니까?');
             if (!result) return;
         }
+        setSearchAuthNm('');
         setTreeDataSource(JSON.parse(JSON.stringify(orgTreeDataSource)));
     };
 
@@ -320,17 +336,8 @@ const AuthMenuManagement = ({handlersRef}: {
 
     // 권한 원본 데이터 → 필터 적용
     useEffect(() => {
-        if (orgAuthDataSource) {
-            if (isIncludeUnusableAuth) {
-                setAuthDataSource(JSON.parse(JSON.stringify(orgAuthDataSource)));
-            } else {
-                setAuthDataSource(
-                    JSON.parse(JSON.stringify(orgAuthDataSource)).filter((v: any) => v.useYn === 'Y')
-                );
-            }
-        }
-        setSelectedAuthRowIndex(-1);
-    }, [orgAuthDataSource, isIncludeUnusableAuth]);
+        applyAuthFilter();
+    }, [orgAuthDataSource, searchAuthNm]);
 
     // 초기 로드
     useEffect(() => {
@@ -339,17 +346,10 @@ const AuthMenuManagement = ({handlersRef}: {
 
     // 첫 렌더 시 0번째 행 자동 선택
     useEffect(() => {
-        if (orgAuthDataSource.length > 0 && rowAuthSeq === -1) {
-            handleAuthRowClick(orgAuthDataSource[0], 0).then(() => {});
-        }
-    }, [orgAuthDataSource]);
-
-    // 미사용 권한포함 토글 시 0번째 행 자동 선택
-    useEffect(() => {
-        if (authDataSource && authDataSource.length > 0) {
+        if (authDataSource.length > 0 && rowAuthSeq === -1) {
             handleAuthRowClick(authDataSource[0], 0).then(() => {});
         }
-    }, [isIncludeUnusableAuth]);
+    }, [authDataSource]);
 
     // handlersRef 등록
     useEffect(() => {
@@ -371,6 +371,19 @@ const AuthMenuManagement = ({handlersRef}: {
     // ──────────────────────────── Render ────────────────────────────
     return (
         <>
+            {/* ③ 조회조건: 권한명 검색 */}
+            <section className="search-wrap">
+                <form>
+                    <span>권한명</span>
+                    <Input
+                        placeholder="권한명을 입력해 주세요."
+                        value={searchAuthNm}
+                        onChange={(e) => setSearchAuthNm(e.target.value)}
+                        style={{width: 200}}
+                    />
+                </form>
+            </section>
+
             <section className="board-wrap half-wrap type03">
                 {/* 좌측: 권한정보 */}
                 <div>
@@ -379,15 +392,6 @@ const AuthMenuManagement = ({handlersRef}: {
                             <IconTitle />
                             권한정보
                         </h3>
-                        <div className="box-btn">
-                            <span>
-                                <CustomCheckbox
-                                    name={'isIncludeUnused'}
-                                    checked={isIncludeUnusableAuth}
-                                    onChange={(v: any) => handleToggleUnusable(v.target.checked)}
-                                />미사용 권한포함
-                            </span>
-                        </div>
                     </div>
                     <div className="board-cont-wrap">
                         <CustomTable
@@ -416,6 +420,11 @@ const AuthMenuManagement = ({handlersRef}: {
                             <IconTitle />
                             메뉴권한
                         </h3>
+                        {/* ④ 접기/펼치기 버튼 */}
+                        <div className="box-btn">
+                            <CustomButton type="default" size="small" onClick={foldTree}>접기</CustomButton>
+                            <CustomButton type="default" size="small" onClick={expandTree}>펼치기</CustomButton>
+                        </div>
                     </div>
                     <div className="board-cont-wrap">
                         <CustomTable

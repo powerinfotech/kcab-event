@@ -79,7 +79,7 @@
 			AND tamb.auth_grp_seq = #{authGrpSeq}
 			AND tamb.auth_seq = #{authSeq}
 		WHERE (tb.sort_seq BETWEEN 1 AND 9 OR tb.sort_seq BETWEEN 11 AND 15)
-		ORDER BY mr.sort_seq_path, tb.sort_seq
+		ORDER BY mr.sort_seq_path, CASE WHEN tb.sort_seq BETWEEN 11 AND 15 THEN 0 ELSE 1 END, tb.sort_seq
 	</select>
 
 	<insert id="insertAuthMenuBtn" parameterType="com.miso.lxnn.domain.AuthMenuBtn" useGeneratedKeys="true" keyProperty="authMenuBtnSeq">
