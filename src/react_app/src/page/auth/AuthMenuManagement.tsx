@@ -141,8 +141,27 @@ const AuthMenuManagement = ({handlersRef}: {
         return keys;
     };
 
+    // 최하위 레벨 노드만 접기: children이 있는 노드 중 그 children에 또 children이 없는 노드를 제외
+    const foldLeafParents = (nodes: AuthMenuBtnRow[], currentKeys: React.Key[]): React.Key[] => {
+        const keysToRemove = new Set<React.Key>();
+        const findLeafParents = (items: AuthMenuBtnRow[]) => {
+            items.forEach(n => {
+                if (n.children && n.children.length > 0) {
+                    const hasGrandChildren = n.children.some(c => c.children && c.children.length > 0);
+                    if (!hasGrandChildren) {
+                        keysToRemove.add(n.menuSeq);
+                    } else {
+                        findLeafParents(n.children);
+                    }
+                }
+            });
+        };
+        findLeafParents(nodes);
+        return currentKeys.filter(k => !keysToRemove.has(k));
+    };
+
     const expandTree = () => setDefaultExpandRowKeys(getAllExpandKeys(treeDataSource));
-    const foldTree = () => setDefaultExpandRowKeys([]);
+    const foldTree = () => setDefaultExpandRowKeys(prev => foldLeafParents(treeDataSource, prev));
 
     // ──────────────────────────── 동적 칼럼 생성 ────────────────────────────
     const buildDynamicColumns = (): ColumnsType<AuthMenuBtnRow> => {
