@@ -77,7 +77,10 @@ const AuthMenuManagement = ({handlersRef}: {
                 });
             }
         });
-        const columns = Array.from(btnMap.values()).sort((a, b) => a.btnSortSeq - b.btnSortSeq);
+        const btnSortOrder = (seq: number) => (seq >= 11 && seq <= 15) ? 0 : 1;
+        const columns = Array.from(btnMap.values()).sort((a, b) =>
+            btnSortOrder(a.btnSortSeq) - btnSortOrder(b.btnSortSeq) || a.btnSortSeq - b.btnSortSeq
+        );
         setBtnColumns(columns);
 
         // 2. menuSeq별 그룹핑
