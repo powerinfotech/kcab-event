@@ -178,4 +178,10 @@
 	    ,upt_user_seq = #{uptUserSeq}
 		WHERE user_seq = #{userSeq}
 	</update>
+
+	<update id="updateLoginDateTime">
+		UPDATE TB_USER
+		SET login_date_time = now()
+		WHERE user_seq = #{userSeq}
+	</update>
 </mapper>

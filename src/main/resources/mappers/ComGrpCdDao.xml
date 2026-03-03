@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.miso.lxnn.dao.ComGrpCdDao">
+
+	<select id="selectComGrpCdList" resultType="com.miso.lxnn.dto.code.ComGrpCdListDto">
+		SELECT
+			 com_grp_cd_seq
+			,com_grp_cd
+			,com_grp_nm
+			,com_grp_desc
+			,ref01
+			,ref02
+			,ref03
+			,ref04
+			,ref05
+			,ref06
+			,ref07
+			,ref08
+			,ref09
+			,ref10
+			,ref11
+			,ref12
+			,ref13
+			,ref14
+			,ref15
+			,use_yn
+			,rgst_user_seq
+			,rgst_date_time::timestamp AS rgst_date_time
+			,upt_user_seq
+			,upt_date_time::timestamp AS upt_date_time
+		FROM tb_com_grp_cd
+		WHERE 1=1
+		<if test="searchText != null and searchText != ''">
+			AND (
+				upper(com_grp_cd) LIKE '%' || upper(#{searchText}) || '%'
+				OR upper(com_grp_nm) LIKE '%' || upper(#{searchText}) || '%'
+			)
+		</if>
+		ORDER BY com_grp_cd
+	</select>
+
+	<insert id="insertComGrpCd" parameterType="com.miso.lxnn.domain.ComGrpCd" useGeneratedKeys="true" keyProperty="comGrpCdSeq">
+		INSERT INTO tb_com_grp_cd
+		(
+			 com_grp_cd
+			,com_grp_nm
+			,com_grp_desc
+			,ref01
+			,ref02
+			,ref03
+			,ref04
+			,ref05
+			,ref06
+			,ref07
+			,ref08
+			,ref09
+			,ref10
+			,ref11
+			,ref12
+			,ref13
+			,ref14
+			,ref15
+			,use_yn
+			,rgst_user_seq
+			,rgst_date_time
+			,upt_user_seq
+			,upt_date_time
+		)
+		VALUES (
+			 #{comGrpCd}
+			,#{comGrpNm}
+			,#{comGrpDesc}
+			,#{ref01}
+			,#{ref02}
+			,#{ref03}
+			,#{ref04}
+			,#{ref05}
+			,#{ref06}
+			,#{ref07}
+			,#{ref08}
+			,#{ref09}
+			,#{ref10}
+			,#{ref11}
+			,#{ref12}
+			,#{ref13}
+			,#{ref14}
+			,#{ref15}
+			,#{useYn}
+			,#{rgstUserSeq}
+			,now()
+			,#{uptUserSeq}
+			,now()
+		)
+	</insert>
+
+	<update id="updateComGrpCd" parameterType="com.miso.lxnn.domain.ComGrpCd">
+		UPDATE tb_com_grp_cd
+		SET com_grp_nm    = #{comGrpNm}
+		   ,com_grp_desc  = #{comGrpDesc}
+		   ,ref01         = #{ref01}
+		   ,ref02         = #{ref02}
+		   ,ref03         = #{ref03}
+		   ,ref04         = #{ref04}
+		   ,ref05         = #{ref05}
+		   ,ref06         = #{ref06}
+		   ,ref07         = #{ref07}
+		   ,ref08         = #{ref08}
+		   ,ref09         = #{ref09}
+		   ,ref10         = #{ref10}
+		   ,ref11         = #{ref11}
+		   ,ref12         = #{ref12}
+		   ,ref13         = #{ref13}
+		   ,ref14         = #{ref14}
+		   ,ref15         = #{ref15}
+		   ,use_yn        = #{useYn}
+		   ,upt_user_seq  = #{uptUserSeq}
+		   ,upt_date_time = now()
+		WHERE com_grp_cd_seq = #{comGrpCdSeq}
+	</update>
+
+</mapper>

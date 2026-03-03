@@ -21,4 +21,5 @@ public interface UserDao {
     void updateUser(User user) throws Exception;
     void deleteUser(User user) throws Exception;
     void updatePassword(User user) throws Exception;
+    void updateLoginDateTime(@Param("userSeq") Long userSeq) throws Exception;
 }

@@ -51,12 +51,7 @@ const UserMenuAuthInquiry = ({handlersRef}: {
     }, [showAllAuth]);
 
     useEffect(() => {
-        console.log('btnColumns', btnColumns);
-    }, [btnColumns]);
-
-    useEffect(() => {
         callGetBtnList().then(res => {
-            console.log('res', res);
             if (res.code === HttpStatusCode.Ok && res.item) {
                 const btnSortOrder = (seq: number) => (seq >= 11 && seq <= 15) ? 0 : 1;
                 const cols: BtnColumnInfo[] = res.item

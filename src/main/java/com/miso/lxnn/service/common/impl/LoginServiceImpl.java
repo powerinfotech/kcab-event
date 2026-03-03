@@ -53,6 +53,12 @@ public class LoginServiceImpl extends EgovAbstractServiceImpl implements LoginSe
         httpSession.setAttribute("user", loginUser);
 
         try {
+            userDao.updateLoginDateTime(loginUser.getUserSeq().longValue());
+        } catch (Exception e) {
+            log.warn("최종 로그인일시 갱신 실패(로그인은 정상 처리): {}", e.getMessage());
+        }
+
+        try {
             loginLogDao.insertLoginLog(
                     LoginLog.builder()
                             .userSeq(loginUser.getUserSeq())
