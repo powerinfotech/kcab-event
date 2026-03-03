@@ -317,17 +317,15 @@ const CommonGroupCodeManagement = ({handlersRef}: {onChange?: (flag: boolean) =>
     return (
         <>
             <section className="search-wrap">
-                <div className="search-area">
-                    <div className="search-item">
-                        <label className="tit">분류코드/명</label>
-                        <CustomInput
-                            value={searchText}
-                            onChange={(e) => setSearchText(e.target.value)}
-                            onKeyDown={handleKeyDown}
-                            style={{width: 200}}
-                        />
-                    </div>
-                </div>
+                <form>
+                    <span>분류코드/명</span>
+                    <CustomInput
+                        value={searchText}
+                        onChange={(e) => setSearchText(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        style={{width: 200}}
+                    />
+                </form>
             </section>
 
             <section className="board-wrap">
