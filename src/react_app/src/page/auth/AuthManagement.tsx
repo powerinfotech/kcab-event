@@ -26,7 +26,8 @@ function applyDataChange<T extends Record<string, any>>(
 ) {
     setter(prev => prev.map(item =>
         item[keyField] === record[keyField]
-            ? {...item, [field]: value, iudType: item.iudType !== IudType.I ? IudType.U : item.iudType}
+            ? item[field] === value ? item
+                : {...item, [field]: value, iudType: item.iudType !== IudType.I ? IudType.U : item.iudType}
             : item
     ));
 }
@@ -72,6 +73,23 @@ const AuthGrpNmCell = ({
     );
 };
 
+const AuthNmCell = ({
+    record, value, setValue, control, register, onDataChange,
+}: {
+    record: AuthInfoList; value: string; setValue: (name: string, v: string) => void;
+    control: any; register: any; onDataChange: (record: AuthInfoList, key: string, value: any) => void;
+}) => {
+    const fieldName = `${record.authSeq}_authNm`;
+    useEffect(() => { setValue(fieldName, value); }, [fieldName, value, setValue]);
+    return (
+        <CustomValidFormInput
+            control={control} required={true} maxLength={100}
+            onChangeValue={(e) => onDataChange(record, 'authNm', e)}
+            {...register(fieldName, {required: '권한명은 필수입력입니다.'})}
+        />
+    );
+};
+
 const AuthManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menuInfo?: any; handlersRef?: React.MutableRefObject<PageButtonHandlers>}) => {
     const {
         register: authGrpRegister, unregister: authGrpUnregister,
@@ -80,6 +98,7 @@ const AuthManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
     const {confirm} = useMessage();
     const tempSeqRef = useRef(-1);
     const autoSelectAuthGrpRef = useRef(true);
+    const prevAuthSeqsRef = useRef<number[]>([]);
 
     // ── Auth Group State ──
     const [authGrpDataSource, setAuthGrpDataSource] = useState<AuthGrpList[]>([]);
@@ -358,8 +377,8 @@ const AuthManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
             title: <span className="tit">권한명<em>*</em></span>,
             key: 'authNm', dataIndex: 'authNm', align: 'center', width: '30%',
             render: (value: string, record: AuthInfoList) =>
-                <CustomInput value={value} maxLength={100}
-                    onChange={(e) => handleDataChangeAuth(record, 'authNm', e.target.value)}/>,
+                <AuthNmCell record={record} value={value} setValue={authGrpSetValue}
+                    control={authGrpControl} register={authGrpRegister} onDataChange={handleDataChangeAuth}/>,
         },
         {
             title: '권한설명', key: 'authExpl', dataIndex: 'authExpl', align: 'center', width: '35%',
@@ -417,6 +436,13 @@ const AuthManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
             }
         }
     }, [orgAuthGrpDataSource]);
+
+    useEffect(() => {
+        const currentSeqs = authDataSource.map(v => v.authSeq);
+        const removedSeqs = prevAuthSeqsRef.current.filter(seq => !currentSeqs.includes(seq));
+        removedSeqs.forEach(seq => authGrpUnregister(`${seq}_authNm`));
+        prevAuthSeqsRef.current = currentSeqs;
+    }, [authDataSource]);
 
     useEffect(() => {
         callGetAuthGrpList().then(res => {
