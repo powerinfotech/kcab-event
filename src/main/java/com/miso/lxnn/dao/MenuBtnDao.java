@@ -11,6 +11,7 @@ import java.util.List;
 public interface MenuBtnDao {
     List<MenuBtn> selectByMenuSeq(@Param("menuSeq") Long menuSeq);
     List<MenuBtnDetailDto> selectActiveByMenuSeq(@Param("menuSeq") Long menuSeq);
+    List<MenuBtnDetailDto> selectUserPermittedMenuBtnList(@Param("userId") String userId, @Param("menuSeq") Long menuSeq);
     void deleteByMenuSeq(@Param("menuSeq") Long menuSeq);
     void insert(MenuBtn menuBtn);
 }

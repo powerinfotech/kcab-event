@@ -18,7 +18,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service("menuManagementService")
@@ -33,6 +36,37 @@ public class MenuManagementServiceImpl extends EgovAbstractServiceImpl implement
     @Override
     public List<MenuListDto> selectMenuInfo(String userId) throws Exception {
         return menuDao.selectMenuList(userId);
+    }
+
+    @Override
+    public List<MenuListDto> selectUserPermittedMenuInfo(String userId) throws Exception {
+        List<MenuListDto> allMenus = menuDao.selectMenuList(userId);
+        List<Long> permittedMenuSeqs = menuDao.selectUserPermittedMenuSeqs(userId);
+        Set<Long> permittedSet = new HashSet<>(permittedMenuSeqs);
+
+        Set<Long> allowedMenuSeqs = new HashSet<>(permittedSet);
+        for (MenuListDto menu : allMenus) {
+            if (menu.getMenuSeq() != null && permittedSet.contains(menu.getMenuSeq().longValue())) {
+                Integer parentSeq = menu.getUpMenuSeq();
+                while (parentSeq != null) {
+                    allowedMenuSeqs.add(parentSeq.longValue());
+                    final Integer pSeq = parentSeq;
+                    MenuListDto parent = allMenus.stream()
+                            .filter(m -> m.getMenuSeq() != null && m.getMenuSeq().equals(pSeq))
+                            .findFirst().orElse(null);
+                    parentSeq = parent != null ? parent.getUpMenuSeq() : null;
+                }
+            }
+        }
+
+        return allMenus.stream()
+                .filter(menu -> menu.getMenuSeq() != null && allowedMenuSeqs.contains(menu.getMenuSeq().longValue()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<MenuBtnDetailDto> selectUserPermittedMenuBtnList(String userId, Long menuSeq) throws Exception {
+        return menuBtnDao.selectUserPermittedMenuBtnList(userId, menuSeq);
     }
 
     @Override

@@ -147,11 +147,10 @@ const UserManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
     const [dataSource, setDataSource] = useState<UserList[]>([]);
     const [orgDataSource, setOrgDataSource] = useState<UserList[]>([]);
     const cmCode = useCmCode(['UserClass']);
-    const isAdminUser = userInfo.admYn === 'Y';
     const [isRowSelected, setIsRowSelected] = useState<boolean>(false);
     const [isOpen, setIsOpen] = useState<boolean>(false);
     const [isValidUser, setIsValidUser] = useState<boolean>(false);
-    const isEditable = isRowSelected && isAdminUser;
+    const isEditable = isRowSelected;
     const {confirm} = useMessage();
     const [selectedRowIndex, setSelectedRowIndex] = useState(-1);
     const currentDataSource = dataSource[selectedRowIndex];

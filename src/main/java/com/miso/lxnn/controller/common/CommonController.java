@@ -45,8 +45,9 @@ public class CommonController {
     public ApiResponse<List<MenuListDto>> menuInfo(@MisoSession LoginUser loginUser) throws Exception {
         if(loginUser ==null)
             return ApiResponse.ok(null);
-        String userId=loginUser.getUserId();
-        return ApiResponse.ok(menuManagementService.selectMenuInfo(userId).stream().filter(v->v.getUpMenuSeq() != null).collect(Collectors.toList()));
+        String userId = loginUser.getUserId();
+        return ApiResponse.ok(menuManagementService.selectUserPermittedMenuInfo(userId)
+                .stream().filter(v->v.getUpMenuSeq() != null).collect(Collectors.toList()));
     }
 
     @GetMapping("/user-list")
@@ -60,7 +61,8 @@ public class CommonController {
     public ApiResponse<List<MenuBtnDetailDto>> menuBtnList(@MisoSession LoginUser loginUser, @RequestParam("menuSeq") Long menuSeq) throws Exception {
         if(loginUser == null)
             return ApiResponse.ok(null);
-        return ApiResponse.ok(menuManagementService.selectActiveMenuBtnList(menuSeq));
+        String userId = loginUser.getUserId();
+        return ApiResponse.ok(menuManagementService.selectUserPermittedMenuBtnList(userId, menuSeq));
     }
 
 }

@@ -11,9 +11,11 @@ import java.util.List;
 
 public interface MenuManagementService {
     List<MenuListDto> selectMenuInfo(String userId) throws Exception;
+    List<MenuListDto> selectUserPermittedMenuInfo(String userId) throws Exception;
     List<Btn> selectBtnList() throws Exception;
     List<MenuBtn> selectMenuBtnList(Long menuSeq) throws Exception;
     List<MenuBtnDetailDto> selectActiveMenuBtnList(Long menuSeq) throws Exception;
+    List<MenuBtnDetailDto> selectUserPermittedMenuBtnList(String userId, Long menuSeq) throws Exception;
     void saveMenu(LoginUser loginUser, MenuSaveDto menuSaveDto) throws Exception;
     void deleteMenu(Integer menuSeq) throws Exception;
 }

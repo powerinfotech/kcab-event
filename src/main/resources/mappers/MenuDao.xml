@@ -72,6 +72,19 @@
 		ORDER BY mr.sort_seq_path
 	</select>
 
+	<select id="selectUserPermittedMenuSeqs" resultType="java.lang.Long" parameterType="java.lang.String">
+		SELECT DISTINCT amb.menu_seq
+		FROM tb_auth_menu_btn amb
+		JOIN tb_auth_user au ON amb.auth_grp_seq = au.auth_grp_seq AND amb.auth_seq = au.auth_seq
+		JOIN tb_user u ON au.user_seq = u.user_seq
+		JOIN tb_menu_btn mb ON amb.menu_seq = mb.menu_seq AND amb.btn_seq = mb.btn_seq AND mb.use_yn = 'Y'
+		WHERE u.user_id = #{userId}
+		  AND au.use_yn = 'Y'
+		  AND amb.use_yn = 'Y'
+		  AND au.str_dt &lt;= TO_CHAR(NOW(), 'YYYYMMDD')
+		  AND au.end_dt &gt;= TO_CHAR(NOW(), 'YYYYMMDD')
+	</select>
+
 	<insert id="insertMenu" parameterType="com.miso.lxnn.domain.Menu" useGeneratedKeys="true" keyProperty="menuSeq">
 		INSERT INTO tb_menu
 		(

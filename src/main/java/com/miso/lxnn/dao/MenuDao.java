@@ -10,6 +10,7 @@ import java.util.List;
 @Mapper("menuDao")
 public interface MenuDao {
     List<MenuListDto> selectMenuList(String userId) throws Exception;
+    List<Long> selectUserPermittedMenuSeqs(String userId) throws Exception;
     void insertMenu(Menu menu) throws Exception;
     void updateMenu(Menu menu) throws Exception;
     void deleteMenu(@Param("menuSeq") Integer menuSeq) throws Exception;

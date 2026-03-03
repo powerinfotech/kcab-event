@@ -23,6 +23,26 @@
         ORDER BY b.sort_seq
     </select>
 
+    <select id="selectUserPermittedMenuBtnList" resultType="com.miso.lxnn.dto.common.MenuBtnDetailDto">
+        SELECT DISTINCT mb.btn_seq AS btnSeq,
+               COALESCE(NULLIF(mb.btn_nm, ''), b.btn_nm) AS btnNm,
+               b.btn_func_cd AS btnFuncCd,
+               b.sort_seq AS sortSeq
+        FROM tb_menu_btn mb
+        JOIN tb_btn b ON mb.btn_seq = b.btn_seq
+        JOIN tb_auth_menu_btn amb ON amb.menu_seq = mb.menu_seq AND amb.btn_seq = mb.btn_seq
+        JOIN tb_auth_user au ON amb.auth_grp_seq = au.auth_grp_seq AND amb.auth_seq = au.auth_seq
+        JOIN tb_user u ON au.user_seq = u.user_seq
+        WHERE mb.menu_seq = #{menuSeq}
+          AND mb.use_yn = 'Y'
+          AND amb.use_yn = 'Y'
+          AND au.use_yn = 'Y'
+          AND u.user_id = #{userId}
+          AND au.str_dt &lt;= TO_CHAR(NOW(), 'YYYYMMDD')
+          AND au.end_dt &gt;= TO_CHAR(NOW(), 'YYYYMMDD')
+        ORDER BY b.sort_seq
+    </select>
+
     <delete id="deleteByMenuSeq">
         DELETE FROM tb_menu_btn
         WHERE menu_seq = #{menuSeq}
