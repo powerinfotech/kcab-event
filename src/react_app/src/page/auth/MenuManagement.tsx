@@ -95,7 +95,6 @@ const filterSearchView = (parent: MenuTree, root: MenuTree, viewList: MenuTree[]
 
 const MenuManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menuInfo?: any; handlersRef?: React.MutableRefObject<PageButtonHandlers>}) => {
     const {confirm} = useMessage();
-    const userInfo = useRecoilValue(sessionInfoAtom);
     const {
         control: searchFormControl,
         handleSubmit: searchFormHandleSubmit,
@@ -272,16 +271,19 @@ const MenuManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
             btnNm: b.btnNm,
             useYn: b.useYn,
         }));
-        const res = await callSaveMenu({...menu, menuBtnList});
-        if (res.code === HttpStatusCode.Ok) {
-            message.success('저장이 완료되었습니다.');
-            saveFormReset(EMPTY_MENU);
-            callGetMenuInfo().then(menuRes => {
-                setIsRowSelected(true);
-                setDataSource(structuredClone(menuRes.item));
-                setOrgDataSource(structuredClone(menuRes.item));
-            });
-            onSelectChange(rowSeq);
+
+        if(menu.menuSeq) {
+            const res = await callSaveMenu({...menu, menuBtnList});
+            if (res.code === HttpStatusCode.Ok) {
+                message.success('저장이 완료되었습니다.');
+                saveFormReset(EMPTY_MENU);
+                callGetMenuInfo().then(menuRes => {
+                    setIsRowSelected(true);
+                    setDataSource(structuredClone(menuRes.item));
+                    setOrgDataSource(structuredClone(menuRes.item));
+                });
+                onSelectChange(rowSeq);
+            }
         }
     };
 
