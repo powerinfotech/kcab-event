@@ -119,13 +119,12 @@ const MenuManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
     const [orgTreeData, setOrgTreeData] = useState<MenuTree[]>();
     const [parentMenuCombo, setParentMenuCombo] = useState<DefaultOptionType[]>([]);
     const [expandedKey, setExpandedKey] = useState<React.Key[]>();
-    const isAdminUser = userInfo.admYn === 'Y';
     const [isRowSelected, setIsRowSelected] = useState<boolean>(false);
     const [dataSource, setDataSource] = useState<MenuInfo[]>([]);
     const [orgDataSource, setOrgDataSource] = useState<MenuInfo[]>([]);
     const [selectable, setSelectable] = useState<boolean>(true);
     const [selectedKeys, setSelectedKeys] = useState<any[]>([]);
-    const isEditable = isRowSelected && isAdminUser;
+    const isEditable = isRowSelected;
     const isViewMenu = saveFormWatch('menuTypeCd') === 'V';
     const isSaveFormErrors = Object.keys(saveFormErrors).length > 0;
     const isChangedDataSource = dataSource.some(v => v.iudType);
