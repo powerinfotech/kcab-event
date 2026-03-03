@@ -6,8 +6,8 @@
 		SELECT
 			 com_grp_cd_seq
 			,com_grp_cd
-			,com_grp_nm
-			,com_grp_desc
+			,com_grp_cd_nm
+			,com_grp_cd_desc
 			,ref01
 			,ref02
 			,ref03
@@ -33,7 +33,7 @@
 		<if test="searchText != null and searchText != ''">
 			AND (
 				upper(com_grp_cd) LIKE '%' || upper(#{searchText}) || '%'
-				OR upper(com_grp_nm) LIKE '%' || upper(#{searchText}) || '%'
+				OR upper(com_grp_cd_nm) LIKE '%' || upper(#{searchText}) || '%'
 			)
 		</if>
 		ORDER BY com_grp_cd
@@ -43,8 +43,8 @@
 		INSERT INTO tb_com_grp_cd
 		(
 			 com_grp_cd
-			,com_grp_nm
-			,com_grp_desc
+			,com_grp_cd_nm
+			,com_grp_cd_desc
 			,ref01
 			,ref02
 			,ref03
@@ -68,8 +68,8 @@
 		)
 		VALUES (
 			 #{comGrpCd}
-			,#{comGrpNm}
-			,#{comGrpDesc}
+			,#{comGrpCdNm}
+			,#{comGrpCdDesc}
 			,#{ref01}
 			,#{ref02}
 			,#{ref03}
@@ -95,8 +95,8 @@
 
 	<update id="updateComGrpCd" parameterType="com.miso.lxnn.domain.ComGrpCd">
 		UPDATE tb_com_grp_cd
-		SET com_grp_nm    = #{comGrpNm}
-		   ,com_grp_desc  = #{comGrpDesc}
+		SET com_grp_cd_nm    = #{comGrpCdNm}
+		   ,com_grp_cd_desc  = #{comGrpCdDesc}
 		   ,ref01         = #{ref01}
 		   ,ref02         = #{ref02}
 		   ,ref03         = #{ref03}

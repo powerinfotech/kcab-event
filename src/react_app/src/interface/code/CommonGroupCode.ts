@@ -3,8 +3,8 @@ import {IudType} from '@interface/common';
 export interface ComGrpCd {
     comGrpCdSeq: number;
     comGrpCd: string;
-    comGrpNm: string;
-    comGrpDesc: string;
+    comGrpCdNm: string;
+    comGrpCdDesc: string;
     ref01: string;
     ref02: string;
     ref03: string;

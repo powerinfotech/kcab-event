@@ -90,7 +90,7 @@ const CommonGroupCodeManagement = ({handlersRef}: {onChange?: (flag: boolean) =>
     const handleAddRow = () => {
         const tempSeq = tempSeqRef.current--;
         setDataSource(prev => [...prev, {
-            comGrpCdSeq: tempSeq, comGrpCd: '', comGrpNm: '', comGrpDesc: '',
+            comGrpCdSeq: tempSeq, comGrpCd: '', comGrpCdNm: '', comGrpCdDesc: '',
             ref01: '', ref02: '', ref03: '', ref04: '', ref05: '',
             ref06: '', ref07: '', ref08: '', ref09: '', ref10: '',
             ref11: '', ref12: '', ref13: '', ref14: '', ref15: '',
@@ -165,16 +165,16 @@ const CommonGroupCodeManagement = ({handlersRef}: {onChange?: (flag: boolean) =>
                           regExp={comGrpCdRegExp}/>,
         },
         {
-            title: '분류명', key: 'comGrpNm', dataIndex: 'comGrpNm', align: 'center', width: 150,
+            title: '분류명', key: 'comGrpCdNm', dataIndex: 'comGrpCdNm', align: 'center', width: 150,
             render: (value: string, record: ComGrpCdList) =>
                 <CustomInput value={value} maxLength={100}
-                    onChange={(e) => handleDataChange(record, 'comGrpNm', e.target.value)}/>,
+                    onChange={(e) => handleDataChange(record, 'comGrpCdNm', e.target.value)}/>,
         },
         {
-            title: '설명', key: 'comGrpDesc', dataIndex: 'comGrpDesc', align: 'center', width: 150,
+            title: '설명', key: 'comGrpCdDesc', dataIndex: 'comGrpCdDesc', align: 'center', width: 150,
             render: (value: string, record: ComGrpCdList) =>
                 <CustomInput value={value} maxLength={200}
-                    onChange={(e) => handleDataChange(record, 'comGrpDesc', e.target.value)}/>,
+                    onChange={(e) => handleDataChange(record, 'comGrpCdDesc', e.target.value)}/>,
         },
         {
             title: '사용여부', key: 'useYn', dataIndex: 'useYn', align: 'center', width: 80,

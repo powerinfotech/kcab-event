@@ -10,8 +10,8 @@ import java.time.LocalDateTime;
 public class ComGrpCd {
     private Long comGrpCdSeq;
     private String comGrpCd;
-    private String comGrpNm;
-    private String comGrpDesc;
+    private String comGrpCdNm;
+    private String comGrpCdDesc;
     private String ref01;
     private String ref02;
     private String ref03;
