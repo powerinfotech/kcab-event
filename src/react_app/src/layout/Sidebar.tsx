@@ -56,16 +56,10 @@ export default function Sidebar({
 
   const parentMenus = menuInfo.filter((item) => item.menuTypeCd === 'D' && item.useYn === 'Y');
 
-  const handleParentClick = (menuId: number) => {
-    if (selectedParentId === menuId) {
-      setSubpanelOpen(false);
-      setSelectedParentId(null);
-      onSubpanelOpenChange?.(false);
-    } else {
-      setSelectedParentId(menuId);
-      setSubpanelOpen(true);
-      onSubpanelOpenChange?.(true);
-    }
+  const handleParentHover = (menuId: number) => {
+    setSelectedParentId(menuId);
+    setSubpanelOpen(true);
+    onSubpanelOpenChange?.(true);
   };
 
   const handleSubpanelClose = () => {
@@ -74,20 +68,12 @@ export default function Sidebar({
     onSubpanelOpenChange?.(false);
   };
 
-  useEffect(() => {
-    if (!subpanelOpen) return;
-    const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as Node;
-      if (sidebarWrapRef.current && !sidebarWrapRef.current.contains(target)) {
-        handleSubpanelClose();
-      }
-    };
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, [subpanelOpen]);
-
   return (
-    <aside ref={sidebarWrapRef} className="sidebar_wrap">
+    <aside
+      ref={sidebarWrapRef}
+      className="sidebar_wrap"
+      onMouseLeave={handleSubpanelClose}
+    >
       <div className="sidebar_narrow">
         <nav className="sidebar_narrow_menu">
           {parentMenus.map((parent) => (
@@ -95,7 +81,7 @@ export default function Sidebar({
               key={parent.menuSeq}
               type="button"
               className={`sidebar_narrow_item ${selectedParentId === parent.menuSeq ? 'is-active' : ''}`}
-              onClick={() => handleParentClick(parent.menuSeq)}
+              onMouseEnter={() => handleParentHover(parent.menuSeq)}
             >
               <span className="sidebar_narrow_label">{parent.menuNm}</span>
             </button>
