@@ -13,82 +13,11 @@ import UserSearchPopup from '@component/popup/UserSearchPopup';
 import {IudType, PageButtonHandlers} from '@interface/common';
 import {callGetAuthGrpList, callGetAuthList, callGetAuthUserList, callSaveAuthManagement} from '@api/auth/AuthManagementApi';
 import {useForm} from 'react-hook-form';
-import CustomValidFormInput from '@component/form/CustomValidFormInput';
 import {useMessage} from '@hook/useMessage';
+import {usePageHandlers} from '@hook/usePageHandlers';
 import dayjs from 'dayjs';
-
-function applyDataChange<T extends Record<string, any>>(
-    setter: React.Dispatch<React.SetStateAction<T[]>>,
-    keyField: keyof T,
-    record: T,
-    field: string,
-    value: any,
-) {
-    setter(prev => prev.map(item =>
-        item[keyField] === record[keyField]
-            ? item[field] === value ? item
-                : {...item, [field]: value, iudType: item.iudType !== IudType.I ? IudType.U : item.iudType}
-            : item
-    ));
-}
-
-function applyDeleteRows<T extends { iudType?: IudType }>(
-    dataSource: T[],
-    setter: React.Dispatch<React.SetStateAction<T[]>>,
-    selectedKeys: React.Key[],
-    setSelectedKeys: React.Dispatch<React.SetStateAction<React.Key[]>>,
-    keyField: keyof T,
-): React.Key[] | null {
-    if (selectedKeys.length === 0) {
-        message.info('선택한 내용이 없습니다.');
-        return null;
-    }
-    const newRowKeys = dataSource
-        .filter(v => selectedKeys.includes(v[keyField] as React.Key) && v.iudType === IudType.I)
-        .map(v => v[keyField] as React.Key);
-    setter(
-        dataSource
-            .filter(v => !(selectedKeys.includes(v[keyField] as React.Key) && v.iudType === IudType.I))
-            .map(v => selectedKeys.includes(v[keyField] as React.Key) ? {...v, iudType: IudType.D} : v)
-    );
-    setSelectedKeys(prev => prev.filter(key => !newRowKeys.includes(key)));
-    return newRowKeys;
-}
-
-const AuthGrpNmCell = ({
-    record, value, setValue, control, register, onDataChange,
-}: {
-    record: AuthGrpList; value: string; setValue: (name: string, v: string) => void;
-    control: any; register: any; onDataChange: (record: AuthGrpList, key: string, value: any) => void;
-}) => {
-    const fieldName = `${record.authGrpSeq}_authGrpNm`;
-    useEffect(() => { setValue(fieldName, value); }, [fieldName, value, setValue]);
-    return (
-        <CustomValidFormInput
-            control={control} required={true} maxLength={100}
-            regExp={{value: /^[ㄱ-ㅎ가-힣a-zA-Z0-9\s]*$/, message: '권한그룹명은 한글,영문,숫자만 입력가능합니다.'}}
-            onChangeValue={(e) => onDataChange(record, 'authGrpNm', e)}
-            {...register(fieldName, {required: '권한그룹명은 필수입력입니다.'})}
-        />
-    );
-};
-
-const AuthNmCell = ({
-    record, value, setValue, control, register, onDataChange,
-}: {
-    record: AuthInfoList; value: string; setValue: (name: string, v: string) => void;
-    control: any; register: any; onDataChange: (record: AuthInfoList, key: string, value: any) => void;
-}) => {
-    const fieldName = `${record.authSeq}_authNm`;
-    useEffect(() => { setValue(fieldName, value); }, [fieldName, value, setValue]);
-    return (
-        <CustomValidFormInput
-            control={control} required={true} maxLength={100}
-            onChangeValue={(e) => onDataChange(record, 'authNm', e)}
-            {...register(fieldName, {required: '권한명은 필수입력입니다.'})}
-        />
-    );
-};
+import {applyDataChange, applyDeleteRows} from '@util/dataSourceUtils';
+import EditableFormCell from '@component/EditableFormCell';
 
 const AuthManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menuInfo?: any; handlersRef?: React.MutableRefObject<PageButtonHandlers>}) => {
     const {
@@ -352,8 +281,10 @@ const AuthManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
             key: 'authGrpNm', dataIndex: 'authGrpNm', align: 'center', width: '25%',
             render: (value: string, record: AuthGrpList) => {
                 if (record.rgstUserSeq && record.useYn !== 'Y') return value;
-                return <AuthGrpNmCell record={record} value={value} setValue={authGrpSetValue}
-                    control={authGrpControl} register={authGrpRegister} onDataChange={handleDataChangeAuthGrp}/>;
+                return <EditableFormCell record={record} seqField="authGrpSeq" fieldSuffix="authGrpNm"
+                    value={value} setValue={authGrpSetValue} control={authGrpControl} register={authGrpRegister}
+                    onDataChange={handleDataChangeAuthGrp} requiredMessage="권한그룹명은 필수입력입니다."
+                    maxLength={100} regExp={{value: /^[ㄱ-ㅎ가-힣a-zA-Z0-9\s]*$/, message: '권한그룹명은 한글,영문,숫자만 입력가능합니다.'}}/>;
             },
         },
         {
@@ -377,8 +308,9 @@ const AuthManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
             title: <span className="tit">권한명<em>*</em></span>,
             key: 'authNm', dataIndex: 'authNm', align: 'center', width: '30%',
             render: (value: string, record: AuthInfoList) =>
-                <AuthNmCell record={record} value={value} setValue={authGrpSetValue}
-                    control={authGrpControl} register={authGrpRegister} onDataChange={handleDataChangeAuth}/>,
+                <EditableFormCell record={record} seqField="authSeq" fieldSuffix="authNm"
+                    value={value} setValue={authGrpSetValue} control={authGrpControl} register={authGrpRegister}
+                    onDataChange={handleDataChangeAuth} requiredMessage="권한명은 필수입력입니다." maxLength={100}/>,
         },
         {
             title: '권한설명', key: 'authExpl', dataIndex: 'authExpl', align: 'center', width: '35%',
@@ -452,19 +384,11 @@ const AuthManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
         });
     }, []);
 
-    useEffect(() => {
-        if (handlersRef) {
-            handlersRef.current = {
-                cfmInit: handleReset,
-                cfmSearch: handleSearchAuthGrpList,
-                cfmSave: authGrpHandleSubmit(handleSave),
-            };
-        }
+    usePageHandlers(handlersRef, {
+        cfmInit: handleReset,
+        cfmSearch: handleSearchAuthGrpList,
+        cfmSave: authGrpHandleSubmit(handleSave),
     });
-
-    useEffect(() => {
-        return () => { if (handlersRef) handlersRef.current = {}; };
-    }, []);
 
     // ── Render ──
     return (

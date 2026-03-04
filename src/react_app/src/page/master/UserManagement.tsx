@@ -20,6 +20,7 @@ import CustomSaveFormInput from '@component/form/CustomSaveFormInput';
 import CustomSaveFormSelect from '@component/form/CustomSaveFormSelect';
 import CustomSaveFormDatePicker from '@component/form/CustomSaveFormDatePicker';
 import ChangePasswordPopup from '@page/auth/ChangePasswordPopup';
+import {usePageHandlers} from '@hook/usePageHandlers';
 
 const columns: ColumnsType<any> = [
     IUD_COLUMN,
@@ -295,21 +296,13 @@ const UserManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
         handleSearchList();
     }, []);
 
-    useEffect(() => {
-        if (handlersRef) {
-            handlersRef.current = {
-                cfmInit: handleReset,
-                cfmSearch: handleSearchList,
-                cfmAdd: () => handleAdd(),
-                cfmDelete: () => handleDelete(),
-                cfmSave: saveFormHandleSubmit(handleSave),
-            };
-        }
+    usePageHandlers(handlersRef, {
+        cfmInit: handleReset,
+        cfmSearch: handleSearchList,
+        cfmAdd: () => handleAdd(),
+        cfmDelete: () => handleDelete(),
+        cfmSave: saveFormHandleSubmit(handleSave),
     });
-
-    useEffect(() => {
-        return () => { if (handlersRef) handlersRef.current = {}; };
-    }, []);
 
     return (
         <>
