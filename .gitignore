@@ -27,6 +27,9 @@ bin/
 /node_module
 /target
 
+### Spring Boot static (빌드 시 copyFrontend로 생성됨) ###
+src/main/resources/static/
+
 ### Next.js ###
 .next/
 out/
