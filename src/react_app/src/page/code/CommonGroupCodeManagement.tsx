@@ -1,4 +1,3 @@
-import CustomButton from '@component/CustomButton';
 import React, {useEffect, useRef, useState} from 'react';
 import {useRouter} from 'next/navigation';
 import {ColumnsType} from 'antd/es/table';
@@ -15,7 +14,7 @@ import {useForm} from 'react-hook-form';
 import {useMessage} from '@hook/useMessage';
 import {usePageHandlers} from '@hook/usePageHandlers';
 import {applyDataChange} from '@util/dataSourceUtils';
-import {ALPHANUMERIC_REGEXP, INTEGER_REGEXP, FLOAT_REGEXP} from '@util/validationPatterns';
+import {ALPHANUMERIC_REGEXP} from '@util/validationPatterns';
 import EditableFormCell from '@component/EditableFormCell';
 
 const CommonGroupCodeManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menuInfo?: any; handlersRef?: React.MutableRefObject<PageButtonHandlers>}) => {
@@ -124,13 +123,11 @@ const CommonGroupCodeManagement = ({handlersRef}: {onChange?: (flag: boolean) =>
     };
 
     const comGrpCdRegExp = ALPHANUMERIC_REGEXP;
-    const integerRegExp = INTEGER_REGEXP;
-    const floatRegExp = FLOAT_REGEXP;
 
     const columns: ColumnsType<ComGrpCdList> = [
         IUD_COLUMN,
         {
-            title: <span className="tit">분류코드<em>*</em></span>,
+            title: <span className="tit">공통그룹코드<em>*</em></span>,
             key: 'comGrpCd', dataIndex: 'comGrpCd', align: 'center', width: 100, fixed: 'left',
             render: (value: string, record: ComGrpCdList) =>
                 record.rgstUserSeq
@@ -141,7 +138,7 @@ const CommonGroupCodeManagement = ({handlersRef}: {onChange?: (flag: boolean) =>
                           maxLength={20} regExp={comGrpCdRegExp} transformValue={(v) => v.toUpperCase()}/>,
         },
         {
-            title: '분류명', key: 'comGrpCdNm', dataIndex: 'comGrpCdNm', align: 'center', width: 150,
+            title: '공통그룹코드명', key: 'comGrpCdNm', dataIndex: 'comGrpCdNm', align: 'center', width: 150,
             render: (value: string, record: ComGrpCdList) =>
                 <CustomInput value={value} maxLength={100}
                     onChange={(e) => handleDataChange(record, 'comGrpCdNm', e.target.value)}/>,
@@ -199,31 +196,31 @@ const CommonGroupCodeManagement = ({handlersRef}: {onChange?: (flag: boolean) =>
                 {
                     title: '정수형1', key: 'ref06', dataIndex: 'ref06', align: 'center', width: 100,
                     render: (value: string, record: ComGrpCdList) =>
-                        <CustomInput value={value} maxLength={20} regExp={integerRegExp}
+                        <CustomInput value={value} maxLength={20} 
                             onChange={(e) => handleDataChange(record, 'ref06', e.target.value)}/>,
                 },
                 {
                     title: '정수형2', key: 'ref07', dataIndex: 'ref07', align: 'center', width: 100,
                     render: (value: string, record: ComGrpCdList) =>
-                        <CustomInput value={value} maxLength={20} regExp={integerRegExp}
+                        <CustomInput value={value} maxLength={20} 
                             onChange={(e) => handleDataChange(record, 'ref07', e.target.value)}/>,
                 },
                 {
                     title: '정수형3', key: 'ref08', dataIndex: 'ref08', align: 'center', width: 100,
                     render: (value: string, record: ComGrpCdList) =>
-                        <CustomInput value={value} maxLength={20} regExp={integerRegExp}
+                        <CustomInput value={value} maxLength={20} 
                             onChange={(e) => handleDataChange(record, 'ref08', e.target.value)}/>,
                 },
                 {
                     title: '정수형4', key: 'ref09', dataIndex: 'ref09', align: 'center', width: 100,
                     render: (value: string, record: ComGrpCdList) =>
-                        <CustomInput value={value} maxLength={20} regExp={integerRegExp}
+                        <CustomInput value={value} maxLength={20} 
                             onChange={(e) => handleDataChange(record, 'ref09', e.target.value)}/>,
                 },
                 {
                     title: '정수형5', key: 'ref10', dataIndex: 'ref10', align: 'center', width: 100,
                     render: (value: string, record: ComGrpCdList) =>
-                        <CustomInput value={value} maxLength={20} regExp={integerRegExp}
+                        <CustomInput value={value} maxLength={20} 
                             onChange={(e) => handleDataChange(record, 'ref10', e.target.value)}/>,
                 },
             ],
@@ -234,31 +231,31 @@ const CommonGroupCodeManagement = ({handlersRef}: {onChange?: (flag: boolean) =>
                 {
                     title: '실수형1', key: 'ref11', dataIndex: 'ref11', align: 'center', width: 100,
                     render: (value: string, record: ComGrpCdList) =>
-                        <CustomInput value={value} maxLength={30} regExp={floatRegExp}
+                        <CustomInput value={value} maxLength={30} 
                             onChange={(e) => handleDataChange(record, 'ref11', e.target.value)}/>,
                 },
                 {
                     title: '실수형2', key: 'ref12', dataIndex: 'ref12', align: 'center', width: 100,
                     render: (value: string, record: ComGrpCdList) =>
-                        <CustomInput value={value} maxLength={30} regExp={floatRegExp}
+                        <CustomInput value={value} maxLength={30} 
                             onChange={(e) => handleDataChange(record, 'ref12', e.target.value)}/>,
                 },
                 {
                     title: '실수형3', key: 'ref13', dataIndex: 'ref13', align: 'center', width: 100,
                     render: (value: string, record: ComGrpCdList) =>
-                        <CustomInput value={value} maxLength={30} regExp={floatRegExp}
+                        <CustomInput value={value} maxLength={30} 
                             onChange={(e) => handleDataChange(record, 'ref13', e.target.value)}/>,
                 },
                 {
                     title: '실수형4', key: 'ref14', dataIndex: 'ref14', align: 'center', width: 100,
                     render: (value: string, record: ComGrpCdList) =>
-                        <CustomInput value={value} maxLength={30} regExp={floatRegExp}
+                        <CustomInput value={value} maxLength={30} 
                             onChange={(e) => handleDataChange(record, 'ref14', e.target.value)}/>,
                 },
                 {
                     title: '실수형5', key: 'ref15', dataIndex: 'ref15', align: 'center', width: 100,
                     render: (value: string, record: ComGrpCdList) =>
-                        <CustomInput value={value} maxLength={30} regExp={floatRegExp}
+                        <CustomInput value={value} maxLength={30} 
                             onChange={(e) => handleDataChange(record, 'ref15', e.target.value)}/>,
                 },
             ],
@@ -286,7 +283,7 @@ const CommonGroupCodeManagement = ({handlersRef}: {onChange?: (flag: boolean) =>
         <>
             <section className="search-wrap">
                 <form>
-                    <span>분류코드/명</span>
+                    <span>공통그룹코드/명</span>
                     <CustomInput
                         value={searchText}
                         onChange={(e) => setSearchText(e.target.value)}
@@ -298,7 +295,7 @@ const CommonGroupCodeManagement = ({handlersRef}: {onChange?: (flag: boolean) =>
 
             <section className="board-wrap">
                 <div className="board-title-wrap">
-                    <h3 className="title"><IconTitle/>분류코드목록</h3>
+                    <h3 className="title"><IconTitle/>공통그룹코드목록</h3>
                     <span className="total-count">Total {dataSource.length}</span>
                 </div>
                 <div className="board-cont-wrap">

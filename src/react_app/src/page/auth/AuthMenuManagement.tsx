@@ -61,7 +61,7 @@ const AuthMenuManagement = ({handlersRef}: {
     const authColumns: ColumnsType<AuthMenuMgtAuth> = [
         {title: '권한그룹명', key: 'authGrpNm', dataIndex: 'authGrpNm', align: 'center', width: '20%'},
         {title: '권한명', key: 'authNm', dataIndex: 'authNm', align: 'center', width: '20%'},
-        {title: '설명', key: 'authExpl', dataIndex: 'authExpl', align: 'center', width: '45%'},
+        {title: '설명', key: 'authExpl', dataIndex: 'authExpl', align: 'left', width: '45%'},
         {
             title: '사용여부', key: 'useYn', dataIndex: 'useYn', align: 'center', width: '15%',
             render: (value: string) => value === 'Y' ? '예' : '아니오',
