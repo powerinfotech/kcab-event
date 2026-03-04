@@ -32,21 +32,21 @@ dependencies {
     developmentOnly 'org.springframework.boot:spring-boot-devtools:2.7.12'
     implementation 'org.springframework.boot:spring-boot-starter-security:2.7.12'
 
- 
+
     implementation ('org.egovframe.rte:org.egovframe.rte.ptl.mvc:4.2.0') {
         exclude group: 'commons-logging', module: 'commons-logging'
     }
     implementation 'org.egovframe.rte:org.egovframe.rte.psl.dataaccess:4.2.0'
     implementation 'org.egovframe.rte:org.egovframe.rte.fdl.idgnr:4.2.0'
     implementation 'org.egovframe.rte:org.egovframe.rte.fdl.property:4.2.0'
- 
+
     implementation 'org.hsqldb:hsqldb:2.7.2:jdk8'
- 
+
     implementation 'org.projectlombok:lombok:1.18.28'
     annotationProcessor 'org.projectlombok:lombok:1.18.28'
     testImplementation 'org.projectlombok:lombok:1.18.28'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.28'
- 
+
     implementation 'org.hibernate:hibernate-entitymanager:5.6.15.Final'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
@@ -57,6 +57,13 @@ dependencies {
     implementation 'com.navercorp.lucy:lucy-xss-servlet:2.0.1'
     implementation 'org.reflections:reflections:0.10.2'
 }
+
+task buildFrontend(type: Exec) {
+    workingDir 'src/react_app'
+    commandLine 'cmd', '/c', 'yarn', 'build'
+}
+
+processResources.dependsOn buildFrontend
  
 bootJar {
     exclude('org/projectlombok/lombok')
