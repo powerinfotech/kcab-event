@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import Sidebar from '@layout/Sidebar';
+import TopBar from '@layout/TopBar';
 import Footer from '@layout/Footer';
 import Login from '@page/Login';
 import { getUserLoginInfo, getUserMenuInfo } from '@api/CommonApi';
@@ -12,6 +13,7 @@ import { showErrorPageAtom } from '@atom/showErrorPageAtom';
 import { HttpStatusCode } from 'axios';
 
 const MemoizedSidebar = React.memo(Sidebar);
+const MemoizedTopBar = React.memo(TopBar);
 const MemoizedFooter = React.memo(Footer);
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -60,6 +62,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <MemoizedSidebar onSubpanelOpenChange={onSubpanelOpenChange} />
         )}
         <div className="app_main">
+          {!showErrorPage && <MemoizedTopBar />}
           {children}
           {!showErrorPage && <MemoizedFooter />}
         </div>

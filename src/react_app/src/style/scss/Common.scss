@@ -92,6 +92,64 @@ body,
     padding-bottom: 86px; /* footer 높이만큼 여백 확보 */
 }
 
+.app_topbar {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 12px 24px;
+    background: #fff;
+    border-bottom: 1px solid #dfe3e8;
+    box-shadow: 0 1px 4px rgba(145, 158, 171, 0.12);
+    flex-shrink: 0;
+}
+
+.app_topbar_user {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.app_topbar_thumb {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.app_topbar_name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #212b36;
+}
+
+.app_topbar_logout {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    background: none;
+    border: none;
+    color: #637381;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: background 0.2s, color 0.2s;
+
+    &:hover {
+        background: #f4f6f8;
+        color: #212b36;
+    }
+}
+
 .popup > #__layout {
     .header_wrap, .side_bar_wrap, .side_bar_wrap_fold, .sidebar_wrap {
         display: none;

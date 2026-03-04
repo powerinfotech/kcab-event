@@ -2,13 +2,8 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { callLogout } from '@api/CommonApi';
-import { HttpStatusCode } from 'axios';
-import IconLogout from '@icon/IconLogout';
-import IconAdmin from '@icon/IconAdmin';
 import { MenuInfo } from '@interface/auth/MenuManagement';
 import { useRecoilValue } from 'recoil';
-import { sessionInfoAtom } from '@atom/sessionInfoAtom';
 import { menuInfoAtom } from '@atom/menuInfoAtom';
 
 function SidebarSubpanel({
@@ -54,7 +49,6 @@ export default function Sidebar({
   menuInfo?: MenuInfo[];
   onSubpanelOpenChange?: (open: boolean) => void;
 }) {
-  const sessionInfo = useRecoilValue(sessionInfoAtom);
   const menuInfo = useRecoilValue(menuInfoAtom);
   const [subpanelOpen, setSubpanelOpen] = useState(false);
   const [selectedParentId, setSelectedParentId] = useState<number | null>(null);
@@ -78,11 +72,6 @@ export default function Sidebar({
     setSubpanelOpen(false);
     setSelectedParentId(null);
     onSubpanelOpenChange?.(false);
-  };
-
-  const logout = async () => {
-    const data = await callLogout();
-    if (data.code === HttpStatusCode.Ok) location.href = location.pathname;
   };
 
   useEffect(() => {
@@ -112,19 +101,6 @@ export default function Sidebar({
             </button>
           ))}
         </nav>
-        <div className="sidebar_footer">
-          <div className="sidebar_user">
-            <div className="sidebar_user_thumb">
-              <IconAdmin />
-            </div>
-            <span className="sidebar_user_name">
-              {(sessionInfo && sessionInfo.userName) ?? ''}님
-            </span>
-          </div>
-          <button type="button" className="sidebar_logout" onClick={logout}>
-            <IconLogout />
-          </button>
-        </div>
       </div>
       {subpanelOpen && (
         <SidebarSubpanel
