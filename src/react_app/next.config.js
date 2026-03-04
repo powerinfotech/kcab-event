@@ -1,14 +1,18 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  output: 'export',
+  images: { unoptimized: true },
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
-  async rewrites() {
-    const apiTarget = process.env.BACKEND_URL || 'http://localhost:8080';
-    return [
-      { source: '/api/:path*', destination: `${apiTarget}/api/:path*` },
-    ];
-  },
+  ...(process.env.NODE_ENV === 'development' ? {
+    async rewrites() {
+      const apiTarget = process.env.BACKEND_URL || 'http://localhost:8080';
+      return [
+        { source: '/api/:path*', destination: `${apiTarget}/api/:path*` },
+      ];
+    },
+  } : {}),
   webpack(config) {
     const fileLoaderRule = config.module.rules.find((rule) =>
       rule.test?.test?.('.svg')

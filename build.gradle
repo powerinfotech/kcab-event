@@ -65,7 +65,13 @@ task buildFrontend(type: Exec) {
         : ['yarn', 'build']
 }
 
-processResources.dependsOn buildFrontend
+task copyFrontend(type: Copy) {
+    dependsOn buildFrontend
+    from 'src/react_app/out'
+    into 'src/main/resources/static'
+}
+
+processResources.dependsOn copyFrontend
  
 bootJar {
     exclude('org/projectlombok/lombok')
