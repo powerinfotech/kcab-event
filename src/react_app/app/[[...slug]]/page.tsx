@@ -1,7 +1,7 @@
 import MainContent from '../_components/MainContent';
 
 export function generateStaticParams() {
-  return [{ slug: [] }];
+  return [{}];
 }
 
 export default function CatchAllPage() {
