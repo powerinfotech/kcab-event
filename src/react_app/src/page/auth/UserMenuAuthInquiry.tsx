@@ -10,15 +10,14 @@ import CustomButton from '@component/CustomButton';
 import UserSearchPopup from '@component/popup/UserSearchPopup';
 import {PageButtonHandlers} from '@interface/common';
 import {UserSearchResult} from '@interface/auth/AuthManagement';
-import {
-    AuthMenuMgtAuth,
-    AuthMenuBtnItem,
-    AuthMenuBtnRow,
-    BtnColumnInfo,
-} from '@interface/auth/AuthMenuManagement';
+import {AuthMenuMgtAuth, BtnColumnInfo} from '@interface/auth/AuthMenuManagement';
 import {callGetAuthMenuBtnList} from '@api/auth/AuthMenuManagementApi';
 import {callGetUserAuthList, callGetUserAllAuthMenuBtnList} from '@api/auth/UserMenuAuthInquiryApi';
 import {callGetBtnList} from '@api/auth/MenuManagementApi';
+import {useMenuBtnTree} from '@hook/useMenuBtnTree';
+import {usePageHandlers} from '@hook/usePageHandlers';
+
+const btnSortOrder = (seq: number) => (seq >= 11 && seq <= 15) ? 0 : 1;
 
 const UserMenuAuthInquiry = ({handlersRef}: {
     onChange?: (flag: boolean) => void;
@@ -33,9 +32,14 @@ const UserMenuAuthInquiry = ({handlersRef}: {
     const [authDataSource, setAuthDataSource] = useState<AuthMenuMgtAuth[]>([]);
     const [selectedAuthRowIndex, setSelectedAuthRowIndex] = useState(-1);
 
-    const [treeDataSource, setTreeDataSource] = useState<AuthMenuBtnRow[]>([]);
-    const [btnColumns, setBtnColumns] = useState<BtnColumnInfo[]>([]);
-    const [defaultExpandRowKeys, setDefaultExpandRowKeys] = useState<React.Key[]>([]);
+    const {
+        treeDataSource,
+        setBtnColumns,
+        expandedRowKeys, setExpandedRowKeys,
+        expandTree, foldTree,
+        loadTree,
+        buildDynamicColumns,
+    } = useMenuBtnTree();
 
     const pendingSearchRef = useRef(false);
     const searchUserIdRef = useRef('');
@@ -53,7 +57,6 @@ const UserMenuAuthInquiry = ({handlersRef}: {
     useEffect(() => {
         callGetBtnList().then(res => {
             if (res.code === HttpStatusCode.Ok && res.item) {
-                const btnSortOrder = (seq: number) => (seq >= 11 && seq <= 15) ? 0 : 1;
                 const cols: BtnColumnInfo[] = res.item
                     .filter(b => b.useYn === 'Y')
                     .map(b => ({btnSeq: b.btnSeq, btnSortSeq: b.sortSeq, btnNm: b.btnNm}))
@@ -74,131 +77,11 @@ const UserMenuAuthInquiry = ({handlersRef}: {
         },
     ];
 
-    // ──────────────────────────── flat → tree 변환 ────────────────────────────
-    const buildMenuBtnTree = (flatList: AuthMenuBtnItem[]): AuthMenuBtnRow[] => {
-        const btnMap = new Map<number, BtnColumnInfo>();
-        flatList.forEach(item => {
-            if (!btnMap.has(item.btnSeq)) {
-                btnMap.set(item.btnSeq, {
-                    btnSeq: item.btnSeq,
-                    btnSortSeq: item.btnSortSeq,
-                    btnNm: item.btnNm,
-                });
-            }
-        });
-        const btnSortOrder = (seq: number) => (seq >= 11 && seq <= 15) ? 0 : 1;
-        const columns = Array.from(btnMap.values()).sort((a, b) =>
-            btnSortOrder(a.btnSortSeq) - btnSortOrder(b.btnSortSeq) || a.btnSortSeq - b.btnSortSeq
-        );
-        setBtnColumns(columns);
-
-        const menuMap = new Map<number, AuthMenuBtnRow>();
-        flatList.forEach(item => {
-            if (!menuMap.has(item.menuSeq)) {
-                menuMap.set(item.menuSeq, {
-                    menuSeq: item.menuSeq,
-                    upMenuSeq: item.upMenuSeq,
-                    menuNm: item.menuNm,
-                    menuTypeCd: item.menuTypeCd,
-                    children: [],
-                });
-            }
-            const node = menuMap.get(item.menuSeq)!;
-            node[`btn_${item.btnSeq}_enabled`] = item.menuBtnUseYn === 'Y';
-            node[`btn_${item.btnSeq}_checked`] = item.authMenuBtnUseYn === 'Y';
-        });
-
-        const roots: AuthMenuBtnRow[] = [];
-        menuMap.forEach(node => {
-            if (node.upMenuSeq == null) {
-                roots.push(node);
-            } else {
-                const parent = menuMap.get(node.upMenuSeq);
-                if (parent) parent.children!.push(node);
-            }
-        });
-
-        menuMap.forEach(node => {
-            if (node.children && node.children.length === 0) {
-                delete node.children;
-            }
-        });
-
-        const expandKeys = Array.from(menuMap.values())
-            .filter(n => n.menuTypeCd === 'D')
-            .map(n => n.menuSeq);
-        setDefaultExpandRowKeys(expandKeys);
-
-        return roots;
-    };
-
-    // ──────────────────────────── 접기/펼치기 ────────────────────────────
-    const getAllExpandKeys = (nodes: AuthMenuBtnRow[]): React.Key[] => {
-        const keys: React.Key[] = [];
-        nodes.forEach(n => {
-            if (n.children && n.children.length > 0) {
-                keys.push(n.menuSeq);
-                keys.push(...getAllExpandKeys(n.children));
-            }
-        });
-        return keys;
-    };
-
-    const foldLeafParents = (nodes: AuthMenuBtnRow[], currentKeys: React.Key[]): React.Key[] => {
-        const keysToRemove = new Set<React.Key>();
-        const findLeafParents = (items: AuthMenuBtnRow[]) => {
-            items.forEach(n => {
-                if (n.children && n.children.length > 0) {
-                    const hasGrandChildren = n.children.some(c => c.children && c.children.length > 0);
-                    if (!hasGrandChildren) {
-                        keysToRemove.add(n.menuSeq);
-                    } else {
-                        findLeafParents(n.children);
-                    }
-                }
-            });
-        };
-        findLeafParents(nodes);
-        return currentKeys.filter(k => !keysToRemove.has(k));
-    };
-
-    const expandTree = () => setDefaultExpandRowKeys(getAllExpandKeys(treeDataSource));
-    const foldTree = () => setDefaultExpandRowKeys(prev => foldLeafParents(treeDataSource, prev));
-
-    // ──────────────────────────── 동적 칼럼 생성 (readonly) ────────────────────────────
-    const buildDynamicColumns = (): ColumnsType<AuthMenuBtnRow> => {
-        const menuNmColumn = {
-            title: '메뉴명',
-            dataIndex: 'menuNm',
-            key: 'menuNm',
-            width: 200,
-        };
-
-        const btnCols = btnColumns.map(btn => ({
-            title: btn.btnNm,
-            key: `btn_${btn.btnSeq}`,
-            width: 80,
-            align: 'center' as const,
-            render: (_: any, record: AuthMenuBtnRow) => {
-                if (record.upMenuSeq == null) return '';
-
-                const enabled = record[`btn_${btn.btnSeq}_enabled`] as boolean;
-                if (!enabled) return '';
-
-                const checked = record[`btn_${btn.btnSeq}_checked`] as boolean;
-                return <CustomCheckbox checked={!!checked} disabled />;
-            },
-        }));
-
-        return [menuNmColumn, ...btnCols];
-    };
-
     // ──────────────────────────── 메뉴버튼 권한 조회 (단일 권한) ────────────────────────────
     const handleSearchAuthMenuBtn = (authGrpSeq: number, authSeq: number) => {
         callGetAuthMenuBtnList(authGrpSeq, authSeq).then(res => {
             if (res.code === HttpStatusCode.Ok) {
-                const tree = buildMenuBtnTree(res.item);
-                setTreeDataSource(tree);
+                loadTree(res.item);
             }
         });
     };
@@ -207,8 +90,7 @@ const UserMenuAuthInquiry = ({handlersRef}: {
     const handleSearchAllAuthMenuBtn = (userId: string) => {
         callGetUserAllAuthMenuBtnList(userId).then(res => {
             if (res.code === HttpStatusCode.Ok) {
-                const tree = buildMenuBtnTree(res.item);
-                setTreeDataSource(tree);
+                loadTree(res.item);
             }
         });
     };
@@ -240,7 +122,7 @@ const UserMenuAuthInquiry = ({handlersRef}: {
 
         pendingSearchRef.current = true;
         setSelectedAuthRowIndex(-1);
-        setTreeDataSource([]);
+        loadTree([]);
         setBtnColumns(initialBtnColumnsRef.current);
 
         callGetUserAuthList(searchUserIdRef.current).then(res => {
@@ -257,7 +139,7 @@ const UserMenuAuthInquiry = ({handlersRef}: {
         setShowAllAuth(false);
         setAuthDataSource([]);
         setSelectedAuthRowIndex(-1);
-        setTreeDataSource([]);
+        loadTree([]);
         setBtnColumns(initialBtnColumnsRef.current);
     };
 
@@ -277,20 +159,10 @@ const UserMenuAuthInquiry = ({handlersRef}: {
         }
     }, [authDataSource]);
 
-    useEffect(() => {
-        if (handlersRef) {
-            handlersRef.current = {
-                cfmInit: handleReset,
-                cfmSearch: handleSearch,
-            };
-        }
+    usePageHandlers(handlersRef, {
+        cfmInit: handleReset,
+        cfmSearch: handleSearch,
     });
-
-    useEffect(() => {
-        return () => {
-            if (handlersRef) handlersRef.current = {};
-        };
-    }, []);
 
     // ──────────────────────────── Render ────────────────────────────
     return (
@@ -370,13 +242,16 @@ const UserMenuAuthInquiry = ({handlersRef}: {
                     </div>
                     <div className="board-cont-wrap">
                         <CustomTable
-                            columns={buildDynamicColumns() as ColumnsType<any>}
+                            columns={buildDynamicColumns((record, btn) => {
+                                const checked = record[`btn_${btn.btnSeq}_checked`] as boolean;
+                                return <CustomCheckbox checked={!!checked} disabled />;
+                            }) as ColumnsType<any>}
                             dataSource={treeDataSource}
                             rowNoFlag={false}
                             pagination={false}
                             rowKey={'menuSeq'}
-                            expandedRowKeys={defaultExpandRowKeys}
-                            onExpandedRowsChange={setDefaultExpandRowKeys}
+                            expandedRowKeys={expandedRowKeys}
+                            onExpandedRowsChange={setExpandedRowKeys}
                             scroll={{x: 'max-content'}}
                         />
                     </div>

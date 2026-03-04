@@ -10,9 +10,7 @@ import {IudType, PageButtonHandlers} from '@interface/common';
 import {useMessage} from '@hook/useMessage';
 import {
     AuthMenuMgtAuth,
-    AuthMenuBtnItem,
     AuthMenuBtnRow,
-    BtnColumnInfo,
     AuthMenuBtnSaveItem,
 } from '@interface/auth/AuthMenuManagement';
 import {
@@ -20,6 +18,8 @@ import {
     callGetAuthMenuBtnList,
     callSaveAuthMenuBtn,
 } from '@api/auth/AuthMenuManagementApi';
+import {useMenuBtnTree} from '@hook/useMenuBtnTree';
+import {usePageHandlers} from '@hook/usePageHandlers';
 
 const AuthMenuManagement = ({handlersRef}: {
     onChange?: (flag: boolean) => void;
@@ -33,11 +33,16 @@ const AuthMenuManagement = ({handlersRef}: {
     const [selectedAuthRowIndex, setSelectedAuthRowIndex] = useState(-1);
     const [searchAuthNm, setSearchAuthNm] = useState('');
 
-    // 우측: 메뉴버튼권한
-    const [treeDataSource, setTreeDataSource] = useState<AuthMenuBtnRow[]>([]);
-    const [orgTreeDataSource, setOrgTreeDataSource] = useState<AuthMenuBtnRow[]>([]);
-    const [btnColumns, setBtnColumns] = useState<BtnColumnInfo[]>([]);
-    const [defaultExpandRowKeys, setDefaultExpandRowKeys] = useState<React.Key[]>([]);
+    // 우측: 메뉴버튼권한 (useMenuBtnTree 훅 사용)
+    const {
+        treeDataSource, setTreeDataSource,
+        orgTreeDataSource,
+        btnColumns,
+        expandedRowKeys, setExpandedRowKeys,
+        expandTree, foldTree,
+        loadTreeWithOrg,
+        buildDynamicColumns,
+    } = useMenuBtnTree({trackIudType: true});
 
     const [rowAuthGrpSeq, setRowAuthGrpSeq] = useState(-1);
     const [rowAuthSeq, setRowAuthSeq] = useState(-1);
@@ -62,139 +67,6 @@ const AuthMenuManagement = ({handlersRef}: {
             render: (value: string) => value === 'Y' ? '예' : '아니오',
         },
     ];
-
-    // ──────────────────────────── flat → tree 변환 ────────────────────────────
-    const buildMenuBtnTree = (flatList: AuthMenuBtnItem[]): AuthMenuBtnRow[] => {
-        // 1. 버튼 칼럼 정보 추출
-        const btnMap = new Map<number, BtnColumnInfo>();
-        flatList.forEach(item => {
-            if (!btnMap.has(item.btnSeq)) {
-                btnMap.set(item.btnSeq, {
-                    btnSeq: item.btnSeq,
-                    btnSortSeq: item.btnSortSeq,
-                    btnNm: item.btnNm,
-                });
-            }
-        });
-        const btnSortOrder = (seq: number) => (seq >= 11 && seq <= 15) ? 0 : 1;
-        const columns = Array.from(btnMap.values()).sort((a, b) =>
-            btnSortOrder(a.btnSortSeq) - btnSortOrder(b.btnSortSeq) || a.btnSortSeq - b.btnSortSeq
-        );
-        setBtnColumns(columns);
-
-        // 2. menuSeq별 그룹핑
-        const menuMap = new Map<number, AuthMenuBtnRow>();
-        flatList.forEach(item => {
-            if (!menuMap.has(item.menuSeq)) {
-                menuMap.set(item.menuSeq, {
-                    menuSeq: item.menuSeq,
-                    upMenuSeq: item.upMenuSeq,
-                    menuNm: item.menuNm,
-                    menuTypeCd: item.menuTypeCd,
-                    children: [],
-                });
-            }
-            const node = menuMap.get(item.menuSeq)!;
-            node[`btn_${item.btnSeq}_enabled`] = item.menuBtnUseYn === 'Y';
-            node[`btn_${item.btnSeq}_checked`] = item.authMenuBtnUseYn === 'Y';
-            node[`btn_${item.btnSeq}_authMenuBtnSeq`] = item.authMenuBtnSeq;
-            node[`btn_${item.btnSeq}_iudType`] = undefined;
-        });
-
-        // 3. 트리 구조 빌드
-        const roots: AuthMenuBtnRow[] = [];
-        menuMap.forEach(node => {
-            if (node.upMenuSeq == null) {
-                roots.push(node);
-            } else {
-                const parent = menuMap.get(node.upMenuSeq);
-                if (parent) parent.children!.push(node);
-            }
-        });
-
-        // children이 비어있으면 제거 (leaf 노드)
-        menuMap.forEach(node => {
-            if (node.children && node.children.length === 0) {
-                delete node.children;
-            }
-        });
-
-        // 4. expand keys
-        const expandKeys = Array.from(menuMap.values())
-            .filter(n => n.menuTypeCd === 'D')
-            .map(n => n.menuSeq);
-        setDefaultExpandRowKeys(expandKeys);
-
-        return roots;
-    };
-
-    // ──────────────────────────── 접기/펼치기 ────────────────────────────
-    const getAllExpandKeys = (nodes: AuthMenuBtnRow[]): React.Key[] => {
-        const keys: React.Key[] = [];
-        nodes.forEach(n => {
-            if (n.children && n.children.length > 0) {
-                keys.push(n.menuSeq);
-                keys.push(...getAllExpandKeys(n.children));
-            }
-        });
-        return keys;
-    };
-
-    // 최하위 레벨 노드만 접기: children이 있는 노드 중 그 children에 또 children이 없는 노드를 제외
-    const foldLeafParents = (nodes: AuthMenuBtnRow[], currentKeys: React.Key[]): React.Key[] => {
-        const keysToRemove = new Set<React.Key>();
-        const findLeafParents = (items: AuthMenuBtnRow[]) => {
-            items.forEach(n => {
-                if (n.children && n.children.length > 0) {
-                    const hasGrandChildren = n.children.some(c => c.children && c.children.length > 0);
-                    if (!hasGrandChildren) {
-                        keysToRemove.add(n.menuSeq);
-                    } else {
-                        findLeafParents(n.children);
-                    }
-                }
-            });
-        };
-        findLeafParents(nodes);
-        return currentKeys.filter(k => !keysToRemove.has(k));
-    };
-
-    const expandTree = () => setDefaultExpandRowKeys(getAllExpandKeys(treeDataSource));
-    const foldTree = () => setDefaultExpandRowKeys(prev => foldLeafParents(treeDataSource, prev));
-
-    // ──────────────────────────── 동적 칼럼 생성 ────────────────────────────
-    const buildDynamicColumns = (): ColumnsType<AuthMenuBtnRow> => {
-        const menuNmColumn = {
-            title: '메뉴명',
-            dataIndex: 'menuNm',
-            key: 'menuNm',
-            width: 200,
-        };
-
-        const btnCols = btnColumns.map(btn => ({
-            title: btn.btnNm,
-            key: `btn_${btn.btnSeq}`,
-            width: 80,
-            align: 'center' as const,
-            render: (_: any, record: AuthMenuBtnRow) => {
-                if (record.upMenuSeq == null) return '';
-
-                const enabled = record[`btn_${btn.btnSeq}_enabled`] as boolean;
-                if (!enabled) return '';
-
-                const checked = record[`btn_${btn.btnSeq}_checked`] as boolean;
-                return (
-                    <CustomCheckbox
-                        checked={!!checked}
-                        disabled={!isEditableAuth()}
-                        onChange={(e: any) => handleCheckboxChange(record.menuSeq, btn.btnSeq, e.target.checked)}
-                    />
-                );
-            },
-        }));
-
-        return [menuNmColumn, ...btnCols];
-    };
 
     // ──────────────────────────── 체크박스 변경 ────────────────────────────
     const handleCheckboxChange = (menuSeq: number, btnSeq: number, checked: boolean) => {
@@ -273,9 +145,7 @@ const AuthMenuManagement = ({handlersRef}: {
     const handleSearchAuthMenuBtn = (authGrpSeq: number, authSeq: number) => {
         callGetAuthMenuBtnList(authGrpSeq, authSeq).then(res => {
             if (res.code === HttpStatusCode.Ok) {
-                const tree = buildMenuBtnTree(res.item);
-                setTreeDataSource(tree);
-                setOrgTreeDataSource(JSON.parse(JSON.stringify(tree)));
+                loadTreeWithOrg(res.item);
             }
         });
     };
@@ -359,26 +229,16 @@ const AuthMenuManagement = ({handlersRef}: {
     }, [authDataSource]);
 
     // handlersRef 등록
-    useEffect(() => {
-        if (handlersRef) {
-            handlersRef.current = {
-                cfmInit: handleReset,
-                cfmSearch: handleSearch,
-                cfmSave: handleSave,
-            };
-        }
+    usePageHandlers(handlersRef, {
+        cfmInit: handleReset,
+        cfmSearch: handleSearch,
+        cfmSave: handleSave,
     });
-
-    useEffect(() => {
-        return () => {
-            if (handlersRef) handlersRef.current = {};
-        };
-    }, []);
 
     // ──────────────────────────── Render ────────────────────────────
     return (
         <>
-            {/* ③ 조회조건: 권한명 검색 */}
+            {/* 조회조건: 권한명 검색 */}
             <section className="search-wrap">
                 <form onSubmit={(e) => { e.preventDefault(); handleSearch(); }}>
                     <span>권한명</span>
@@ -427,7 +287,6 @@ const AuthMenuManagement = ({handlersRef}: {
                             <IconTitle />
                             메뉴권한
                         </h3>
-                        {/* ④ 접기/펼치기 버튼 */}
                         <div className="box-btn">
                             <CustomButton type="default" size="small" onClick={foldTree}>접기</CustomButton>
                             <CustomButton type="default" size="small" onClick={expandTree}>펼치기</CustomButton>
@@ -435,13 +294,22 @@ const AuthMenuManagement = ({handlersRef}: {
                     </div>
                     <div className="board-cont-wrap">
                         <CustomTable
-                            columns={buildDynamicColumns()}
+                            columns={buildDynamicColumns((record, btn) => {
+                                const checked = record[`btn_${btn.btnSeq}_checked`] as boolean;
+                                return (
+                                    <CustomCheckbox
+                                        checked={!!checked}
+                                        disabled={!isEditableAuth()}
+                                        onChange={(e: any) => handleCheckboxChange(record.menuSeq, btn.btnSeq, e.target.checked)}
+                                    />
+                                );
+                            })}
                             dataSource={treeDataSource}
                             rowNoFlag={false}
                             pagination={false}
                             rowKey={'menuSeq'}
-                            expandedRowKeys={defaultExpandRowKeys}
-                            onExpandedRowsChange={setDefaultExpandRowKeys}
+                            expandedRowKeys={expandedRowKeys}
+                            onExpandedRowsChange={setExpandedRowKeys}
                             scroll={{x: 'max-content'}}
                         />
                     </div>

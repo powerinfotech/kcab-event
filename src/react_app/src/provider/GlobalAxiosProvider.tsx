@@ -17,8 +17,7 @@ const GlobalAxiosProvider = (props: GlobalAxiosInterceptorProps) => {
     const onRequestFulfilled = (config: InternalAxiosRequestConfig) => {
         if(config.headers?.showLoading === undefined || config.headers?.showLoading === true)
             loading.add(config?.url ? config.url : '');
-        const { headers } = config.headers;
-        return { ...config, headers: headers, data: config?.data };
+        return config;
     };
 
     const onRequestRejected = (error:AxiosError): Promise<AxiosError> => {
@@ -51,16 +50,7 @@ const GlobalAxiosProvider = (props: GlobalAxiosInterceptorProps) => {
     };
 
 
-    const retry = (errorConfig: InternalAxiosRequestConfig) => {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                resolve(axios.request(errorConfig));
-            }, 1000);
-        });
-    };
-
     useEffect(() => {
-        // axios.defaults.timeout = 15000;
         axios.defaults.withCredentials = true;
         axios.defaults.transitional = {
             clarifyTimeoutError: true,

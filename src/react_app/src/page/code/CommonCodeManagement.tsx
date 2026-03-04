@@ -13,41 +13,11 @@ import {IudType, PageButtonHandlers} from '@interface/common';
 import {callGetComGrpCdList} from '@api/code/CommonGroupCodeApi';
 import {callGetComCdList, callSaveComCd} from '@api/code/CommonCodeApi';
 import {useForm} from 'react-hook-form';
-import CustomValidFormInput from '@component/form/CustomValidFormInput';
 import {useMessage} from '@hook/useMessage';
-
-function applyDataChange<T extends Record<string, any>>(
-    setter: React.Dispatch<React.SetStateAction<T[]>>,
-    keyField: keyof T,
-    record: T,
-    field: string,
-    value: any,
-) {
-    setter(prev => prev.map(item =>
-        item[keyField] === record[keyField]
-            ? item[field] === value ? item
-                : {...item, [field]: value, iudType: item.iudType !== IudType.I ? IudType.U : item.iudType}
-            : item
-    ));
-}
-
-const ComCdCell = ({
-    record, value, setValue, control, register, onDataChange, regExp,
-}: {
-    record: ComCdList; value: string; setValue: (name: string, v: string) => void;
-    control: any; register: any; onDataChange: (record: ComCdList, key: string, value: any) => void;
-    regExp?: {value: RegExp; message: string};
-}) => {
-    const fieldName = `${record.comCdSeq}_comCd`;
-    useEffect(() => { setValue(fieldName, value); }, [fieldName, value, setValue]);
-    return (
-        <CustomValidFormInput
-            control={control} required={true} maxLength={20} regExp={regExp}
-            onChangeValue={(v: string) => onDataChange(record, 'comCd', v.toUpperCase())}
-            {...register(fieldName, {required: '공통코드는 필수입력입니다.'})}
-        />
-    );
-};
+import {usePageHandlers} from '@hook/usePageHandlers';
+import {applyDataChange} from '@util/dataSourceUtils';
+import {ALPHANUMERIC_REGEXP, INTEGER_REGEXP, FLOAT_REGEXP} from '@util/validationPatterns';
+import EditableFormCell from '@component/EditableFormCell';
 
 const CommonCodeManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menuInfo?: any; handlersRef?: React.MutableRefObject<PageButtonHandlers>}) => {
     const {register, unregister, control, handleSubmit, setValue} = useForm<any>({mode: 'onSubmit'});
@@ -198,9 +168,9 @@ const CommonCodeManagement = ({handlersRef}: {onChange?: (flag: boolean) => void
         }
     };
 
-    const comCdRegExp = {value: /^[A-Za-z0-9]*$/, message: '영어와 숫자만 입력 가능합니다.'};
-    const integerRegExp = {value: /^-?\d*$/, message: '정수만 입력 가능합니다.'};
-    const floatRegExp = {value: /^-?\d*\.?\d*$/, message: '실수만 입력 가능합니다.'};
+    const comCdRegExp = ALPHANUMERIC_REGEXP;
+    const integerRegExp = INTEGER_REGEXP;
+    const floatRegExp = FLOAT_REGEXP;
 
     const grpColumns: ColumnsType<ComGrpCdList> = [
         {
@@ -220,9 +190,10 @@ const CommonCodeManagement = ({handlersRef}: {onChange?: (flag: boolean) => void
             render: (value: string, record: ComCdList) =>
                 record.rgstUserSeq
                     ? <span>{value}</span>
-                    : <ComCdCell record={record} value={value} setValue={setValue}
-                          control={control} register={register} onDataChange={handleDataChange}
-                          regExp={comCdRegExp}/>,
+                    : <EditableFormCell record={record} seqField="comCdSeq" fieldSuffix="comCd"
+                          value={value} setValue={setValue} control={control} register={register}
+                          onDataChange={handleDataChange} requiredMessage="공통코드는 필수입력입니다."
+                          maxLength={20} regExp={comCdRegExp} transformValue={(v) => v.toUpperCase()}/>,
         },
         {
             title: '코드명', key: 'comCdNm', dataIndex: 'comCdNm', align: 'center', width: 120,
@@ -359,19 +330,11 @@ const CommonCodeManagement = ({handlersRef}: {onChange?: (flag: boolean) => void
         fetchGrpList();
     }, []);
 
-    useEffect(() => {
-        if (handlersRef) {
-            handlersRef.current = {
-                cfmInit: handleReset,
-                cfmSearch: handleSearch,
-                cfmSave: handleSubmit(handleSave),
-            };
-        }
+    usePageHandlers(handlersRef, {
+        cfmInit: handleReset,
+        cfmSearch: handleSearch,
+        cfmSave: handleSubmit(handleSave),
     });
-
-    useEffect(() => {
-        return () => { if (handlersRef) handlersRef.current = {}; };
-    }, []);
 
     return (
         <>

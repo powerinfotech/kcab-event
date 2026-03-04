@@ -18,7 +18,6 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -35,8 +34,14 @@ public class FileServiceImpl implements FileService {
     @Resource(name="fileDao")
     private FileDao fileDao;
 
+    private final ObjectMapper objectMapper;
+
     @Value("${file.path.dir}")
     private String uploadDir;
+
+    public FileServiceImpl(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
 
     @Override
     public List<FileDetailDto> getFileList(Integer fileSeq) throws Exception{
@@ -47,7 +52,6 @@ public class FileServiceImpl implements FileService {
     public Integer addFile(LoginUser loginUser, String insertFileMetaListJson, List<MultipartFile> insertFiles) throws Exception {
         if(insertFiles == null) return null;
 
-        ObjectMapper objectMapper = new ObjectMapper();
         List<FileDetailDto> insertFileMetaList = objectMapper.readValue(
                 insertFileMetaListJson,
                 new TypeReference<List<FileDetailDto>>() {}
@@ -127,7 +131,6 @@ public class FileServiceImpl implements FileService {
     public void updateFile(LoginUser loginUser, String updateFileListJson) throws Exception{
         if (updateFileListJson == null) return;
 
-        ObjectMapper objectMapper = new ObjectMapper();
         List<FileDetailDto> updateFileList = objectMapper.readValue(updateFileListJson, new TypeReference<List<FileDetailDto>>() {});
 
         for (FileDetailDto fileDto : updateFileList) {
@@ -166,7 +169,6 @@ public class FileServiceImpl implements FileService {
     public void deleteFile(LoginUser loginUser, String deleteFileListJson) throws Exception{
         if (deleteFileListJson == null) return;
 
-        ObjectMapper objectMapper = new ObjectMapper();
         List<FileDetailDto> deleteFileList = objectMapper.readValue(deleteFileListJson, new TypeReference<List<FileDetailDto>>() {});
 
         for (FileDetailDto fileDto : deleteFileList) {
