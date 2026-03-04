@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {message} from 'antd';
 import {useForm} from 'react-hook-form';
 import {HttpStatusCode} from 'axios';
@@ -108,6 +108,7 @@ export function useMenuManagement() {
     const [rowSeq, setRowSeq] = useState<any[]>([]);
     const [btnList, setBtnList] = useState<BtnInfo[]>([]);
     const [menuBtnState, setMenuBtnState] = useState<MenuBtnState[]>([]);
+    const newItemBtnInitializedRef = useRef(false);
 
     const getCurrentRowDataSourceBySeq = (menuSeq: number | React.Key) => {
         if (typeof menuSeq === 'string' && menuSeq.startsWith('_new_')) {
@@ -149,14 +150,17 @@ export function useMenuManagement() {
             });
             setMenuBtnState(merged.length ? merged : []);
         } else if (row?.iudType === IudType.I) {
-            setMenuBtnState(
-                btnList.map(btn => ({
-                    btnSeq: btn.btnSeq,
-                    sortSeq: btn.sortSeq,
-                    btnNm: '',
-                    useYn: 'N',
-                }))
-            );
+            if (!newItemBtnInitializedRef.current) {
+                newItemBtnInitializedRef.current = true;
+                setMenuBtnState(
+                    btnList.map(btn => ({
+                        btnSeq: btn.btnSeq,
+                        sortSeq: btn.sortSeq,
+                        btnNm: '',
+                        useYn: 'N',
+                    }))
+                );
+            }
         }
     };
 
@@ -166,6 +170,7 @@ export function useMenuManagement() {
             if (!result) return;
             setDataSource(structuredClone(orgDataSource));
         }
+        newItemBtnInitializedRef.current = false;
         setRowSeq(keys);
         onSelectChange(keys);
     };
@@ -246,19 +251,18 @@ export function useMenuManagement() {
             useYn: b.useYn,
         }));
 
-        if (menu.menuSeq) {
-            const res = await callSaveMenu({...menu, menuBtnList});
-            if (res.code === HttpStatusCode.Ok) {
-                message.success('저장이 완료되었습니다.');
-                saveForm.reset(EMPTY_MENU);
-                callGetMenuInfo().then(menuRes => {
-                    setIsRowSelected(true);
-                    setDataSource(structuredClone(menuRes.item));
-                    setOrgDataSource(structuredClone(menuRes.item));
-                });
-                onSelectChange(rowSeq);
-            }
+        const res = await callSaveMenu({...menu, menuBtnList});
+        if (res.code === HttpStatusCode.Ok) {
+            message.success('저장이 완료되었습니다.');
+            saveForm.reset(EMPTY_MENU);
+            callGetMenuInfo().then(menuRes => {
+                setIsRowSelected(true);
+                setDataSource(structuredClone(menuRes.item));
+                setOrgDataSource(structuredClone(menuRes.item));
+            });
+            onSelectChange(rowSeq);
         }
+
     };
 
     const handleSearch = async () => {
@@ -281,6 +285,7 @@ export function useMenuManagement() {
             const result = await confirm('저장하지 않은 정보는 초기화 됩니다. 계속 하시겠습니까?');
             if (!result) return;
         }
+        newItemBtnInitializedRef.current = false;
         const newMenu: MenuInfo = {
             ...structuredClone(EMPTY_MENU),
             upMenuSeq: orgDataSource.length > 0
