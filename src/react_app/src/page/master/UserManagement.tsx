@@ -171,9 +171,13 @@ const UserManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
         const res = await callGetUserList({userId: idOrName, userName: idOrName, isCheck});
         setDataSource(structuredClone(res.item));
         setOrgDataSource(structuredClone(res.item));
-        saveFormReset(EMPTY_USER);
-        setIsRowSelected(false);
-        setSelectedRowIndex(-1);
+        if (res.item.length > 0) {
+            handleRowSelection(res.item[0], 0);
+        } else {
+            saveFormReset(EMPTY_USER);
+            setIsRowSelected(false);
+            setSelectedRowIndex(-1);
+        }
     };
 
     const handleSave = async (value: UserList) => {

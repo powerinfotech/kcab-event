@@ -98,7 +98,7 @@ const CommonCodeManagement = ({handlersRef}: {onChange?: (flag: boolean) => void
 
     const handleAddRow = () => {
         if (!selectedGrpCd) {
-            message.info('분류코드를 먼저 선택해 주세요.');
+            message.info('공통그코드를 먼저 선택해 주세요.');
             return;
         }
         const tempSeq = tempSeqRef.current--;
@@ -133,7 +133,7 @@ const CommonCodeManagement = ({handlersRef}: {onChange?: (flag: boolean) => void
 
     const handleSave = async () => {
         if (!selectedGrpCd) {
-            message.info('분류코드를 먼저 선택해 주세요.');
+            message.info('공통그룹코드를 먼저 선택해 주세요.');
             return;
         }
         if (!isChanged) {
@@ -174,11 +174,10 @@ const CommonCodeManagement = ({handlersRef}: {onChange?: (flag: boolean) => void
 
     const grpColumns: ColumnsType<ComGrpCdList> = [
         {
-            title: '분류코드', key: 'comGrpCd', dataIndex: 'comGrpCd', align: 'center', width: 100,
-            render: (value: string) => <a>{value}</a>,
+            title: '공통그룹코드', key: 'comGrpCd', dataIndex: 'comGrpCd', align: 'center', width: 100,
         },
         {
-            title: '분류명', key: 'comGrpCdNm', dataIndex: 'comGrpCdNm', align: 'center', width: 120,
+            title: '공통그룹코드명', key: 'comGrpCdNm', dataIndex: 'comGrpCdNm', align: 'center', width: 120,
         },
     ];
 
@@ -353,7 +352,7 @@ const CommonCodeManagement = ({handlersRef}: {onChange?: (flag: boolean) => void
             <section className="board-wrap half-wrap type02">
                 <div>
                     <div className="board-title-wrap">
-                        <h3 className="title"><IconTitle/>분류코드목록</h3>
+                        <h3 className="title"><IconTitle/>공통그룹코드목록</h3>
                         <span className="total-count">Total {grpDataSource.length}</span>
                     </div>
                     <div className="board-cont-wrap">
