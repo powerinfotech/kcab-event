@@ -60,6 +60,16 @@ dependencies {
 
 task buildFrontend(type: Exec) {
     workingDir 'src/react_app'
+
+    // [추가] 빌드에 영향을 주는 파일들을 입력값으로 지정
+    inputs.dir 'src/react_app/src'
+    inputs.dir 'src/react_app/public'
+    inputs.file 'src/react_app/package.json'
+    inputs.file 'src/react_app/yarn.lock'
+
+    // [추가] 빌드 결과물이 나오는 폴더를 출력값으로 지정
+    outputs.dir 'src/react_app/out'
+
     commandLine System.getProperty('os.name').toLowerCase().contains('windows')
         ? ['cmd', '/c', 'yarn', 'build']
         : ['yarn', 'build']
@@ -69,6 +79,9 @@ task copyFrontend(type: Copy) {
     dependsOn buildFrontend
     from 'src/react_app/out'
     into 'src/main/resources/static'
+
+    inputs.dir 'src/react_app/out'
+    outputs.dir 'src/main/resources/static'
 }
 
 processResources.dependsOn copyFrontend
