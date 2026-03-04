@@ -60,7 +60,9 @@ dependencies {
 
 task buildFrontend(type: Exec) {
     workingDir 'src/react_app'
-    commandLine 'cmd', '/c', 'yarn', 'build'
+    commandLine System.getProperty('os.name').toLowerCase().contains('windows')
+        ? ['cmd', '/c', 'yarn', 'build']
+        : ['yarn', 'build']
 }
 
 processResources.dependsOn buildFrontend
