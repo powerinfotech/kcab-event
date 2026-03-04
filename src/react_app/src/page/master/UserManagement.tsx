@@ -345,8 +345,8 @@ const UserManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
                         <h3 className="title">
                             <IconTitle/>
                             사용자 목록
+                            <span className="total-count">{dataSource.length}건</span>
                         </h3>
-                        <span className="total-count">Total {dataSource.length}</span>
                     </div>
                     <div className="board-cont-wrap">
                         <CustomTable onRow={(recode: any, index?: number) => {

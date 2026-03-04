@@ -295,8 +295,7 @@ const CommonGroupCodeManagement = ({handlersRef}: {onChange?: (flag: boolean) =>
 
             <section className="board-wrap">
                 <div className="board-title-wrap">
-                    <h3 className="title"><IconTitle/>공통그룹코드목록</h3>
-                    <span className="total-count">Total {dataSource.length}</span>
+                    <h3 className="title"><IconTitle/>공통그룹코드목록<span className="total-count">{dataSource.length}건</span></h3>
                 </div>
                 <div className="board-cont-wrap">
                     <CustomTable

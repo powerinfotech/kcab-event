@@ -258,6 +258,7 @@ const AuthMenuManagement = ({handlersRef}: {
                         <h3 className="title">
                             <IconTitle />
                             권한정보
+                            <span className="total-count">{authDataSource.length}건</span>
                         </h3>
                     </div>
                     <div className="board-cont-wrap">

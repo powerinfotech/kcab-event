@@ -267,6 +267,19 @@
             font-size:18px;
             font-weight:700;
             line-height:28px;
+
+            .total-count{
+                display: inline-flex;
+                align-items: center;
+                margin-left: 10px;
+                padding: 1px 10px;
+                font-size: 12px;
+                font-weight: 600;
+                color: $PrimaryDark;
+                background: $Primary08;
+                border-radius: 10px;
+                line-height: 20px;
+            }
         }
         .box-btn{
             display:flex;

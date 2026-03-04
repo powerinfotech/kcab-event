@@ -354,8 +354,7 @@ const CommonCodeManagement = ({handlersRef}: {onChange?: (flag: boolean) => void
             <section className="board-wrap half-wrap type02">
                 <div>
                     <div className="board-title-wrap">
-                        <h3 className="title"><IconTitle/>공통그룹코드목록</h3>
-                        <span className="total-count">Total {grpDataSource.length}</span>
+                        <h3 className="title"><IconTitle/>공통그룹코드목록<span className="total-count">{grpDataSource.length}건</span></h3>
                     </div>
                     <div className="board-cont-wrap">
                         <CustomTable
@@ -375,8 +374,7 @@ const CommonCodeManagement = ({handlersRef}: {onChange?: (flag: boolean) => void
 
                 <div>
                     <div className="board-title-wrap">
-                        <h3 className="title"><IconTitle/>공통코드목록</h3>
-                        <span className="total-count">Total {comCdDataSource.length}</span>
+                        <h3 className="title"><IconTitle/>공통코드목록<span className="total-count">{comCdDataSource.length}건</span></h3>
                         <div className="box-btn">
                             <CustomButton type="default" size="small" onClick={handleAddRow}>+행추가</CustomButton>
                             <CustomButton type="default" size="small" onClick={handleDeleteRow}>-행삭제</CustomButton>

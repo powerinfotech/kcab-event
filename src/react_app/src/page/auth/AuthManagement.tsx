@@ -429,8 +429,7 @@ const AuthManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
                 {/* 권한그룹정보 */}
                 <div style={{flex: '0 0 38%', minWidth: 0}}>
                     <div className="board-title-wrap">
-                        <h3 className="title"><IconTitle/>권한그룹정보</h3>
-                        <span className="total-count">Total {authGrpDataSource.length}</span>
+                        <h3 className="title"><IconTitle/>권한그룹정보<span className="total-count">{authGrpDataSource.length}건</span></h3>
                         <div className="box-btn">
                             <CustomButton type="default" size="small" onClick={handleAddRowAuthGrp}>+ 행추가</CustomButton>
                             <CustomButton type="default" size="small" onClick={handleDeleteRowAuthGrp}>- 행삭제</CustomButton>
@@ -458,8 +457,7 @@ const AuthManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
                 <div style={{flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '16px'}}>
                     <div>
                         <div className="board-title-wrap">
-                            <h3 className="title"><IconTitle/>권한정보</h3>
-                            <span className="total-count">Total {authDataSource.length}</span>
+                            <h3 className="title"><IconTitle/>권한정보<span className="total-count">{authDataSource.length}건</span></h3>
                             <div className="box-btn">
                                 <CustomButton type="default" size="small" onClick={handleAddRowAuth}>+ 행추가</CustomButton>
                                 <CustomButton type="default" size="small" onClick={handleDeleteRowAuth}>- 행삭제</CustomButton>
@@ -485,8 +483,7 @@ const AuthManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
 
                     <div>
                         <div className="board-title-wrap">
-                            <h3 className="title"><IconTitle/>권한사용자정보</h3>
-                            <span className="total-count">Total {authUserDataSource.length}</span>
+                            <h3 className="title"><IconTitle/>권한사용자정보<span className="total-count">{authUserDataSource.length}건</span></h3>
                             <div className="box-btn">
                                 <CustomButton type="default" size="small" onClick={handleOpenUserPopup}>인원추가</CustomButton>
                                 <CustomButton type="default" size="small" onClick={handleDeleteRowAuthUser}>- 행삭제</CustomButton>

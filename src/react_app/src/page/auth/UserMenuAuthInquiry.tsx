@@ -205,8 +205,8 @@ const UserMenuAuthInquiry = ({handlersRef}: {
                         <h3 className="title">
                             <IconTitle />
                             권한정보
+                            <span className="total-count">{authDataSource.length}건</span>
                         </h3>
-                        <span className="total-count">Total {authDataSource.length}</span>
                     </div>
                     <div className="board-cont-wrap">
                         <CustomTable

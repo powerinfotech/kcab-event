@@ -71,8 +71,7 @@ const UserSearchPopup = ({open, onClose, onSelect}: UserSearchPopupProps) => {
                 <CustomButton type="primary" size="small" onClick={handleSearch}>조회</CustomButton>
             </div>
             <div className="board-title-wrap" style={{marginBottom: '4px'}}>
-                <h3 className="title" style={{fontSize: '13px'}}><IconTitle/>사용자 ID 조회내역</h3>
-                <span className="total-count">Total {userSearchList.length}</span>
+                <h3 className="title" style={{fontSize: '13px'}}><IconTitle/>사용자 ID 조회내역<span className="total-count">{userSearchList.length}건</span></h3>
             </div>
             <CustomTable
                 onRow={(record: any, index?: number) => ({
