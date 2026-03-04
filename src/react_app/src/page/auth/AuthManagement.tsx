@@ -255,18 +255,50 @@ const AuthManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
             if (res.code !== HttpStatusCode.Ok) return;
             message.success('저장이 완료 되었습니다.');
 
-            const grpRes = await callGetAuthGrpList();
-            if (grpRes.code === HttpStatusCode.Ok) {
-                setOrgAuthGrpDataSource(structuredClone(grpRes.item));
-            }
-            if (selectedAuthGrp?.authGrpSeq && selectedAuthGrp?.rgstUserSeq) {
-                const authRes = await callGetAuthList(selectedAuthGrp.authGrpSeq);
-                if (authRes.code === HttpStatusCode.Ok) {
-                    setAuthDataSource(structuredClone(authRes.item));
+            const hasDeletedAuthGrp = authGrpDataSource.some(v => v.iudType === IudType.D);
+            const hasDeletedAuth = authDataSource.some(v => v.iudType === IudType.D);
+
+            if (hasDeletedAuthGrp) {
+                // 권한그룹 삭제 시: 전체 재조회 + 첫 번째 행 자동 선택
+                autoSelectAuthGrpRef.current = true;
+                setSelectedAuthGrpRowIndex(-1);
+                setSelectedAuthGrpRowKeys([]);
+                setSelectedAuthRowIndex(-1);
+                setSelectedAuthRowKeys([]);
+                resetAuthUserState();
+
+                const grpRes = await callGetAuthGrpList();
+                if (grpRes.code === HttpStatusCode.Ok) {
+                    setOrgAuthGrpDataSource(structuredClone(grpRes.item));
                 }
-            }
-            if (selectedAuth?.authSeq && selectedAuth?.rgstUserSeq && selectedAuthGrp?.authGrpSeq) {
-                await fetchAuthUserList(selectedAuthGrp.authGrpSeq, selectedAuth.authSeq);
+            } else if (hasDeletedAuth) {
+                // 권한 삭제 시: 권한그룹 재조회 + 권한/사용자 초기화 후 권한 재조회
+                const grpRes = await callGetAuthGrpList();
+                if (grpRes.code === HttpStatusCode.Ok) {
+                    setOrgAuthGrpDataSource(structuredClone(grpRes.item));
+                }
+                setSelectedAuthRowIndex(-1);
+                setSelectedAuthRowKeys([]);
+                resetAuthUserState();
+
+                if (selectedAuthGrp?.authGrpSeq && selectedAuthGrp?.rgstUserSeq) {
+                    await fetchAuthWithAutoSelect(selectedAuthGrp.authGrpSeq);
+                }
+            } else {
+                // 삭제 없는 일반 저장: 기존 선택 유지하며 재조회
+                const grpRes = await callGetAuthGrpList();
+                if (grpRes.code === HttpStatusCode.Ok) {
+                    setOrgAuthGrpDataSource(structuredClone(grpRes.item));
+                }
+                if (selectedAuthGrp?.authGrpSeq && selectedAuthGrp?.rgstUserSeq) {
+                    const authRes = await callGetAuthList(selectedAuthGrp.authGrpSeq);
+                    if (authRes.code === HttpStatusCode.Ok) {
+                        setAuthDataSource(structuredClone(authRes.item));
+                    }
+                }
+                if (selectedAuth?.authSeq && selectedAuth?.rgstUserSeq && selectedAuthGrp?.authGrpSeq) {
+                    await fetchAuthUserList(selectedAuthGrp.authGrpSeq, selectedAuth.authSeq);
+                }
             }
         } catch {
             // handled by axios interceptor
