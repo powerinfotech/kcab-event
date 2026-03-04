@@ -37,15 +37,11 @@ export default function MainContent() {
 
   useEffect(() => {
     if (menuInfo.length === 0) return;
-    const shouldRedirect =
-      pathname === '/' ||
-      (typeof window !== 'undefined' && window.location.href.includes('987654321'));
-    if (!shouldRedirect) return;
-
-    const defaultPath = getDefaultMenuPath(menuInfo);
-    if (defaultPath && !hasRedirected.current) {
-      hasRedirected.current = true;
-      router.replace(defaultPath);
+    if (typeof window !== 'undefined' && window.location.href.includes('987654321')) {
+      if (!hasRedirected.current) {
+        hasRedirected.current = true;
+        router.replace('/');
+      }
     }
   }, [pathname, menuInfo, router]);
 
@@ -75,8 +71,10 @@ export default function MainContent() {
   let Comp: React.ComponentType<{ onChange: (flag: boolean) => void; menuInfo?: MenuInfo; handlersRef?: React.MutableRefObject<PageButtonHandlers> }> | null = null;
   let menuItem: MenuInfo | null = null;
 
-  if (pathname === '/') {
-    Comp = getPageComponent('Dashboard');
+  const isDashboard = pathname === '/';
+
+  if (isDashboard) {
+    Comp = getPageComponent('DashBoard');
   } else if (menu?.menuViewPath) {
     menuItem = menu;
     const viewPath = menu.menuViewPath.replace(/^\//, '');
@@ -133,6 +131,13 @@ export default function MainContent() {
     <div className="container_wrap">
       <div className="container_inner">
         <Suspense fallback={<></>}>
+          {isDashboard && (
+            <section className="title-wrap">
+              <div className="box-flex">
+                <h2 className="title">대시보드</h2>
+              </div>
+            </section>
+          )}
           <Comp onChange={onChange} />
         </Suspense>
       </div>

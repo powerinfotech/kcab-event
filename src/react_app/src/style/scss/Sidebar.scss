@@ -27,6 +27,22 @@ $sidebar-subpanel-width: 280px;
   border-right: 1px solid rgba(255, 255, 255, 0.06);
 }
 
+.sidebar_logo {
+  flex-shrink: 0;
+  height: 61px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+
+  img {
+    max-width: 48px;
+    max-height: 36px;
+    object-fit: contain;
+  }
+}
+
 .sidebar_narrow_menu {
   flex: 1;
   overflow-y: auto;

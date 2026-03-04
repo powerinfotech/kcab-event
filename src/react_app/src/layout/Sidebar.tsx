@@ -2,9 +2,11 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { MenuInfo } from '@interface/auth/MenuManagement';
 import { useRecoilValue } from 'recoil';
 import { menuInfoAtom } from '@atom/menuInfoAtom';
+import LogoImage from '@image/powerInfoTech_logo.png';
 
 function SidebarSubpanel({
   menuInfo,
@@ -49,6 +51,7 @@ export default function Sidebar({
   menuInfo?: MenuInfo[];
   onSubpanelOpenChange?: (open: boolean) => void;
 }) {
+  const router = useRouter();
   const menuInfo = useRecoilValue(menuInfoAtom);
   const [subpanelOpen, setSubpanelOpen] = useState(false);
   const [selectedParentId, setSelectedParentId] = useState<number | null>(null);
@@ -75,6 +78,9 @@ export default function Sidebar({
       onMouseLeave={handleSubpanelClose}
     >
       <div className="sidebar_narrow">
+        <div className="sidebar_logo" onClick={() => router.push('/')}>
+          <img src={typeof LogoImage === 'string' ? LogoImage : LogoImage.src} alt="Logo" />
+        </div>
         <nav className="sidebar_narrow_menu">
           {parentMenus.map((parent) => (
             <button

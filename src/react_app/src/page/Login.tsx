@@ -8,7 +8,6 @@ import CustomValidFormInput from '@component/form/CustomValidFormInput';
 import {useCookies} from 'react-cookie';
 import CustomValidFormCheckbox from '@component/form/CustomValidFormCheckbox';
 import {message, Modal} from "antd";
-import {MenuInfo} from "@interface/auth/MenuManagement";
 import FindIdPopup from "@page/auth/FindIdPopup";
 import FindPasswordPopup from "@page/auth/FindPasswordPopup";
 import { useRouter } from 'next/navigation';
@@ -45,7 +44,7 @@ const Login = () => {
                 getUserMenuInfo().then((res)=> {
                     if(res.code === HttpStatusCode.Ok && res.item) {
                         setMenuInfoRecoil(res.item);
-                        defaultMenu(res.item);
+                        defaultMenu();
                     }
                 });
             }
@@ -54,19 +53,8 @@ const Login = () => {
         return data;
     };
 
-    const defaultMenu = (menuList: MenuInfo[]) => {
-        const level2Menu = menuList.filter((item) => item.level === 2);
-
-        if (level2Menu.length > 0) {
-            const minumSeqMenu = level2Menu.reduce((minMenu, currentMenu) => {
-                return currentMenu.menuSeq < minMenu.menuSeq ? currentMenu : minMenu;
-            });
-
-            const path = minumSeqMenu.menuUrl?.startsWith('/') ? minumSeqMenu.menuUrl : `/${minumSeqMenu.menuUrl}`;
-            if (path && path !== '/') {
-                router.replace(path);
-            }
-        }
+    const defaultMenu = () => {
+        router.replace('/');
     };
 
     const AutoLogin = async() => {
@@ -87,7 +75,7 @@ const Login = () => {
                 getUserMenuInfo().then((res)=> {
                     if(res.code === HttpStatusCode.Ok && res.item) {
                         setMenuInfoRecoil(res.item);
-                        defaultMenu(res.item);
+                        defaultMenu();
                     }
                 });
             }
