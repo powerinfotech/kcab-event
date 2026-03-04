@@ -145,7 +145,10 @@ const CommonGroupCodeManagement = ({handlersRef}: {onChange?: (flag: boolean) =>
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter') handleSearch();
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleSearch();
+        }
     };
 
     const comGrpCdRegExp = {value: /^[A-Za-z0-9]*$/, message: '영어와 숫자만 입력 가능합니다.'};

@@ -14,9 +14,11 @@ import { menuInfoAtom } from '@atom/menuInfoAtom';
 function SidebarSubpanel({
   menuInfo,
   selectedParentId,
+  onMenuClick,
 }: {
   menuInfo: MenuInfo[];
   selectedParentId: number | null;
+  onMenuClick?: () => void;
 }) {
   if (selectedParentId === null) return null;
 
@@ -36,6 +38,7 @@ function SidebarSubpanel({
             key={child.menuSeq}
             href={child.menuUrl}
             className="sidebar_menu_child"
+            onClick={onMenuClick}
           >
             {child.menuNm}
           </Link>
@@ -127,6 +130,7 @@ export default function Sidebar({
         <SidebarSubpanel
           menuInfo={menuInfo}
           selectedParentId={selectedParentId}
+          onMenuClick={handleSubpanelClose}
         />
       )}
     </aside>

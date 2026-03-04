@@ -198,11 +198,6 @@ const CommonCodeManagement = ({handlersRef}: {onChange?: (flag: boolean) => void
         }
     };
 
-    const handleSearchSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        handleSearch();
-    };
-
     const comCdRegExp = {value: /^[A-Za-z0-9]*$/, message: '영어와 숫자만 입력 가능합니다.'};
     const integerRegExp = {value: /^-?\d*$/, message: '정수만 입력 가능합니다.'};
     const floatRegExp = {value: /^-?\d*\.?\d*$/, message: '실수만 입력 가능합니다.'};
@@ -381,7 +376,7 @@ const CommonCodeManagement = ({handlersRef}: {onChange?: (flag: boolean) => void
     return (
         <>
             <section className="search-wrap">
-                <form onSubmit={handleSearchSubmit}>
+                <form>
                     <span>ID/성명</span>
                     <CustomInput
                         value={searchText}
