@@ -123,7 +123,7 @@ export function useMenuManagement() {
     const createParentMenuCombo = () => {
         setParentMenuCombo(
             dataSource
-                .filter(v => v.menuSeq != null)
+                .filter(v => v.menuSeq != null && v.menuTypeCd === 'D')
                 .map(v => ({value: v.menuSeq as any, label: v.menuNm, level: v.level}))
         );
     };
