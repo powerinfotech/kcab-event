@@ -1,5 +1,6 @@
 import CustomButton from '@component/CustomButton';
 import React, {useEffect, useRef, useState} from 'react';
+import {useRouter} from 'next/navigation';
 import {ColumnsType} from 'antd/es/table';
 import CustomTable, {IUD_COLUMN} from '@component/CustomTable';
 import CustomInput from '@component/CustomInput';
@@ -18,6 +19,7 @@ import {ALPHANUMERIC_REGEXP, INTEGER_REGEXP, FLOAT_REGEXP} from '@util/validatio
 import EditableFormCell from '@component/EditableFormCell';
 
 const CommonGroupCodeManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menuInfo?: any; handlersRef?: React.MutableRefObject<PageButtonHandlers>}) => {
+    const router = useRouter();
     const {register, unregister, control, handleSubmit, setValue} = useForm<any>({mode: 'onSubmit'});
     const {confirm} = useMessage();
     const tempSeqRef = useRef(-1);
@@ -132,7 +134,7 @@ const CommonGroupCodeManagement = ({handlersRef}: {onChange?: (flag: boolean) =>
             key: 'comGrpCd', dataIndex: 'comGrpCd', align: 'center', width: 100, fixed: 'left',
             render: (value: string, record: ComGrpCdList) =>
                 record.rgstUserSeq
-                    ? <a>{value}</a>
+                    ? <a onClick={() => router.push(`/com-cd-mgt?comGrpCd=${encodeURIComponent(value)}`)}>{value}</a>
                     : <EditableFormCell record={record} seqField="comGrpCdSeq" fieldSuffix="comGrpCd"
                           value={value} setValue={setValue} control={control} register={register}
                           onDataChange={handleDataChange} requiredMessage="분류코드는 필수입력입니다."

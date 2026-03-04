@@ -1,5 +1,6 @@
 import CustomButton from '@component/CustomButton';
 import React, {useEffect, useRef, useState} from 'react';
+import {useSearchParams} from 'next/navigation';
 import {ColumnsType} from 'antd/es/table';
 import CustomTable, {IUD_COLUMN} from '@component/CustomTable';
 import CustomInput from '@component/CustomInput';
@@ -20,11 +21,12 @@ import {ALPHANUMERIC_REGEXP, INTEGER_REGEXP, FLOAT_REGEXP} from '@util/validatio
 import EditableFormCell from '@component/EditableFormCell';
 
 const CommonCodeManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menuInfo?: any; handlersRef?: React.MutableRefObject<PageButtonHandlers>}) => {
+    const searchParams = useSearchParams();
     const {register, unregister, control, handleSubmit, setValue} = useForm<any>({mode: 'onSubmit'});
     const {confirm} = useMessage();
     const tempSeqRef = useRef(-1);
 
-    const [searchText, setSearchText] = useState('');
+    const [searchText, setSearchText] = useState(searchParams?.get('comGrpCd') ?? '');
     const [grpDataSource, setGrpDataSource] = useState<ComGrpCdList[]>([]);
     const [selectedGrpRowIndex, setSelectedGrpRowIndex] = useState<number | undefined>(undefined);
     const [selectedGrpCd, setSelectedGrpCd] = useState<ComGrpCdList | null>(null);
@@ -98,7 +100,7 @@ const CommonCodeManagement = ({handlersRef}: {onChange?: (flag: boolean) => void
 
     const handleAddRow = () => {
         if (!selectedGrpCd) {
-            message.info('공통그코드를 먼저 선택해 주세요.');
+            message.info('공통그룹코드를 먼저 선택해 주세요.');
             return;
         }
         const tempSeq = tempSeqRef.current--;
