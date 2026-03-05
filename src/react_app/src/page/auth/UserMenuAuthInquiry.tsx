@@ -1,13 +1,12 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {Button, Input, message} from 'antd';
+import {message} from 'antd';
 import {ColumnsType} from 'antd/es/table';
 import {HttpStatusCode} from 'axios';
 import IconTitle from '@icon/IconTitle';
-import IconBtnSearch from '@icon/IconBtnSearch';
 import CustomTable from '@component/CustomTable';
 import CustomCheckbox from '@component/CustomCheckbox';
 import CustomButton from '@component/CustomButton';
-import UserSearchPopup from '@component/popup/UserSearchPopup';
+import UserSearchInput from '@component/UserSearchInput';
 import {PageButtonHandlers} from '@interface/common';
 import {UserSearchResult} from '@interface/auth/AuthManagement';
 import {AuthMenuMgtAuth, BtnColumnInfo} from '@interface/auth/AuthMenuManagement';
@@ -27,8 +26,6 @@ const UserMenuAuthInquiry = ({handlersRef}: {
     const [searchUserId, setSearchUserId] = useState('');
     const [searchUserName, setSearchUserName] = useState('');
     const [showAllAuth, setShowAllAuth] = useState(false);
-    const [userPopupOpen, setUserPopupOpen] = useState(false);
-
     const [authDataSource, setAuthDataSource] = useState<AuthMenuMgtAuth[]>([]);
     const [selectedAuthRowIndex, setSelectedAuthRowIndex] = useState(-1);
 
@@ -170,25 +167,9 @@ const UserMenuAuthInquiry = ({handlersRef}: {
             <section className="search-wrap">
                 <form onSubmit={(e) => { e.preventDefault(); handleSearch(); }}>
                     <span>사용자</span>
-                    <span style={{display: 'inline-flex', alignItems: 'center'}}>
-                        <Input
-                            readOnly
-                            value={searchUserId}
-                            placeholder="사용자를 선택해 주세요."
-                            style={{width: 140, borderTopRightRadius: 0, borderBottomRightRadius: 0}}
-                        />
-                        <Button
-                            type="primary"
-                            onClick={() => setUserPopupOpen(true)}
-                            style={{borderTopLeftRadius: 0, borderBottomLeftRadius: 0, marginLeft: -1}}
-                        >
-                            <IconBtnSearch />
-                        </Button>
-                    </span>
-                    <Input
-                        readOnly
-                        value={searchUserName}
-                        style={{width: 100}}
+                    <UserSearchInput
+                        value={searchUserId}
+                        onChange={handleUserSelect}
                     />
                     <CustomCheckbox
                         checked={showAllAuth}
@@ -258,11 +239,6 @@ const UserMenuAuthInquiry = ({handlersRef}: {
                 </div>
             </section>
 
-            <UserSearchPopup
-                open={userPopupOpen}
-                onClose={() => setUserPopupOpen(false)}
-                onSelect={handleUserSelect}
-            />
         </>
     );
 };
