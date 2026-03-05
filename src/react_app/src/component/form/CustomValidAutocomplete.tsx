@@ -47,7 +47,7 @@ const CustomValidAutoComplete = ({name, defaultValue, control, onChangeValue, la
                         >
                             {props.children}
                         </AutoComplete>
-                        {props.showName&&<Input value={labelText} disabled={true} style={{width:'200px'}}/>}
+                        {props.showName&&<Input value={labelText} disabled={true} className="w200"/>}
                     </div>
                 </Tooltip>
 

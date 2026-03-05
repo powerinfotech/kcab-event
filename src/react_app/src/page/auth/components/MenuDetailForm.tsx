@@ -39,8 +39,8 @@ const MenuDetailForm: React.FC<MenuDetailFormProps> = ({
                 </h3>
             </div>
             <div className="board-cont-wrap">
-                <CustomInput style={{display: 'none'}} className={'hide'} {...register('menuSeq')}/>
-                <CustomInput style={{display: 'none'}} className={'hide'} {...register('iudType')}/>
+                <CustomInput className="hide" {...register('menuSeq')}/>
+                <CustomInput className="hide" {...register('iudType')}/>
                 <div className="board-detail-info menu-detail-two-column">
                     <div>
                         <CustomSaveFormInput
@@ -58,7 +58,7 @@ const MenuDetailForm: React.FC<MenuDetailFormProps> = ({
                             required={true}
                             disabled={!isEditable}
                             options={parentMenuCombo}
-                            style={{width: '200px'}}
+                            className="w200"
                             showSearch
                             optionFilterProp="label"
                             onChangeValueback={() => onDataChanged()}

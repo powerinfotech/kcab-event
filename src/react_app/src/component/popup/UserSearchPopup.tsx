@@ -64,12 +64,12 @@ const UserSearchPopup = ({open, onClose, onSelect}: UserSearchPopupProps) => {
             <section className="search-wrap">
                 <form>
                     <span>ID/사용자명</span>
-                    <CustomInput value={userSearchText} style={{width: 180}}
+                    <CustomInput value={userSearchText} className="w180"
                         onChange={(e) => setUserSearchText(e.target.value)}
                         onKeyDown={(e: React.KeyboardEvent) => { if (e.key === 'Enter') handleSearch(); }}/>
                     <CustomCheckbox checked={excludeUnused} onChange={(e) => setExcludeUnused(e.target.checked)}/>
                     <span>미사용자 제외</span>
-                    <CustomButton type="primary" size="small" onClick={handleSearch} style={{marginLeft: 'auto'}}>조회</CustomButton>
+                    <CustomButton type="primary" size="small" onClick={handleSearch} className="ml-auto">조회</CustomButton>
                 </form>
             </section>
             <section className="board-wrap type03">

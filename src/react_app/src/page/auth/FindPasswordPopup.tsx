@@ -135,8 +135,8 @@ const FindPasswordPopup = (props:ChangePasswordPopupProps) => {
     </div>
 
     </div>
-    <Button type='primary'  ref={formRef} onClick={findPasswordHandleSubmit(handleFindPassword)} style={{ marginTop: 10 }}>비밀번호 찾기</Button>
-    <Button type='primary' onClick={props.onClose} style={{ marginTop: 10 }} >닫기</Button>
+    <Button type='primary'  ref={formRef} onClick={findPasswordHandleSubmit(handleFindPassword)} className="mt10">비밀번호 찾기</Button>
+    <Button type='primary' onClick={props.onClose} className="mt10">닫기</Button>
     </form>
 
     {changeInfo &&(
@@ -175,8 +175,8 @@ const FindPasswordPopup = (props:ChangePasswordPopupProps) => {
         </div>
 
         </div>
-        <Button type={'primary'} ref={formRef} onClick={changePasswordHandleSubmit(handleSave)} style={{ marginTop: 10 }}>비밀번호 변경</Button>
-    <Button type="primary" onClick={props.onClose} style={{ marginTop: 10 }}>닫기</Button>
+        <Button type={'primary'} ref={formRef} onClick={changePasswordHandleSubmit(handleSave)} className="mt10">비밀번호 변경</Button>
+    <Button type="primary" onClick={props.onClose} className="mt10">닫기</Button>
     </form>
 
     </CustomModal>

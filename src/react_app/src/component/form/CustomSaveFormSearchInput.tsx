@@ -47,7 +47,7 @@ const CustomSaveFormSearchInput = ({name, defaultValue, control, onChangeValue, 
             control={control}
             render={({ field, fieldState }) => (
                 <p className={singleRow ?'full': props.isNoTitle === true ? 'no-title' : ''}>
-                    { props.isNoTitle === true ? <></> : <span className="tit" style={{ marginTop: '0px'}}>{props.title}{props.required? <em>*</em> : <></>}</span>}
+                    { props.isNoTitle === true ? <></> : <span className="tit mt0">{props.title}{props.required? <em>*</em> : <></>}</span>}
                     <div className="box-inp">
                         <Tooltip title={validError && props.regExp?.message ? props.regExp.message : (fieldState.error?.message ?? (props.regExp ? props.regExp.message : ''))}
                                  open={(fieldState.error !== undefined || validError) && focus}>

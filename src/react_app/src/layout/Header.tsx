@@ -18,7 +18,7 @@ function ParentMenu({parentMenu}:{parentMenu:MenuInfo}) {
 function ChildMenu({parentMenu, menuList}:{parentMenu:MenuInfo, menuList:MenuInfo[]}) {
     return (<div className='menu-sub-link'>
             {menuList.filter((menu) => menu.upMenuSeq === parentMenu.menuSeq && menu.useYn === 'Y').map((menu) => {
-               return <p key={menu.menuSeq} style={{cursor:'pointer'}}><a onClick={()=>window.location.replace(menu.menuUrl)}>{menu.menuNm}</a></p>;
+               return <p key={menu.menuSeq} className="cursor-pointer"><a onClick={()=>window.location.replace(menu.menuUrl)}>{menu.menuNm}</a></p>;
             })}
         </div>
     );
@@ -83,7 +83,7 @@ const Header = ({menuInfo}: { menuInfo: MenuInfo[] }) => {
             ></div>
 
             <div className='inner'>
-                <a className='logo'  style={{ cursor: 'pointer' }} onClick={()=>defaultMenu(menuInfo)}>
+                <a className='logo cursor-pointer' onClick={()=>defaultMenu(menuInfo)}>
                     <img src={typeof LogoImage === 'string' ? LogoImage : (LogoImage as { src?: string })?.src ?? ''} alt='서울특별시' />
                 </a>
 

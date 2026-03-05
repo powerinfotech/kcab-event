@@ -19,7 +19,7 @@ const CustomSaveFormCheckbox = ({name, control, onChangeValue,...props}:CustomCh
             defaultValue={true}
             render={({ field, fieldState }) => (
                 <p>
-                    <span className="tit" style={{ marginTop: '0px'}}>{props.title}{props.required ? <em>*</em> : <></>}</span>
+                    <span className="tit mt0">{props.title}{props.required ? <em>*</em> : <></>}</span>
                     <div className="box-inp">
                         <Tooltip title={fieldState.error?.message ?? ''} open={fieldState.error !== undefined && focus}>
                             <div className={fieldState.error !== undefined ? 'tooltip error' : ''}>

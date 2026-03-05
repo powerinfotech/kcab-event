@@ -75,7 +75,7 @@ const MenuManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
                 </div>
 
                 <div className="right-panel">
-                    <form onSubmit={mgmt.saveForm.handleSubmit(mgmt.handleSave)} style={{height: '100%'}}>
+                    <form onSubmit={mgmt.saveForm.handleSubmit(mgmt.handleSave)} className="h-full">
                         <MenuDetailForm
                             saveForm={mgmt.saveForm}
                             isEditable={mgmt.isEditable}

@@ -246,7 +246,7 @@ const AuthMenuManagement = ({handlersRef}: {
                         placeholder="권한명을 입력해 주세요."
                         value={searchAuthNm}
                         onChange={(e) => setSearchAuthNm(e.target.value)}
-                        style={{width: 200}}
+                        className="w200"
                     />
                 </form>
             </section>

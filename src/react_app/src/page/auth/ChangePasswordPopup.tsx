@@ -78,7 +78,7 @@ const ChangePasswordPopup = (props:ChangePasswordPopupProps) => {
                         {...changePasswordFormRegister('password_retry', {required:'비밀번호를 입력하세요.'})}
                     />
                 </div>
-                <Button style={{display:'none'}} ref={formRef} onClick={changePasswordFormHandleSubmit(handleSave)}/>
+                <Button className="hide" ref={formRef} onClick={changePasswordFormHandleSubmit(handleSave)}/>
             </form>
         </CustomModal>
     );

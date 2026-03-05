@@ -6,7 +6,7 @@ import {useEffect} from 'react';
 
 const CustomLoading = () => {
     const isLoading = useRecoilValue(loadingAtom);
-    const antIcon = <Loading3QuartersOutlined style={{fontSize: 24, color: '#fff'}} spin />;
+    const antIcon = <Loading3QuartersOutlined className="loading-icon" spin />;
 
     useEffect(() =>  {
         const body = document.querySelector('body');
@@ -25,7 +25,7 @@ const CustomLoading = () => {
 
     return (
       <>
-          <div className={'loading_wrap'} style={{display: isLoading.length > 0? '' : 'none'}}>
+          <div className={`loading_wrap${isLoading.length > 0 ? '' : ' hide'}`}>
               <div className={'loading_dim'}>
                   <Spin indicator={antIcon} delay={1.5} />
               </div>

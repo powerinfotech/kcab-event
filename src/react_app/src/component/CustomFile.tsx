@@ -256,7 +256,7 @@ const CustomFile = (props:CustomFilePropsType) => {
                         return <CustomFileItem originNode={originNode} file={file} />;
                     }}
                 >
-                    <Button disabled={!props.isEditable} style={{backgroundColor:'white'}} icon={<UploadOutlined />}>파일첨부</Button>
+                    <Button disabled={!props.isEditable} className="btn-bg-white" icon={<UploadOutlined />}>파일첨부</Button>
                 </Upload>
             </SortableContext>
         </DndContext>

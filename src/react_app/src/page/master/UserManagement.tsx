@@ -25,52 +25,52 @@ import {usePageHandlers} from '@hook/usePageHandlers';
 const columns: ColumnsType<any> = [
     IUD_COLUMN,
     {
-        title: <div style={{textAlign: 'center'}}>ID</div>,
+        title: <div className="tac">ID</div>,
         key: 'userId',
         dataIndex: 'userId',
         width: '10%',
     },
     {
-        title: <div style={{textAlign: 'center'}}>사용자구분</div>,
+        title: <div className="tac">사용자구분</div>,
         key: 'userCd',
         dataIndex: 'userCd',
         align: 'center',
         width: '8%',
     },
     {
-        title: <div style={{textAlign: 'center'}}>성명(한글)</div>,
+        title: <div className="tac">성명(한글)</div>,
         key: 'userName',
         dataIndex: 'userName',
         align: 'center',
         width: '9%',
     },
     {
-        title: <div style={{textAlign: 'center'}}>성명(영문)</div>,
+        title: <div className="tac">성명(영문)</div>,
         key: 'userNameEng',
         dataIndex: 'userNameEng',
         width: '10%',
     },
     {
-        title: <div style={{textAlign: 'center'}}>내선번호</div>,
+        title: <div className="tac">내선번호</div>,
         key: 'telNo',
         dataIndex: 'telNo',
         align: 'center',
         width: '8%',
     },
     {
-        title: <div style={{textAlign: 'center'}}>전화번호</div>,
+        title: <div className="tac">전화번호</div>,
         key: 'hpNo',
         dataIndex: 'hpNo',
         width: '10%',
     },
     {
-        title: <div style={{textAlign: 'center'}}>이메일</div>,
+        title: <div className="tac">이메일</div>,
         key: 'email',
         dataIndex: 'email',
         width: '14%',
     },
     {
-        title: <div style={{textAlign: 'center'}}>사용시작일</div>,
+        title: <div className="tac">사용시작일</div>,
         key: 'strDate',
         dataIndex: 'strDate',
         align: 'center',
@@ -78,7 +78,7 @@ const columns: ColumnsType<any> = [
         render: (val: string | undefined) => (val ? dayjs(val, 'YYYYMMDD').format('YYYY-MM-DD') : ''),
     },
     {
-        title: <div style={{textAlign: 'center'}}>사용종료일</div>,
+        title: <div className="tac">사용종료일</div>,
         key: 'endDate',
         dataIndex: 'endDate',
         align: 'center',
@@ -86,7 +86,7 @@ const columns: ColumnsType<any> = [
         render: (val: string | undefined) => (val ? dayjs(val, 'YYYYMMDD').format('YYYY-MM-DD') : ''),
     },
     {
-        title: <div style={{textAlign: 'center'}}>최종로그인일시</div>,
+        title: <div className="tac">최종로그인일시</div>,
         key: 'loginDateTime',
         dataIndex: 'loginDateTime',
         align: 'center',
@@ -322,7 +322,7 @@ const UserManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
                             placeholder="ID 또는 성명을 입력해 주세요."
                             value={field.value}
                             onChange={field.onChange}
-                            style={{width: 250, margin: '0 8px'}}
+                            className="search-input-w250"
                             onKeyDown={handleKeyDown}
                         />
                     )}
@@ -339,7 +339,7 @@ const UserManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
             </form>
         </section>
 
-            <section className="board-wrap half-wrap type01">
+            <section className="board-wrap half-wrap type03">
                 <div>
                     <div className="board-title-wrap">
                         <h3 className="title">
@@ -358,7 +358,7 @@ const UserManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
                                     });
                                 },
                             };
-                        }} rowKey={'userSeq'} pagination={false} rowNoFlag={true} columns={columns} selectedRowIndex={selectedRowIndex}
+                        }} scroll={{x: 1000, y: undefined}} rowKey={'userSeq'} pagination={false} rowNoFlag={true} columns={columns} selectedRowIndex={selectedRowIndex}
                                      dataSource={dataSource}/>
                     </div>
                 </div>
@@ -378,8 +378,8 @@ const UserManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
 
                     <div className="board-cont-wrap">
                         <form onSubmit={saveFormHandleSubmit(handleSave)}>
-                        <CustomInput style={{display: 'none'}} className={'hide'} {...saveFormRegister('userSeq')}/>
-                        <div className="board-detail-info" style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 24px'}}>
+                        <CustomInput className="hide" {...saveFormRegister('userSeq')}/>
+                        <div className="board-detail-info board-detail-grid">
                             {/* 좌측 컬럼 */}
                             <div>
                                 <CustomSaveFormInput
@@ -574,7 +574,7 @@ const UserManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
                 userInfo={currentDataSource}
                 open={isOpen}
                 title={'비밀번호 변경'}
-                style={{minWidth: '400px'}}
+                className="modal-min-w400"
                 maskClosable={false}
                 onOk={() => setIsOpen(false)}
                 onCancel={() => setIsOpen(false)}

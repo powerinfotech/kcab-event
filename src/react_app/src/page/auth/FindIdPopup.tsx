@@ -95,8 +95,8 @@ const FindIdPopup = (props:ChangePasswordPopupProps) => {
                         />
                     </div>
                 </div>
-                <Button type="primary" style={{ marginTop: 10 }} onClick={findIdHandleSubmit(handleFindId)}>아이디 찾기</Button>
-                <Button type="primary" onClick={props.onClose} style={{ marginTop: 10 }}>닫기</Button>
+                <Button type="primary" className="mt10" onClick={findIdHandleSubmit(handleFindId)}>아이디 찾기</Button>
+                <Button type="primary" onClick={props.onClose} className="mt10">닫기</Button>
             </form>
             {findInfo.userId &&(
                 <CustomModal {...props}
@@ -106,10 +106,10 @@ const FindIdPopup = (props:ChangePasswordPopupProps) => {
                              open={isModalOpen}
                              footer={null}
                 >
-                    <p style={{fontSize: 20}}>
+                    <p className="font-size-20">
                         회원님의 아이디는 <strong>{findInfo.userId}</strong> 입니다.
                     </p>
-                    <Button type="primary" onClick={props.onClose} style={{ marginTop: 10 }}>닫기</Button>
+                    <Button type="primary" onClick={props.onClose} className="mt10">닫기</Button>
                 </CustomModal >
 
             )}

@@ -374,7 +374,7 @@ const AuthManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
                 <CustomDatePicker
                     value={value ? dayjs(value, 'YYYYMMDD') : null}
                     onChange={(date) => handleDataChangeAuthUser(record, 'strDt', date ? date.format('YYYYMMDD') : '')}
-                    style={{width: '100%'}}/>,
+                    className="w-full"/>,
         },
         {
             title: '종료일', key: 'endDt', dataIndex: 'endDt', align: 'center', width: '18%',
@@ -382,7 +382,7 @@ const AuthManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
                 <CustomDatePicker
                     value={value ? dayjs(value, 'YYYYMMDD') : null}
                     onChange={(date) => handleDataChangeAuthUser(record, 'endDt', date ? date.format('YYYYMMDD') : '')}
-                    style={{width: '100%'}}/>,
+                    className="w-full"/>,
         },
     ];
 
@@ -425,9 +425,9 @@ const AuthManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
     // ── Render ──
     return (
         <>
-            <section className="board-wrap" style={{display: 'flex', gap: '16px', alignItems: 'flex-start'}}>
+            <section className="board-wrap auth-mgmt-layout">
                 {/* 권한그룹정보 */}
-                <div style={{flex: '0 0 38%', minWidth: 0}}>
+                <div className="auth-mgmt-left">
                     <div className="board-title-wrap">
                         <h3 className="title"><IconTitle/>권한그룹정보<span className="total-count">{authGrpDataSource.length}건</span></h3>
                         <div className="box-btn">
@@ -454,7 +454,7 @@ const AuthManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
                 </div>
 
                 {/* 권한정보 + 권한사용자정보 */}
-                <div style={{flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '16px'}}>
+                <div className="auth-mgmt-right">
                     <div>
                         <div className="board-title-wrap">
                             <h3 className="title"><IconTitle/>권한정보<span className="total-count">{authDataSource.length}건</span></h3>

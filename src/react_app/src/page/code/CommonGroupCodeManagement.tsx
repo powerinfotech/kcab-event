@@ -288,7 +288,7 @@ const CommonGroupCodeManagement = ({handlersRef}: {onChange?: (flag: boolean) =>
                         value={searchText}
                         onChange={(e) => setSearchText(e.target.value)}
                         onKeyDown={handleKeyDown}
-                        style={{width: 200}}
+                        className="w200"
                     />
                 </form>
             </section>

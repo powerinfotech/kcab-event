@@ -43,7 +43,7 @@ const CustomSaveFormInput = forwardRef<any, CustomFormInputProps>(({ name, defau
             render={({ field, fieldState }) => (
                 <div className={singleRow ? 'full' : props.isNoTitle === true ? 'no-title' : ''}>
                     {props.isNoTitle !== true && (
-                        <span className="tit" style={{ marginTop: '0px' }}>{props.title}{props.required ? <em>*</em> : null}</span>
+                        <span className="tit mt0">{props.title}{props.required ? <em>*</em> : null}</span>
                     )}
                     <div className="box-inp">
                         <Tooltip

@@ -20,7 +20,7 @@ const MenuButtonInfoPanel: React.FC<MenuButtonInfoPanelProps> = ({
     onUpdateBtnNm,
 }) => (
     <div className="bottom-right">
-        <div className="board-title-wrap" style={{marginTop: 16}}>
+        <div className="board-title-wrap mt16">
             <h3 className="title">
                 <IconTitle />
                 버튼정보
@@ -31,9 +31,9 @@ const MenuButtonInfoPanel: React.FC<MenuButtonInfoPanelProps> = ({
                 <div className="button-info-header">기본버튼(권한설정)</div>
                 <table className="tbl type02">
                     <colgroup>
-                        <col style={{width: '120px'}} />
-                        <col style={{width: '80px'}} />
-                        <col style={{width: '80px'}} />
+                        <col className="w120" />
+                        <col className="w080" />
+                        <col className="w080" />
                     </colgroup>
                     <thead>
                         <tr>
@@ -77,10 +77,10 @@ const MenuButtonInfoPanel: React.FC<MenuButtonInfoPanelProps> = ({
                 <div className="button-info-header">커스텀버튼(권한설정)</div>
                 <table className="tbl type02">
                     <colgroup>
-                        <col style={{width: '120px'}} />
-                        <col style={{width: '200px'}} />
-                        <col style={{width: '80px'}} />
-                        <col style={{width: '80px'}} />
+                        <col className="w120" />
+                        <col className="w200" />
+                        <col className="w080" />
+                        <col className="w080" />
                     </colgroup>
                     <thead>
                         <tr>
@@ -103,7 +103,7 @@ const MenuButtonInfoPanel: React.FC<MenuButtonInfoPanelProps> = ({
                                             value={btnNm}
                                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => onUpdateBtnNm(btn.btnSeq, e.target.value, btnNm)}
                                             disabled={!isEditable}
-                                            style={{width: '100%'}}
+                                            className="w-full"
                                         />
                                     </td>
                                     <td>

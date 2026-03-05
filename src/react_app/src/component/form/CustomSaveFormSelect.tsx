@@ -24,7 +24,7 @@ const CustomSaveFormSelect = forwardRef<any, CustomFormSelectProps>(({ name, def
             rules={rules}
             render={({ field, fieldState }) => (
                 <div>
-                    <span className="tit" style={{ marginTop: '0px' }}>{props.title}{props.required ? <em>*</em> : null}</span>
+                    <span className="tit mt0">{props.title}{props.required ? <em>*</em> : null}</span>
                     <div className="box-inp">
                         <Tooltip title={fieldState.error?.message ?? ''} open={fieldState.error !== undefined && focus}>
                             <div className={fieldState.error !== undefined ? 'tooltip error' : ''}>

@@ -20,12 +20,12 @@ const CustomAutoComplete =  (props:CustomAutocompleteProps) => {
                     {...props}
                     size={props.size}
                     onSelect={(value, option) => {props.onSelect&&props.onSelect(value, option);}}
-                    style={props.showName?{...props.style, marginRight:'2px'}:{...props.style}}
+                    className={props.showName ? `${props.className || ''} autocomplete-mr`.trim() : props.className}
                 >
                     {props.children}
 
                 </AutoComplete>
-            {props.showName&&<Input value={labelText} disabled={true} style={{width:'200px'}}/>}
+            {props.showName&&<Input value={labelText} disabled={true} className="w200"/>}
         </>
     );
 };

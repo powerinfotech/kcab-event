@@ -28,7 +28,7 @@ const CustomCkEditor = ({value,onChange,isEditable}: Props)=>{
     }, [isEditable]);
 
         return (
-            <div style={{width:550}}>
+            <div className="ckeditor-wrap">
                 <style>
                     {`
                         .ck-editor__editable_inline {

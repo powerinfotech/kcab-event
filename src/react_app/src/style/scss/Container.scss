@@ -525,3 +525,35 @@
         color:#F5222D;
     }
 }
+
+.board-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 24px;
+}
+
+.auth-mgmt-layout {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+}
+.auth-mgmt-left {
+    flex: 0 0 38%;
+    min-width: 0;
+}
+.auth-mgmt-right {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.search-input-w250 {
+    width: 250px;
+    margin: 0 8px;
+}
+
+.modal-min-w400 {
+    min-width: 400px;
+}
