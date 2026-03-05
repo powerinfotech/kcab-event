@@ -8,10 +8,9 @@ export interface UserSearchInputProps {
     value: string;
     onChange: (user: UserSearchResult) => void;
     placeholder?: string;
-    width?: number;
 }
 
-const UserSearchInput = ({value, onChange, placeholder = '사용자를 선택해 주세요.', width = 200}: UserSearchInputProps) => {
+const UserSearchInput = ({value, onChange, placeholder = '사용자를 선택해 주세요.'}: UserSearchInputProps) => {
     const [popupOpen, setPopupOpen] = useState(false);
 
     const handleSelect = (user: UserSearchResult) => {
@@ -20,17 +19,16 @@ const UserSearchInput = ({value, onChange, placeholder = '사용자를 선택해
 
     return (
         <>
-            <span style={{display: 'inline-flex', alignItems: 'center'}}>
+            <span className="user-search-input">
                 <Input
                     readOnly
                     value={value}
                     placeholder={placeholder}
-                    style={{width, borderTopRightRadius: 0, borderBottomRightRadius: 0}}
+                    onClick={() => setPopupOpen(true)}
                 />
                 <Button
                     type="primary"
                     onClick={() => setPopupOpen(true)}
-                    style={{borderTopLeftRadius: 0, borderBottomLeftRadius: 0, marginLeft: -1}}
                 >
                     <IconBtnSearch />
                 </Button>
