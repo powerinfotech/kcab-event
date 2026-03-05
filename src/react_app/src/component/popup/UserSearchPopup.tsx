@@ -61,28 +61,36 @@ const UserSearchPopup = ({open, onClose, onSelect}: UserSearchPopupProps) => {
         <Modal title="사용자 팝업" open={open} onOk={handleOk}
             onCancel={onClose} width={650} okText="확인" cancelText="취소"
             maskClosable={false}>
-            <div style={{display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px'}}>
-                <span>ID/사용자명</span>
-                <CustomInput value={userSearchText} style={{width: 180}}
-                    onChange={(e) => setUserSearchText(e.target.value)}
-                    onKeyDown={(e: React.KeyboardEvent) => { if (e.key === 'Enter') handleSearch(); }}/>
-                <CustomCheckbox checked={excludeUnused} onChange={(e) => setExcludeUnused(e.target.checked)}/>
-                <span>미사용자 제외</span>
-                <CustomButton type="primary" size="small" onClick={handleSearch}>조회</CustomButton>
-            </div>
-            <div className="board-title-wrap" style={{marginBottom: '4px'}}>
-                <h3 className="title" style={{fontSize: '13px'}}><IconTitle/>사용자 ID 조회내역<span className="total-count">{userSearchList.length}건</span></h3>
-            </div>
-            <CustomTable
-                onRow={(record: any, index?: number) => ({
-                    onClick: () => setSelectedUserRowIndex(index ?? -1),
-                    onDoubleClick: () => handleDoubleClick(record),
-                })}
-                rowKey={'userSeq'} pagination={false} rowNoFlag={true} rowSelectedFlag={true}
-                columns={USER_POPUP_COLUMNS} dataSource={userSearchList}
-                selectedRowIndex={selectedUserRowIndex}
-                scroll={{y: 300}}
-            />
+            <section className="search-wrap">
+                <form>
+                    <span>ID/사용자명</span>
+                    <CustomInput value={userSearchText} style={{width: 180}}
+                        onChange={(e) => setUserSearchText(e.target.value)}
+                        onKeyDown={(e: React.KeyboardEvent) => { if (e.key === 'Enter') handleSearch(); }}/>
+                    <CustomCheckbox checked={excludeUnused} onChange={(e) => setExcludeUnused(e.target.checked)}/>
+                    <span>미사용자 제외</span>
+                    <CustomButton type="primary" size="small" onClick={handleSearch} style={{marginLeft: 'auto'}}>조회</CustomButton>
+                </form>
+            </section>
+            <section className="board-wrap type03">
+                <div className="board-title-wrap">
+                    <h3 className="title">
+                        <IconTitle />
+                        사용자 ID 조회내역
+                        <span className="total-count">{userSearchList.length}건</span>
+                    </h3>
+                </div>
+                <CustomTable
+                    onRow={(record: any, index?: number) => ({
+                        onClick: () => setSelectedUserRowIndex(index ?? -1),
+                        onDoubleClick: () => handleDoubleClick(record),
+                    })}
+                    rowKey={'userSeq'} pagination={false} rowNoFlag={true} rowSelectedFlag={true}
+                    columns={USER_POPUP_COLUMNS} dataSource={userSearchList}
+                    selectedRowIndex={selectedUserRowIndex}
+                    scroll={{y: 300}}
+                />
+            </section>
         </Modal>
     );
 };
