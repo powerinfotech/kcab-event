@@ -1,6 +1,6 @@
 import React from 'react';
 import CustomInput from '@component/CustomInput';
-import IconTitle from '@image/icon_title.svg';
+import IconTitle from '@icon/IconTitle';
 import {BtnInfo} from '@interface/auth/MenuManagement';
 import {MenuBtnState} from '../hooks/useMenuManagement';
 

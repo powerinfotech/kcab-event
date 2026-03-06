@@ -13,7 +13,15 @@ import GlobalAlertProvider from '@provider/GlobalAlertProvider';
 export default function ClientProviders({ children }: { children: React.ReactNode }) {
   return (
     <RecoilRoot>
-      <ConfigProvider locale={locale}>
+      <ConfigProvider locale={locale} theme={{
+          token: {
+            colorPrimary: '#FFDD00',
+            borderRadius: 4,
+            colorBorder: '#d9d9d9',
+            colorText: '#333',
+            colorTextSecondary: '#666',
+          },
+        }}>
         <GlobalAxiosProvider>
           <CustomLoading />
           <GlobalModalProvider />

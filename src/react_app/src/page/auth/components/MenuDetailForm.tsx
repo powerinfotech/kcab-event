@@ -5,7 +5,7 @@ import CustomInput from '@component/CustomInput';
 import CustomSaveFormInput from '@component/form/CustomSaveFormInput';
 import CustomSaveFormRadio from '@component/form/CustomSaveFormRadio';
 import CustomSaveFormSelect from '@component/form/CustomSaveFormSelect';
-import IconTitle from '@image/icon_title.svg';
+import IconTitle from '@icon/IconTitle';
 import {MenuInfo, MenuType} from '@interface/auth/MenuManagement';
 import {CommonCodeMap} from '@interface/common';
 

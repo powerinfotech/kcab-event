@@ -1,6 +1,6 @@
 .header_wrap{
     position:relative;
-    background:$Primary-gradient-bold;
+    background:linear-gradient(135deg, #FFDD00 0%, #E5C700 100%);
     height:260px;
     padding:16px 64px 0 64px;
     margin-left:-64px;
@@ -51,7 +51,7 @@
         left:0;
         width:100%;
         height:300px;
-        background:#1CB25B;
+        background:#E5C700;
         z-index:1;
         display:none;
         box-shadow: 0px 12px 24px -4px #919EAB1F;

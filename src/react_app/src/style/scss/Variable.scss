@@ -12,7 +12,7 @@ $yellow80: #FFE433;
 $yellow20: #FFF8CC;
 $yellow5: #FFFDF2;
 
-// Primary Color YEllow
+// Primary Color Yellow
 $brandYellow: #FFDD00;
 $brandYellowDarken : #E58800;
 
@@ -40,29 +40,29 @@ $gray98: #fafafa;
 $gray100: #ffffff;
 $gray44: #4c4c4c;
 
-// Primary bg
-$PrimaryLighter : #D3FCD2;
-$PrimaryLight   : #77ED8B;
-$PrimaryMain    : #22C55E;
-$PrimaryDark    : #118D57;
-$PrimaryDarker  : #065E49;
+// Primary - Yellow (changed from green)
+$PrimaryLighter : #FFF8CC;
+$PrimaryLight   : #FFE433;
+$PrimaryMain    : #FFDD00;
+$PrimaryDark    : #E5C700;
+$PrimaryDarker  : #B89E00;
 
 // Primary bg opacity
-$Primary08 : rgba(34, 197, 94, 0.08);
-$Primary12 : rgba(34, 197, 94, 0.12);
-$Primary16 : rgba(34, 197, 94, 0.16);
-$Primary20 : rgba(34, 197, 94, 0.20);
-$Primary24 : rgba(34, 197, 94, 0.24);
-$Primary32 : rgba(34, 197, 94, 0.32);
-$Primary48 : rgba(34, 197, 94, 0.48);
+$Primary08 : rgba(255, 221, 0, 0.08);
+$Primary12 : rgba(255, 221, 0, 0.12);
+$Primary16 : rgba(255, 221, 0, 0.16);
+$Primary20 : rgba(255, 221, 0, 0.20);
+$Primary24 : rgba(255, 221, 0, 0.24);
+$Primary32 : rgba(255, 221, 0, 0.32);
+$Primary48 : rgba(255, 221, 0, 0.48);
 
 // max, min width
 $MinWidth : 1376px;
 $MaxWidth : 1728px;
 
-// Primary bg opacity
-$Primary-gradient-main : linear-gradient(135deg, #77ED8B 0%, #22C55E 100%);
-$Primary-gradient-bold : linear-gradient(135deg, #22C55E 0%, #118D57 100%);
+// Primary gradient
+$Primary-gradient-main : linear-gradient(135deg, #FFE433 0%, #FFDD00 100%);
+$Primary-gradient-bold : linear-gradient(135deg, #FFDD00 0%, #E5C700 100%);
 
 // Sub Color - Red
 $red10: #f33ff0;

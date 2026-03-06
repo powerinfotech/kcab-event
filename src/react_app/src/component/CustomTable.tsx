@@ -27,7 +27,7 @@ const rowNoColumns: ColumnsType = [
         dataIndex: 'rowNo',
         key: 'rowNo',
         align: 'center',
-        width: '45px',
+        width: '50px',
     }
 ];
 
@@ -38,7 +38,7 @@ export const IUD_COLUMN = {
     dataIndex: 'iudType',
     key: 'iudType',
     align: 'center' as const,
-    width: '40px',
+    width: '50px',
     render: (value:IudType) => {
         if(value === IudType.I)
             return <PlusCircleOutlined />;
@@ -116,9 +116,15 @@ const CustomTable = (props: CustomTableProps) => {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
+    const targetRowSelection = useMemo(() => {
+        if (!props.rowSelection) return undefined;
+        return { columnWidth: 50, ...props.rowSelection };
+    }, [props.rowSelection]);
+
     return (
         <Table
             {...props}
+            rowSelection={targetRowSelection}
             scroll={props.scroll ?? {y: tableHeight}}
             onRow={(record, index) => {
                 const rowProps = props.onRow?.(record, index) as any;

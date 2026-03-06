@@ -338,7 +338,7 @@ const AuthManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
         IUD_COLUMN,
         {
             title: <span className="tit">권한명<em>*</em></span>,
-            key: 'authNm', dataIndex: 'authNm', align: 'center', width: '30%',
+            key: 'authNm', dataIndex: 'authNm', align: 'center', width: '35%',
             render: (value: string, record: AuthInfoList) =>
                 <EditableFormCell record={record} seqField="authSeq" fieldSuffix="authNm"
                     value={value} setValue={authGrpSetValue} control={authGrpControl} register={authGrpRegister}
@@ -351,7 +351,7 @@ const AuthManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
                     onChange={(e) => handleDataChangeAuth(record, 'authExpl', e.target.value)}/>,
         },
         {
-            title: '사용여부', key: 'useYn', dataIndex: 'useYn', align: 'center', width: '15%',
+            title: '사용여부', key: 'useYn', dataIndex: 'useYn', align: 'center', width: '100px',
             render: (value: string, record: AuthInfoList) =>
                 <CustomCheckbox checked={value === 'Y'}
                     onChange={(e) => handleDataChangeAuth(record, 'useYn', e.target.checked ? 'Y' : 'N')}/>,
