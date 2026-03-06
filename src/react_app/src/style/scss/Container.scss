@@ -16,9 +16,9 @@
     width:423px;
     padding:64px 48px 28px 48px;
     z-index: 2;
-    background:#fff;
+    background:$gray100;
     border-radius:30px;
-    box-shadow: 0px 8px 22px 0px rgba(0, 0, 0, 0.25);
+    box-shadow: 0px 8px 22px 0px $black25;
 
     .logo{
         text-align:center;
@@ -47,7 +47,7 @@
         line-height:48px;
         font-size:15px;
         margin-bottom:16px;
-        color:#333;
+        color:$gray20;
 
         &.ant-btn-primary:not(:disabled):not(.ant-btn-disabled):hover{
             background:$brandYellowDarken;
@@ -67,7 +67,7 @@
     .find{
         .link{
             text-decoration: underline;
-            color:#424242;
+            color:$grayDark;
             font-size:14px;
             + .link{
                 margin-left:8px;
@@ -78,7 +78,7 @@
         text-align:center;
         margin-top:95px;
         font-size:12px;
-        color:#000
+        color:$dim
     }
 }
 
@@ -91,7 +91,7 @@
 
     .container_inner{
         position: relative;
-        background: #fff;
+        background: $gray100;
         border-radius: 8px;
         padding: 24px 32px;
         min-height: 680px;
@@ -111,7 +111,7 @@
         .title{
             font-size:22px;
             font-weight:700;
-            color:#1a1a1a;
+            color:$gray10;
         }
     }
     .box-btn{
@@ -130,9 +130,9 @@
 }
 .search-wrap{
     margin-top:8px;
-    background:#fff;
+    background:$gray100;
     padding:20px 24px;
-    border:1px solid #e5e5e5;
+    border:1px solid $gray90;
     border-radius:0;
     margin-bottom:24px;
 
@@ -148,7 +148,7 @@
         .deps > span{
             font-size:13px;
             font-weight:600;
-            color:#333;
+            color:$gray20;
 
             + div,
             + .ant-picker,
@@ -166,7 +166,7 @@
         > span{
             font-size:13px;
             font-weight:600;
-            color:#333;
+            color:$gray20;
 
             + .ant-select,
             + input{
@@ -273,7 +273,7 @@
             font-size:16px;
             font-weight:700;
             line-height:28px;
-            color:#1a1a1a;
+            color:$gray10;
 
             .total-count{
                 display: inline-flex;
@@ -282,8 +282,8 @@
                 padding: 1px 10px;
                 font-size: 12px;
                 font-weight: 600;
-                color: #666;
-                background: #f5f5f5;
+                color: $gray30;
+                background: $gray96;
                 border-radius: 10px;
                 line-height: 20px;
             }
@@ -319,11 +319,11 @@
 
             .button-info-box{
                 flex:1;
-                border-top:1px solid #333;
-                border-bottom:1px solid #e5e5e5;
+                border-top:1px solid $gray20;
+                border-bottom:1px solid $gray90;
                 border-radius:0;
                 overflow:hidden;
-                background:#fff;
+                background:$gray100;
 
                 .button-info-header{
                     height:44px;
@@ -332,21 +332,21 @@
                     align-items:center;
                     font-size:13px;
                     font-weight:600;
-                    color:#333;
-                    background:#f5f5f5;
-                    border-bottom:1px solid #e5e5e5;
+                    color:$gray20;
+                    background:$gray96;
+                    border-bottom:1px solid $gray90;
                 }
 
                 .tbl.type02{
                     width:100%;
 
                     thead th{
-                        background:#f5f5f5;
+                        background:$gray96;
                         font-weight:600;
                         font-size:13px;
-                        color:#333;
+                        color:$gray20;
                         text-align:center;
-                        border-bottom:1px solid #e5e5e5;
+                        border-bottom:1px solid $gray90;
                         height:52px;
                     }
 
@@ -359,7 +359,7 @@
                         padding:6px 12px;
                         font-size:13px;
                         text-align:center;
-                        border-bottom:1px solid #e5e5e5;
+                        border-bottom:1px solid $gray90;
                         border-left:none;
                         border-right:none;
                         position:relative;
@@ -375,15 +375,15 @@
                         right:0;
                         width:1px;
                         height:100%;
-                        background:#e5e5e5;
+                        background:$gray90;
                     }
 
                     th:first-child,
                     td:first-child{
                         text-align:left;
-                        background:#f5f5f5;
+                        background:$gray96;
                         font-weight:600;
-                        color:#333;
+                        color:$gray20;
                         padding-left:16px;
                     }
 
@@ -396,8 +396,8 @@
         }
     }
     .board-detail-info{
-        border-top:1px solid #333;
-        border-bottom:1px solid #e5e5e5;
+        border-top:1px solid $gray20;
+        border-bottom:1px solid $gray90;
 
         + .ant-table-wrapper{
             margin-top:26px;
@@ -405,7 +405,7 @@
         > div{
             display:flex;
             flex-direction:column;
-            border-bottom:1px solid #e0e0e0;
+            border-bottom:1px solid $gray83;
 
             &:last-child{
                 border-bottom:none;
@@ -430,15 +430,15 @@
                     left:0;
                     width:120px;
                     font-size:13px;
-                    background:#f5f5f5;
+                    background:$gray96;
                     height:100%;
                     padding-left:16px;
                     display: flex;align-items: center;
-                    color:#333;
+                    color:$gray20;
                     font-weight:600;
 
                     em{
-                        color:#F5222D;
+                        color:$statusRedDark;
                     }
                 }
                 .box-inp{
@@ -508,18 +508,18 @@
         font-size:32px;
         line-height:48px;
         font-weight:700;
-        color:#454F5B;
+        color:$neutral800;
 
         &.red{
-            color:#FF4646;
+            color:$statusRed;
         }
         &.blue{
-            color:#0090F0;
+            color:$statusBlue;
         }
     }
     .inner{
         margin-top:40px;
-        background:#fff;
+        background:$gray100;
         border-radius:6px;
         padding:80px 0 48px 0;
         text-align:center;
@@ -528,7 +528,7 @@
         width:120px;
         height:120px;
         border-radius:50%;
-        background:#f9f9f9;
+        background:$gray99;
         margin:0 auto;
         display: flex;
         align-items: center;
@@ -537,7 +537,7 @@
     .txt{
         font-size:16px;
         line-height:24px;
-        color:#212B36;
+        color:$neutral900;
         margin:40px 0;
     }
     .btn{
@@ -548,18 +548,18 @@
     }
     .copy-right{
         line-height:22px;
-        color:#A3AEB9;
+        color:$neutral500;
         margin-top:16px;
     }
 }
 
 .tit{
     font-size:13px;
-    background:#f5f5f5;
-    color:#333;
+    background:$gray96;
+    color:$gray20;
     font-weight:600;
     em{
-        color:#F5222D;
+        color:$statusRedDark;
     }
 }
 

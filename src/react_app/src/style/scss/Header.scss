@@ -1,6 +1,6 @@
 .header_wrap{
     position:relative;
-    background:linear-gradient(135deg, #FFDD00 0%, #E5C700 100%);
+    background:$Primary-gradient-bold;
     height:260px;
     padding:16px 64px 0 64px;
     margin-left:-64px;
@@ -35,14 +35,14 @@
         display:flex;
         align-items: center;
         justify-content: space-between;
-        color:#fff;
+        color:$gray100;
         height:80px;
     }
     .logo{
         font-size:34px;
         font-weight:900;
         text-decoration: none;
-        color:#fff;
+        color:$gray100;
         line-height:24px;
     }
     .menu-dim{
@@ -51,10 +51,10 @@
         left:0;
         width:100%;
         height:300px;
-        background:#E5C700;
+        background:$PrimaryDark;
         z-index:1;
         display:none;
-        box-shadow: 0px 12px 24px -4px #919EAB1F;
+        box-shadow: 0px 12px 24px -4px $neutralAlpha12;
 
         &.on{
             display:block;
@@ -75,7 +75,7 @@
         justify-content: space-between;
         align-items: center;
         height: 100%;
-        color:#fff;
+        color:$gray100;
 
         &:hover{
             .menu-sub{
@@ -86,7 +86,7 @@
             width: 180px;
 
             a{
-                color:#fff;
+                color:$gray100;
                 font-size:20px;
                 line-height:30px;
                 font-weight:700;
@@ -102,7 +102,7 @@
                         left:-14px;
                         width:calc(100% + 28px);
                         height:3px;
-                        background:#fff;
+                        background:$gray100;
                     }
                 }
             }
@@ -126,7 +126,7 @@
                     position:absolute;
                     top:0;
                     right:-10px;
-                    border-right:1px dotted #919EAB33;
+                    border-right:1px dotted $neutralAlpha20;
                     height:100%;
                 }
                 &:last-child{
@@ -142,11 +142,11 @@
                 line-height:20px;
                 padding:8px;
                 border-radius: 8px;
-                color:#fff;
+                color:$gray100;
                 cursor: pointer;
 
                 &:hover{
-                    background:rgba(255, 255, 255, 0.16);
+                    background:rgba($gray100, 0.16);
 
                 }
             }
@@ -173,7 +173,7 @@
                 overflow: hidden;
                 border-radius:50%;
                 margin-right:8px;
-                background:#fff;
+                background:$gray100;
             }
             .name{
                 font-size:13px;
@@ -194,7 +194,7 @@
                 width:20px;
                 height:20px;
                 border-radius:50%;
-                background:#FF4646;
+                background:$statusRed;
                 font-size:12px;
                 font-weight:700;
             }
@@ -206,10 +206,10 @@
             margin-right:0;
             width:288px;
             height:509px;
-            box-shadow: 0px 0px 2px 0px rgba(145, 158, 171, 0.20), 0px 12px 24px -4px rgba(145, 158, 171, 0.12);
+            box-shadow: 0px 0px 2px 0px $neutralAlpha20, 0px 12px 24px -4px $neutralAlpha12;
             border-radius:16px;
             overflow: hidden;
-            background:#fff;
+            background:$gray100;
             display:none;
 
             &.on{
@@ -220,8 +220,8 @@
                 font-size:18px;
                 font-weight:700;
                 line-height:28px;
-                color:#212B36;
-                background:#fff;
+                color:$neutral900;
+                background:$gray100;
 
                 .btn-read{
                     position:absolute;
@@ -229,9 +229,9 @@
                     right:16px;
                     line-height:26px;
                     font-size:13px;
-                    color:#637381;
-                    border:1px solid rgba(145, 158, 171, 0.32);
-                    background:#fff;
+                    color:$neutral700;
+                    border:1px solid $neutralAlpha32;
+                    background:$gray100;
                     font-weight:700;
                     padding:0 8px;
                     border-radius:8px;
@@ -259,7 +259,7 @@
                             > div{
                                 p{
                                     font-weight:700;
-                                    color:#212B36;
+                                    color:$neutral900;
 
                                     + p{
                                         font-weight:400;
@@ -277,7 +277,7 @@
                                 right:0;
                                 width:8px;
                                 height:8px;
-                                background:#0290EF;
+                                background:$statusBlueDot;
                                 border-radius:50%;;
                             }
                         }
@@ -293,42 +293,42 @@
                             justify-content: center;
 
                             svg * {
-                                fill: #fff;
+                                fill: $gray100;
                             }
                             &.type-humidity{
-                                background:#1877F2;
+                                background:$colorHumidity;
                             }
                             &.type-battery{
-                                background:#22C55E;
+                                background:$colorBattery;
                             }
                             &.type-gps{
-                                background:#8E33FF;
+                                background:$colorGps;
                             }
                             &.type-protractor{
-                                background:#454F5B;
+                                background:$neutral800;
                             }
                             &.type-shock{
-                                background:#00B8D9;
+                                background:$colorShock;
                             }
                             &.type-sound{
-                                background:#F07E26;
+                                background:$colorSound;
                             }
                             &.type-emergency{
-                                background:#FF4646;
+                                background:$statusRed;
                             }
                         }
                         > div{
                             padding-left:52px;
 
                             p{
-                                color:#637381;
+                                color:$neutral700;
                                 font-size:14px;
                                 line-height:22px;
 
                                 + p{
                                     font-size:12px;
                                     line-height:18px;
-                                    color:#919EAB;
+                                    color:$neutral600;
                                 }
                             }
                         }
@@ -339,12 +339,12 @@
             .btn-more{
                 margin:16px 24px 0 24px;
                 height:40px;
-                background:#454F5B;
-                border:1px solid #454F5B;
+                background:$neutral800;
+                border:1px solid $neutral800;
                 font-size:14px;
                 width:calc(100% - 48px);
                 border-radius:8px;
-                color:#fff;
+                color:$gray100;
 
             }
 

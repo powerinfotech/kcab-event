@@ -71,6 +71,55 @@ $red60: #fba1a7;
 $red100: #f8626c;
 $red66: #ff6666;
 
+// Neutral (Blue-Gray)
+$neutral900: #212B36;
+$neutral800: #454F5B;
+$neutral700: #637381;
+$neutral600: #919EAB;
+$neutral500: #A3AEB9;
+$neutral200: #E9ECEE;
+$neutral100: #f4f6f8;
+
+// Additional Grayscale
+$darkBg: #111;
+$grayDark: #424242;
+$gray83: #e0e0e0;
+$gray91: #e9e9e9;
+$gray99: #f9f9f9;
+
+// Status / Alert Colors
+$statusRed: #FF4646;
+$statusRedDark: #F5222D;
+$statusRedError: #ff4d4f;
+$statusBlue: #0090F0;
+$statusBlueDot: #0290EF;
+
+// Notification Type Colors
+$colorHumidity: #1877F2;
+$colorBattery: #22C55E;
+$colorGps: #8E33FF;
+$colorShock: #00B8D9;
+$colorSound: #F07E26;
+
+// Black opacity
+$black08: rgba(0, 0, 0, 0.08);
+$black15: rgba(0, 0, 0, 0.15);
+$black20: rgba(0, 0, 0, 0.20);
+$black25: rgba(0, 0, 0, 0.25);
+
+// White opacity
+$white06: rgba(255, 255, 255, 0.06);
+$white08: rgba(255, 255, 255, 0.08);
+$white12: rgba(255, 255, 255, 0.12);
+$white20: rgba(255, 255, 255, 0.20);
+$white85: rgba(255, 255, 255, 0.85);
+$white90: rgba(255, 255, 255, 0.90);
+
+// Neutral opacity (919EAB)
+$neutralAlpha12: rgba(145, 158, 171, 0.12);
+$neutralAlpha20: rgba(145, 158, 171, 0.20);
+$neutralAlpha32: rgba(145, 158, 171, 0.32);
+$neutralAlpha80: rgba(145, 158, 171, 0.80);
 
 // font
 $fz12: 12px;

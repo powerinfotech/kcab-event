@@ -10,12 +10,12 @@ $sidebar-subpanel-width: 280px;
   left: 0;
   width: $sidebar-narrow-width;
   height: 100vh;
-  background: #1a1a1a;
-  color: #fff;
+  background: $gray10;
+  color: $gray100;
   z-index: 100;
   display: flex;
   flex-direction: column;
-  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.08);
+  box-shadow: 2px 0 4px $black08;
 }
 
 .sidebar_narrow {
@@ -24,7 +24,7 @@ $sidebar-subpanel-width: 280px;
   height: 100%;
   display: flex;
   flex-direction: column;
-  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  border-right: 1px solid $white06;
 }
 
 .sidebar_logo {
@@ -33,7 +33,7 @@ $sidebar-subpanel-width: 280px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid $white08;
   cursor: pointer;
 
   img {
@@ -58,7 +58,7 @@ $sidebar-subpanel-width: 280px;
   padding: 12px 8px;
   font-size: 13px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.85);
+  color: $white85;
   background: none;
   border: none;
   cursor: pointer;
@@ -66,13 +66,13 @@ $sidebar-subpanel-width: 280px;
   transition: background 0.2s, color 0.2s;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.08);
-    color: #fff;
+    background: $white08;
+    color: $gray100;
   }
 
   &.is-active {
-    background: #ffdd00;
-    color: #1a1a1a;
+    background: $brandYellow;
+    color: $gray10;
   }
 }
 
@@ -91,11 +91,11 @@ $sidebar-subpanel-width: 280px;
   z-index: 100;
   width: $sidebar-subpanel-width;
   height: 100vh;
-  background: #111;
+  background: $darkBg;
   display: flex;
   flex-direction: column;
-  border-right: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.08);
+  border-right: 1px solid $white06;
+  box-shadow: 2px 0 4px $black08;
   overflow: hidden;
 }
 
@@ -107,13 +107,13 @@ $sidebar-subpanel-width: 280px;
   gap: 12px;
   padding: 14px 16px;
   height: 61px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid $white08;
 }
 
 .sidebar_subpanel_title {
   font-size: 15px;
   font-weight: 700;
-  color: #fff;
+  color: $gray100;
 }
 
 .sidebar_subpanel_close {
@@ -128,16 +128,16 @@ $sidebar-subpanel-width: 280px;
   justify-content: center;
   font-size: 24px;
   line-height: 1;
-  color: rgba(255, 255, 255, 0.9);
-  background: rgba(255, 255, 255, 0.08);
+  color: $white90;
+  background: $white08;
   border: none;
   border-radius: 6px;
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.12);
-    color: #fff;
+    background: $white12;
+    color: $gray100;
   }
 }
 
@@ -152,7 +152,7 @@ $sidebar-subpanel-width: 280px;
   display: flex;
   gap: 8px;
   padding: 12px 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid $white08;
 }
 
 .sidebar_menu_btn {
@@ -160,16 +160,16 @@ $sidebar-subpanel-width: 280px;
   padding: 8px 12px;
   font-size: 12px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
-  background: rgba(255, 255, 255, 0.08);
+  color: $white90;
+  background: $white08;
   border: none;
   border-radius: 6px;
   cursor: pointer;
   transition: background 0.2s;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.12);
-    color: #fff;
+    background: $white12;
+    color: $gray100;
   }
 }
 
@@ -191,18 +191,18 @@ $sidebar-subpanel-width: 280px;
   cursor: pointer;
   font-size: 15px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
+  color: $white90;
   transition: background 0.2s, color 0.2s;
   user-select: none;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.08);
-    color: #fff;
+    background: $white08;
+    color: $gray100;
   }
 
   &.is-open {
-    background: rgba(255, 255, 255, 0.12);
-    color: #fff;
+    background: $white12;
+    color: $gray100;
   }
 }
 
@@ -219,7 +219,7 @@ $sidebar-subpanel-width: 280px;
 .sidebar_menu_children {
   max-height: 0;
   overflow: hidden;
-  background: rgba(0, 0, 0, 0.2);
+  background: $black20;
   transition: max-height 0.25s ease-out;
 
   &.is-visible {
@@ -232,12 +232,12 @@ $sidebar-subpanel-width: 280px;
   display: block;
   padding: 10px 24px 10px 36px;
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.85);
+  color: $white85;
   transition: background 0.2s, color 0.2s;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.08);
-    color: #fff;
+    background: $white08;
+    color: $gray100;
   }
 }
 
@@ -248,8 +248,8 @@ $sidebar-subpanel-width: 280px;
   justify-content: center;
   gap: 8px;
   padding: 12px 8px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(0, 0, 0, 0.15);
+  border-top: 1px solid $white08;
+  background: $black15;
 }
 
 .sidebar_narrow .sidebar_footer {
@@ -273,7 +273,7 @@ $sidebar-subpanel-width: 280px;
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
+  background: $white20;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -296,14 +296,14 @@ $sidebar-subpanel-width: 280px;
   padding: 8px;
   background: none;
   border: none;
-  color: rgba(255, 255, 255, 0.9);
+  color: $white90;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
 
   &:hover {
-    color: #fff;
+    color: $gray100;
   }
 }
 
@@ -315,7 +315,7 @@ $sidebar-subpanel-width: 280px;
   height: 18px;
   padding: 0 5px;
   border-radius: 9px;
-  background: #ff4646;
+  background: $statusRed;
   font-size: 11px;
   font-weight: 700;
   display: flex;
@@ -330,9 +330,9 @@ $sidebar-subpanel-width: 280px;
   margin-bottom: 8px;
   width: 288px;
   max-height: 400px;
-  background: #fff;
+  background: $gray100;
   border-radius: 12px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 24px $black15;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -343,9 +343,9 @@ $sidebar-subpanel-width: 280px;
   padding: 14px 16px;
   font-size: 16px;
   font-weight: 700;
-  color: #212b36;
-  background: #fff;
-  border-bottom: 1px solid #f4f6f8;
+  color: $neutral900;
+  background: $gray100;
+  border-bottom: 1px solid $neutral100;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -355,16 +355,16 @@ $sidebar-subpanel-width: 280px;
 
 .sidebar_alarm_pop_read {
   font-size: 12px;
-  color: #637381;
-  border: 1px solid rgba(145, 158, 171, 0.32);
-  background: #fff;
+  color: $neutral700;
+  border: 1px solid $neutralAlpha32;
+  background: $gray100;
   font-weight: 600;
   padding: 4px 8px;
   border-radius: 6px;
   cursor: pointer;
 
   &:hover {
-    background: #f4f6f8;
+    background: $neutral100;
   }
 }
 
@@ -383,11 +383,11 @@ $sidebar-subpanel-width: 280px;
     align-items: flex-start;
     padding: 10px;
     border-radius: 8px;
-    color: #637381;
+    color: $neutral700;
     cursor: pointer;
 
     &:hover {
-      background: #f4f6f8;
+      background: $neutral100;
     }
 
     .icon {
@@ -401,15 +401,15 @@ $sidebar-subpanel-width: 280px;
       margin-right: 12px;
 
       svg * {
-        fill: #fff;
+        fill: $gray100;
       }
-      &.type-humidity { background: #1877f2; }
-      &.type-battery { background: #22c55e; }
-      &.type-gps { background: #8e33ff; }
-      &.type-protractor { background: #454f5b; }
-      &.type-shock { background: #00b8d9; }
-      &.type-sound { background: #f07e26; }
-      &.type-emergency { background: #ff4646; }
+      &.type-humidity { background: $colorHumidity; }
+      &.type-battery { background: $colorBattery; }
+      &.type-gps { background: $colorGps; }
+      &.type-protractor { background: $neutral800; }
+      &.type-shock { background: $colorShock; }
+      &.type-sound { background: $colorSound; }
+      &.type-emergency { background: $statusRed; }
     }
 
     > div p {
@@ -419,7 +419,7 @@ $sidebar-subpanel-width: 280px;
 
       + p {
         font-size: 12px;
-        color: #919eab;
+        color: $neutral600;
       }
     }
   }
@@ -428,15 +428,15 @@ $sidebar-subpanel-width: 280px;
 .sidebar_alarm_more {
   margin: 8px 16px 16px;
   height: 40px;
-  background: #454f5b;
+  background: $neutral800;
   border: none;
   font-size: 14px;
-  color: #fff;
+  color: $gray100;
   border-radius: 8px;
   cursor: pointer;
 
   &:hover {
-    background: #637381;
+    background: $neutral700;
   }
 }
 
@@ -446,7 +446,7 @@ $sidebar-subpanel-width: 280px;
   padding: 0;
   background: none;
   border: none;
-  color: rgba(255, 255, 255, 0.85);
+  color: $white85;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -454,6 +454,6 @@ $sidebar-subpanel-width: 280px;
   flex-shrink: 0;
 
   &:hover {
-    color: #fff;
+    color: $gray100;
   }
 }
