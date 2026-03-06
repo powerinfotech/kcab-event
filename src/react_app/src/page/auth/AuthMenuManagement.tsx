@@ -63,7 +63,7 @@ const AuthMenuManagement = ({handlersRef}: {
         {title: '권한명', key: 'authNm', dataIndex: 'authNm', align: 'center', width: '20%'},
         {title: '설명', key: 'authExpl', dataIndex: 'authExpl', align: 'left', width: '45%'},
         {
-            title: '사용여부', key: 'useYn', dataIndex: 'useYn', align: 'center', width: '15%',
+            title: '사용여부', key: 'useYn', dataIndex: 'useYn', align: 'center', width: 80,
             render: (value: string) => value === 'Y' ? '예' : '아니오',
         },
     ];

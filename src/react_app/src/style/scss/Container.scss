@@ -405,7 +405,7 @@
         > div{
             display:flex;
             flex-direction:column;
-            border-bottom:1px solid #e5e5e5;
+            border-bottom:1px solid #e0e0e0;
 
             &:last-child{
                 border-bottom:none;
@@ -561,12 +561,6 @@
     em{
         color:#F5222D;
     }
-}
-
-.board-detail-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0 24px;
 }
 
 .auth-mgmt-layout {

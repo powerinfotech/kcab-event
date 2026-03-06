@@ -327,7 +327,7 @@ const AuthManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
                         onChange={(e) => handleDataChangeAuthGrp(record, 'authGrpExpl', e.target.value)}/>,
         },
         {
-            title: '사용여부', key: 'useYn', dataIndex: 'useYn', align: 'center', width: '15%',
+            title: '사용여부', key: 'useYn', dataIndex: 'useYn', align: 'center', width: 80,
             render: (value: string, record: AuthGrpList) =>
                 <CustomCheckbox name={`${record.authGrpSeq}_useYn`} checked={value === 'Y'}
                     onChange={(e) => handleDataChangeAuthGrp(record, 'useYn', e.target.checked ? 'Y' : 'N')}/>,
@@ -338,20 +338,20 @@ const AuthManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
         IUD_COLUMN,
         {
             title: <span className="tit">권한명<em>*</em></span>,
-            key: 'authNm', dataIndex: 'authNm', align: 'center', width: '35%',
+            key: 'authNm', dataIndex: 'authNm', align: 'center', width: '50%',
             render: (value: string, record: AuthInfoList) =>
                 <EditableFormCell record={record} seqField="authSeq" fieldSuffix="authNm"
                     value={value} setValue={authGrpSetValue} control={authGrpControl} register={authGrpRegister}
                     onDataChange={handleDataChangeAuth} requiredMessage="권한명은 필수입력입니다." maxLength={100}/>,
         },
         {
-            title: '권한설명', key: 'authExpl', dataIndex: 'authExpl', align: 'center', width: '35%',
+            title: '권한설명', key: 'authExpl', dataIndex: 'authExpl', align: 'center', width: '50%',
             render: (value: string, record: AuthInfoList) =>
                 <CustomInput value={value} maxLength={2000}
                     onChange={(e) => handleDataChangeAuth(record, 'authExpl', e.target.value)}/>,
         },
         {
-            title: '사용여부', key: 'useYn', dataIndex: 'useYn', align: 'center', width: '100px',
+            title: '사용여부', key: 'useYn', dataIndex: 'useYn', align: 'center', width: 80,
             render: (value: string, record: AuthInfoList) =>
                 <CustomCheckbox checked={value === 'Y'}
                     onChange={(e) => handleDataChangeAuth(record, 'useYn', e.target.checked ? 'Y' : 'N')}/>,
@@ -360,16 +360,16 @@ const AuthManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
 
     const authUserColumn: ColumnsType<AuthUserInfoList> = [
         IUD_COLUMN,
-        {title: '사용자ID', key: 'userId', dataIndex: 'userId', align: 'center', width: '20%'},
-        {title: '사용자명', key: 'userName', dataIndex: 'userName', align: 'center', width: '15%'},
+        {title: '사용자ID', key: 'userId', dataIndex: 'userId', align: 'center', width: '25%'},
+        {title: '사용자명', key: 'userName', dataIndex: 'userName', align: 'center', width: '25%'},
         {
-            title: '사용여부', key: 'useYn', dataIndex: 'useYn', align: 'center', width: '13%',
+            title: '사용여부', key: 'useYn', dataIndex: 'useYn', align: 'center', width: '80px',
             render: (value: string, record: AuthUserInfoList) =>
                 <CustomCheckbox checked={value === 'Y'}
                     onChange={(e) => handleDataChangeAuthUser(record, 'useYn', e.target.checked ? 'Y' : 'N')}/>,
         },
         {
-            title: '시작일', key: 'strDt', dataIndex: 'strDt', align: 'center', width: '18%',
+            title: '시작일', key: 'strDt', dataIndex: 'strDt', align: 'center', width: '25%',
             render: (value: string, record: AuthUserInfoList) =>
                 <CustomDatePicker
                     value={value ? dayjs(value, 'YYYYMMDD') : null}
@@ -377,7 +377,7 @@ const AuthManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
                     className="w-full"/>,
         },
         {
-            title: '종료일', key: 'endDt', dataIndex: 'endDt', align: 'center', width: '18%',
+            title: '종료일', key: 'endDt', dataIndex: 'endDt', align: 'center', width: '25%',
             render: (value: string, record: AuthUserInfoList) =>
                 <CustomDatePicker
                     value={value ? dayjs(value, 'YYYYMMDD') : null}

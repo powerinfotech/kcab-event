@@ -69,7 +69,7 @@ const UserMenuAuthInquiry = ({handlersRef}: {
         {title: '권한그룹', key: 'authGrpNm', dataIndex: 'authGrpNm', align: 'center', width: '25%'},
         {title: '권한명', key: 'authNm', dataIndex: 'authNm', align: 'center', width: '35%'},
         {
-            title: '사용여부', key: 'useYn', dataIndex: 'useYn', align: 'center', width: '25%',
+            title: '사용여부', key: 'useYn', dataIndex: 'useYn', align: 'center', width: 80,
             render: (value: string) => <CustomCheckbox checked={value === 'Y'} disabled />,
         },
     ];

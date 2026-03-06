@@ -379,8 +379,7 @@ const UserManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
                     <div className="board-cont-wrap">
                         <form onSubmit={saveFormHandleSubmit(handleSave)}>
                         <CustomInput className="hide" {...saveFormRegister('userSeq')}/>
-                        <div className="board-detail-info board-detail-grid">
-                            {/* 좌측 컬럼 */}
+                        <div className="board-detail-info menu-detail-two-column">
                             <div>
                                 <CustomSaveFormInput
                                     title="사용자ID"
@@ -396,6 +395,16 @@ const UserManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
                                         onChange: handleDataChanged,
                                     })}
                                 />
+                                <CustomSaveFormSelect
+                                    title="사용자구분"
+                                    control={saveFormControl}
+                                    required={true}
+                                    disabled={!isEditable}
+                                    options={Object.keys(cmCode).length > 0 ? Array.from(Object.entries(cmCode['UserClass'] ?? {}), ([value, label]) => ({value, label: String(label)})) : []}
+                                    {...saveFormRegister('userCd', {required: '사용자구분은 필수입력입니다.', onChange: handleDataChanged})}
+                                />
+                            </div>
+                            <div>
                                 <CustomSaveFormInput
                                     title="성명(한글)"
                                     control={saveFormControl}
@@ -411,6 +420,21 @@ const UserManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
                                     })}
                                 />
                                 <CustomSaveFormInput
+                                    title="성명(영문)"
+                                    control={saveFormControl}
+                                    required={true}
+                                    disabled={!isEditable}
+                                    maxLength={30}
+                                    regExp={{value: /^[a-z\sA-Z]*$/, message: '성명(영문)은 알파벳만 입력가능합니다.'}}
+                                    {...saveFormRegister('userNameEng', {
+                                        required: '성명(영문)은 필수입력입니다.',
+                                        minLength: {value: 2, message: '성명(영문)은 2글자 이상이어야 합니다.'},
+                                        onChange: handleDataChanged,
+                                    })}
+                                />
+                            </div>
+                            <div>
+                                <CustomSaveFormInput
                                     title="내선번호"
                                     control={saveFormControl}
                                     required={true}
@@ -424,6 +448,22 @@ const UserManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
                                     })}
                                 />
                                 <CustomSaveFormInput
+                                    title="H.P 번호"
+                                    control={saveFormControl}
+                                    required={true}
+                                    disabled={!isEditable}
+                                    maxLength={11}
+                                    regExp={{value: /^[0-9]*$/, message: '휴대폰번호는 숫자만 입력가능합니다.'}}
+                                    {...saveFormRegister('hpNo', {
+                                        required: 'H.P 번호는 필수입력입니다.',
+                                        pattern: {value: /^[0-9]*$/, message: '휴대폰번호는 숫자만 입력가능합니다.'},
+                                        minLength: {value: 10, message: '휴대폰번호는 10자리 이상이어야 합니다.'},
+                                        onChange: handleDataChanged,
+                                    })}
+                                />
+                            </div>
+                            <div>
+                                <CustomSaveFormInput
                                     title="이메일"
                                     control={saveFormControl}
                                     required={true}
@@ -436,6 +476,16 @@ const UserManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
                                         onChange: handleDataChanged,
                                     })}
                                 />
+                                <CustomSaveFormInput
+                                    title="부서"
+                                    control={saveFormControl}
+                                    disabled={!isEditable}
+                                    name="dprtCd"
+                                    onChangeValue={handleDataChanged}
+                                    maxLength={20}
+                                />
+                            </div>
+                            <div>
                                 <CustomSaveFormDatePicker
                                     title="사용시작일"
                                     control={saveFormControl}
@@ -444,6 +494,16 @@ const UserManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
                                     onChangeValue={() => handleDataChanged()}
                                     {...saveFormRegister('strDate', {required: '사용시작일은 필수입력입니다.', onChange: handleDataChanged})}
                                 />
+                                <CustomSaveFormDatePicker
+                                    name="endDate"
+                                    title="사용종료일"
+                                    control={saveFormControl}
+                                    disabled={!isEditable}
+                                    onChangeValue={handleDataChanged}
+                                    minDate={saveFormGetValues('strDate') ? dayjs(saveFormGetValues('strDate'), 'YYYY-MM-DD') : undefined}
+                                />
+                            </div>
+                            <div>
                                 <Controller
                                     name="admYn"
                                     control={saveFormControl}
@@ -463,7 +523,14 @@ const UserManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
                                         </div>
                                     )}
                                 />
-                                <CustomSaveFormInput title="수정자" control={saveFormControl} name="lastModifyUserName" disabled={true} />
+                                <CustomSaveFormInput
+                                    title="최종로그인일시"
+                                    control={saveFormControl}
+                                    name="loginDateTime"
+                                    disabled={true}
+                                />
+                            </div>
+                            <div>
                                 <Controller
                                     name="useYn"
                                     control={saveFormControl}
@@ -485,7 +552,11 @@ const UserManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
                                         </div>
                                     )}
                                 />
-                                {currentDataSource?.iudType === IudType.I && (
+                                <CustomSaveFormInput title="수정자" control={saveFormControl} name="lastModifyUserName" disabled={true} />
+                            </div>
+                            <div>
+                                <CustomSaveFormInput title="최종수정일" control={saveFormControl} name="uptDateTime" disabled={true} />
+                                {currentDataSource?.iudType === IudType.I ? (
                                     <CustomSaveFormInput
                                         title="비밀번호"
                                         type="password"
@@ -501,68 +572,7 @@ const UserManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
                                             onChange: handleDataChanged,
                                         })}
                                     />
-                                )}
-                            </div>
-                            {/* 우측 컬럼 */}
-                            <div>
-                                <CustomSaveFormSelect
-                                    title="사용자구분"
-                                    control={saveFormControl}
-                                    required={true}
-                                    disabled={!isEditable}
-                                    options={Object.keys(cmCode).length > 0 ? Array.from(Object.entries(cmCode['UserClass'] ?? {}), ([value, label]) => ({value, label: String(label)})) : []}
-                                    {...saveFormRegister('userCd', {required: '사용자구분은 필수입력입니다.', onChange: handleDataChanged})}
-                                />
-                                <CustomSaveFormInput
-                                    title="성명(영문)"
-                                    control={saveFormControl}
-                                    required={true}
-                                    disabled={!isEditable}
-                                    maxLength={30}
-                                    regExp={{value: /^[a-z\sA-Z]*$/, message: '성명(영문)은 알파벳만 입력가능합니다.'}}
-                                    {...saveFormRegister('userNameEng', {
-                                        required: '성명(영문)은 필수입력입니다.',
-                                        minLength: {value: 2, message: '성명(영문)은 2글자 이상이어야 합니다.'},
-                                        onChange: handleDataChanged,
-                                    })}
-                                />
-                                <CustomSaveFormInput
-                                    title="H.P 번호"
-                                    control={saveFormControl}
-                                    required={true}
-                                    disabled={!isEditable}
-                                    maxLength={11}
-                                    regExp={{value: /^[0-9]*$/, message: '휴대폰번호는 숫자만 입력가능합니다.'}}
-                                    {...saveFormRegister('hpNo', {
-                                        required: 'H.P 번호는 필수입력입니다.',
-                                        pattern: {value: /^[0-9]*$/, message: '휴대폰번호는 숫자만 입력가능합니다.'},
-                                        minLength: {value: 10, message: '휴대폰번호는 10자리 이상이어야 합니다.'},
-                                        onChange: handleDataChanged,
-                                    })}
-                                />
-                                <CustomSaveFormInput
-                                    title="부서"
-                                    control={saveFormControl}
-                                    disabled={!isEditable}
-                                    name="dprtCd"
-                                    onChangeValue={handleDataChanged}
-                                    maxLength={20}
-                                />
-                                <CustomSaveFormDatePicker
-                                    name="endDate"
-                                    title="사용종료일"
-                                    control={saveFormControl}
-                                    disabled={!isEditable}
-                                    onChangeValue={handleDataChanged}
-                                    minDate={saveFormGetValues('strDate') ? dayjs(saveFormGetValues('strDate'), 'YYYY-MM-DD') : undefined}
-                                />
-                                <CustomSaveFormInput
-                                    title="최종로그인일시"
-                                    control={saveFormControl}
-                                    name="loginDateTime"
-                                    disabled={true}
-                                />
-                                <CustomSaveFormInput title="최종수정일" control={saveFormControl} name="uptDateTime" disabled={true} />
+                                ) : <div />}
                             </div>
                         </div>
                         </form>
