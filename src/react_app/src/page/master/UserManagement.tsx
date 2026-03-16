@@ -358,7 +358,7 @@ const UserManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
                                     });
                                 },
                             };
-                        }} scroll={{x: 1000, y: undefined}} rowKey={'userSeq'} pagination={false} rowNoFlag={true} columns={columns} selectedRowIndex={selectedRowIndex}
+                        }} scroll={{x: 1400, y: undefined}} rowKey={'userSeq'} pagination={false} rowNoFlag={true} columns={columns} selectedRowIndex={selectedRowIndex}
                                      dataSource={dataSource}/>
                     </div>
                 </div>

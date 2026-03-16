@@ -436,6 +436,11 @@ z-index: 3001;
 .ant-table-wrapper .ant-table-container table{
     table-layout: fixed !important;
 }
+.ant-table-wrapper .ant-table-tbody > tr > td {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 .ant-table-wrapper .ant-table-selection-column{
     width:50px !important;
     min-width:50px !important;
