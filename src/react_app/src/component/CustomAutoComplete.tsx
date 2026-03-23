@@ -6,26 +6,24 @@ interface CustomAutocompleteProps extends AutoCompleteProps{
     size?:'small' | 'middle' | 'large' ;
     label?:string;
 }
-const CustomAutoComplete =  (props:CustomAutocompleteProps) => {
-        const [labelText, setLabelText] = useState<string>(props.label??'');
+const CustomAutoComplete =  ({showName, label, children, ...restProps}:CustomAutocompleteProps) => {
+        const [labelText, setLabelText] = useState<string>(label??'');
 
 
     useEffect(() => {
-        setLabelText(props.label??'');
-    }, [props.label]);
+        setLabelText(label??'');
+    }, [label]);
 
     return (
         <>
              <AutoComplete
-                    {...props}
-                    size={props.size}
-                    onSelect={(value, option) => {props.onSelect&&props.onSelect(value, option);}}
-                    className={props.showName ? `${props.className || ''} autocomplete-mr`.trim() : props.className}
+                    {...restProps}
+                    className={showName ? `${restProps.className || ''} autocomplete-mr`.trim() : restProps.className}
                 >
-                    {props.children}
+                    {children}
 
                 </AutoComplete>
-            {props.showName&&<Input value={labelText} disabled={true} className="w200"/>}
+            {showName&&<Input value={labelText} disabled={true} className="w200"/>}
         </>
     );
 };
