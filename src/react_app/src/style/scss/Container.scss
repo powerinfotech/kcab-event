@@ -168,10 +168,12 @@
             font-weight:600;
             color:$gray20;
 
+            + div,
+            + .ant-picker,
             + .ant-select,
             + input{
                 margin-left:8px;
-                margin-right:24px;;
+                margin-right:24px;
             }
         }
         > div{

@@ -12,6 +12,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@ant-design/charts": "^2.6.7",
     "@ant-design/icons": "^5.4.0",
     "@ckeditor/ckeditor5-build-classic": "43.1.0",
     "@ckeditor/ckeditor5-react": "10.0.0",

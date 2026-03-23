@@ -109,13 +109,13 @@ z-index: 3001;
 
 .ant-btn{
     vertical-align: middle;
-    background:$gray20;
+    background:$gray100;
     font-weight:700;
     border-radius: 4px;
     height:35px;
     padding:0 15px;
-    color:$gray100;
-    border-color:$gray20;
+    color:$gray20;
+    border-color:$gray80;
 
     &.ant-btn-sm{
         background:$gray100;
@@ -135,12 +135,15 @@ z-index: 3001;
 
     &.ant-input-search-button{
         height: 35px;
+        background:$brandYellow;
+        color:$gray20;
+        border-color:$brandYellow;
     }
 }
 .ant-btn-default:not(:disabled):not(.ant-btn-disabled):hover{
-    background:$gray25;
-    border-color:$gray25;
-    color:$gray100;
+    background:$gray95;
+    border-color:$gray60;
+    color:$gray20;
 }
 .ant-btn-default.ant-btn-sm.point:not(:disabled):not(.ant-btn-disabled):hover{
     background:$brandYellowDarken;
@@ -157,19 +160,20 @@ z-index: 3001;
     background:$brandYellow;
     color:$gray20;
     border-color:$brandYellow;
+
+    &:disabled, &.ant-btn-disabled{
+        background:$neutral200;
+        color:$neutralAlpha80;
+        border:1px solid $neutral200;
+    }
+    &:disabled svg path, &.ant-btn-disabled svg path{
+        fill:$neutralAlpha80;
+    }
 }
 .ant-btn-primary:not(:disabled):not(.ant-btn-disabled):hover{
     background:$brandYellowDarken;
     border-color:$brandYellowDarken;
     color:$gray100;
-}
-.ant-btn-primary:disabled, .ant-btn-primary.ant-btn-disabled{
-    background:$neutral200;
-    color:$neutralAlpha80;
-    border:1px solid $neutral200
-}
-.ant-btn-primary:disabled svg path, .ant-btn-primary.ant-btn-disabled svg path{
-    fill:$neutralAlpha80;
 }
 
 .ant-btn.ant-btn-sm:disabled{
