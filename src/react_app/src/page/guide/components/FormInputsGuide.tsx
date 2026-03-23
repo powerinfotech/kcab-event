@@ -4,6 +4,7 @@ import locale from 'antd/es/date-picker/locale/ko_KR';
 import CustomInput from '@component/CustomInput';
 import CustomDatePicker from '@component/CustomDatePicker';
 import CustomRangePicker from '@component/CustomRangePicker';
+import CustomDateRangePicker from '@component/CustomDateRangePicker';
 import CustomMaskedInput from '@component/CustomMaskedInput';
 import { GuideSection, GuideDemoBox, GuideStatusRow, GuideStatusItem } from './GuideSection';
 
@@ -127,6 +128,12 @@ const FormInputsGuide = () => {
           </GuideStatusItem>
           <GuideStatusItem label="disabled">
             <CustomRangePicker locale={locale} disabled />
+          </GuideStatusItem>
+          <GuideStatusItem label="CustomDateRangePicker">
+            <CustomDateRangePicker />
+          </GuideStatusItem>
+          <GuideStatusItem label="CustomDateRangePicker (disabled)">
+            <CustomDateRangePicker disabled />
           </GuideStatusItem>
         </GuideStatusRow>
       </GuideDemoBox>

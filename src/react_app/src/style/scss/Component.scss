@@ -80,6 +80,9 @@ z-index: 3001;
 .ant-select .ant-select-arrow .anticon{
     display:none;
 }
+.ant-select-multiple{
+    min-width:150px;
+}
 .ant-picker{
     padding:4px 8px;
     border-radius: 4px;
@@ -155,6 +158,14 @@ z-index: 3001;
 }
 .ant-btn + .ant-btn{
     margin-left:8px;
+}
+.ant-btn-compact-item.ant-btn + .ant-btn{
+    margin-left:0;
+}
+.date-range-picker-wrap{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
 }
 .ant-btn-primary{
     background:$brandYellow;

@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { Drawer, notification, Alert, Skeleton, Progress, message } from 'antd';
+import { Drawer, Modal, notification, Alert, Skeleton, Progress, message } from 'antd';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import CustomButton from '@component/CustomButton';
 import CustomModal from '@component/CustomModal';
 import { GuideSection, GuideDemoBox, GuideStatusRow, GuideStatusItem } from './GuideSection';
 
-const { confirm } = CustomModal;
+const { confirm } = Modal;
 
 const FeedbackGuide = () => {
   const [modalOpen, setModalOpen] = useState(false);

@@ -81,7 +81,13 @@ const SelectionGuide = () => {
       <GuideDemoBox title="AutoComplete (자동완성 검색)">
         <GuideStatusRow>
           <GuideStatusItem label="enabled">
-            <CustomAutoComplete options={autoCompleteOptions} placeholder="도시명을 입력하세요" />
+            <CustomAutoComplete
+              options={autoCompleteOptions}
+              placeholder="도시명을 입력하세요"
+              filterOption={(inputValue, option) =>
+                (option?.value as string).includes(inputValue)
+              }
+            />
           </GuideStatusItem>
           <GuideStatusItem label="disabled">
             <CustomAutoComplete options={autoCompleteOptions} disabled value="서울특별시" />

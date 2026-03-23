@@ -4,9 +4,8 @@ import CustomInput from '@component/CustomInput';
 import CustomSelect from '@component/CustomSelect';
 import CustomSearchBar from '@component/CustomSearchBar';
 import CustomFilterPanel from '@component/CustomFilterPanel';
-import CustomDatePicker from '@component/CustomDatePicker';
+import CustomDateRangePicker from '@component/CustomDateRangePicker';
 import CustomButton from '@component/CustomButton';
-import locale from 'antd/es/date-picker/locale/ko_KR';
 import { SearchOutlined } from '@ant-design/icons';
 import { GuideSection, GuideDemoBox, GuideStatusRow, GuideStatusItem } from './GuideSection';
 
@@ -50,9 +49,7 @@ const SearchFilterGuide = () => {
               ]}
             />
             <span>기간</span>
-            <CustomDatePicker locale={locale} placeholder="시작일" />
-            <span>~</span>
-            <CustomDatePicker locale={locale} placeholder="종료일" />
+            <CustomDateRangePicker />
           </form>
         </div>
         <div className="guide-demo-description">
