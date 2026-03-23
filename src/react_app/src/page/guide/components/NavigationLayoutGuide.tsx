@@ -87,10 +87,10 @@ const NavigationLayoutGuide = () => {
         </GuideStatusRow>
         <GuideStatusRow>
           <GuideStatusItem label="간소화">
-            <Pagination simple current={1} total={50} />
+            <Pagination simple defaultCurrent={1} total={50} />
           </GuideStatusItem>
           <GuideStatusItem label="disabled">
-            <Pagination current={1} total={50} disabled />
+            <Pagination defaultCurrent={1} total={50} disabled />
           </GuideStatusItem>
         </GuideStatusRow>
       </GuideDemoBox>
