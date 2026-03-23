@@ -55,8 +55,8 @@ const CustomTable = (props: CustomTableProps) => {
     const targetPagination = props.pagination ?? false;
     const [targetDataSource, setTargetDataSource] = useState<any>();
     const [paginationParam, setPaginationParam] = useState<CustomPageParam>({
-        page: targetPagination && targetPagination.current ? targetPagination.current : 0,
-        pageSize: targetPagination && targetPagination.pageSize ? targetPagination.pageSize : 0,
+        page: targetPagination && targetPagination.current ? targetPagination.current : 1,
+        pageSize: targetPagination && targetPagination.pageSize ? targetPagination.pageSize : 10,
         pageEditFlag: true,
     });
     const [tableHeight, setTableHeight] = useState(800);
@@ -101,7 +101,7 @@ const CustomTable = (props: CustomTableProps) => {
         } else {
             setTargetDataSource(props.dataSource);
         }
-    }, [props.dataSource, paginationParam.pageEditFlag, props.rowNoFlag]);
+    }, [props.dataSource, paginationParam.pageEditFlag, paginationParam.page, paginationParam.pageSize, props.rowNoFlag]);
 
     useEffect(() => {
         const handleResize = () => {

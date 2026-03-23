@@ -234,15 +234,27 @@
   .ant-input-search {
     width: 200px;
 
-    .ant-input {
+    .ant-input-affix-wrapper {
       height: 35px;
       border-color: $gray80;
       border-radius: 4px 0 0 4px;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .ant-input {
+      height: auto;
+      line-height: normal;
     }
 
     .ant-input-search-button {
       height: 35px;
+      width: 35px;
       border-radius: 0 4px 4px 0;
+    }
+
+    .ant-input-group-addon {
+      padding: 0;
     }
   }
 

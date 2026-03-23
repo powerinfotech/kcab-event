@@ -86,6 +86,13 @@ z-index: 3001;
 .ant-select-auto-complete{
     width:100%;
 }
+.ant-tree-select{
+    min-width:150px;
+
+    .ant-select-clear{
+        right:30px;
+    }
+}
 .ant-picker{
     padding:4px 8px;
     border-radius: 4px;
@@ -144,6 +151,18 @@ z-index: 3001;
         background:$brandYellow;
         color:$gray20;
         border-color:$brandYellow;
+
+        &:not(:disabled):not(.ant-btn-disabled):hover{
+            background:$brandYellowDarken;
+            border-color:$brandYellowDarken;
+            color:$gray100;
+        }
+
+        &:disabled, &.ant-btn-disabled{
+            background:$neutral200;
+            color:$neutralAlpha80;
+            border-color:$neutral200;
+        }
     }
 }
 .ant-btn-default:not(:disabled):not(.ant-btn-disabled):hover{

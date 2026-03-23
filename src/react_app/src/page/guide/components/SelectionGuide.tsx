@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
-import { Radio, Switch, TreeSelect, Select } from 'antd';
+import { Radio, Select } from 'antd';
+import CustomTreeSelect from '@component/CustomTreeSelect';
+import CustomSwitch from '@component/CustomSwitch';
 import CustomSelect from '@component/CustomSelect';
+import CustomMultiSelect from '@component/CustomMultiSelect';
 import CustomAutoComplete from '@component/CustomAutoComplete';
+import CustomRadioGroup from '@component/CustomRadioGroup';
 import CustomCheckbox from '@component/CustomCheckbox';
 import { GuideSection, GuideDemoBox, GuideStatusRow, GuideStatusItem } from './GuideSection';
 
@@ -69,10 +73,10 @@ const SelectionGuide = () => {
       <GuideDemoBox title="MultiSelect (다중 선택)">
         <GuideStatusRow>
           <GuideStatusItem label="enabled">
-            <Select mode="multiple" value={multiValue} onChange={setMultiValue} options={selectOptions} />
+            <CustomMultiSelect value={multiValue} onChange={setMultiValue} options={selectOptions} />
           </GuideStatusItem>
           <GuideStatusItem label="disabled">
-            <Select mode="multiple" value={multiValue} disabled options={selectOptions} />
+            <CustomMultiSelect value={multiValue} disabled options={selectOptions} />
           </GuideStatusItem>
         </GuideStatusRow>
       </GuideDemoBox>
@@ -99,16 +103,24 @@ const SelectionGuide = () => {
       <GuideDemoBox title="RadioGroup (라디오 버튼 그룹)">
         <GuideStatusRow>
           <GuideStatusItem label="enabled">
-            <Radio.Group value={radioValue} onChange={(e) => setRadioValue(e.target.value)}>
-              <Radio value="A">Yes</Radio>
-              <Radio value="B">No</Radio>
-            </Radio.Group>
+            <CustomRadioGroup
+              value={radioValue}
+              onChange={(e) => setRadioValue(e.target.value)}
+              options={[
+                { value: 'A', label: 'Yes' },
+                { value: 'B', label: 'No' },
+              ]}
+            />
           </GuideStatusItem>
           <GuideStatusItem label="disabled">
-            <Radio.Group value={radioValue} disabled>
-              <Radio value="A">Yes</Radio>
-              <Radio value="B">No</Radio>
-            </Radio.Group>
+            <CustomRadioGroup
+              value={radioValue}
+              disabled
+              options={[
+                { value: 'A', label: 'Yes' },
+                { value: 'B', label: 'No' },
+              ]}
+            />
           </GuideStatusItem>
         </GuideStatusRow>
       </GuideDemoBox>
@@ -135,13 +147,13 @@ const SelectionGuide = () => {
       <GuideDemoBox title="Toggle / Switch (ON/OFF)">
         <GuideStatusRow>
           <GuideStatusItem label="enabled">
-            <Switch checked={switchValue} onChange={setSwitchValue} checkedChildren="ON" unCheckedChildren="OFF" />
+            <CustomSwitch checked={switchValue} onChange={setSwitchValue} />
           </GuideStatusItem>
           <GuideStatusItem label="disabled (ON)">
-            <Switch checked disabled checkedChildren="ON" unCheckedChildren="OFF" />
+            <CustomSwitch checked disabled />
           </GuideStatusItem>
           <GuideStatusItem label="disabled (OFF)">
-            <Switch checked={false} disabled checkedChildren="ON" unCheckedChildren="OFF" />
+            <CustomSwitch checked={false} disabled />
           </GuideStatusItem>
         </GuideStatusRow>
       </GuideDemoBox>
@@ -150,17 +162,15 @@ const SelectionGuide = () => {
       <GuideDemoBox title="TreeSelect (트리형 선택)">
         <GuideStatusRow>
           <GuideStatusItem label="enabled">
-            <TreeSelect
+            <CustomTreeSelect
               treeData={treeData}
               value={treeValue}
               onChange={setTreeValue}
               placeholder="부서를 선택하세요"
-              treeDefaultExpandAll
-              allowClear
             />
           </GuideStatusItem>
           <GuideStatusItem label="disabled">
-            <TreeSelect
+            <CustomTreeSelect
               treeData={treeData}
               value="dept-1-1"
               disabled
