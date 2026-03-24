@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import CustomTable from '@component/display/CustomTable';
 import CustomTag from '@component/display/CustomTag';
 import CustomBadge from '@component/display/CustomBadge';
@@ -7,6 +7,9 @@ import CustomStatistic from '@component/display/CustomStatistic';
 import CustomCard from '@component/display/CustomCard';
 import CustomDescriptions, { CustomDescriptionsItem } from '@component/display/CustomDescriptions';
 import CustomDirectoryTree from '@component/display/CustomDirectoryTree';
+import CustomSpace from '@component/button/CustomSpace';
+import CustomExcelDownload from '@component/upload/CustomExcelDownload';
+import CustomExcelUpload from '@component/upload/CustomExcelUpload';
 import {
   CheckCircleOutlined,
   ClockCircleOutlined,
@@ -16,6 +19,7 @@ import {
   ArrowDownOutlined,
 } from '@ant-design/icons';
 import { GuideSection, GuideDemoBox } from './GuideSection';
+import { ExcelColumnDef } from '@api/CommonExcelApi';
 
 const tableColumns = [
   { title: 'ID', dataIndex: 'id', key: 'id', width: '10%', align: 'center' as const },
@@ -35,6 +39,16 @@ const tableData = [
   { id: 3, name: '이영희', dept: '재무팀', position: '부장', email: 'lee@example.com', status: '비활성', regDate: '2023-11-05' },
   { id: 4, name: '박지민', dept: '기획팀', position: '사원', email: 'park@example.com', status: '활성', regDate: '2024-03-10' },
   { id: 5, name: '최수진', dept: '개발팀', position: '차장', email: 'choi@example.com', status: '활성', regDate: '2023-09-01' },
+];
+
+const excelColumns: ExcelColumnDef[] = [
+  { headerName: 'ID', dataIndex: 'id', width: 10 },
+  { headerName: '이름', dataIndex: 'name', width: 15 },
+  { headerName: '부서', dataIndex: 'dept', width: 15 },
+  { headerName: '직급', dataIndex: 'position', width: 12 },
+  { headerName: '이메일', dataIndex: 'email', width: 25 },
+  { headerName: '상태', dataIndex: 'status', width: 10 },
+  { headerName: '등록일', dataIndex: 'regDate', width: 15 },
 ];
 
 const treeData = [
@@ -71,6 +85,8 @@ const treeData = [
 ];
 
 const DataDisplayGuide = () => {
+  const [uploadedData, setUploadedData] = useState<any[]>([]);
+
   return (
     <GuideSection id="data-display" title="데이터 표시 (Data Display)" description="그리드, 트리, 카드, 태그 등 데이터 표시 컴포넌트">
       {/* DataGrid / DataTable */}
@@ -83,6 +99,36 @@ const DataDisplayGuide = () => {
           pagination={{ pageSize: 5 }}
           scroll={{ x: 800 }}
         />
+      </GuideDemoBox>
+
+      {/* 엑셀 다운로드/업로드 */}
+      <GuideDemoBox title="엑셀 다운로드/업로드 (Excel Download/Upload)">
+        <CustomSpace direction="vertical" style={{ width: '100%' }} size="middle">
+          <CustomSpace>
+            <CustomExcelDownload
+              columns={excelColumns}
+              dataSource={tableData}
+              fileName="사용자목록"
+            />
+            <CustomExcelUpload
+              columns={excelColumns}
+              onUploadSuccess={setUploadedData}
+            />
+          </CustomSpace>
+          {uploadedData.length > 0 && (
+            <>
+              <div style={{ fontWeight: 'bold' }}>업로드 결과:</div>
+              <CustomTable
+                rowKey="id"
+                columns={tableColumns}
+                dataSource={uploadedData}
+                rowNoFlag
+                pagination={{ pageSize: 5 }}
+                scroll={{ x: 800 }}
+              />
+            </>
+          )}
+        </CustomSpace>
       </GuideDemoBox>
 
       {/* TreeGrid */}

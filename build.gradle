@@ -56,6 +56,8 @@ dependencies {
 
     implementation 'com.navercorp.lucy:lucy-xss-servlet:2.0.1'
     implementation 'org.reflections:reflections:0.10.2'
+
+    implementation 'org.apache.poi:poi-ooxml:5.2.3'
 }
 
 task buildFrontend(type: Exec) {
