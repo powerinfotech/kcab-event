@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React from 'react';
 import {callLogout} from '@api/CommonApi';
 import {HttpStatusCode} from 'axios';
 

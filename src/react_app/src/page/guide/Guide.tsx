@@ -25,7 +25,7 @@ const anchorItems = [
   { key: 'utility', href: '#utility', title: '유틸리티' },
 ];
 
-const Guide = ({ menuInfo }: { onChange: (flag: boolean) => void; menuInfo?: MenuInfo }) => {
+const Guide = ({ menuInfo }: { menuInfo?: MenuInfo }) => {
   return (
     <div className="guide-wrap">
       <aside className="guide-nav">

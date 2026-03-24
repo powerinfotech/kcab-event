@@ -9,7 +9,6 @@ import {Modal} from 'antd';
  */
 const GlobalConfirmProvider = () => {
     const confirmState = useRecoilValue(confirmAtom);
-    const {confirm} = Modal;
     const openedRef = useRef(false);
 
     useEffect(() => {

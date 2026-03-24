@@ -9,7 +9,6 @@ import {alertAtom} from '@atom/alertAtom';
  */
 const GlobalAlertProvider = () => {
     const alertState = useRecoilValue(alertAtom);
-    const {info} = Modal;
     const openedRef = useRef(false);
 
     useEffect(() => {

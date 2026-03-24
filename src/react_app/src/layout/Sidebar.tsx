@@ -48,7 +48,6 @@ function SidebarSubpanel({
 export default function Sidebar({
   onSubpanelOpenChange,
 }: {
-  menuInfo?: MenuInfo[];
   onSubpanelOpenChange?: (open: boolean) => void;
 }) {
   const router = useRouter();
