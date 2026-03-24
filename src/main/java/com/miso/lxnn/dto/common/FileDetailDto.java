@@ -14,5 +14,5 @@ public class FileDetailDto extends FileDto{
     private String filePath;
     private String fileType;
     private String delYn;
-    private Integer srtSq;
+    private Integer sortSeq;
 }

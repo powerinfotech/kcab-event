@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Upload, Modal } from 'antd';
+import { Upload, Modal, message } from 'antd';
 import type { UploadFile, UploadProps } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
+import type { RcFile } from 'antd/es/upload/interface';
 
 interface CustomImageUploadProps {
   maxCount?: number;
@@ -45,10 +46,19 @@ const CustomImageUpload = ({ maxCount = 5, disabled = false, fileList: propFileL
         fileList={fileList}
         onPreview={handlePreview}
         onChange={handleChange}
-        beforeUpload={() => false}
+        beforeUpload={(file: RcFile) => {
+          if (!file.type.startsWith('image/')) {
+            message.error('이미지 파일만 업로드 가능합니다.');
+            return Upload.LIST_IGNORE;
+          }
+          return false;
+        }}
         disabled={disabled}
         maxCount={maxCount}
         accept="image/*"
+        showUploadList={{
+          removeIcon: <DeleteOutlined />,
+        }}
       >
         {fileList.length >= maxCount ? null : (
           <div>

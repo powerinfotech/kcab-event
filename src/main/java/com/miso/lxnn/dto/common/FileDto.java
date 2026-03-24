@@ -9,9 +9,9 @@ import java.time.LocalDateTime;
 @Setter
 public class FileDto {
     private Integer fileSeq;
-    private String menuSeq;
-    private String rgstUserId;
+    private Integer menuSeq;
+    private Integer rgstUserSeq;
     private LocalDateTime rgstDateTime;
-    private String uptUserId;
+    private Integer uptUserSeq;
     private LocalDateTime uptDateTime;
 }

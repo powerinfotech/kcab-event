@@ -627,6 +627,85 @@ z-index: 3001;
     pointer-events: none;
 }
 
+/* ImageUpload hover overlay */
+.ant-upload-list-picture-card .ant-upload-list-item-container {
+    .ant-upload-list-item {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .ant-upload-list-item-actions {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        width: 100% !important;
+        height: 100% !important;
+        left: 0 !important;
+        top: 0 !important;
+
+        a, button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: none !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+            cursor: pointer;
+            transition: transform 0.2s;
+
+            .anticon {
+                color: #fff !important;
+                font-size: 18px;
+                filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.4));
+            }
+
+            &:hover {
+                transform: scale(1.15);
+            }
+        }
+
+        button.ant-btn {
+            line-height: 1 !important;
+            min-width: unset !important;
+            min-height: unset !important;
+            width: auto !important;
+            height: auto !important;
+        }
+    }
+}
+
+/* FileUpload 파일 목록 삭제 버튼 */
+.ant-upload-list-text .ant-upload-list-item {
+    .ant-upload-list-item-action {
+        background: none !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        min-width: unset !important;
+        min-height: unset !important;
+        width: auto !important;
+        height: auto !important;
+        line-height: 1 !important;
+        opacity: 0;
+        transition: opacity 0.2s;
+
+        .anticon {
+            color: $gray40;
+            font-size: 14px;
+        }
+
+        &:hover .anticon {
+            color: $gray20;
+        }
+    }
+
+    &:hover .ant-upload-list-item-action {
+        opacity: 1;
+    }
+}
+
 .loading-icon {
     font-size: 24px;
     color: $gray100;

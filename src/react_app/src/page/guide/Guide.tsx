@@ -1,4 +1,5 @@
 import React from 'react';
+import { MenuInfo } from '@interface/auth/MenuManagement';
 import { Anchor } from 'antd';
 import FormInputsGuide from './components/FormInputsGuide';
 import SelectionGuide from './components/SelectionGuide';
@@ -24,7 +25,7 @@ const anchorItems = [
   { key: 'utility', href: '#utility', title: '유틸리티' },
 ];
 
-const Guide = () => {
+const Guide = ({ menuInfo }: { onChange: (flag: boolean) => void; menuInfo?: MenuInfo }) => {
   return (
     <div className="guide-wrap">
       <aside className="guide-nav">
@@ -37,7 +38,7 @@ const Guide = () => {
       <main className="guide-content">
         <FormInputsGuide />
         <SelectionGuide />
-        <FileGuide />
+        <FileGuide menuSeq={menuInfo?.menuSeq} />
         <DataDisplayGuide />
         <NavigationLayoutGuide />
         <FeedbackGuide />

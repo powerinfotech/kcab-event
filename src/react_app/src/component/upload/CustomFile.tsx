@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {UploadOutlined} from '@ant-design/icons';
 import type {DragEndEvent} from '@dnd-kit/core';
 import {DndContext, PointerSensor, useSensor} from '@dnd-kit/core';
@@ -10,7 +10,6 @@ import {IudType} from "@interface/common";
 import {cloneDeep} from "lodash";
 import {RcFile} from "antd/es/upload/interface";
 import axios from 'axios';
-import {isEditable} from "@testing-library/user-event/dist/utils";
 
 interface CustomFileItemPropsType {
     originNode: React.ReactElement<any, string | React.JSXElementConstructor<any>>;
@@ -56,7 +55,7 @@ export interface FileDetailType {
     filePath?: string;
     fileType?: string;
     delYn?: string;
-    srtSq: number;
+    sortSeq: number;
     originFileObj?: RcFile;
     iudType?: IudType;
 }
@@ -64,7 +63,7 @@ export interface FileDetailType {
 export interface CustomFile extends UploadFile{
     fileSeq?: number;
     fileDtlSeq?: number;
-    srtSq: number;
+    sortSeq: number;
     iudType?: IudType;
 }
 
@@ -83,7 +82,7 @@ const CustomFile = (props:CustomFilePropsType) => {
         name: fileDto.fileNm,
         url: fileDto.filePath,
         status: 'done',
-        srtSq: fileDto.srtSq,
+        sortSeq: fileDto.sortSeq,
         iudType: fileDto.iudType,
         originFileObj: fileDto.originFileObj,
     });
@@ -94,12 +93,13 @@ const CustomFile = (props:CustomFilePropsType) => {
         fileDtlSeq: antdFileData.fileDtlSeq,
         fileNm: antdFileData.name,
         filePath: antdFileData.url,
-        srtSq: antdFileData.srtSq,
+        sortSeq: antdFileData.sortSeq,
         iudType: antdFileData.iudType,
         originFileObj: antdFileData.originFileObj
     });
 
     const [fileList, setFileList] = useState<CustomFile[]>(props.fileList ? props.fileList.map(fileDtoToAntdFile) : []);
+    const isInternalUpdate = useRef(false);
 
     const sensor = useSensor(PointerSensor, {
         activationConstraint: { distance: 10 },
@@ -115,15 +115,15 @@ const CustomFile = (props:CustomFilePropsType) => {
                 let currentSrtSq = 1;
 
                 const reindexed = newList.map((item, index) => {
-                    let srtSq = 0;
+                    let sortSeq = 0;
 
                     if (item.iudType !== IudType.D) {
-                        srtSq = currentSrtSq++;
+                        sortSeq = currentSrtSq++;
                     }
 
                     return {
                         ...item,
-                        srtSq: srtSq,
+                        sortSeq: sortSeq,
                         iudType: item.iudType !== IudType.I && item.iudType !== IudType.D ? IudType.U : item.iudType
                     };
                 });
@@ -170,13 +170,13 @@ const CustomFile = (props:CustomFilePropsType) => {
             })
             .filter((fileData): fileData is CustomFile => fileData !== null)
             .map((fileData) => {
-                let srtSq = 0;
+                let sortSeq = 0;
 
                 if (fileData.iudType !== IudType.D) {
-                    srtSq = currentSrtSq++;
+                    sortSeq = currentSrtSq++;
                 }
 
-                return { ...fileData, srtSq: srtSq};
+                return { ...fileData, sortSeq: sortSeq};
             });
         } else {
             const maxSize =  10 * 1024 * 1024;
@@ -190,7 +190,7 @@ const CustomFile = (props:CustomFilePropsType) => {
                 name: newFile.name,
                 url: URL.createObjectURL(newFile as any),
                 status: newFile.status,
-                srtSq: fileList.filter((fileData) => fileData.iudType !== IudType.D).length + 1,
+                sortSeq: fileList.filter((fileData) => fileData.iudType !== IudType.D).length + 1,
                 originFileObj : newFile as RcFile,
                 iudType: IudType.I,
             };
@@ -203,8 +203,17 @@ const CustomFile = (props:CustomFilePropsType) => {
     };
 
     useEffect(() => {
+        isInternalUpdate.current = true;
         props.onFileListChange(fileList.map(AntdFileToFileDto));
     },[fileList]);
+
+    useEffect(() => {
+        if (isInternalUpdate.current) {
+            isInternalUpdate.current = false;
+            return;
+        }
+        setFileList(props.fileList ? props.fileList.map(fileDtoToAntdFile) : []);
+    }, [props.fileList]);
 
     const handlePreview: UploadProps['onPreview'] = async (file) => {
         // 1) 로컬에서 방금 올린 파일 (originFileObj 존재)
@@ -242,7 +251,7 @@ const CustomFile = (props:CustomFilePropsType) => {
     return (
         <DndContext sensors={[sensor]} onDragEnd={onDragEnd}>
             <SortableContext items={fileList.slice()
-                                            .sort((a, b) => a.srtSq - b.srtSq)
+                                            .sort((a, b) => a.sortSeq - b.sortSeq)
                                             .map((f) => f.uid)
                                     }
                              strategy={verticalListSortingStrategy}>

@@ -100,7 +100,7 @@ public class FileServiceImpl implements FileService {
             insertFileDtl.setFileNm(originalFileName);
             insertFileDtl.setFilePath(filePath);
             insertFileDtl.setFileType(extension);
-            insertFileDtl.setSrtSq(fileMeta.getSrtSq());
+            insertFileDtl.setSortSeq(fileMeta.getSortSeq());
 
             insertFileDtlList.add(insertFileDtl);
         });
@@ -111,8 +111,8 @@ public class FileServiceImpl implements FileService {
             fileSeq = insertFileDtlList.get(0).getFileSeq();
 
             for(FileDetailDto fileDto : insertFileDtlList){
-                fileDto.setRgstUserId(loginUser.getUserId());
-                fileDto.setUptUserId(loginUser.getUserId());
+                fileDto.setRgstUserSeq(loginUser.getUserSeq());
+                fileDto.setUptUserSeq(loginUser.getUserSeq());
 
                 if(fileSeq == null && !fileDao.checkExistFileSeq(fileDto.getFileSeq())){
                     fileDao.insertFile(fileDto);
@@ -134,7 +134,7 @@ public class FileServiceImpl implements FileService {
         List<FileDetailDto> updateFileList = objectMapper.readValue(updateFileListJson, new TypeReference<List<FileDetailDto>>() {});
 
         for (FileDetailDto fileDto : updateFileList) {
-            fileDto.setUptUserId(loginUser.getUserId());
+            fileDto.setUptUserSeq(loginUser.getUserSeq());
 
             fileDao.updateFileDetail(fileDto);
         }
@@ -178,7 +178,7 @@ public class FileServiceImpl implements FileService {
                 //file.delete();
             }
 
-            fileDto.setUptUserId(loginUser.getUserId());
+            fileDto.setUptUserSeq(loginUser.getUserSeq());
 
             fileDao.deleteFileDetail(fileDto);
         }
@@ -197,13 +197,13 @@ public class FileServiceImpl implements FileService {
                 //file.delete();
             }
 
-            fileDto.setUptUserId(loginUser.getUserId());
+            fileDto.setUptUserSeq(loginUser.getUserSeq());
 
             fileDao.deleteFileDetail(fileDto);
         }
 
         FileDetailDto deleteFileDto = new FileDetailDto();
-        deleteFileDto.setUptUserId(loginUser.getUserId());
+        deleteFileDto.setUptUserSeq(loginUser.getUserSeq());
         deleteFileDto.setFileSeq(fileSeq);
 
         fileDao.deleteFile(deleteFileDto);

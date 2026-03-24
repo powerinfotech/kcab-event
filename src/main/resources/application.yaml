@@ -111,7 +111,7 @@ system:
 
 file:
   path:
-    dir: C:/upload
+    dir: /Users/junkwon/downloadtest
 
 ---
 

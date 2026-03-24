@@ -70,7 +70,7 @@ export const callSaveFiles = async (fileSeq : number|null, menuSeq : number, fil
             fileSeq : fileSeq,
             menuSeq : menuSeq,
             fileNm : fileData.fileNm,
-            srtSq : fileData.srtSq,
+            sortSeq : fileData.sortSeq,
         };
     });
 
@@ -78,7 +78,7 @@ export const callSaveFiles = async (fileSeq : number|null, menuSeq : number, fil
         return {
             fileDtlSeq : fileData.fileDtlSeq,
             fileSeq : fileSeq,
-            srtSq : fileData.srtSq
+            sortSeq : fileData.sortSeq
         };
     });
 
