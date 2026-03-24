@@ -79,34 +79,6 @@ const UtilityGuide = () => {
           </GuideStatusItem>
         </GuideStatusRow>
       </GuideDemoBox>
-
-      {/* ErrorBoundary */}
-      <GuideDemoBox title="ErrorBoundary (에러 바운더리)">
-        <div className="guide-demo-description">
-          ErrorBoundary는 하위 컴포넌트에서 발생하는 JavaScript 에러를 캐치하여
-          전체 애플리케이션이 크래시되는 것을 방지합니다.
-          <br /><br />
-          사용 패턴:
-          <br />- 페이지 단위로 ErrorBoundary를 감싸서 한 페이지의 오류가 다른 페이지에 영향을 주지 않도록 합니다.
-          <br />- 현재 프로젝트에서는 showErrorPageAtom을 통한 전역 에러 페이지로 처리합니다.
-        </div>
-      </GuideDemoBox>
-
-      {/* AuthGuard / PermissionButton */}
-      <GuideDemoBox title="AuthGuard / PermissionButton (권한 컴포넌트)">
-        <div className="guide-demo-description">
-          권한 관련 컴포넌트는 현재 프로젝트에서 다음과 같이 처리됩니다:
-          <br /><br />
-          - AuthGuard: GlobalAxiosProvider에서 401 에러 시 자동 로그인 페이지 리다이렉트
-          <br />- PermissionButton: MenuButtonBar 컴포넌트에서 메뉴별 버튼 권한을 동적으로 렌더링
-          <br />- FormValidator: react-hook-form의 Controller + rules 조합으로 폼 유효성 검증
-          <br /><br />
-          관련 파일:
-          <br />- src/provider/GlobalAxiosProvider.tsx
-          <br />- src/component/MenuButtonBar.tsx
-          <br />- src/component/form/CustomSaveForm*.tsx
-        </div>
-      </GuideDemoBox>
     </GuideSection>
   );
 };
