@@ -1,5 +1,5 @@
 import React from 'react';
-import UserSearchPopup from '@component/popup/UserSearchPopup';
+import UserSearchPopup from '@component/popup/search/UserSearchPopup';
 import {PageButtonHandlers} from '@interface/common';
 import {usePageHandlers} from '@hook/usePageHandlers';
 import {useAuthManagement} from './hooks/useAuthManagement';

@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import {Button, Input} from 'antd';
 import IconBtnSearch from '@icon/IconBtnSearch';
-import UserSearchPopup from '@component/popup/UserSearchPopup';
+import UserSearchPopup from '@component/popup/search/UserSearchPopup';
 import {UserSearchResult} from '@interface/auth/AuthManagement';
 
 export interface UserSearchInputProps {
