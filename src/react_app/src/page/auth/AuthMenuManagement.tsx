@@ -3,9 +3,9 @@ import {Input, message} from 'antd';
 import {ColumnsType} from 'antd/es/table';
 import {HttpStatusCode} from 'axios';
 import IconTitle from '@icon/IconTitle';
-import CustomTable from '@component/CustomTable';
-import CustomCheckbox from '@component/CustomCheckbox';
-import CustomButton from '@component/CustomButton';
+import CustomTable from '@component/display/CustomTable';
+import CustomCheckbox from '@component/select/CustomCheckbox';
+import CustomButton from '@component/button/CustomButton';
 import {IudType, PageButtonHandlers} from '@interface/common';
 import {useMessage} from '@hook/useMessage';
 import {

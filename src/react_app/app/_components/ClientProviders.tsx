@@ -5,7 +5,7 @@ import { RecoilRoot } from 'recoil';
 import { ConfigProvider } from 'antd';
 import locale from 'antd/locale/ko_KR';
 import GlobalAxiosProvider from '@provider/GlobalAxiosProvider';
-import CustomLoading from '@component/CustomLoading';
+import CustomLoading from '@component/layout/CustomLoading';
 import GlobalModalProvider from '@provider/GlobalModalProvider';
 import GlobalConfirmProvider from '@provider/GlobalConfirmProvider';
 import GlobalAlertProvider from '@provider/GlobalAlertProvider';

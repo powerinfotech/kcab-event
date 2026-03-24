@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import { Input, Select } from 'antd';
-import CustomInput from '@component/CustomInput';
-import CustomSelect from '@component/CustomSelect';
-import CustomSearchBar from '@component/CustomSearchBar';
-import CustomFilterPanel from '@component/CustomFilterPanel';
-import CustomDateRangePicker from '@component/CustomDateRangePicker';
-import CustomButton from '@component/CustomButton';
+import CustomInput from '@component/input/CustomInput';
+import CustomSelect from '@component/select/CustomSelect';
+import CustomSearchBar from '@component/input/CustomSearchBar';
+import CustomFilterPanel from '@component/layout/CustomFilterPanel';
+import CustomDateRangePicker from '@component/date/CustomDateRangePicker';
+import CustomButton from '@component/button/CustomButton';
 import { SearchOutlined } from '@ant-design/icons';
 import { GuideSection, GuideDemoBox, GuideStatusRow, GuideStatusItem } from './GuideSection';
 
@@ -90,14 +89,12 @@ const SearchFilterGuide = () => {
       {/* QuickFilter */}
       <GuideDemoBox title="QuickFilter (빠른 필터)">
         <div className="guide-demo-row">
-          <Input.Search
+          <CustomSearchBar
             placeholder="테이블 빠른 검색"
-            allowClear
-            enterButton={<SearchOutlined />}
           />
         </div>
         <div className="guide-demo-description">
-          그리드 상단에 배치하는 빠른 필터. Input.Search를 활용합니다.
+          그리드 상단에 배치하는 빠른 필터. CustomSearchBar를 활용합니다.
         </div>
       </GuideDemoBox>
     </GuideSection>

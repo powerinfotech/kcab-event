@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {ApiResponse} from '@interface/common';
-import CustomButton from '@component/CustomButton';
+import CustomButton from '@component/button/CustomButton';
 import axios, {HttpStatusCode} from 'axios';
 import {getUserLoginInfo, getUserMenuInfo} from '@api/CommonApi';
 import {useForm} from 'react-hook-form';

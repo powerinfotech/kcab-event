@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import CustomFile, { FileDetailType } from '@component/CustomFile';
-import CustomImageUpload from '@component/CustomImageUpload';
+import CustomFile, { FileDetailType } from '@component/upload/CustomFile';
+import CustomImageUpload from '@component/upload/CustomImageUpload';
 import { GuideSection, GuideDemoBox, GuideStatusRow, GuideStatusItem } from './GuideSection';
 
 const FileGuide = () => {

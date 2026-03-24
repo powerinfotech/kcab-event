@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import {SelectProps, Tooltip} from 'antd';
 import {Control, Controller} from 'react-hook-form';
-import CustomSelect from '@component/CustomSelect';
+import CustomSelect from '@component/select/CustomSelect';
 
 interface CustomFormSelectProps extends SelectProps {
     name:string;

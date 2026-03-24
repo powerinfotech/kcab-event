@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Radio, Select } from 'antd';
-import CustomTreeSelect from '@component/CustomTreeSelect';
-import CustomSwitch from '@component/CustomSwitch';
-import CustomSelect from '@component/CustomSelect';
-import CustomMultiSelect from '@component/CustomMultiSelect';
-import CustomAutoComplete from '@component/CustomAutoComplete';
-import CustomRadioGroup from '@component/CustomRadioGroup';
-import CustomCheckbox from '@component/CustomCheckbox';
+import CustomTreeSelect from '@component/select/CustomTreeSelect';
+import CustomSwitch from '@component/select/CustomSwitch';
+import CustomSelect from '@component/select/CustomSelect';
+import CustomMultiSelect from '@component/select/CustomMultiSelect';
+import CustomAutoComplete from '@component/input/CustomAutoComplete';
+import CustomRadioGroup from '@component/select/CustomRadioGroup';
+import CustomCheckbox from '@component/select/CustomCheckbox';
 import { GuideSection, GuideDemoBox, GuideStatusRow, GuideStatusItem } from './GuideSection';
 
 const selectOptions = [

@@ -1,5 +1,12 @@
 import React from 'react';
-import { Tag, Badge, Timeline, Statistic, Card, Descriptions, Tree } from 'antd';
+import CustomTable from '@component/display/CustomTable';
+import CustomTag from '@component/display/CustomTag';
+import CustomBadge from '@component/display/CustomBadge';
+import CustomTimeline from '@component/display/CustomTimeline';
+import CustomStatistic from '@component/display/CustomStatistic';
+import CustomCard from '@component/display/CustomCard';
+import CustomDescriptions, { CustomDescriptionsItem } from '@component/display/CustomDescriptions';
+import CustomDirectoryTree from '@component/display/CustomDirectoryTree';
 import {
   CheckCircleOutlined,
   ClockCircleOutlined,
@@ -8,7 +15,6 @@ import {
   ArrowUpOutlined,
   ArrowDownOutlined,
 } from '@ant-design/icons';
-import CustomTable from '@component/CustomTable';
 import { GuideSection, GuideDemoBox } from './GuideSection';
 
 const tableColumns = [
@@ -18,7 +24,7 @@ const tableColumns = [
   { title: '직급', dataIndex: 'position', key: 'position', width: '12%', align: 'center' as const },
   { title: '이메일', dataIndex: 'email', key: 'email', width: '25%' },
   { title: '상태', dataIndex: 'status', key: 'status', width: '10%', align: 'center' as const,
-    render: (val: string) => <Tag color={val === '활성' ? 'green' : 'default'}>{val}</Tag>,
+    render: (val: string) => <CustomTag color={val === '활성' ? 'green' : 'default'}>{val}</CustomTag>,
   },
   { title: '등록일', dataIndex: 'regDate', key: 'regDate', width: '13%', align: 'center' as const },
 ];
@@ -81,7 +87,7 @@ const DataDisplayGuide = () => {
 
       {/* TreeGrid */}
       <GuideDemoBox title="TreeGrid / Tree (트리형)">
-        <Tree.DirectoryTree
+        <CustomDirectoryTree
           showLine
           defaultExpandAll
           treeData={treeData}
@@ -91,34 +97,34 @@ const DataDisplayGuide = () => {
       {/* Card / CardList */}
       <GuideDemoBox title="Card / CardList (카드형 목록)">
         <div className="guide-card-row">
-          <Card title="사용자 현황" extra={<a href="#">더보기</a>}>
+          <CustomCard title="사용자 현황" extra={<a href="#">더보기</a>}>
             <p>전체 사용자: 1,234명</p>
             <p>활성 사용자: 1,100명</p>
-          </Card>
-          <Card title="시스템 상태" extra={<Badge status="success" text="정상" />}>
+          </CustomCard>
+          <CustomCard title="시스템 상태" extra={<CustomBadge status="success" text="정상" />}>
             <p>CPU: 45%</p>
             <p>Memory: 62%</p>
-          </Card>
-          <Card title="최근 공지" hoverable>
+          </CustomCard>
+          <CustomCard title="최근 공지" hoverable>
             <p>시스템 정기 점검 안내</p>
             <p>2024-03-20 예정</p>
-          </Card>
+          </CustomCard>
         </div>
       </GuideDemoBox>
 
       {/* DescriptionList */}
       <GuideDemoBox title="DescriptionList (상세 정보)">
-        <Descriptions bordered column={2}>
-          <Descriptions.Item label="이름">홍길동</Descriptions.Item>
-          <Descriptions.Item label="부서">개발팀</Descriptions.Item>
-          <Descriptions.Item label="직급">과장</Descriptions.Item>
-          <Descriptions.Item label="이메일">hong@example.com</Descriptions.Item>
-          <Descriptions.Item label="전화번호">010-1234-5678</Descriptions.Item>
-          <Descriptions.Item label="입사일">2020-03-15</Descriptions.Item>
-          <Descriptions.Item label="비고" span={2}>
+        <CustomDescriptions bordered column={2}>
+          <CustomDescriptionsItem label="이름">홍길동</CustomDescriptionsItem>
+          <CustomDescriptionsItem label="부서">개발팀</CustomDescriptionsItem>
+          <CustomDescriptionsItem label="직급">과장</CustomDescriptionsItem>
+          <CustomDescriptionsItem label="이메일">hong@example.com</CustomDescriptionsItem>
+          <CustomDescriptionsItem label="전화번호">010-1234-5678</CustomDescriptionsItem>
+          <CustomDescriptionsItem label="입사일">2020-03-15</CustomDescriptionsItem>
+          <CustomDescriptionsItem label="비고" span={2}>
             시스템 관리자 권한 보유
-          </Descriptions.Item>
-        </Descriptions>
+          </CustomDescriptionsItem>
+        </CustomDescriptions>
       </GuideDemoBox>
 
       {/* Tag / Badge */}
@@ -126,23 +132,23 @@ const DataDisplayGuide = () => {
         <div className="guide-sub-section">
           <h5>Tag</h5>
           <div className="guide-demo-row">
-            <Tag>기본</Tag>
-            <Tag color="success" icon={<CheckCircleOutlined />}>완료</Tag>
-            <Tag color="processing" icon={<SyncOutlined spin />}>진행중</Tag>
-            <Tag color="warning" icon={<ClockCircleOutlined />}>대기</Tag>
-            <Tag color="error" icon={<CloseCircleOutlined />}>오류</Tag>
-            <Tag color="#FFDD00">커스텀</Tag>
+            <CustomTag>기본</CustomTag>
+            <CustomTag color="success" icon={<CheckCircleOutlined />}>완료</CustomTag>
+            <CustomTag color="processing" icon={<SyncOutlined spin />}>진행중</CustomTag>
+            <CustomTag color="warning" icon={<ClockCircleOutlined />}>대기</CustomTag>
+            <CustomTag color="error" icon={<CloseCircleOutlined />}>오류</CustomTag>
+            <CustomTag color="#FFDD00">커스텀</CustomTag>
           </div>
         </div>
         <div className="guide-sub-section">
           <h5>Badge</h5>
           <div className="guide-demo-row">
-            <Badge count={5}><div className="guide-badge-placeholder">알림</div></Badge>
-            <Badge count={99}><div className="guide-badge-placeholder">메시지</div></Badge>
-            <Badge dot><div className="guide-badge-placeholder">업데이트</div></Badge>
-            <Badge status="success" text="성공" />
-            <Badge status="error" text="실패" />
-            <Badge status="processing" text="처리중" />
+            <CustomBadge count={5}><div className="guide-badge-placeholder">알림</div></CustomBadge>
+            <CustomBadge count={99}><div className="guide-badge-placeholder">메시지</div></CustomBadge>
+            <CustomBadge dot><div className="guide-badge-placeholder">업데이트</div></CustomBadge>
+            <CustomBadge status="success" text="성공" />
+            <CustomBadge status="error" text="실패" />
+            <CustomBadge status="processing" text="처리중" />
           </div>
         </div>
       </GuideDemoBox>
@@ -150,7 +156,7 @@ const DataDisplayGuide = () => {
       {/* Timeline */}
       <GuideDemoBox title="Timeline (이력/타임라인)">
         <div className="guide-timeline-wrap">
-          <Timeline
+          <CustomTimeline
             items={[
               { color: 'green', children: '시스템 배포 완료 (2024-03-20 14:00)' },
               { color: 'blue', children: '테스트 승인 (2024-03-19 10:30)' },
@@ -166,16 +172,16 @@ const DataDisplayGuide = () => {
       <GuideDemoBox title="Statistic (숫자 통계 카드)">
         <div className="guide-stat-row">
           <div>
-            <Statistic title="전체 사용자" value={1234} />
+            <CustomStatistic title="전체 사용자" value={1234} />
           </div>
           <div>
-            <Statistic title="금일 접속자" value={89} prefix={<ArrowUpOutlined />} valueStyle={{ color: '#3f8600' }} />
+            <CustomStatistic title="금일 접속자" value={89} prefix={<ArrowUpOutlined />} valueStyle={{ color: '#3f8600' }} />
           </div>
           <div>
-            <Statistic title="오류 건수" value={3} prefix={<ArrowDownOutlined />} valueStyle={{ color: '#cf1322' }} />
+            <CustomStatistic title="오류 건수" value={3} prefix={<ArrowDownOutlined />} valueStyle={{ color: '#cf1322' }} />
           </div>
           <div>
-            <Statistic title="처리율" value={93.5} suffix="%" precision={1} />
+            <CustomStatistic title="처리율" value={93.5} suffix="%" precision={1} />
           </div>
         </div>
       </GuideDemoBox>

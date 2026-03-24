@@ -1,10 +1,10 @@
-import CustomButton from '@component/CustomButton';
+import CustomButton from '@component/button/CustomButton';
 import React, {useEffect, useRef, useState} from 'react';
 import {ColumnsType} from 'antd/es/table';
-import CustomTable, {IUD_COLUMN} from '@component/CustomTable';
-import CustomInput from '@component/CustomInput';
-import CustomCheckbox from '@component/CustomCheckbox';
-import CustomDatePicker from '@component/CustomDatePicker';
+import CustomTable, {IUD_COLUMN} from '@component/display/CustomTable';
+import CustomInput from '@component/input/CustomInput';
+import CustomCheckbox from '@component/select/CustomCheckbox';
+import CustomDatePicker from '@component/date/CustomDatePicker';
 import {HttpStatusCode} from 'axios';
 import {message} from 'antd';
 import IconTitle from '@icon/IconTitle';
@@ -17,7 +17,7 @@ import {useMessage} from '@hook/useMessage';
 import {usePageHandlers} from '@hook/usePageHandlers';
 import dayjs from 'dayjs';
 import {applyDataChange, applyDeleteRows} from '@util/dataSourceUtils';
-import EditableFormCell from '@component/EditableFormCell';
+import EditableFormCell from '@component/special/EditableFormCell';
 
 const AuthManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menuInfo?: any; handlersRef?: React.MutableRefObject<PageButtonHandlers>}) => {
     const {

@@ -1,4 +1,4 @@
-import CustomModal, {CustomModalProps} from '@component/CustomModal';
+import CustomModal, {CustomModalProps} from '@component/feedback/CustomModal';
 import React, {useEffect, useRef, useState} from 'react';
 import {useForm} from 'react-hook-form';
 import CustomSaveFormInput from '@component/form/CustomSaveFormInput';

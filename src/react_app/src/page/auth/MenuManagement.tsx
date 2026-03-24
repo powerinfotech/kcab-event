@@ -1,6 +1,6 @@
 import {Tree} from 'antd';
 import React from 'react';
-import CustomButton from '@component/CustomButton';
+import CustomButton from '@component/button/CustomButton';
 import IconTitle from '@icon/IconTitle';
 import {useCmCode} from '@hook/useCmCode';
 import CustomValidFormInput from '@component/form/CustomValidFormInput';

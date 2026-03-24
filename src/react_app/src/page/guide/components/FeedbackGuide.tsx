@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
-import { Drawer, Modal, notification, Alert, Skeleton, Progress, message } from 'antd';
+import { Modal, notification, message } from 'antd';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
-import CustomButton from '@component/CustomButton';
-import CustomModal from '@component/CustomModal';
+import CustomButton from '@component/button/CustomButton';
+import CustomModal from '@component/feedback/CustomModal';
+import CustomDrawer from '@component/feedback/CustomDrawer';
+import CustomAlert from '@component/feedback/CustomAlert';
+import CustomSkeleton from '@component/feedback/CustomSkeleton';
+import CustomProgress from '@component/feedback/CustomProgress';
 import { GuideSection, GuideDemoBox, GuideStatusRow, GuideStatusItem } from './GuideSection';
 
 const { confirm } = Modal;
@@ -50,7 +54,7 @@ const FeedbackGuide = () => {
         <div className="guide-feedback-row">
           <CustomButton onClick={() => setDrawerOpen(true)}>Drawer 열기</CustomButton>
         </div>
-        <Drawer
+        <CustomDrawer
           title="상세 정보"
           open={drawerOpen}
           onClose={() => setDrawerOpen(false)}
@@ -58,7 +62,7 @@ const FeedbackGuide = () => {
         >
           <p>Drawer 내용입니다. 우측에서 슬라이드되는 패널입니다.</p>
           <p>상세 정보나 설정 등을 표시할 때 사용합니다.</p>
-        </Drawer>
+        </CustomDrawer>
       </GuideDemoBox>
 
       {/* Toast / Notification */}
@@ -102,11 +106,11 @@ const FeedbackGuide = () => {
       {/* Alert */}
       <GuideDemoBox title="Alert (인라인 경고/안내)">
         <div className="guide-demo-content">
-          <Alert message="정보 메시지입니다." type="info" showIcon />
-          <Alert message="성공 메시지입니다." type="success" showIcon />
-          <Alert message="경고 메시지입니다." type="warning" showIcon />
-          <Alert message="오류 메시지입니다." type="error" showIcon />
-          <Alert
+          <CustomAlert message="정보 메시지입니다." type="info" showIcon />
+          <CustomAlert message="성공 메시지입니다." type="success" showIcon />
+          <CustomAlert message="경고 메시지입니다." type="warning" showIcon />
+          <CustomAlert message="오류 메시지입니다." type="error" showIcon />
+          <CustomAlert
             message="닫기 가능한 알림"
             description="이 알림은 사용자가 닫을 수 있습니다."
             type="info"
@@ -121,12 +125,12 @@ const FeedbackGuide = () => {
         <GuideStatusRow>
           <GuideStatusItem label="Skeleton">
             <div className="guide-skeleton-box">
-              <Skeleton active />
+              <CustomSkeleton active />
             </div>
           </GuideStatusItem>
           <GuideStatusItem label="Skeleton (아바타)">
             <div className="guide-skeleton-box">
-              <Skeleton avatar active paragraph={{ rows: 2 }} />
+              <CustomSkeleton avatar active paragraph={{ rows: 2 }} />
             </div>
           </GuideStatusItem>
         </GuideStatusRow>
@@ -135,11 +139,11 @@ const FeedbackGuide = () => {
       {/* ProgressBar */}
       <GuideDemoBox title="ProgressBar (진행률 표시)">
         <div className="guide-progress-box">
-          <Progress percent={30} />
-          <Progress percent={70} status="active" />
-          <Progress percent={100} />
-          <Progress percent={50} status="exception" />
-          <Progress type="circle" percent={75} size={80} />
+          <CustomProgress percent={30} />
+          <CustomProgress percent={70} status="active" />
+          <CustomProgress percent={100} />
+          <CustomProgress percent={50} status="exception" />
+          <CustomProgress type="circle" percent={75} size={80} />
         </div>
       </GuideDemoBox>
     </GuideSection>

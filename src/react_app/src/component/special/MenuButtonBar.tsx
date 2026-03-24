@@ -1,5 +1,5 @@
 import React from 'react';
-import CustomButton from '@component/CustomButton';
+import CustomButton from '@component/button/CustomButton';
 import IconBtnRefresh from '@icon/IconBtnRefresh';
 import IconBtnSearch from '@icon/IconBtnSearch';
 import {MenuBtnDetail, PageButtonHandlers} from '@interface/common';

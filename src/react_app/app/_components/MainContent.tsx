@@ -14,7 +14,7 @@ import { menuInfoAtom } from '@atom/menuInfoAtom';
 import { showErrorPageAtom } from '@atom/showErrorPageAtom';
 import { callGetMenuBtnList } from '@api/CommonApi';
 import { HttpStatusCode } from 'axios';
-import MenuButtonBar from '@component/MenuButtonBar';
+import MenuButtonBar from '@component/special/MenuButtonBar';
 
 function getDefaultMenuPath(menuList: MenuInfo[]): string | null {
   const level2Menu = menuList.filter((item) => item.level === 2);

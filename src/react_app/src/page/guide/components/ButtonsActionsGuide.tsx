@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Space, Dropdown, FloatButton } from 'antd';
 import {
   SearchOutlined,
   PlusOutlined,
@@ -11,7 +10,10 @@ import {
   UpOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
-import CustomButton from '@component/CustomButton';
+import CustomButton from '@component/button/CustomButton';
+import CustomSpace from '@component/button/CustomSpace';
+import CustomDropdown, { CustomDropdownButton } from '@component/button/CustomDropdown';
+import CustomFloatButton, { CustomFloatButtonGroup } from '@component/button/CustomFloatButton';
 import { GuideSection, GuideDemoBox, GuideStatusRow, GuideStatusItem } from './GuideSection';
 
 const dropdownItems: MenuProps['items'] = [
@@ -79,12 +81,12 @@ const ButtonsActionsGuide = () => {
       {/* ButtonGroup */}
       <GuideDemoBox title="ButtonGroup (버튼 묶음)">
         <div className="guide-demo-row">
-          <Space>
+          <CustomSpace>
             <CustomButton icon={<SearchOutlined />}>조회</CustomButton>
             <CustomButton icon={<PlusOutlined />}>추가</CustomButton>
             <CustomButton icon={<DeleteOutlined />}>삭제</CustomButton>
             <CustomButton type="primary" icon={<SaveOutlined />}>저장</CustomButton>
-          </Space>
+          </CustomSpace>
         </div>
       </GuideDemoBox>
 
@@ -102,14 +104,14 @@ const ButtonsActionsGuide = () => {
       {/* DropdownButton */}
       <GuideDemoBox title="DropdownButton (드롭다운 메뉴 버튼)">
         <div className="guide-demo-row">
-          <Dropdown menu={{ items: dropdownItems }}>
+          <CustomDropdown menu={{ items: dropdownItems }}>
             <CustomButton>
               다운로드 <DownOutlined />
             </CustomButton>
-          </Dropdown>
-          <Dropdown.Button menu={{ items: dropdownItems }}>
+          </CustomDropdown>
+          <CustomDropdownButton menu={{ items: dropdownItems }}>
             내보내기
-          </Dropdown.Button>
+          </CustomDropdownButton>
         </div>
       </GuideDemoBox>
 
@@ -121,10 +123,10 @@ const ButtonsActionsGuide = () => {
           </CustomButton>
         </div>
         {showFab && (
-          <FloatButton.Group shape="square" trigger="hover" icon={<UpOutlined />}>
-            <FloatButton icon={<QuestionCircleOutlined />} tooltip="도움말" />
-            <FloatButton icon={<PlusOutlined />} tooltip="추가" />
-          </FloatButton.Group>
+          <CustomFloatButtonGroup shape="square" trigger="hover" icon={<UpOutlined />}>
+            <CustomFloatButton icon={<QuestionCircleOutlined />} tooltip="도움말" />
+            <CustomFloatButton icon={<PlusOutlined />} tooltip="추가" />
+          </CustomFloatButtonGroup>
         )}
       </GuideDemoBox>
     </GuideSection>

@@ -3,7 +3,7 @@ import {User} from '@interface/master/UserManagement';
 import {ApiResponse, CommonCodeMap, IudType, MenuBtnDetail} from '@interface/common';
 import {MenuInfo} from '@interface/auth/MenuManagement';
 import {Role} from '@interface/auth/RoleManagement';
-import {FileDetailType} from "@component/CustomFile";
+import {FileDetailType} from "@component/upload/CustomFile";
 import {RcFile} from "antd/es/upload/interface";
 
 

@@ -1,9 +1,9 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {useRouter} from 'next/navigation';
 import {ColumnsType} from 'antd/es/table';
-import CustomTable, {IUD_COLUMN} from '@component/CustomTable';
-import CustomInput from '@component/CustomInput';
-import CustomCheckbox from '@component/CustomCheckbox';
+import CustomTable, {IUD_COLUMN} from '@component/display/CustomTable';
+import CustomInput from '@component/input/CustomInput';
+import CustomCheckbox from '@component/select/CustomCheckbox';
 import {HttpStatusCode} from 'axios';
 import {message} from 'antd';
 import IconTitle from '@icon/IconTitle';
@@ -15,7 +15,7 @@ import {useMessage} from '@hook/useMessage';
 import {usePageHandlers} from '@hook/usePageHandlers';
 import {applyDataChange} from '@util/dataSourceUtils';
 import {ALPHANUMERIC_REGEXP} from '@util/validationPatterns';
-import EditableFormCell from '@component/EditableFormCell';
+import EditableFormCell from '@component/special/EditableFormCell';
 
 const CommonGroupCodeManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menuInfo?: any; handlersRef?: React.MutableRefObject<PageButtonHandlers>}) => {
     const router = useRouter();

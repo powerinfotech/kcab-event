@@ -1,6 +1,6 @@
 import {useEffect} from 'react';
 import IconRepair from '@icon/IconRepair';
-import CustomButton from '@component/CustomButton';
+import CustomButton from '@component/button/CustomButton';
 
 const UnderConstruction = ({onChange}:{onChange:(flag:boolean) => void}) => {
 

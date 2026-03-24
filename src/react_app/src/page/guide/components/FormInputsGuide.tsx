@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
-import { Input, InputNumber, DatePicker, TimePicker } from 'antd';
 import locale from 'antd/es/date-picker/locale/ko_KR';
-import CustomInput from '@component/CustomInput';
-import CustomDatePicker from '@component/CustomDatePicker';
-import CustomRangePicker from '@component/CustomRangePicker';
-import CustomDateRangePicker from '@component/CustomDateRangePicker';
-import CustomMaskedInput from '@component/CustomMaskedInput';
+import CustomInput from '@component/input/CustomInput';
+import CustomTextArea from '@component/input/CustomTextArea';
+import CustomInputNumber from '@component/input/CustomInputNumber';
+import CustomPassword from '@component/input/CustomPassword';
+import CustomDatePicker from '@component/date/CustomDatePicker';
+import CustomRangePicker from '@component/date/CustomRangePicker';
+import CustomDateRangePicker from '@component/date/CustomDateRangePicker';
+import CustomTimePicker from '@component/date/CustomTimePicker';
+import CustomMaskedInput from '@component/input/CustomMaskedInput';
 import { GuideSection, GuideDemoBox, GuideStatusRow, GuideStatusItem } from './GuideSection';
-
-const { TextArea } = Input;
 
 const FormInputsGuide = () => {
   const [textValue, setTextValue] = useState('텍스트 입력');
@@ -47,16 +48,16 @@ const FormInputsGuide = () => {
       <GuideDemoBox title="TextArea (다중 줄 텍스트)">
         <GuideStatusRow>
           <GuideStatusItem label="enabled">
-            <TextArea rows={4} value={textAreaValue} onChange={(e) => setTextAreaValue(e.target.value)} />
+            <CustomTextArea rows={4} value={textAreaValue} onChange={(e) => setTextAreaValue(e.target.value)} />
           </GuideStatusItem>
           <GuideStatusItem label="disabled">
-            <TextArea rows={4} value={textAreaValue} disabled />
+            <CustomTextArea rows={4} value={textAreaValue} disabled />
           </GuideStatusItem>
           <GuideStatusItem label="readOnly">
-            <TextArea rows={4} value={textAreaValue} readOnly />
+            <CustomTextArea rows={4} value={textAreaValue} readOnly />
           </GuideStatusItem>
           <GuideStatusItem label="placeholder">
-            <TextArea rows={4} placeholder="내용을 입력해주세요." />
+            <CustomTextArea rows={4} placeholder="내용을 입력해주세요." />
           </GuideStatusItem>
         </GuideStatusRow>
       </GuideDemoBox>
@@ -65,7 +66,7 @@ const FormInputsGuide = () => {
       <GuideDemoBox title="NumberInput (숫자 전용)">
         <GuideStatusRow>
           <GuideStatusItem label="enabled (천단위 콤마)">
-            <InputNumber
+            <CustomInputNumber
               value={numberValue}
               onChange={(v) => setNumberValue(v)}
               formatter={(v) => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
@@ -73,10 +74,10 @@ const FormInputsGuide = () => {
             />
           </GuideStatusItem>
           <GuideStatusItem label="disabled">
-            <InputNumber value={numberValue} disabled formatter={(v) => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} />
+            <CustomInputNumber value={numberValue} disabled formatter={(v) => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} />
           </GuideStatusItem>
           <GuideStatusItem label="min/max 설정">
-            <InputNumber min={0} max={100} defaultValue={50} />
+            <CustomInputNumber min={0} max={100} defaultValue={50} />
           </GuideStatusItem>
         </GuideStatusRow>
       </GuideDemoBox>
@@ -85,10 +86,10 @@ const FormInputsGuide = () => {
       <GuideDemoBox title="PasswordInput (비밀번호)">
         <GuideStatusRow>
           <GuideStatusItem label="enabled">
-            <Input.Password placeholder="비밀번호를 입력하세요" />
+            <CustomPassword placeholder="비밀번호를 입력하세요" />
           </GuideStatusItem>
           <GuideStatusItem label="disabled">
-            <Input.Password value="password123" disabled />
+            <CustomPassword value="password123" disabled />
           </GuideStatusItem>
         </GuideStatusRow>
       </GuideDemoBox>
@@ -142,10 +143,10 @@ const FormInputsGuide = () => {
       <GuideDemoBox title="TimePicker (시간 선택)">
         <GuideStatusRow>
           <GuideStatusItem label="enabled">
-            <TimePicker locale={locale} placeholder="시간 선택" />
+            <CustomTimePicker placeholder="시간 선택" />
           </GuideStatusItem>
           <GuideStatusItem label="disabled">
-            <TimePicker locale={locale} disabled allowEmpty />
+            <CustomTimePicker disabled allowEmpty />
           </GuideStatusItem>
         </GuideStatusRow>
       </GuideDemoBox>
@@ -154,10 +155,10 @@ const FormInputsGuide = () => {
       <GuideDemoBox title="MonthPicker (월 선택)">
         <GuideStatusRow>
           <GuideStatusItem label="enabled">
-            <DatePicker picker="month" locale={locale} placeholder="월 선택" />
+            <CustomDatePicker picker="month" locale={locale} placeholder="월 선택" />
           </GuideStatusItem>
           <GuideStatusItem label="disabled">
-            <DatePicker picker="month" locale={locale} disabled allowEmpty />
+            <CustomDatePicker picker="month" locale={locale} disabled allowEmpty />
           </GuideStatusItem>
         </GuideStatusRow>
       </GuideDemoBox>

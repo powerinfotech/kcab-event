@@ -2,7 +2,7 @@ import {Modal} from 'antd';
 import {ModalProps} from 'antd/es/modal/interface';
 import DaumPostcode, {Address} from "react-daum-postcode";
 import {Search, State} from "react-daum-postcode/lib/loadPostcode";
-import CustomButton from "@component/CustomButton";
+import CustomButton from "@component/button/CustomButton";
 import React from "react";
 
 export interface CustomAddressSearchModalProps extends ModalProps{

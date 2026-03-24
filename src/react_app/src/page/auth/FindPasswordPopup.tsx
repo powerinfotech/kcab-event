@@ -6,7 +6,7 @@ import {HttpStatusCode} from "axios";
 import { useForm} from "react-hook-form";
 
 import CustomValidFormInput from '@component/form/CustomValidFormInput';
-import CustomModal, {CustomModalProps} from "@component/CustomModal";
+import CustomModal, {CustomModalProps} from "@component/feedback/CustomModal";
 import {useMessage} from '@hook/useMessage';
 import {ModalProps} from "antd/es/modal/interface";
 import {ChangePassword, findUserInfo} from "@interface/auth/FindUser";

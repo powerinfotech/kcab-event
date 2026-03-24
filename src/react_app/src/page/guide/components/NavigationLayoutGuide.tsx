@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
-import { Breadcrumb, Tabs, Steps, Pagination } from 'antd';
+import CustomBreadcrumb from '@component/navigation/CustomBreadcrumb';
+import CustomTabs from '@component/navigation/CustomTabs';
+import CustomSteps from '@component/navigation/CustomSteps';
+import CustomPagination from '@component/navigation/CustomPagination';
 import { HomeOutlined, UserOutlined, SettingOutlined } from '@ant-design/icons';
 import { GuideSection, GuideDemoBox, GuideStatusRow, GuideStatusItem } from './GuideSection';
 
@@ -12,7 +15,7 @@ const NavigationLayoutGuide = () => {
       {/* Breadcrumb */}
       <GuideDemoBox title="Breadcrumb (경로 표시)">
         <div className="guide-nav-demo">
-          <Breadcrumb
+          <CustomBreadcrumb
             items={[
               { title: <><HomeOutlined /> 홈</> },
               { title: '시스템관리' },
@@ -26,7 +29,7 @@ const NavigationLayoutGuide = () => {
       <GuideDemoBox title="Tabs (탭 전환)">
         <div className="guide-sub-section">
           <h5>기본 탭</h5>
-          <Tabs
+          <CustomTabs
             defaultActiveKey="1"
             items={[
               { key: '1', label: '탭 메뉴 01', children: '탭 메뉴 01 내용' },
@@ -37,7 +40,7 @@ const NavigationLayoutGuide = () => {
         </div>
         <div className="guide-sub-section">
           <h5>카드형 탭</h5>
-          <Tabs
+          <CustomTabs
             type="card"
             items={[
               { key: '1', label: '탭 메뉴 01', children: '탭 메뉴 01 내용' },
@@ -47,7 +50,7 @@ const NavigationLayoutGuide = () => {
         </div>
         <div className="guide-sub-section">
           <h5>비활성화 탭</h5>
-          <Tabs
+          <CustomTabs
             items={[
               { key: '1', label: '탭 메뉴 01', children: '활성화된 탭' },
               { key: '2', label: '탭 메뉴 02', disabled: true },
@@ -58,7 +61,7 @@ const NavigationLayoutGuide = () => {
 
       {/* Stepper / Wizard */}
       <GuideDemoBox title="Stepper / Wizard (단계별 진행)">
-        <Steps
+        <CustomSteps
           current={currentStep}
           onChange={setCurrentStep}
           items={[
@@ -77,7 +80,7 @@ const NavigationLayoutGuide = () => {
       <GuideDemoBox title="Pagination (페이지네이션)">
         <GuideStatusRow>
           <GuideStatusItem label="기본">
-            <Pagination
+            <CustomPagination
               current={currentPage}
               onChange={setCurrentPage}
               total={100}
@@ -87,10 +90,10 @@ const NavigationLayoutGuide = () => {
         </GuideStatusRow>
         <GuideStatusRow>
           <GuideStatusItem label="간소화">
-            <Pagination simple defaultCurrent={1} total={50} />
+            <CustomPagination simple defaultCurrent={1} total={50} />
           </GuideStatusItem>
           <GuideStatusItem label="disabled">
-            <Pagination defaultCurrent={1} total={50} disabled />
+            <CustomPagination defaultCurrent={1} total={50} disabled />
           </GuideStatusItem>
         </GuideStatusRow>
       </GuideDemoBox>

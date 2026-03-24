@@ -1,6 +1,6 @@
 import {useEffect} from 'react';
 import IconWarning from '@icon/IconWarning';
-import CustomButton from '@component/CustomButton';
+import CustomButton from '@component/button/CustomButton';
 
 const ErrorPage403 = ({onChange}:{onChange:(flag:boolean) => void}) => {
 

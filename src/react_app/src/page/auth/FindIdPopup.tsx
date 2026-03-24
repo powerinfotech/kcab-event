@@ -3,7 +3,7 @@ import {Button, Input, message, Modal} from "antd";
 import  {HttpStatusCode} from "axios";
 import {ModalProps} from "antd/es/modal/interface";
 import {useForm} from "react-hook-form";
-import CustomModal from "@component/CustomModal";
+import CustomModal from "@component/feedback/CustomModal";
 import {useMessage} from "@hook/useMessage";
 import CustomValidFormInput from "@component/form/CustomValidFormInput";
 import {getUserId} from "@api/auth/FindUserApi";

@@ -1,5 +1,5 @@
 import React from 'react';
-import CustomInput from '@component/CustomInput';
+import CustomInput from '@component/input/CustomInput';
 import IconTitle from '@icon/IconTitle';
 import {BtnInfo} from '@interface/auth/MenuManagement';
 import {MenuBtnState} from '../hooks/useMenuManagement';
