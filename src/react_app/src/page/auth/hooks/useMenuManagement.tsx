@@ -406,6 +406,7 @@ export function useMenuManagement() {
         const newItems = dataSource.filter(v => v.iudType === IudType.I);
         if (treeData?.length && newItems.length > 0) {
             const keysToSelect = newItems.map(v => getTreeKey(v, dataSource));
+            setRowSeq(keysToSelect);
             onSelectChange(keysToSelect);
             setSelectable(true);
         }
