@@ -40,8 +40,10 @@ const CommonGroupCodeManagement = ({handlersRef}: {onChange?: (flag: boolean) =>
                         rowSelection={{
                             selectedRowKeys: mgmt.selectedRowKeys,
                             onChange: (keys: React.Key[]) => mgmt.setSelectedRowKeys(keys),
-                            renderCell: (_value: any, record: any, _index: number, originNode: React.ReactNode) =>
-                                record.rgstUserSeq ? null : originNode,
+                            getCheckboxProps: (record: any) => ({
+                                disabled: !!record.rgstUserSeq,
+                                style: record.rgstUserSeq ? { display: 'none' } : undefined,
+                            }),
                         }}
                         rowKey={'comGrpCdSeq'}
                         pagination={false}
