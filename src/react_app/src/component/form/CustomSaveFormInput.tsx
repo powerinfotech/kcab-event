@@ -11,11 +11,13 @@ interface CustomFormInputProps extends InputProps {
     onChangeValue?:(v:string)=>void;
     singleRow?:boolean;
     isNoTitle?: boolean;
+    displayFormatter?:(v:string)=>string;
     [key: string]: any;
 }
 
-const CustomSaveFormInput = forwardRef<any, CustomFormInputProps>(({ name, defaultValue, control, rules, onChangeValue, singleRow = false, regExp, ...props }, ref) => {
+const CustomSaveFormInput = forwardRef<any, CustomFormInputProps>(({ name, defaultValue, control, rules, onChangeValue, singleRow = false, regExp, displayFormatter, ...props }, ref) => {
     const [focus, setFocus] = useState<boolean>(false);
+    const [inputFocused, setInputFocused] = useState<boolean>(false);
     const [validError, setValidError] = useState<boolean>(false);
 
     const handleChange = (field: any, v: React.ChangeEvent<HTMLInputElement>) => {
@@ -53,18 +55,22 @@ const CustomSaveFormInput = forwardRef<any, CustomFormInputProps>(({ name, defau
                             <div className={(fieldState.error !== undefined || validError) ? 'tooltip error' : ''}>
                                 <Input
                                     {...props}
+                                    {...((!inputFocused && displayFormatter) ? {maxLength: undefined} : {})}
                                     ref={ref}
                                     id={field.name}
                                     name={field.name}
-                                    value={field.value ?? ''}
+                                    value={(!inputFocused && displayFormatter) ? displayFormatter(field.value ?? '') : (field.value ?? '')}
                                     onChange={(v) => handleChange(field, v)}
                                     onBlur={(v) => {
-                                        field.onChange(v);
-                                        onChangeValue && onChangeValue(v.target.value);
+                                        setInputFocused(false);
+                                        if (!displayFormatter) {
+                                            field.onChange(v);
+                                            onChangeValue && onChangeValue(v.target.value);
+                                        }
                                     }}
                                     onMouseEnter={() => setFocus(true)}
                                     onMouseLeave={() => { setFocus(false); setValidError(false); }}
-                                    onFocus={(e) => e.target.select()}
+                                    onFocus={(e) => { setInputFocused(true); e.target.select(); }}
                                 />
                             </div>
                         </Tooltip>

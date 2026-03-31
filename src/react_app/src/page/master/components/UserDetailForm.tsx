@@ -123,6 +123,7 @@ const UserDetailForm: React.FC<UserDetailFormProps> = ({
                             disabled={!isEditable}
                             maxLength={11}
                             regExp={{value: /^[0-9]*$/, message: '휴대폰번호는 숫자만 입력가능합니다.'}}
+                            displayFormatter={(v: string) => v.length === 11 ? v.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3') : v}
                             {...register('hpNo', {
                                 required: 'H.P 번호는 필수입력입니다.',
                                 pattern: {value: /^[0-9]*$/, message: '휴대폰번호는 숫자만 입력가능합니다.'},
