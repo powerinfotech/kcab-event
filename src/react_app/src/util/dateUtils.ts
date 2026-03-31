@@ -1,3 +1,22 @@
+/**
+ * dateUtils - 현재 날짜 조회 및 월 말일 계산 유틸
+ *
+ * [목적]
+ * 오늘 일자, 이번 달, 이번 년도 등 자주 사용하는 날짜 값을 간편하게 가져오고,
+ * 특정 년월의 마지막 일자를 계산한다. dayjs 기반.
+ *
+ * [사용 방법]
+ * @example
+ * import { getToday, getThisMonth, getThisYear, getLastDay, getLastDate } from '@util/dateUtils';
+ *
+ * getToday()                → '2026-03-31'
+ * getToday('YYYYMMDD')      → '20260331'
+ * getThisMonth()            → '2026-03'
+ * getThisYear()             → '2026'
+ * getLastDay(2026, 2)       → 28
+ * getLastDay(2024, 2)       → 29  (윤년)
+ * getLastDate(2026, 3)      → '2026-03-31'
+ */
 import dayjs from 'dayjs';
 
 /**

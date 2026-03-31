@@ -1,3 +1,26 @@
+/**
+ * dataSourceUtils - 테이블 데이터 상태 변경 유틸 (IUD 패턴)
+ *
+ * [목적]
+ * Ant Design Table의 dataSource(배열 상태)에 대해 단건 수정, 일괄 삭제를 처리한다.
+ * IUD(Insert/Update/Delete) 패턴으로 변경 이력을 추적하여 서버 저장 시 한 번에 전송.
+ *
+ * [IUD 패턴 설명]
+ * - I (Insert) : 클라이언트에서 새로 추가한 행 → 서버에 INSERT
+ * - U (Update) : 기존 행을 수정한 행 → 서버에 UPDATE
+ * - D (Delete) : 삭제 표시한 행 → 서버에 DELETE
+ * - 신규 행(I)을 삭제하면 목록에서 즉시 제거 (서버에 없으므로 DELETE 불필요)
+ *
+ * [사용 방법]
+ * @example
+ * import { applyDataChange, applyDeleteRows } from '@util/dataSourceUtils';
+ *
+ * // 단건 필드 수정 (예: 테이블 셀 편집 시)
+ * applyDataChange(setDataSource, 'userSeq', record, 'userName', '홍길동');
+ *
+ * // 선택한 행 일괄 삭제 (예: 삭제 버튼 클릭 시)
+ * applyDeleteRows(dataSource, setDataSource, selectedKeys, setSelectedKeys, 'userSeq');
+ */
 import React from 'react';
 import {message} from 'antd';
 import {IudType} from '@interface/common';

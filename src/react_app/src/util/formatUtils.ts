@@ -1,3 +1,22 @@
+/**
+ * formatUtils - 데이터 표시용 포맷 변환 유틸
+ *
+ * [목적]
+ * 전화번호, 사업자번호, 금액, 날짜, 파일크기 등
+ * 원본 데이터를 사용자에게 보여줄 형식으로 변환한다.
+ * null/undefined 입력 시 빈 문자열을 반환하여 안전하게 사용 가능.
+ *
+ * [사용 방법]
+ * @example
+ * import { formatPhone, formatCurrency, formatDate } from '@util/formatUtils';
+ *
+ * formatPhone('01012345678')         → '010-1234-5678'
+ * formatBizNo('1234567890')          → '123-45-67890'
+ * formatCurrency(1500000, '원')      → '1,500,000원'
+ * formatDate('2024-01-15')           → '2024-01-15'
+ * formatFileSize(2621440)            → '2.5 MB'
+ * stripNonNumeric('010-1234-5678')   → '01012345678'
+ */
 import dayjs, { Dayjs } from 'dayjs';
 
 /**
