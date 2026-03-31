@@ -107,12 +107,8 @@ const CustomSaveFormInput = forwardRef<any, CustomFormInputProps>(({ name, defau
                                     name={field.name}
                                     value={(!inputFocused && displayFormatter) ? displayFormatter(field.value ?? '') : (field.value ?? '')}
                                     onChange={(v) => handleChange(field, v)}
-                                    onBlur={(v) => {
+                                    onBlur={() => {
                                         setInputFocused(false);
-                                        if (!displayFormatter) {
-                                            field.onChange(v);
-                                            onChangeValue && onChangeValue(v.target.value);
-                                        }
                                     }}
                                     onMouseEnter={() => setFocus(true)}
                                     onMouseLeave={() => { setFocus(false); setValidError(false); }}
