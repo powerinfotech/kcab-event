@@ -20,7 +20,7 @@ export function useCommonGroupCodeManagement() {
     const form = useForm<any>({mode: 'onSubmit'});
     const {register, unregister, control, setValue} = form;
     const {confirm} = useMessage();
-    const tempSeqRef = useRef(-1);
+    const tempSeqRef = useRef(-1); 
 
     const [searchText, setSearchText] = useState('');
     const [dataSource, setDataSource] = useState<ComGrpCdList[]>([]);
