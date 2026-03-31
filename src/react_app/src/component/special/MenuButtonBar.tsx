@@ -1,3 +1,36 @@
+/**
+ * MenuButtonBar - 메뉴 권한 버튼 바 컴포넌트
+ *
+ * [목적]
+ * menuBtnList(API에서 조회한 버튼 권한 목록)를 기반으로 버튼을 동적으로 렌더링한다.
+ * 각 버튼 클릭 시 handlersRef에서 btnFuncCd에 해당하는 핸들러를 호출한다.
+ *
+ * [동작 방식]
+ * 1. menuBtnList가 없거나 비어있으면 null 반환
+ * 2. btnFuncCd를 ICON_MAP으로 조회하여 아이콘 자동 적용
+ *    - cfmInit    → IconBtnRefresh (초기화)
+ *    - cfmSearch  → IconBtnSearch  (조회)
+ * 3. 버튼 클릭 → handlersRef.current[btnFuncCd]?.() 호출
+ *
+ * @param menuBtnList  - API에서 조회한 버튼 권한 목록
+ * @param handlersRef  - 버튼 기능코드(btnFuncCd) → 핸들러 함수 맵 (useRef)
+ *
+ * [사용 방법]
+ * @example
+ * import MenuButtonBar from '@component/special/MenuButtonBar';
+ *
+ * const handlersRef = useRef<PageButtonHandlers>({
+ *   cfmSearch: handleSearch,
+ *   cfmSave:   handleSave,
+ *   cfmDelete: handleDelete,
+ *   cfmInit:   handleReset,
+ * });
+ *
+ * // menuBtnList는 useMenuBtnTree 또는 usePermission으로 조회
+ * const { menuBtnList } = useMenuBtnTree();
+ *
+ * <MenuButtonBar menuBtnList={menuBtnList} handlersRef={handlersRef} />
+ */
 import React from 'react';
 import CustomButton from '@component/button/CustomButton';
 import IconBtnRefresh from '@icon/IconBtnRefresh';
