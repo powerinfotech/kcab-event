@@ -1,3 +1,41 @@
+/**
+ * usePagination - 테이블 페이지네이션 로직 분리 훅
+ *
+ * [목적]
+ * 목록 조회 페이지에서 반복되는 패턴(데이터 조회, 페이지 변경, 로딩 처리)을
+ * 하나의 훅으로 통합한다. API 호출 함수만 전달하면 페이징이 자동 처리된다.
+ *
+ * [사용 방법]
+ * @example
+ * // 1. API 함수 전달하여 훅 생성
+ * const { dataSource, pagination, loading, search, reload, onPageChange } = usePagination(
+ *   (params) => callGetUserList(params),
+ *   { defaultPageSize: 20 }
+ * );
+ *
+ * // 2. 조회 버튼 → search에 검색 조건 전달 (1페이지로 이동)
+ * const handleSearch = () => {
+ *   search({ userName: searchText, statusCd: selectedStatus });
+ * };
+ *
+ * // 3. 저장 후 현재 페이지 재조회
+ * const handleSave = async () => {
+ *   await callSaveUser(data);
+ *   reload();
+ * };
+ *
+ * // 4. 테이블에 연결
+ * <CustomTable
+ *   dataSource={dataSource}
+ *   loading={loading}
+ *   pagination={{
+ *     current: pagination.current,
+ *     pageSize: pagination.pageSize,
+ *     total: pagination.total,
+ *     onChange: onPageChange,
+ *   }}
+ * />
+ */
 import { useState, useCallback, useRef } from 'react';
 import { ApiResponse } from '@interface/common';
 

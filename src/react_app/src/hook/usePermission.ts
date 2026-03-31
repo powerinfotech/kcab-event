@@ -1,3 +1,32 @@
+/**
+ * usePermission - 메뉴 버튼 권한 조회 훅
+ *
+ * [목적]
+ * 현재 활성 탭(메뉴)에 대해 사용자에게 부여된 버튼 권한을 조회한다.
+ * hasButton()으로 특정 버튼의 표시 여부를 간편하게 확인할 수 있다.
+ *
+ * [동작 방식]
+ * 1. 현재 활성 탭의 menuSeq를 자동 감지 (또는 직접 전달)
+ * 2. callGetMenuBtnList API 호출 → 버튼 목록 조회
+ * 3. hasButton(btnFuncCd)로 권한 체크
+ *
+ * [사용 방법]
+ * @example
+ * // 기본 사용 - 현재 활성 탭의 권한 자동 조회
+ * const { hasButton, buttons, loaded } = usePermission();
+ *
+ * // 조건부 버튼 렌더링
+ * {hasButton('cfmSave') && <CustomButton onClick={handleSave}>저장</CustomButton>}
+ * {hasButton('cfmDelete') && <CustomButton onClick={handleDelete}>삭제</CustomButton>}
+ *
+ * // 특정 메뉴 시퀀스로 직접 조회
+ * const { hasButton } = usePermission(menuSeq);
+ *
+ * // 로딩 완료 후 처리
+ * if (loaded && !hasButton('cfmSearch')) {
+ *   message.warning('조회 권한이 없습니다.');
+ * }
+ */
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRecoilValue } from 'recoil';
 import { activeTabKeyAtom, tabListAtom } from '@atom/tabListAtom';
