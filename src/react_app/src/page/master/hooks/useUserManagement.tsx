@@ -142,8 +142,8 @@ export function useUserManagement() {
         return dataSource.find(v => v.userSeq === id);
     };
 
-    const handleSearchList = async () => {
-        if (isChangedDataSource) {
+    const handleSearchList = async (skipConfirm = false) => {
+        if (!skipConfirm && isChangedDataSource) {
             const result = await confirm('저장하지 않은 내용은 초기화 됩니다. 조회 하시겠습니까?');
             if (!result) return;
         }
@@ -236,7 +236,7 @@ export function useUserManagement() {
 
         const result = await callDeleteUser(saveForm.getValues('userSeq'));
         if (result.code === HttpStatusCode.Ok) {
-            handleSearchList();
+            handleSearchList(true);
             setIsRowSelected(false);
         }
     };
