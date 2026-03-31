@@ -1,3 +1,31 @@
+/**
+ * CustomSaveFormCheckbox - react-hook-form 연동 체크박스 폼 컴포넌트 (저장 폼용)
+ *
+ * [목적]
+ * react-hook-form의 Controller를 내장하여 제목(label) + 체크박스 + 유효성 툴팁을 한 번에 렌더링한다.
+ * defaultValue는 true(체크된 상태)로 초기화된다.
+ *
+ * [주요 Props]
+ * @param name           - react-hook-form 필드 이름
+ * @param control        - useForm()의 control 객체
+ * @param onChangeValue  - 체크 상태 변경 시 boolean 값 전달 콜백
+ * @param title          - 필드 제목 레이블 텍스트
+ * @param required       - 필수 여부 표시
+ *
+ * [사용 방법]
+ * @example
+ * import CustomSaveFormCheckbox from '@component/form/CustomSaveFormCheckbox';
+ *
+ * const { control } = useForm({ defaultValues: { agreeYn: false } });
+ *
+ * <CustomSaveFormCheckbox
+ *   name="agreeYn"
+ *   control={control}
+ *   title="이용약관 동의"
+ *   required
+ *   onChangeValue={(checked) => console.log('동의 여부:', checked)}
+ * />
+ */
 import React, {useState} from 'react';
 import {Checkbox, CheckboxProps, Tooltip} from 'antd';
 import {Control, Controller} from 'react-hook-form';

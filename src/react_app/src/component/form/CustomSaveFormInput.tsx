@@ -1,3 +1,49 @@
+/**
+ * CustomSaveFormInput - react-hook-form 연동 텍스트 입력 폼 컴포넌트 (저장 폼용)
+ *
+ * [목적]
+ * react-hook-form의 Controller를 내장하여 제목(label) + 입력 필드 + 유효성 툴팁을 한 번에 렌더링한다.
+ * 저장 폼의 표준 레이아웃(tit 클래스 제목 + box-inp 입력 영역)을 자동 적용한다.
+ *
+ * [주요 Props]
+ * @param name           - react-hook-form 필드 이름
+ * @param control        - useForm()의 control 객체
+ * @param rules          - react-hook-form 유효성 규칙
+ * @param regExp         - 정규식 검증 { value, message } — 실패 시 입력 차단 + 툴팁
+ * @param onChangeValue  - 값 변경 시 외부 콜백 (string)
+ * @param singleRow      - true이면 'full' 클래스 적용 (전체 너비 단독 행)
+ * @param isNoTitle      - true이면 제목 레이블 미표시
+ * @param title          - 필드 제목 레이블 텍스트
+ * @param required       - 필수 여부 표시 (*) 아이콘
+ *
+ * [사용 방법]
+ * @example
+ * import CustomSaveFormInput from '@component/form/CustomSaveFormInput';
+ * import { ALPHANUMERIC_REGEXP } from '@util/validationPatterns';
+ *
+ * const { control } = useForm();
+ *
+ * // 기본 입력 필드
+ * <CustomSaveFormInput
+ *   name="userName"
+ *   control={control}
+ *   title="사용자명"
+ *   required
+ *   rules={{ required: '사용자명을 입력해주세요.' }}
+ * />
+ *
+ * // 정규식 + 전체 너비
+ * <CustomSaveFormInput
+ *   name="userId"
+ *   control={control}
+ *   title="사용자 ID"
+ *   singleRow
+ *   regExp={ALPHANUMERIC_REGEXP}
+ * />
+ *
+ * // 제목 없음 (그리드 레이아웃에서 단독 셀)
+ * <CustomSaveFormInput name="memo" control={control} isNoTitle />
+ */
 import React, {forwardRef, useEffect, useState} from 'react';
 import {Input, InputProps, Tooltip} from 'antd';
 import {Control, Controller} from 'react-hook-form';
