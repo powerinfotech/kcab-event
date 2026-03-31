@@ -1,3 +1,37 @@
+/**
+ * CustomImageUpload - 이미지 업로드 + 미리보기 컴포넌트
+ *
+ * [목적]
+ * 이미지 파일만 선택 가능한 업로드 컴포넌트다. 썸네일 미리보기와 클릭 시 원본 크기 모달 미리보기를 제공한다.
+ *
+ * [주요 기능]
+ * - image/* 형식만 허용 (비이미지 파일 차단)
+ * - 썸네일 picture-card 리스트 표시
+ * - 클릭 시 모달에서 원본 크기 미리보기
+ * - maxCount 초과 시 업로드 버튼 자동 숨김
+ *
+ * @param maxCount    - 최대 이미지 개수 (기본: 5)
+ * @param disabled    - 업로드 비활성화 여부 (기본: false)
+ * @param fileList    - 초기 파일 목록 (controlled)
+ * @param onChange    - 파일 목록 변경 시 UploadFile[] 전달 콜백
+ *
+ * [사용 방법]
+ * @example
+ * import CustomImageUpload from '@component/upload/CustomImageUpload';
+ * import type { UploadFile } from 'antd';
+ *
+ * const [images, setImages] = useState<UploadFile[]>([]);
+ *
+ * // 기본 이미지 업로드
+ * <CustomImageUpload
+ *   fileList={images}
+ *   onChange={setImages}
+ *   maxCount={3}
+ * />
+ *
+ * // 읽기 전용
+ * <CustomImageUpload fileList={images} disabled />
+ */
 import React, { useState } from 'react';
 import { Upload, Modal, message } from 'antd';
 import type { UploadFile, UploadProps } from 'antd';

@@ -1,3 +1,35 @@
+/**
+ * CustomAddressSearchModal - 다음 주소 검색 모달 컴포넌트
+ *
+ * [목적]
+ * react-daum-postcode 라이브러리를 Modal로 래핑하여 주소 검색 UI를 제공한다.
+ * 사용자가 주소를 선택하면 onAddrSearchComplete 콜백으로 주소 정보를 전달한다.
+ *
+ * @param onAddrSearchComplete - 주소 항목 클릭 시 Address 데이터 전달 콜백 (필수)
+ * @param onAddrSearchClose    - 모달 닫힐 때 State 전달 콜백
+ * @param onAddrSearch         - 검색어 입력 시 Search 전달 콜백
+ *
+ * [사용 방법]
+ * @example
+ * import CustomAddressSearchModal from '@component/special/CustomAddressSearchModal';
+ * import { Address } from 'react-daum-postcode';
+ *
+ * const [addrOpen, setAddrOpen] = useState(false);
+ * const [address, setAddress] = useState('');
+ * const [zipCode, setZipCode] = useState('');
+ *
+ * <CustomButton onClick={() => setAddrOpen(true)}>주소 검색</CustomButton>
+ *
+ * <CustomAddressSearchModal
+ *   open={addrOpen}
+ *   onCancel={() => setAddrOpen(false)}
+ *   onAddrSearchComplete={(data: Address) => {
+ *     setZipCode(data.zonecode);
+ *     setAddress(data.roadAddress || data.jibunAddress);
+ *     setAddrOpen(false);
+ *   }}
+ * />
+ */
 import {Modal} from 'antd';
 import {ModalProps} from 'antd/es/modal/interface';
 import DaumPostcode, {Address} from "react-daum-postcode";

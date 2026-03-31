@@ -1,3 +1,44 @@
+/**
+ * CustomFile - 드래그 순서 변경 + IUD 상태 추적 파일 첨부 컴포넌트
+ *
+ * [목적]
+ * 파일 첨부, 삭제, 순서 변경(드래그 앤 드롭), 기존 파일 유지를 하나의 컴포넌트에서 처리한다.
+ * IUD 패턴(Insert/Update/Delete)으로 변경사항을 추적하여 저장 시 서버에 전달한다.
+ *
+ * [주요 기능]
+ * - 최대 5개 파일 첨부 (MAX_FILE_COUNT=5)
+ * - 최대 파일 크기 10MB 제한
+ * - @dnd-kit 기반 드래그 앤 드롭 순서 변경
+ * - 순서 변경 시 iudType=U, 새 파일=I, 삭제=D 자동 설정
+ * - 기존 파일 클릭 다운로드 (서버 파일: axios GET /api/download-file, 신규 파일: Blob URL)
+ *
+ * [주요 Props]
+ * @param fileList          - 초기 파일 목록 (FileDetailType[])
+ * @param onFileListChange  - 파일 목록 변경 시 FileDetailType[] 전달 콜백
+ * @param isEditable        - true이면 파일 첨부/삭제/순서변경 가능
+ *
+ * [exports]
+ * - default: CustomFile
+ * - named:   FileDetailType  (파일 DTO 인터페이스)
+ * - named:   CustomFile      (Ant Design UploadFile 확장 인터페이스)
+ *
+ * [사용 방법]
+ * @example
+ * import CustomFile, { FileDetailType } from '@component/upload/CustomFile';
+ *
+ * const [fileList, setFileList] = useState<FileDetailType[]>(initialFiles);
+ *
+ * <CustomFile
+ *   fileList={fileList}
+ *   onFileListChange={(newList) => setFileList(newList)}
+ *   isEditable={isEditMode}
+ * />
+ *
+ * // 저장 시 IUD 상태로 분류
+ * const newFiles    = fileList.filter(f => f.iudType === 'I');
+ * const updatedFiles = fileList.filter(f => f.iudType === 'U');
+ * const deletedFiles = fileList.filter(f => f.iudType === 'D');
+ */
 import React, {useEffect, useRef, useState} from 'react';
 import {UploadOutlined} from '@ant-design/icons';
 import type {DragEndEvent} from '@dnd-kit/core';
