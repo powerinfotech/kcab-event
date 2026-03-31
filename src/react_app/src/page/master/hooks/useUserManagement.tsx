@@ -270,7 +270,10 @@ export function useUserManagement() {
         const formData = saveForm.getValues();
         const changedDataSource = dataSource.map(item => {
             if (item.userSeq !== saveForm.getValues('userSeq')) return item;
-            if (!isItemChanged(item, formData)) return item;
+            const original = orgDataSource.find(v => v.userSeq === item.userSeq);
+            if (original && !isItemChanged(original, formData)) {
+                return {...item, ...formData, iudType: item.iudType === IudType.I ? IudType.I : undefined};
+            }
             return {...item, ...formData, iudType: item.iudType ?? IudType.U};
         });
         setDataSource(changedDataSource);
