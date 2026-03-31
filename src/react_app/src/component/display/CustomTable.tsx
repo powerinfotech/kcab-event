@@ -1,3 +1,50 @@
+/**
+ * CustomTable - 행 번호 자동 계산 + IUD 상태 아이콘 + 선택 행 강조 테이블 컴포넌트
+ *
+ * [목적]
+ * Ant Design Table을 래핑하여 관리자 화면에서 공통으로 필요한 기능을 추가한다.
+ * 1. 행 번호(NO) 자동 계산 — 오름/내림차순 모두 지원
+ * 2. IUD 상태 아이콘 표시 (+ 신규, ✓ 수정, 🗑 삭제)
+ * 3. 클릭 행 배경색 강조 (selected-row 클래스)
+ * 4. 창 높이에 비례한 테이블 스크롤 높이 자동 계산 (TABLE_HEIGHT_RATIO=0.55)
+ *
+ * [추가 Props]
+ * @param rowNoFlag        - 오름차순 행 번호 표시 여부 (rowNo 컬럼 자동 추가)
+ * @param rowNoDescFlag    - 내림차순 행 번호 표시 여부
+ * @param showIudIcon      - IUD_COLUMN 사용 여부 (columns에 직접 포함시켜 사용)
+ * @param selectedRowIndex - 외부에서 선택 행 인덱스 제어
+ * @param rowSelectedFlag  - 클릭 시 행 자동 선택 여부
+ *
+ * [exports]
+ * - default: CustomTable
+ * - named:   IUD_COLUMN   (IUD 상태 아이콘 컬럼 정의 객체)
+ *
+ * [사용 방법]
+ * @example
+ * import CustomTable, { IUD_COLUMN } from '@component/display/CustomTable';
+ *
+ * // 행 번호 + 클릭 선택
+ * <CustomTable
+ *   rowNoFlag
+ *   rowSelectedFlag
+ *   columns={columns}
+ *   dataSource={dataSource}
+ *   pagination={{ current: page, pageSize: 10, total: totalCount, onChange: onPageChange }}
+ *   onRow={(record) => ({ onClick: () => handleRowClick(record) })}
+ * />
+ *
+ * // IUD 아이콘 컬럼 포함
+ * const columns = [IUD_COLUMN, { title: '이름', dataIndex: 'name' }];
+ * <CustomTable columns={columns} dataSource={dataSource} pagination={false} />
+ *
+ * // 내림차순 행 번호 (전체 건수 기준)
+ * <CustomTable
+ *   rowNoDescFlag
+ *   columns={columns}
+ *   dataSource={dataSource}
+ *   pagination={{ total: totalCount, current: page, pageSize: 10 }}
+ * />
+ */
 import React, {useEffect, useMemo, useState} from 'react';
 
 import {Table, TableProps} from 'antd';
