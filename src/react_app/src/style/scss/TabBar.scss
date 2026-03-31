@@ -85,3 +85,27 @@
     color: $gray20;
   }
 }
+
+.tab_close_all {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin-left: 4px;
+  border: 1px solid $gray90;
+  background: $gray94;
+  border-radius: 4px;
+  font-size: 15px;
+  color: $gray40;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+
+  &:hover {
+    background: $statusRed;
+    border-color: $statusRed;
+    color: $gray100;
+  }
+}

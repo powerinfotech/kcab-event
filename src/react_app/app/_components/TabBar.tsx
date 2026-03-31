@@ -1,16 +1,19 @@
 'use client';
 
 import React, { useCallback } from 'react';
-import { Dropdown } from 'antd';
+import { Dropdown, Tooltip } from 'antd';
+import { CloseSquareOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { useRecoilValue } from 'recoil';
 import { tabModeAtom } from '@atom/tabModeAtom';
 import useTabManager from '@hook/useTabManager';
+import { useMessage } from '@hook/useMessage';
 
 export default function TabBar() {
   const tabMode = useRecoilValue(tabModeAtom);
   const { tabList, activeTabKey, activateTab, closeTab, closeOtherTabs, closeAllTabs } =
     useTabManager();
+  const { confirm } = useMessage();
 
   const getContextMenuItems = useCallback(
     (key: string): MenuProps['items'] => [
@@ -20,6 +23,15 @@ export default function TabBar() {
     ],
     [closeTab, closeOtherTabs, closeAllTabs],
   );
+
+  const handleCloseAll = useCallback(async () => {
+    const confirmed = await confirm(
+      '모든 화면을 종료합니다.\n전체 화면을 닫으시겠습니까?',
+    );
+    if (confirmed) {
+      closeAllTabs();
+    }
+  }, [confirm, closeAllTabs]);
 
   if (!tabMode || tabList.length === 0) return null;
 
@@ -49,6 +61,15 @@ export default function TabBar() {
           </div>
         </Dropdown>
       ))}
+      <Tooltip title="전체 화면 닫기">
+        <button
+          type="button"
+          className="tab_close_all"
+          onClick={handleCloseAll}
+        >
+          <CloseSquareOutlined />
+        </button>
+      </Tooltip>
     </div>
   );
 }
