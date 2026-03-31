@@ -6,6 +6,7 @@ import IconLogout from '@icon/IconLogout';
 import IconAdmin from '@icon/IconAdmin';
 import { useRecoilValue } from 'recoil';
 import { sessionInfoAtom } from '@atom/sessionInfoAtom';
+import TabBar from '../../app/_components/TabBar';
 
 export default function TopBar() {
   const sessionInfo = useRecoilValue(sessionInfoAtom);
@@ -17,17 +18,22 @@ export default function TopBar() {
 
   return (
     <div className="app_topbar">
-      <div className="app_topbar_user">
-        <div className="app_topbar_thumb">
-          <IconAdmin />
-        </div>
-        <span className="app_topbar_name">
-          {(sessionInfo && sessionInfo.userName) ?? ''}님
-        </span>
+      <div className="app_topbar_left">
+        <TabBar />
       </div>
-      <button type="button" className="app_topbar_logout" onClick={logout}>
-        <IconLogout />
-      </button>
+      <div className="app_topbar_right">
+        <div className="app_topbar_user">
+          <div className="app_topbar_thumb">
+            <IconAdmin />
+          </div>
+          <span className="app_topbar_name">
+            {(sessionInfo && sessionInfo.userName) ?? ''}님
+          </span>
+        </div>
+        <button type="button" className="app_topbar_logout" onClick={logout}>
+          <IconLogout />
+        </button>
+      </div>
     </div>
   );
 }

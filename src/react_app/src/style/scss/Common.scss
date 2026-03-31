@@ -99,11 +99,24 @@ body,
     z-index: 50;
     display: flex;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: space-between;
     gap: 12px;
     padding: 12px 24px;
     background: $gray100;
     border-bottom: 1px solid $gray90;
+    flex-shrink: 0;
+}
+.app_topbar_left {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+}
+.app_topbar_right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
     flex-shrink: 0;
 }
 
@@ -176,6 +189,7 @@ html{
 @import 'Sidebar.scss';
 @import 'Header.scss';
 @import 'Footer.scss';
+@import 'TabBar.scss';
 
 .hide {
     display: none;

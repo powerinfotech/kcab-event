@@ -1,0 +1,87 @@
+@import 'Variable.scss';
+
+.tab_bar {
+  display: flex;
+  align-items: center;
+  overflow-x: auto;
+  flex: 1;
+  min-width: 0;
+  gap: 4px;
+
+  &::-webkit-scrollbar {
+    height: 3px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: $gray70;
+    border-radius: 2px;
+  }
+}
+
+.tab_item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: $gray94;
+  border-radius: 4px;
+  cursor: pointer;
+  max-width: 180px;
+  min-width: 0;
+  font-size: 13px;
+  color: $gray30;
+  transition: background 0.15s, color 0.15s;
+  user-select: none;
+  white-space: nowrap;
+  border: 1px solid $gray90;
+  flex-shrink: 0;
+
+  &:hover {
+    background: $gray90;
+  }
+
+  &.is-active {
+    background: $brandYellow;
+    color: $gray10;
+    font-weight: 600;
+    border-color: $PrimaryDark;
+
+    .tab_close {
+      color: $gray20;
+
+      &:hover {
+        background: rgba(0, 0, 0, 0.12);
+        color: $gray10;
+      }
+    }
+  }
+}
+
+.tab_label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 20px;
+}
+
+.tab_close {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: none;
+  background: transparent;
+  border-radius: 50%;
+  font-size: 13px;
+  line-height: 1;
+  color: $gray50;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.08);
+    color: $gray20;
+  }
+}

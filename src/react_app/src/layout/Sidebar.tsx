@@ -1,28 +1,48 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
+import React, { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Tooltip } from 'antd';
+import { FileTextOutlined, AppstoreOutlined } from '@ant-design/icons';
 import { MenuInfo } from '@interface/auth/MenuManagement';
-import { useRecoilValue } from 'recoil';
+import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import { menuInfoAtom } from '@atom/menuInfoAtom';
+import { tabModeAtom } from '@atom/tabModeAtom';
+import { tabListAtom, activeTabKeyAtom } from '@atom/tabListAtom';
+import useTabManager from '@hook/useTabManager';
 import LogoImage from '@image/powerInfoTech_logo.png';
 
 function SidebarSubpanel({
   menuInfo,
   selectedParentId,
   onMenuClick,
+  tabMode,
+  onTabOpen,
 }: {
   menuInfo: MenuInfo[];
   selectedParentId: number | null;
   onMenuClick?: () => void;
+  tabMode: boolean;
+  onTabOpen: (menu: MenuInfo) => void;
 }) {
+  const router = useRouter();
+
   if (selectedParentId === null) return null;
 
   const parent = menuInfo.find((m) => m.menuSeq === selectedParentId && m.menuTypeCd === 'D');
   const children = parent
     ? menuInfo.filter((m) => m.upMenuSeq === parent.menuSeq && m.useYn === 'Y')
     : [];
+
+  const handleClick = (e: React.MouseEvent, child: MenuInfo) => {
+    e.preventDefault();
+    if (tabMode) {
+      onTabOpen(child);
+    } else {
+      router.push(child.menuUrl);
+    }
+    onMenuClick?.();
+  };
 
   return (
     <div className="sidebar_subpanel">
@@ -31,14 +51,14 @@ function SidebarSubpanel({
       </div>
       <nav className="sidebar_menu">
         {children.map((child) => (
-          <Link
+          <a
             key={child.menuSeq}
             href={child.menuUrl}
             className="sidebar_menu_child"
-            onClick={onMenuClick}
+            onClick={(e) => handleClick(e, child)}
           >
             {child.menuNm}
-          </Link>
+          </a>
         ))}
       </nav>
     </div>
@@ -52,6 +72,10 @@ export default function Sidebar({
 }) {
   const router = useRouter();
   const menuInfo = useRecoilValue(menuInfoAtom);
+  const [tabMode, setTabMode] = useRecoilState(tabModeAtom);
+  const setTabList = useSetRecoilState(tabListAtom);
+  const setActiveTabKey = useSetRecoilState(activeTabKeyAtom);
+  const { openTab } = useTabManager();
   const [subpanelOpen, setSubpanelOpen] = useState(false);
   const [selectedParentId, setSelectedParentId] = useState<number | null>(null);
   const sidebarWrapRef = useRef<HTMLElement>(null);
@@ -92,12 +116,38 @@ export default function Sidebar({
             </button>
           ))}
         </nav>
+        <div className="sidebar_mode_toggle">
+          <Tooltip title={tabMode ? '싱글 모드로 전환' : '멀티탭 모드로 전환'} placement="right">
+            <button
+              type="button"
+              className={`sidebar_mode_btn ${tabMode ? 'is-multi' : ''}`}
+              onClick={() => {
+                const nextMode = !tabMode;
+                if (!nextMode) {
+                  // 멀티탭 → 싱글: 탭 전부 제거
+                  setTabList([]);
+                  setActiveTabKey(null);
+                }
+                setTabMode(nextMode);
+              }}
+            >
+              <span className={`sidebar_mode_icon ${!tabMode ? 'is-selected' : ''}`}>
+                <FileTextOutlined />
+              </span>
+              <span className={`sidebar_mode_icon ${tabMode ? 'is-selected' : ''}`}>
+                <AppstoreOutlined />
+              </span>
+            </button>
+          </Tooltip>
+        </div>
       </div>
       {subpanelOpen && (
         <SidebarSubpanel
           menuInfo={menuInfo}
           selectedParentId={selectedParentId}
           onMenuClick={handleSubpanelClose}
+          tabMode={tabMode}
+          onTabOpen={openTab}
         />
       )}
     </aside>
