@@ -2,7 +2,7 @@ import Icon from '@image/icon_title.svg';
 
 const IconTitle = () => {
     //return   <Icon />;
-    return;
+    return null;
 };
 
 export default IconTitle;
