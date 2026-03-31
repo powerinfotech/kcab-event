@@ -1,0 +1,13 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - name: Run deploy script
+        run: |
+          bash /home/ubuntu/next-admin-common.sh
