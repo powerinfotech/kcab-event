@@ -70,6 +70,9 @@ const CustomValidAutoComplete = ({name, defaultValue, control, onChangeValue, la
                             onChange={(v)=>{
                                 field.onChange(v);
                                 onChangeValue&&onChangeValue(v);
+                                if (props.showName && (v === '' || v === undefined || v === null)) {
+                                    setLabelText('');
+                                }
                             }}
                             onMouseEnter={() => setFocus(true)}
                             onMouseLeave={() => setFocus(false)}

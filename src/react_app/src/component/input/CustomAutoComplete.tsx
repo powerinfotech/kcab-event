@@ -51,10 +51,18 @@ const CustomAutoComplete =  ({showName, label, children, ...restProps}:CustomAut
         setLabelText(label??'');
     }, [label]);
 
+    const handleChange = (value: string, option: any) => {
+        if (showName && (value === '' || value === undefined || value === null)) {
+            setLabelText('');
+        }
+        restProps.onChange?.(value, option);
+    };
+
     return (
         <>
              <AutoComplete
                     {...restProps}
+                    onChange={handleChange}
                     className={showName ? `${restProps.className || ''} autocomplete-mr`.trim() : restProps.className}
                 >
                     {children}

@@ -9,6 +9,10 @@
  * @param onSearch   - 검색어 전달 콜백 (string)
  * @param debounceMs - 타이핑 디바운스 대기 시간 ms (기본: 300, 0이면 디바운스 없음)
  *
+ * [IME 지원]
+ * 한글 등 IME 입력 시 compositionStart/End를 감지하여 조합 완료 후에만 debounce를 시작한다.
+ * → 한글 조합 중간 단계에서 불필요한 API 호출이 발생하지 않는다.
+ *
  * [사용 방법]
  * @example
  * import CustomSearchBar from '@component/input/CustomSearchBar';
@@ -42,6 +46,7 @@ interface CustomSearchBarProps extends Omit<SearchProps, 'onSearch'> {
 
 const CustomSearchBar = ({ onSearch, debounceMs = 300, ...rest }: CustomSearchBarProps) => {
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isComposingRef = useRef(false);
 
   const handleSearch = useCallback(
     (value: string) => {
@@ -50,16 +55,36 @@ const CustomSearchBar = ({ onSearch, debounceMs = 300, ...rest }: CustomSearchBa
     [onSearch]
   );
 
-  const handleChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
+  const startDebounce = useCallback(
+    (value: string) => {
       if (debounceMs > 0) {
         if (timerRef.current) clearTimeout(timerRef.current);
         timerRef.current = setTimeout(() => {
-          onSearch?.(e.target.value);
+          onSearch?.(value);
         }, debounceMs);
       }
     },
     [onSearch, debounceMs]
+  );
+
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (isComposingRef.current) return;
+      startDebounce(e.target.value);
+    },
+    [startDebounce]
+  );
+
+  const handleCompositionStart = useCallback(() => {
+    isComposingRef.current = true;
+  }, []);
+
+  const handleCompositionEnd = useCallback(
+    (e: React.CompositionEvent<HTMLInputElement>) => {
+      isComposingRef.current = false;
+      startDebounce((e.target as HTMLInputElement).value);
+    },
+    [startDebounce]
   );
 
   return (
@@ -67,6 +92,8 @@ const CustomSearchBar = ({ onSearch, debounceMs = 300, ...rest }: CustomSearchBa
       allowClear
       onSearch={handleSearch}
       onChange={handleChange}
+      onCompositionStart={handleCompositionStart}
+      onCompositionEnd={handleCompositionEnd}
       {...rest}
     />
   );

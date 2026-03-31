@@ -3,6 +3,9 @@
  *
  * [목적]
  * 숫자 입력 전용 컴포넌트다. 최솟값/최댓값 제한, 증감 버튼, 형식 지정 등을 지원한다.
+ * 포커스 시 기존 값을 전체선택하여 즉시 새 값을 입력할 수 있다.
+ *
+ * @param selectOnFocus - 포커스 시 전체선택 여부 (기본: true)
  *
  * [사용 방법]
  * @example
@@ -22,14 +25,26 @@
  * // 소수점
  * <CustomInputNumber value={rate} onChange={setRate} min={0} max={100} step={0.1} />
  */
-import React from 'react';
+import React, {useCallback} from 'react';
 import {InputNumber, InputNumberProps} from 'antd';
 
-interface CustomInputNumberProps extends InputNumberProps {}
+interface CustomInputNumberProps extends InputNumberProps {
+    selectOnFocus?: boolean;
+}
 
-const CustomInputNumber = (props: CustomInputNumberProps) => {
+const CustomInputNumber = ({selectOnFocus = true, onFocus, ...rest}: CustomInputNumberProps) => {
+    const handleFocus = useCallback(
+        (e: React.FocusEvent<HTMLInputElement>) => {
+            if (selectOnFocus) {
+                e.target.select();
+            }
+            onFocus?.(e);
+        },
+        [selectOnFocus, onFocus]
+    );
+
     return (
-        <InputNumber {...props} />
+        <InputNumber {...rest} onFocus={handleFocus} />
     );
 };
 
