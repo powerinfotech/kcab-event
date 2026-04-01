@@ -1,3 +1,41 @@
+/**
+ * GlobalAxiosProvider - 전역 Axios 인터셉터 프로바이더
+ *
+ * [목적]
+ * 앱 전체에서 사용하는 axios 요청/응답 인터셉터를 설정하고 자식 컴포넌트를 렌더링한다.
+ * 로딩 상태 관리, 에러 코드 처리, 인증 만료 리다이렉트를 전역으로 처리한다.
+ *
+ * [동작 방식]
+ * - 마운트 시 axios 인터셉터를 등록하고 isReadyAxios를 true로 설정한다.
+ * - 인터셉터가 준비되기 전까지 children을 렌더링하지 않는다 (요청이 인터셉터 없이 날아가는 것 방지).
+ * - 언마운트 시 인터셉터를 해제(eject)하여 메모리 누수를 방지한다.
+ *
+ * [인터셉터 처리 내용]
+ * - 요청: showLoading 헤더가 true(또는 미설정)이면 로딩 큐에 URL 추가
+ * - 응답 성공:
+ *   - INVALID_PARAMETER_ERROR → message.error로 파라미터 오류 메시지 표시
+ *   - BUSINESS_ERROR → message.error로 비즈니스 오류 메시지 표시
+ *   - INVALID_SESSION_ERROR → 루트('/')로 리다이렉트 (세션 만료)
+ * - 응답 실패: 로딩 큐에서 URL 제거 후 에러 그대로 reject
+ * - paramsSerializer: qs 라이브러리로 배열 파라미터를 brackets 형식으로 직렬화
+ * - withCredentials: true (쿠키 기반 인증)
+ *
+ * [사용 방법]
+ * @example
+ * // 앱 루트에서 RecoilRoot 안에 배치 (children을 감싸야 함)
+ * import GlobalAxiosProvider from '@provider/GlobalAxiosProvider';
+ *
+ * const App = () => (
+ *   <RecoilRoot>
+ *     <GlobalAxiosProvider>
+ *       <RouterProvider router={router} />
+ *     </GlobalAxiosProvider>
+ *   </RecoilRoot>
+ * );
+ *
+ * // 특정 요청에서 로딩 표시 끄기
+ * axios.get('/api/silent', { headers: { showLoading: false } });
+ */
 import React, {useEffect, useState} from 'react';
 
 import axios, {AxiosError, AxiosResponse, InternalAxiosRequestConfig} from 'axios';
@@ -70,7 +108,7 @@ const GlobalAxiosProvider = (props: GlobalAxiosInterceptorProps) => {
         };
     }, []);
 
-    return isReadyAxios ? <>{props.children}</> : <></>;
+    return isReadyAxios ? <>{props.children}</> : null;
 };
 
 export default GlobalAxiosProvider;
