@@ -13,7 +13,6 @@ import CustomEmpty from '@component/display/CustomEmpty';
 import CustomProgress from '@component/display/CustomProgress';
 import CustomButton from '@component/button/CustomButton';
 import CustomSpace from '@component/button/CustomSpace';
-import CustomCollapse from '@component/display/CustomCollapse';
 import CustomExcelDownload from '@component/upload/CustomExcelDownload';
 import CustomExcelUpload from '@component/upload/CustomExcelUpload';
 import {
