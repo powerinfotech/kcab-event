@@ -178,7 +178,7 @@ export function useUserManagement() {
         const saveResult = await callSaveUser(payload);
         if (saveResult.code !== HttpStatusCode.Ok) return;
 
-        message.info('저장 되었습니다.');
+        message.success('저장되었습니다.');
         const idOrName = searchForm.getValues('idOrName') ?? '';
         const isCheck = searchForm.getValues('isCheck') ?? false;
         const res = await callGetUserList({userId: idOrName, userName: idOrName, isCheck});
@@ -234,8 +234,12 @@ export function useUserManagement() {
     const handleDelete = async () => {
         if (!await confirm('삭제하시겠습니까?')) return;
 
+        const currentRow = getCurrentRowDataSourceById(saveForm.getValues('userSeq'));
+        const isNewRow = currentRow?.iudType === IudType.I;
+
         const result = await callDeleteUser(saveForm.getValues('userSeq'));
         if (result.code === HttpStatusCode.Ok) {
+            if (!isNewRow) message.success('삭제되었습니다.');
             handleSearchList(true);
             setIsRowSelected(false);
         }

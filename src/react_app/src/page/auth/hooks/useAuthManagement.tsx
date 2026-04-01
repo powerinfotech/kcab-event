@@ -241,7 +241,7 @@ export function useAuthManagement() {
                 ) as AuthUserInfoList[],
             });
             if (res.code !== HttpStatusCode.Ok) return;
-            message.success('저장이 완료 되었습니다.');
+            message.success('저장되었습니다.');
 
             const hasDeletedAuthGrp = authGrpDataSource.some(v => v.iudType === IudType.D);
             const hasDeletedAuth = authDataSource.some(v => v.iudType === IudType.D);

@@ -201,6 +201,7 @@ const AuthMenuManagement = ({handlersRef}: {
         if (isChanged()) {
             const result = await confirm('저장하지 않은 내용은 초기화 됩니다. 조회 하시겠습니까?');
             if (!result) return;
+            loadTreeWithOrg([]); // confirm 후 즉시 트리 리셋 → useEffect의 handleAuthRowClick에서 isChanged() = false
         }
         handleSearchAuthList();
     };
@@ -210,6 +211,7 @@ const AuthMenuManagement = ({handlersRef}: {
         if (isChanged()) {
             const result = await confirm('저장하지 않은 정보는 초기화됩니다. 계속 하시겠습니까?');
             if (!result) return;
+            loadTreeWithOrg([]); // confirm 후 즉시 트리 리셋
         }
         setSearchAuthNm('');
         handleSearchAuthList('');

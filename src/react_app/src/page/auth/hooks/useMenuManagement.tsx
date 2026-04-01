@@ -253,7 +253,7 @@ export function useMenuManagement() {
 
         const res = await callSaveMenu({...menu, menuBtnList});
         if (res.code === HttpStatusCode.Ok) {
-            message.success('저장이 완료되었습니다.');
+            message.success('저장되었습니다.');
             saveForm.reset(EMPTY_MENU);
             callGetMenuInfo().then(menuRes => {
                 setIsRowSelected(true);
@@ -312,6 +312,7 @@ export function useMenuManagement() {
         if (!await confirm('삭제하시겠습니까?')) return;
         const result = await callDeleteMenu(menuSeq);
         if (result.code === HttpStatusCode.Ok) {
+            message.success('삭제되었습니다.');
             handleSearch();
         }
     };
