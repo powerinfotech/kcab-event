@@ -61,7 +61,7 @@ const MenuDetailForm: React.FC<MenuDetailFormProps> = ({
                             className="w200"
                             showSearch
                             optionFilterProp="label"
-                            onChangeValueback={() => onDataChanged()}
+                            onChangeValue={() => onDataChanged()}
                         />
                     </div>
 

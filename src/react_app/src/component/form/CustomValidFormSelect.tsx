@@ -14,7 +14,7 @@
  * @param name              - react-hook-form 필드 이름
  * @param control           - useForm()의 control 객체
  * @param options           - 셀렉트 옵션 목록
- * @param onChangeValueback - 선택 시 string 값 전달 콜백
+ * @param onChangeValue - 선택 시 string 값 전달 콜백
  *
  * [사용 방법]
  * @example
@@ -26,7 +26,7 @@
  *   name="status"
  *   control={control}
  *   options={statusOptions}
- *   onChangeValueback={(v) => handleStatusChange(v)}
+ *   onChangeValue={(v) => handleStatusChange(v)}
  *   style={{ width: 150 }}
  * />
  */
@@ -39,11 +39,11 @@ interface CustomFormSelectProps extends SelectProps {
     name:string;
     defaultValue?:string;
     control:Control<any>
-    onChangeValueback?:(v:string)=>void;
+    onChangeValue?:(v:string)=>void;
     [key: string]: any;
 };
 
-const CustomValidFormSelect = ({name, defaultValue, control, onChangeValueback, ...props}:CustomFormSelectProps) => {
+const CustomValidFormSelect = ({name, defaultValue, control, onChangeValue, ...props}:CustomFormSelectProps) => {
     const [focus, setFocus] = useState<boolean>(false);
 
     return (
@@ -60,7 +60,7 @@ const CustomValidFormSelect = ({name, defaultValue, control, onChangeValueback, 
                                       value={field.value}
                                       onChange={(v)=>{
                                         field.onChange(v);
-                                        onChangeValueback&&onChangeValueback(v);
+                                        onChangeValue&&onChangeValue(v);
                                      }}
                                       onMouseEnter={() => setFocus(true)}
                                       onMouseLeave={() => setFocus(false)}

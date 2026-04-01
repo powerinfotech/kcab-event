@@ -66,9 +66,6 @@ const CustomSaveFormSearchInput = ({name, defaultValue, control, onChangeValue, 
             setValidError(true);
             return;
         }
-        if(v.target.value.length === 1) {
-            field.onChange('');
-        }
         field.onChange(v);
         props.onChangeValue && props.onChangeValue(v);
     };

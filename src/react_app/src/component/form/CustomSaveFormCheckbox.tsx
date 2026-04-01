@@ -3,7 +3,7 @@
  *
  * [목적]
  * react-hook-form의 Controller를 내장하여 제목(label) + 체크박스 + 유효성 툴팁을 한 번에 렌더링한다.
- * defaultValue는 true(체크된 상태)로 초기화된다.
+ * defaultValue를 지정하지 않으면 useForm의 defaultValues 설정을 따른다.
  *
  * [주요 Props]
  * @param name           - react-hook-form 필드 이름
@@ -33,18 +33,19 @@ import {Control, Controller} from 'react-hook-form';
 interface CustomCheckboxProps extends CheckboxProps {
     name:string;
     control:Control<any>;
+    defaultValue?:boolean;
     onChangeValue?: (v:boolean) => void;
     [key: string]: any;
 };
 
-const CustomSaveFormCheckbox = ({name, control, onChangeValue,...props}:CustomCheckboxProps) => {
+const CustomSaveFormCheckbox = ({name, control, defaultValue, onChangeValue,...props}:CustomCheckboxProps) => {
     const [focus, setFocus] = useState<boolean>(false);
 
     return (
         <Controller
             name={name}
             control={control}
-            defaultValue={true}
+            defaultValue={defaultValue}
             render={({ field, fieldState }) => (
                 <p>
                     <span className="tit mt0">{props.title}{props.required ? <em>*</em> : <></>}</span>

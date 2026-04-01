@@ -41,7 +41,7 @@ interface CustomDatePickerProps extends DatePickerProps {
     [key: string]: any;
 };
 
-const CustomSaveFormDatePicker = ({name, control, onChange, onChangeValue,...props}:CustomDatePickerProps) => {
+const CustomValidDatePicker = ({name, control, onChange, onChangeValue,...props}:CustomDatePickerProps) => {
     const [focus, setFocus] = useState<boolean>(false);
 
     return (
@@ -70,4 +70,4 @@ const CustomSaveFormDatePicker = ({name, control, onChange, onChangeValue,...pro
     );
 };
 
-export default CustomSaveFormDatePicker;
+export default CustomValidDatePicker;

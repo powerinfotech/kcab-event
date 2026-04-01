@@ -10,7 +10,7 @@
  * @param rules             - react-hook-form 유효성 규칙
  * @param nullFlag          - true이면 options 앞에 빈 항목 { label: '', value: '' } 자동 추가
  * @param nullText          - 빈 항목의 텍스트 (기본: '')
- * @param onChangeValueback - 선택 시 option 객체 전달 콜백
+ * @param onChangeValue - 선택 시 option 객체 전달 콜백
  * @param title             - 필드 제목 레이블 텍스트
  * @param required          - 필수 여부 표시
  *
@@ -41,7 +41,7 @@
  *   title="상태"
  *   nullFlag
  *   options={statusOptions}
- *   onChangeValueback={(option) => console.log('선택된 항목:', option)}
+ *   onChangeValue={(option) => console.log('선택된 항목:', option)}
  * />
  */
 import React, {forwardRef, useState} from 'react';
@@ -53,13 +53,13 @@ interface CustomFormSelectProps extends SelectProps {
     defaultValue?:string;
     control:Control<any>;
     rules?: any;
-    onChangeValueback?:(v:any)=>void;
+    onChangeValue?:(v:any)=>void;
     nullFlag?:boolean;
     nullText?:string;
     [key: string]: any;
 }
 
-const CustomSaveFormSelect = forwardRef<any, CustomFormSelectProps>(({ name, defaultValue, control, rules, onChangeValueback, ...props }, ref) => {
+const CustomSaveFormSelect = forwardRef<any, CustomFormSelectProps>(({ name, defaultValue, control, rules, onChangeValue, ...props }, ref) => {
     const [focus, setFocus] = useState<boolean>(false);
     const options = props.nullFlag ? [{ label: '', value: '' }, ...(props.options ?? [])] : props.options;
     return (
@@ -81,7 +81,7 @@ const CustomSaveFormSelect = forwardRef<any, CustomFormSelectProps>(({ name, def
                                     value={field.value}
                                     onChange={(v, option) => {
                                         field.onChange(v);
-                                        onChangeValueback && onChangeValueback(option);
+                                        onChangeValue && onChangeValue(option);
                                     }}
                                     onMouseEnter={() => setFocus(true)}
                                     onMouseLeave={() => setFocus(false)}

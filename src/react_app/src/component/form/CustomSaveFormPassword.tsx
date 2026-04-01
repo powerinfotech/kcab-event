@@ -1,16 +1,16 @@
 /**
- * CustomSaveFormInput - react-hook-form 연동 텍스트 입력 폼 컴포넌트 (저장 폼용)
+ * CustomSaveFormPassword - react-hook-form 연동 비밀번호 입력 폼 컴포넌트 (저장 폼용)
  *
  * [목적]
- * react-hook-form의 Controller를 내장하여 제목(label) + 입력 필드 + 유효성 툴팁을 한 번에 렌더링한다.
- * 저장 폼의 표준 레이아웃(tit 클래스 제목 + box-inp 입력 영역)을 자동 적용한다.
+ * react-hook-form의 Controller를 내장하여 제목(label) + 비밀번호 입력 + 유효성 툴팁을 한 번에 렌더링한다.
+ * 눈 모양 아이콘으로 비밀번호 표시/숨김 전환이 기본 제공된다.
  *
  * [주요 Props]
  * @param name           - react-hook-form 필드 이름
  * @param control        - useForm()의 control 객체
  * @param rules          - react-hook-form 유효성 규칙
- * @param regExp         - 정규식 검증 { value, message } — 실패 시 입력 차단 + 툴팁
- * @param onChangeValue  - 값 변경 시 외부 콜백 (string)
+ * @param regExp         - 비밀번호 정책 정규식 검증 { value, message }
+ * @param onChangeValue  - 값 변경 시 string 전달 콜백
  * @param singleRow      - true이면 'full' 클래스 적용 (전체 너비 단독 행)
  * @param isNoTitle      - true이면 제목 레이블 미표시
  * @param title          - 필드 제목 레이블 텍스트
@@ -18,37 +18,45 @@
  *
  * [사용 방법]
  * @example
- * import CustomSaveFormInput from '@component/form/CustomSaveFormInput';
- * import { ALPHANUMERIC_REGEXP } from '@util/validationPatterns';
+ * import CustomSaveFormPassword from '@component/form/CustomSaveFormPassword';
  *
  * const { control } = useForm();
  *
- * // 기본 입력 필드
- * <CustomSaveFormInput
- *   name="userName"
+ * // 기본 비밀번호 입력
+ * <CustomSaveFormPassword
+ *   name="password"
  *   control={control}
- *   title="사용자명"
+ *   title="비밀번호"
  *   required
- *   rules={{ required: '사용자명을 입력해주세요.' }}
+ *   rules={{ required: '비밀번호를 입력해주세요.' }}
  * />
  *
- * // 정규식 + 전체 너비
- * <CustomSaveFormInput
- *   name="userId"
+ * // 비밀번호 정책 검증 (영문+숫자+특수문자 8자 이상)
+ * <CustomSaveFormPassword
+ *   name="newPassword"
  *   control={control}
- *   title="사용자 ID"
- *   singleRow
- *   regExp={ALPHANUMERIC_REGEXP}
+ *   title="새 비밀번호"
+ *   required
+ *   regExp={{
+ *     value: /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/,
+ *     message: '영문, 숫자, 특수문자 포함 8자 이상'
+ *   }}
  * />
  *
- * // 제목 없음 (그리드 레이아웃에서 단독 셀)
- * <CustomSaveFormInput name="memo" control={control} isNoTitle />
+ * // 비밀번호 확인 (표시/숨김 토글 없음)
+ * <CustomSaveFormPassword
+ *   name="confirmPassword"
+ *   control={control}
+ *   title="비밀번호 확인"
+ *   visibilityToggle={false}
+ * />
  */
-import React, {forwardRef, useEffect, useState} from 'react';
-import {Input, InputProps, Tooltip} from 'antd';
+import React, {forwardRef, useState} from 'react';
+import {Input, Tooltip} from 'antd';
+import type {PasswordProps} from 'antd/es/input';
 import {Control, Controller} from 'react-hook-form';
 
-interface CustomFormInputProps extends InputProps {
+interface CustomFormPasswordProps extends PasswordProps {
     regExp?:{value:RegExp, message:string};
     name:string;
     defaultValue?:string;
@@ -57,28 +65,22 @@ interface CustomFormInputProps extends InputProps {
     onChangeValue?:(v:string)=>void;
     singleRow?:boolean;
     isNoTitle?: boolean;
-    displayFormatter?:(v:string)=>string;
     [key: string]: any;
 }
 
-const CustomSaveFormInput = forwardRef<any, CustomFormInputProps>(({ name, defaultValue, control, rules, onChangeValue, singleRow = false, regExp, displayFormatter, ...props }, ref) => {
+const CustomSaveFormPassword = forwardRef<any, CustomFormPasswordProps>(({ name, defaultValue, control, rules, onChangeValue, singleRow = false, regExp, ...props }, ref) => {
     const [focus, setFocus] = useState<boolean>(false);
-    const [inputFocused, setInputFocused] = useState<boolean>(false);
     const [validError, setValidError] = useState<boolean>(false);
 
     const handleChange = (field: any, v: React.ChangeEvent<HTMLInputElement>) => {
         setValidError(false);
         if (regExp && regExp.value && !regExp.value.test(v.target.value)) {
             setValidError(true);
-            return;
         }
         field.onChange(v);
-        onChangeValue && onChangeValue(v);
+        onChangeValue && onChangeValue(v.target.value);
     };
 
-    useEffect(() => {
-        setValidError(false);
-    }, [control._fields]);
     return (
         <Controller
             name={name}
@@ -92,24 +94,20 @@ const CustomSaveFormInput = forwardRef<any, CustomFormInputProps>(({ name, defau
                     )}
                     <div className="box-inp">
                         <Tooltip
-                            title={validError && regExp?.message ? regExp.message : (fieldState.error?.message ?? (regExp ? regExp.message : ''))}
+                            title={validError && regExp?.message ? regExp.message : (fieldState.error?.message ?? '')}
                             open={(fieldState.error !== undefined || validError) && focus}
                         >
                             <div className={(fieldState.error !== undefined || validError) ? 'tooltip error' : ''}>
-                                <Input
+                                <Input.Password
                                     {...props}
-                                    {...((!inputFocused && displayFormatter) ? {maxLength: undefined} : {})}
                                     ref={ref}
                                     id={field.name}
                                     name={field.name}
-                                    value={(!inputFocused && displayFormatter) ? displayFormatter(field.value ?? '') : (field.value ?? '')}
+                                    value={field.value ?? ''}
                                     onChange={(v) => handleChange(field, v)}
-                                    onBlur={() => {
-                                        setInputFocused(false);
-                                    }}
                                     onMouseEnter={() => setFocus(true)}
                                     onMouseLeave={() => { setFocus(false); setValidError(false); }}
-                                    onFocus={(e) => { setInputFocused(true); e.target.select(); }}
+                                    onFocus={(e) => e.target.select()}
                                 />
                             </div>
                         </Tooltip>
@@ -120,6 +118,6 @@ const CustomSaveFormInput = forwardRef<any, CustomFormInputProps>(({ name, defau
     );
 });
 
-CustomSaveFormInput.displayName = 'CustomSaveFormInput';
+CustomSaveFormPassword.displayName = 'CustomSaveFormPassword';
 
-export default CustomSaveFormInput;
+export default CustomSaveFormPassword;

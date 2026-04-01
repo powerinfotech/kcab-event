@@ -58,9 +58,6 @@ const CustomValidFormInput = forwardRef<InputRef, CustomFormInputProps>(({name, 
             setValidError(true);
             return;
          }
-         if(v.target.value.length === 1) {
-             field.onChange('');
-         }
          field.onChange(v);
          onChangeValue && onChangeValue(v.target.value);
     };
