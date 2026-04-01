@@ -181,9 +181,9 @@ const ButtonsActionsGuide = () => {
           </CustomButton>
         </div>
         {showFab && (
-          <CustomFloatButtonGroup shape="square" trigger="hover" icon={<UpOutlined />}>
-            <CustomFloatButton icon={<QuestionCircleOutlined />} tooltip="도움말" />
-            <CustomFloatButton icon={<PlusOutlined />} tooltip="추가" />
+          <CustomFloatButtonGroup shape="square" trigger="hover" icon={<UpOutlined />} style={{ bottom: 80 }}>
+            <CustomFloatButton icon={<QuestionCircleOutlined />} tooltip={{ title: '도움말', placement: 'left' }} />
+            <CustomFloatButton icon={<PlusOutlined />} tooltip={{ title: '추가', placement: 'left' }} />
           </CustomFloatButtonGroup>
         )}
         <div className="guide-sub-section" style={{ marginTop: 16 }}>

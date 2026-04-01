@@ -154,55 +154,6 @@ const NavigationLayoutGuide = () => {
           mode="inline" — 사이드바 / mode="horizontal" — 상단 GNB / inlineCollapsed — 아이콘 전용 축소 모드
         </div>
       </GuideDemoBox>
-
-      {/* PageHeader */}
-      <GuideDemoBox title="PageHeader (페이지 헤더)">
-        <div className="guide-sub-section">
-          <h5>기본 제목</h5>
-          <CustomPageHeader title="사용자 관리" />
-        </div>
-        <div className="guide-sub-section">
-          <h5>뒤로가기 + 보조 제목 + 부가 액션</h5>
-          <CustomPageHeader
-            title="사용자 상세"
-            onBack={() => {}}
-            subTitle="전체 12건"
-            extra={
-              <CustomSpace>
-                <CustomButton>수정</CustomButton>
-                <CustomButton danger>삭제</CustomButton>
-              </CustomSpace>
-            }
-          />
-        </div>
-        <div className="guide-sub-section">
-          <h5>등록 버튼 포함</h5>
-          <CustomPageHeader
-            title="공지사항"
-            extra={<CustomButton type="primary">등록</CustomButton>}
-          />
-        </div>
-        <div className="guide-demo-description">
-          onBack 전달 시 좌측에 뒤로가기 버튼 표시 / extra에 버튼·태그 등 ReactNode 배치 가능
-        </div>
-      </GuideDemoBox>
-
-      {/* Layout 안내 */}
-      <GuideDemoBox title="Layout (레이아웃 구조)">
-        <div className="guide-demo-description">
-          현재 프로젝트의 레이아웃은 다음 구조를 사용합니다:
-          <br />- Header (TopBar): 상단 네비게이션 바
-          <br />- Sidebar: 좌측 메뉴 (72px 좁은 메뉴 + 280px 서브패널)
-          <br />- Content: 메인 콘텐츠 영역 (.container_wrap &gt; .container_inner)
-          <br />- Footer: 하단 영역
-          <br />
-          <br />레이아웃 컴포넌트 위치:
-          <br />- src/layout/Header.tsx
-          <br />- src/layout/Sidebar.tsx
-          <br />- src/layout/Footer.tsx
-          <br />- src/layout/TopBar.tsx
-        </div>
-      </GuideDemoBox>
     </GuideSection>
   );
 };
