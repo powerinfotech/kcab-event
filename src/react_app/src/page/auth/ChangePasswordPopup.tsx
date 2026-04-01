@@ -29,13 +29,11 @@ const ChangePasswordPopup = (props:ChangePasswordPopupProps) => {
             changePasswordFormSetError('password_retry', { message:'패스워드가 일치하지 않습니다.'});
             return;
         }
-        const result = await callChangePassword(info);
+        const result = await callChangePassword({...info, password: value.password, password_retry: value.password_retry});
         if(result.code === HttpStatusCode.Ok) {
             message.info('비밀번호가 변경되었습니다.');
             handleReset();
             props.onOk && props.onOk();
-        }  else {
-            message.error(result.message);
         }
 
     };
