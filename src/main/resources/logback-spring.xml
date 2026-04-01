@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="30 seconds">
+
+    <property name="LOGS_ABSOLUTE_PATH" value="./logs" />
+    <property name="SERVICE_NAME" value="miso-lxnn"/>
+
+    <!-- ===== CONSOLE Appender ===== -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>%boldGreen(%d{yy-MM-dd HH:mm:ss.SSS}) [%thread] [%highlight(%-5level)] %magenta(%-4relative) [%boldBlue(%logger{0}:%line)] - %boldYellow(%msg%n)</Pattern>
+        </layout>
+    </appender>
+
+    <!-- ===== FILE Appender (전체 로그) ===== -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOGS_ABSOLUTE_PATH}/${SERVICE_NAME}.log</file>
+        <encoder>
+            <pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}:%-3relative][%thread] %-5level %logger{35} - %msg%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOGS_ABSOLUTE_PATH}/${SERVICE_NAME}/%d{yyyy-MM-dd}.%i.log.zip</fileNamePattern>
+            <maxFileSize>10MB</maxFileSize>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>3GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <!-- ===== ERROR 전용 FILE Appender ===== -->
+    <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOGS_ABSOLUTE_PATH}/${SERVICE_NAME}-error.log</file>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <encoder>
+            <pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}][%thread] %-5level %logger{35} - %msg%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOGS_ABSOLUTE_PATH}/${SERVICE_NAME}-error/%d{yyyy-MM-dd}.%i.log.zip</fileNamePattern>
+            <maxFileSize>10MB</maxFileSize>
+            <maxHistory>90</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <!-- ===== 패키지별 Logger ===== -->
+
+    <!-- 프로젝트 패키지: 프로파일별로 레벨 분리 -->
+    <springProfile name="local">
+        <logger name="com.miso.lxnn" level="DEBUG" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
+            <appender-ref ref="ERROR_FILE"/>
+        </logger>
+    </springProfile>
+
+    <springProfile name="dev">
+        <logger name="com.miso.lxnn" level="DEBUG" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
+            <appender-ref ref="ERROR_FILE"/>
+        </logger>
+    </springProfile>
+
+    <springProfile name="prod">
+        <logger name="com.miso.lxnn" level="INFO" additivity="false">
+            <appender-ref ref="FILE"/>
+            <appender-ref ref="ERROR_FILE"/>
+        </logger>
+    </springProfile>
+
+    <!-- Spring Framework: WARN 이상만 -->
+    <logger name="org.springframework" level="WARN"/>
+
+    <!-- MyBatis SQL: local/dev에서만 TRACE -->
+    <springProfile name="local,dev">
+        <logger name="org.mybatis" level="DEBUG"/>
+        <logger name="jdbc.sqltiming" level="DEBUG"/>
+    </springProfile>
+    <springProfile name="prod">
+        <logger name="org.mybatis" level="WARN"/>
+        <logger name="jdbc.sqltiming" level="WARN"/>
+    </springProfile>
+
+    <!-- Hibernate SQL -->
+    <logger name="org.hibernate.SQL" level="WARN"/>
+
+    <!-- Tomcat, Netty 등 불필요한 INFO 제거 -->
+    <logger name="org.apache" level="WARN"/>
+    <logger name="io.netty" level="WARN"/>
+
+    <!-- ===== Root ===== -->
+    <springProfile name="local,dev">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
+            <appender-ref ref="ERROR_FILE"/>
+        </root>
+    </springProfile>
+
+    <springProfile name="prod">
+        <root level="WARN">
+            <appender-ref ref="FILE"/>
+            <appender-ref ref="ERROR_FILE"/>
+        </root>
+    </springProfile>
+
+</configuration>
