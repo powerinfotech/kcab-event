@@ -9,10 +9,7 @@
 .guide-nav {
   width: 220px;
   flex-shrink: 0;
-  position: sticky;
-  top: 0;
-  max-height: calc(100vh - 160px);
-  overflow-y: auto;
+  align-self: flex-start;
 
   .ant-anchor {
     font-size: 13px;
