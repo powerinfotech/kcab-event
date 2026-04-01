@@ -1,3 +1,4 @@
+import { message } from '@util/antdMessage';
 /**
  * CustomFile - 드래그 순서 변경 + IUD 상태 추적 파일 첨부 컴포넌트
  *
@@ -45,7 +46,7 @@ import type {DragEndEvent} from '@dnd-kit/core';
 import {DndContext, PointerSensor, useSensor} from '@dnd-kit/core';
 import {arrayMove, SortableContext, useSortable, verticalListSortingStrategy,} from '@dnd-kit/sortable';
 import {CSS} from '@dnd-kit/utilities';
-import {message, UploadFile, UploadProps} from 'antd';
+import {UploadFile, UploadProps} from 'antd';
 import {Button, Upload} from 'antd';
 import {IudType} from "@interface/common";
 import {cloneDeep} from "lodash";

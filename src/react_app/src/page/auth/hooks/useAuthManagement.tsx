@@ -1,7 +1,7 @@
+import { message } from '@util/antdMessage';
 import React, {useEffect, useRef, useState} from 'react';
 import {useForm} from 'react-hook-form';
 import {HttpStatusCode} from 'axios';
-import {message} from 'antd';
 import dayjs from 'dayjs';
 import {AuthGrpList, AuthInfoList, AuthUserInfoList, UserSearchResult} from '@interface/auth/AuthManagement';
 import {IudType} from '@interface/common';

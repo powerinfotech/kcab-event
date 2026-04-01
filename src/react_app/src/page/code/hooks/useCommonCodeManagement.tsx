@@ -1,9 +1,9 @@
+import { message } from '@util/antdMessage';
 import React, {useEffect, useRef, useState} from 'react';
 import {useSearchParams} from 'next/navigation';
 import type { TableColumnsType } from 'antd';
 import {useForm} from 'react-hook-form';
 import {HttpStatusCode} from 'axios';
-import {message} from 'antd';
 import CustomInput from '@component/input/CustomInput';
 import CustomCheckbox from '@component/select/CustomCheckbox';
 import {IUD_COLUMN} from '@component/display/CustomTable';

@@ -36,9 +36,10 @@
 import {useEffect, useRef} from 'react';
 import { useAtomValue } from 'jotai';
 import {confirmAtom} from '@atom/confirmAtom';
-import {Modal} from 'antd';
+import {App} from 'antd';
 
 const GlobalConfirmProvider = () => {
+    const { modal } = App.useApp();
     const confirmState = useAtomValue(confirmAtom);
     const openedRef = useRef(false);
 
@@ -50,14 +51,14 @@ const GlobalConfirmProvider = () => {
         if (openedRef.current) return;
         openedRef.current = true;
 
-        Modal.confirm({
+        modal.confirm({
             title: confirmState.message,
             okText: confirmState.okText,
             cancelText: confirmState.cancelText,
             onOk: confirmState.onClickOK,
             onCancel: confirmState.onClickCancel,
         });
-    }, [confirmState]);
+    }, [confirmState, modal]);
 
     return null;
 };

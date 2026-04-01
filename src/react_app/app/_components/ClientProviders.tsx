@@ -1,13 +1,14 @@
 'use client';
 
 import React from 'react';
-import { ConfigProvider } from 'antd';
+import { ConfigProvider, App } from 'antd';
 import locale from 'antd/locale/ko_KR';
 import GlobalAxiosProvider from '@provider/GlobalAxiosProvider';
 import CustomLoading from '@component/layout/CustomLoading';
 import GlobalModalProvider from '@provider/GlobalModalProvider';
 import GlobalConfirmProvider from '@provider/GlobalConfirmProvider';
 import GlobalAlertProvider from '@provider/GlobalAlertProvider';
+import AntdAppBridge from '@provider/AntdAppBridge';
 
 export default function ClientProviders({ children }: { children: React.ReactNode }) {
   return (
@@ -20,6 +21,8 @@ export default function ClientProviders({ children }: { children: React.ReactNod
             colorTextSecondary: '#666',
           },
         }}>
+      <App>
+        <AntdAppBridge />
         <GlobalAxiosProvider>
           <CustomLoading />
           <GlobalModalProvider />
@@ -27,6 +30,7 @@ export default function ClientProviders({ children }: { children: React.ReactNod
           <GlobalAlertProvider />
           {children}
         </GlobalAxiosProvider>
+      </App>
     </ConfigProvider>
   );
 }

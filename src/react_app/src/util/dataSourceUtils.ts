@@ -1,3 +1,4 @@
+import { message } from '@util/antdMessage';
 /**
  * dataSourceUtils - 테이블 데이터 상태 변경 유틸 (IUD 패턴)
  *
@@ -30,7 +31,6 @@
  * const deleteRows  = dataSource.filter(r => r.iudType === 'D');
  */
 import React from 'react';
-import {message} from 'antd';
 import {IudType} from '@interface/common';
 
 /**
