@@ -2,7 +2,7 @@
  * dataSourceUtils - 테이블 데이터 상태 변경 유틸 (IUD 패턴)
  *
  * [목적]
- * Ant Design Table의 dataSource(배열 상태)에 대해 단건 수정, 일괄 삭제를 처리한다.
+ * Ant Design Table의 dataSource(배열 상태)에 대해 행 추가, 단건 수정, 일괄 삭제를 처리한다.
  * IUD(Insert/Update/Delete) 패턴으로 변경 이력을 추적하여 서버 저장 시 한 번에 전송.
  *
  * [IUD 패턴 설명]
@@ -13,17 +13,52 @@
  *
  * [사용 방법]
  * @example
- * import { applyDataChange, applyDeleteRows } from '@util/dataSourceUtils';
+ * import { applyAddRow, applyDataChange, applyDeleteRows } from '@util/dataSourceUtils';
+ *
+ * // 신규 행 추가 (예: 추가 버튼 클릭 시)
+ * applyAddRow(setDataSource, { userSeq: Date.now(), userName: '', iudType: 'I' });
  *
  * // 단건 필드 수정 (예: 테이블 셀 편집 시)
  * applyDataChange(setDataSource, 'userSeq', record, 'userName', '홍길동');
  *
  * // 선택한 행 일괄 삭제 (예: 삭제 버튼 클릭 시)
  * applyDeleteRows(dataSource, setDataSource, selectedKeys, setSelectedKeys, 'userSeq');
+ *
+ * // 저장 시 IUD 분류
+ * const insertRows  = dataSource.filter(r => r.iudType === 'I');
+ * const updateRows  = dataSource.filter(r => r.iudType === 'U');
+ * const deleteRows  = dataSource.filter(r => r.iudType === 'D');
  */
 import React from 'react';
 import {message} from 'antd';
 import {IudType} from '@interface/common';
+
+/**
+ * 테이블에 신규 행 추가 (iudType = I)
+ * - 전달한 newRow 객체를 dataSource 맨 뒤에 추가한다.
+ * - newRow에 iudType이 없으면 자동으로 I를 설정한다.
+ * - uid 등 고유 키는 호출부에서 직접 지정해야 한다 (예: Date.now()).
+ *
+ * @param setter - dataSource 상태 setter
+ * @param newRow - 추가할 행 데이터 (iudType은 자동 설정)
+ *
+ * @example
+ * // 추가 버튼 클릭 시
+ * applyAddRow(setDataSource, {
+ *   userSeq: Date.now(),   // 임시 고유 키
+ *   userName: '',
+ *   useYn: 'Y',
+ * });
+ *
+ * // 맨 앞에 추가하고 싶을 때는 setter를 직접 사용
+ * setDataSource(prev => [{ ...newRow, iudType: IudType.I }, ...prev]);
+ */
+export function applyAddRow<T extends Record<string, any>>(
+    setter: React.Dispatch<React.SetStateAction<T[]>>,
+    newRow: T,
+): void {
+    setter(prev => [...prev, { ...newRow, iudType: IudType.I }]);
+}
 
 /**
  * 테이블 데이터 단건 필드 수정

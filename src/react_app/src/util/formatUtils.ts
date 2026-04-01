@@ -8,14 +8,16 @@
  *
  * [사용 방법]
  * @example
- * import { formatPhone, formatCurrency, formatDate } from '@util/formatUtils';
+ * import { formatPhone, formatCurrency, formatDate, formatDateTime, formatZipCode } from '@util/formatUtils';
  *
- * formatPhone('01012345678')         → '010-1234-5678'
- * formatBizNo('1234567890')          → '123-45-67890'
- * formatCurrency(1500000, '원')      → '1,500,000원'
- * formatDate('2024-01-15')           → '2024-01-15'
- * formatFileSize(2621440)            → '2.5 MB'
- * stripNonNumeric('010-1234-5678')   → '01012345678'
+ * formatPhone('01012345678')              → '010-1234-5678'
+ * formatBizNo('1234567890')              → '123-45-67890'
+ * formatZipCode('06234')                 → '06234'  (5자리 그대로)
+ * formatCurrency(1500000, '원')           → '1,500,000원'
+ * formatDate('2024-01-15')               → '2024-01-15'
+ * formatDateTime('2024-01-15 09:30:00')  → '2024-01-15 09:30:00'
+ * formatFileSize(2621440)                → '2.5 MB'
+ * stripNonNumeric('010-1234-5678')       → '01012345678'
  */
 import dayjs, { Dayjs } from 'dayjs';
 
@@ -87,6 +89,30 @@ export function formatFileSize(bytes: number | null | undefined): string {
     const size = bytes / Math.pow(1024, i);
 
     return `${size.toFixed(i === 0 ? 0 : 1)} ${units[i]}`;
+}
+
+/**
+ * 날짜+시간 포맷 (dayjs 래핑)
+ * @example formatDateTime('2024-01-15 09:30:00') → '2024-01-15 09:30:00'
+ * @example formatDateTime('2024-01-15T09:30:00', 'YYYY년 MM월 DD일 HH시 mm분') → '2024년 01월 15일 09시 30분'
+ */
+export function formatDateTime(
+    value: string | Date | null | undefined,
+    format: string = 'YYYY-MM-DD HH:mm:ss'
+): string {
+    if (!value) return '';
+    const d = dayjs(value);
+    return d.isValid() ? d.format(format) : '';
+}
+
+/**
+ * 우편번호 포맷 (숫자만 추출, 5자리 맞춤)
+ * @example formatZipCode('06234')   → '06234'
+ * @example formatZipCode('062340')  → '06234'  (초과분 제거)
+ */
+export function formatZipCode(value: string | null | undefined): string {
+    if (!value) return '';
+    return value.replace(/\D/g, '').slice(0, 5);
 }
 
 /**

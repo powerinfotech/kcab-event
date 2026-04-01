@@ -11,27 +11,37 @@
  * import {
  *   getToday, getThisMonth, getThisYear,
  *   getLastDay, getLastDate,
- *   addDays, addMonths,
- *   diffDays, diffMonths,
- *   isValidDateRange
+ *   getStartOfMonth, getEndOfMonth,
+ *   addDays, addMonths, addYears,
+ *   diffDays, diffMonths, diffYears,
+ *   isToday, isValidDateRange
  * } from '@util/dateUtils';
  *
  * // 현재 날짜 조회
- * getToday()                        → '2026-03-31'
- * getThisMonth()                    → '2026-03'
- * getThisYear()                     → '2026'
+ * getToday()                              → '2026-03-31'
+ * getThisMonth()                          → '2026-03'
+ * getThisYear()                           → '2026'
+ *
+ * // 월 시작/종료일
+ * getStartOfMonth('2026-03-15')           → '2026-03-01'
+ * getEndOfMonth('2026-03-15')             → '2026-03-31'
  *
  * // 마지막 일자
- * getLastDay(2026, 2)               → 28
- * getLastDate(2026, 3)              → '2026-03-31'
+ * getLastDay(2026, 2)                     → 28
+ * getLastDate(2026, 3)                    → '2026-03-31'
  *
  * // 날짜 가감
- * addDays('2026-03-31', 7)          → '2026-04-07'
- * addMonths('2026-03-31', -2)       → '2026-01-31'
+ * addDays('2026-03-31', 7)               → '2026-04-07'
+ * addMonths('2026-03-31', -2)            → '2026-01-31'
+ * addYears('2026-03-31', 1)              → '2027-03-31'
  *
  * // 차이 계산
  * diffDays('2026-03-01', '2026-03-31')   → 30
  * diffMonths('2026-01-15', '2026-04-15') → 3
+ * diffYears('2020-01-01', '2026-03-31')  → 6
+ *
+ * // 오늘 여부 확인
+ * isToday('2026-03-31')                  → true/false (실행 일자 기준)
  *
  * // 시작-종료일 유효성 검증
  * isValidDateRange('2026-03-01', '2026-03-31') → true
@@ -85,6 +95,42 @@ export function getThisMonth(format: string = 'YYYY-MM'): string {
  */
 export function getThisYear(format: string = 'YYYY'): string {
     return dayjs().format(format);
+}
+
+// ============================================================
+// 월 시작/종료일 조회
+// ============================================================
+
+/**
+ * 해당 날짜가 속한 월의 첫째 날을 반환
+ *
+ * @param date   - 기준 일자 (기본: 오늘)
+ * @param format - 출력 포맷 (기본: 'YYYY-MM-DD')
+ * @returns 월 첫째 날 문자열
+ *
+ * @example
+ * getStartOfMonth('2026-03-15')           → '2026-03-01'
+ * getStartOfMonth('2026-03-15', 'YYYYMMDD') → '20260301'
+ * getStartOfMonth()                       → 이번 달 1일
+ */
+export function getStartOfMonth(date?: string | Date, format: string = 'YYYY-MM-DD'): string {
+    return dayjs(date).startOf('month').format(format);
+}
+
+/**
+ * 해당 날짜가 속한 월의 마지막 날을 반환
+ *
+ * @param date   - 기준 일자 (기본: 오늘)
+ * @param format - 출력 포맷 (기본: 'YYYY-MM-DD')
+ * @returns 월 마지막 날 문자열
+ *
+ * @example
+ * getEndOfMonth('2026-03-15')             → '2026-03-31'
+ * getEndOfMonth('2026-02-01')             → '2026-02-28'
+ * getEndOfMonth()                         → 이번 달 마지막 날
+ */
+export function getEndOfMonth(date?: string | Date, format: string = 'YYYY-MM-DD'): string {
+    return dayjs(date).endOf('month').format(format);
 }
 
 // ============================================================
@@ -164,6 +210,24 @@ export function addMonths(date: string | Date, months: number, format: string = 
     return dayjs(date).add(months, 'month').format(format);
 }
 
+/**
+ * 기준 일자에서 년(year)을 더하거나 빼서 반환
+ * - 양수: 미래 날짜, 음수: 과거 날짜
+ *
+ * @param date   - 기준 일자 (문자열 또는 Date)
+ * @param years  - 더할 년수 (음수면 빼기)
+ * @param format - 출력 포맷 (기본: 'YYYY-MM-DD')
+ * @returns 계산된 일자 문자열
+ *
+ * @example
+ * addYears('2026-03-31', 1)         → '2027-03-31'   (1년 후)
+ * addYears('2026-03-31', -3)        → '2023-03-31'   (3년 전)
+ * addYears('2024-02-29', 1)         → '2025-02-28'   (윤년 말일 자동 보정)
+ */
+export function addYears(date: string | Date, years: number, format: string = 'YYYY-MM-DD'): string {
+    return dayjs(date).add(years, 'year').format(format);
+}
+
 // ============================================================
 // 날짜 차이 계산
 // ============================================================
@@ -203,9 +267,42 @@ export function diffMonths(startDate: string | Date, endDate: string | Date): nu
     return dayjs(endDate).diff(dayjs(startDate), 'month');
 }
 
+/**
+ * 두 일자 간의 차이 년수를 계산
+ * - endDate - startDate 방향으로 계산 (endDate가 이후면 양수)
+ * - 소수점 이하 버림 (완전한 년 단위)
+ *
+ * @param startDate - 시작 일자
+ * @param endDate   - 종료 일자
+ * @returns 차이 년수 (절대값 아님, 방향 포함)
+ *
+ * @example
+ * diffYears('2020-01-01', '2026-03-31')  → 6
+ * diffYears('2020-06-01', '2026-03-01')  → 5   (완전한 6년 미도달)
+ * diffYears('2026-01-01', '2020-01-01')  → -6
+ */
+export function diffYears(startDate: string | Date, endDate: string | Date): number {
+    return dayjs(endDate).diff(dayjs(startDate), 'year');
+}
+
 // ============================================================
 // 날짜 유효성 검증
 // ============================================================
+
+/**
+ * 주어진 날짜가 오늘인지 확인
+ *
+ * @param date - 확인할 날짜
+ * @returns true: 오늘, false: 오늘이 아님
+ *
+ * @example
+ * isToday('2026-04-01')   → true  (오늘이 2026-04-01인 경우)
+ * isToday('2026-01-01')   → false
+ * isToday(new Date())     → true
+ */
+export function isToday(date: string | Date): boolean {
+    return dayjs(date).isSame(dayjs(), 'day');
+}
 
 /**
  * 시작일이 종료일보다 이전(또는 같은)인지 검증
