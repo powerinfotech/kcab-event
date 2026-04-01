@@ -10,6 +10,9 @@ import org.springframework.stereotype.Component;
  * 비밀번호 해시 생성과 검증을 정적 메서드로 제공한다.
  * salt는 BCrypt 해시 결과에 포함되므로 별도 저장이 필요 없다.</p>
  *
+ * <p><strong>설계 참고:</strong> {@code @Component}로 등록되어 있으나 모든 메서드가 {@code static}이므로
+ * 주입 없이 클래스명으로 직접 호출한다. Spring Bean 인스턴스는 생성되나 실제로 사용되지는 않는다.</p>
+ *
  * <h3>사용 예시</h3>
  * <pre>
  * // 회원가입 · 비밀번호 변경 시 해시 생성

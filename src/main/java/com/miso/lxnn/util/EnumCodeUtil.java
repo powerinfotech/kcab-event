@@ -18,6 +18,9 @@ import java.util.stream.Collectors;
  * <p>Reflections 라이브러리를 통해 {@code com.miso.lxnn.enums} 패키지의 모든 열거형을 스캔하고,
  * {@code value} 필드를 기준으로 열거형 이름({@link Enum#name()}) → 값 문자열의 Map을 반환한다.</p>
  *
+ * <p><strong>설계 참고:</strong> {@code @Component}로 등록되어 있으나 모든 메서드가 {@code static}이므로
+ * 주입 없이 클래스명으로 직접 호출한다. Spring Bean 인스턴스는 생성되나 실제로 사용되지는 않는다.</p>
+ *
  * <h3>전제 조건</h3>
  * <ul>
  *   <li>코드 목록으로 노출할 열거형은 {@code value}라는 이름의 {@link String} 필드를 가져야 한다.</li>

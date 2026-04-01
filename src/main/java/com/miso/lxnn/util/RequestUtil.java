@@ -68,11 +68,12 @@ public class RequestUtil {
     /**
      * User-Agent 문자열에서 클라이언트 운영체제를 추출한다.
      *
-     * @param userAgent {@code User-Agent} 헤더 값
+     * @param userAgent {@code User-Agent} 헤더 값 ({@code null}이면 {@code "Other"} 반환)
      * @return OS 이름 ({@code "Windows"}, {@code "iPhone"}, {@code "iPad"},
      *         {@code "android"}, {@code "mac"}, {@code "Linux"}, {@code "Other"} 중 하나)
      */
     public static String getClientOS(String userAgent) {
+        if (userAgent == null) return "Other";
         String os = "";
         userAgent = userAgent.toLowerCase();
         if (userAgent.contains("windows")) {
@@ -98,11 +99,12 @@ public class RequestUtil {
     /**
      * User-Agent 문자열에서 브라우저 종류를 추출한다.
      *
-     * @param userAgent {@code User-Agent} 헤더 값
+     * @param userAgent {@code User-Agent} 헤더 값 ({@code null}이면 {@code ""} 반환)
      * @return 브라우저 식별자 ({@code "ie"}, {@code "edge"}, {@code "whale"},
      *         {@code "opera"}, {@code "firefox"}, {@code "safari"}, {@code "chrome"}, 또는 {@code ""})
      */
     public static String getBrowser(String userAgent) {
+        if (userAgent == null) return "";
         String browser 	 = "";
 
         if(userAgent.contains("Trident")) {

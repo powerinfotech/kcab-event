@@ -49,6 +49,9 @@ public class StringStripJsonDeserializer extends JsonDeserializer<String> {
      */
     @Override
     public String deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
+        // p.getValueAsString()은 JSON null 토큰을 "" (빈 문자열)로 반환한다.
+        // p.getText()와 달리 null 토큰에 대해 "null" 문자열을 반환하지 않으므로
+        // null → null 변환이 의도대로 동작한다.
         String value = p.getValueAsString();
 
         if (value == null) {
