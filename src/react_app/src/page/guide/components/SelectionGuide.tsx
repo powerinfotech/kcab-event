@@ -7,6 +7,7 @@ import CustomMultiSelect from '@component/select/CustomMultiSelect';
 import CustomAutoComplete from '@component/input/CustomAutoComplete';
 import CustomRadioGroup from '@component/select/CustomRadioGroup';
 import CustomCheckbox from '@component/select/CustomCheckbox';
+import CustomCheckboxGroup from '@component/select/CustomCheckboxGroup';
 import { GuideSection, GuideDemoBox, GuideStatusRow, GuideStatusItem } from './GuideSection';
 
 const selectOptions = [
@@ -51,6 +52,7 @@ const SelectionGuide = () => {
   const [checkB, setCheckB] = useState(false);
   const [switchValue, setSwitchValue] = useState(true);
   const [treeValue, setTreeValue] = useState<string | undefined>();
+  const [checkGroupValue, setCheckGroupValue] = useState<string[]>(['READ']);
 
   return (
     <GuideSection id="selection" title="선택 컴포넌트 (Selection)" description="드롭다운, 라디오, 체크박스 등 선택 컴포넌트">
@@ -125,8 +127,8 @@ const SelectionGuide = () => {
         </GuideStatusRow>
       </GuideDemoBox>
 
-      {/* CheckboxGroup */}
-      <GuideDemoBox title="CheckboxGroup (체크박스 그룹)">
+      {/* Checkbox (단일) */}
+      <GuideDemoBox title="Checkbox (단일 체크박스)">
         <GuideStatusRow>
           <GuideStatusItem label="enabled">
             <div className="guide-demo-inline">
@@ -141,6 +143,48 @@ const SelectionGuide = () => {
             </div>
           </GuideStatusItem>
         </GuideStatusRow>
+      </GuideDemoBox>
+
+      {/* CheckboxGroup (그룹) */}
+      <GuideDemoBox title="CheckboxGroup (체크박스 그룹)">
+        <GuideStatusRow>
+          <GuideStatusItem label="enabled">
+            <CustomCheckboxGroup
+              options={[
+                { value: 'READ', label: '조회' },
+                { value: 'WRITE', label: '등록/수정' },
+                { value: 'DELETE', label: '삭제' },
+              ]}
+              value={checkGroupValue}
+              onChange={(vals) => setCheckGroupValue(vals as string[])}
+            />
+          </GuideStatusItem>
+          <GuideStatusItem label="일부 비활성">
+            <CustomCheckboxGroup
+              options={[
+                { value: 'READ', label: '조회' },
+                { value: 'WRITE', label: '등록/수정', disabled: true },
+                { value: 'DELETE', label: '삭제', disabled: true },
+              ]}
+              value={checkGroupValue}
+              onChange={(vals) => setCheckGroupValue(vals as string[])}
+            />
+          </GuideStatusItem>
+          <GuideStatusItem label="disabled">
+            <CustomCheckboxGroup
+              options={[
+                { value: 'READ', label: '조회' },
+                { value: 'WRITE', label: '등록/수정' },
+                { value: 'DELETE', label: '삭제' },
+              ]}
+              value={['READ', 'WRITE']}
+              disabled
+            />
+          </GuideStatusItem>
+        </GuideStatusRow>
+        <div className="guide-demo-description">
+          단일 체크박스는 CustomCheckbox, 다중 선택 그룹은 CustomCheckboxGroup 사용
+        </div>
       </GuideDemoBox>
 
       {/* Toggle / Switch */}

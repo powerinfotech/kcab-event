@@ -8,6 +8,7 @@ import CustomCard from '@component/display/CustomCard';
 import CustomDescriptions, { CustomDescriptionsItem } from '@component/display/CustomDescriptions';
 import CustomDirectoryTree from '@component/display/CustomDirectoryTree';
 import CustomSpace from '@component/button/CustomSpace';
+import CustomCollapse from '@component/display/CustomCollapse';
 import CustomExcelDownload from '@component/upload/CustomExcelDownload';
 import CustomExcelUpload from '@component/upload/CustomExcelUpload';
 import {
@@ -209,6 +210,61 @@ const DataDisplayGuide = () => {
               { color: 'blue', children: 'QA 테스트 시작 (2024-03-18 09:00)' },
               { color: 'gray', children: '개발 완료 (2024-03-15 18:00)' },
               { color: 'gray', children: '요구사항 확정 (2024-03-10 11:00)' },
+            ]}
+          />
+        </div>
+      </GuideDemoBox>
+
+      {/* Collapse */}
+      <GuideDemoBox title="Collapse (아코디언)">
+        <div className="guide-sub-section">
+          <h5>기본 아코디언</h5>
+          <CustomCollapse
+            defaultActiveKey={['1']}
+            items={[
+              {
+                key: '1',
+                label: '검색 필터',
+                children: (
+                  <p>검색 조건 영역입니다. 펼쳤다 접을 수 있는 필터 패널에 활용합니다.</p>
+                ),
+              },
+              {
+                key: '2',
+                label: '고급 설정',
+                children: (
+                  <p>추가 설정 영역입니다. 자주 사용하지 않는 옵션을 숨길 때 유용합니다.</p>
+                ),
+              },
+              {
+                key: '3',
+                label: '도움말',
+                children: (
+                  <p>도움말 내용입니다. 사용자 안내 텍스트를 접어둘 때 사용합니다.</p>
+                ),
+              },
+            ]}
+          />
+        </div>
+        <div className="guide-sub-section">
+          <h5>accordion 모드 (하나만 열림)</h5>
+          <CustomCollapse
+            accordion
+            items={[
+              { key: '1', label: '항목 1', children: <p>항목 1 내용 — accordion 모드에서는 하나만 열립니다.</p> },
+              { key: '2', label: '항목 2', children: <p>항목 2 내용</p> },
+              { key: '3', label: '항목 3', children: <p>항목 3 내용</p> },
+            ]}
+          />
+        </div>
+        <div className="guide-sub-section">
+          <h5>테두리 없음</h5>
+          <CustomCollapse
+            bordered={false}
+            defaultActiveKey={['1']}
+            items={[
+              { key: '1', label: '테두리 없는 패널', children: <p>bordered=false 옵션으로 테두리를 제거합니다.</p> },
+              { key: '2', label: '패널 2', children: <p>내용 영역</p> },
             ]}
           />
         </div>

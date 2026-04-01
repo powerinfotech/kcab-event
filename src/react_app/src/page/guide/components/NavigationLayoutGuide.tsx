@@ -3,12 +3,37 @@ import CustomBreadcrumb from '@component/navigation/CustomBreadcrumb';
 import CustomTabs from '@component/navigation/CustomTabs';
 import CustomSteps from '@component/navigation/CustomSteps';
 import CustomPagination from '@component/navigation/CustomPagination';
-import { HomeOutlined, UserOutlined, SettingOutlined } from '@ant-design/icons';
+import CustomMenu from '@component/navigation/CustomMenu';
+import CustomPageHeader from '@component/layout/CustomPageHeader';
+import CustomButton from '@component/button/CustomButton';
+import CustomSpace from '@component/button/CustomSpace';
+import type { MenuProps } from 'antd';
+import { HomeOutlined, UserOutlined, SettingOutlined, TeamOutlined, FileTextOutlined, AppstoreOutlined } from '@ant-design/icons';
 import { GuideSection, GuideDemoBox, GuideStatusRow, GuideStatusItem } from './GuideSection';
+
+type MenuItem = Required<MenuProps>['items'][number];
+
+const menuItems: MenuItem[] = [
+  {
+    key: 'system',
+    icon: <AppstoreOutlined />,
+    label: '시스템관리',
+    children: [
+      { key: 'user', icon: <TeamOutlined />, label: '사용자관리' },
+      { key: 'code', icon: <FileTextOutlined />, label: '코드관리' },
+    ],
+  },
+  {
+    key: 'setting',
+    icon: <SettingOutlined />,
+    label: '환경설정',
+  },
+];
 
 const NavigationLayoutGuide = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedMenuKey, setSelectedMenuKey] = useState('user');
 
   return (
     <GuideSection id="navigation-layout" title="네비게이션 / 레이아웃 (Navigation & Layout)" description="메뉴, 탭, 페이지네이션 등 네비게이션 컴포넌트">
@@ -96,6 +121,70 @@ const NavigationLayoutGuide = () => {
             <CustomPagination defaultCurrent={1} total={50} disabled />
           </GuideStatusItem>
         </GuideStatusRow>
+      </GuideDemoBox>
+
+      {/* Menu */}
+      <GuideDemoBox title="Menu (메뉴 네비게이션)">
+        <div className="guide-sub-section">
+          <h5>인라인 메뉴 (사이드바)</h5>
+          <div style={{ width: 240, border: '1px solid #f0f0f0', borderRadius: 8 }}>
+            <CustomMenu
+              mode="inline"
+              selectedKeys={[selectedMenuKey]}
+              defaultOpenKeys={['system']}
+              items={menuItems}
+              onClick={({ key }) => setSelectedMenuKey(key)}
+            />
+          </div>
+        </div>
+        <div className="guide-sub-section">
+          <h5>수평 메뉴 (GNB)</h5>
+          <CustomMenu
+            mode="horizontal"
+            selectedKeys={[selectedMenuKey]}
+            items={[
+              { key: 'home', icon: <HomeOutlined />, label: '홈' },
+              { key: 'user', icon: <TeamOutlined />, label: '사용자관리' },
+              { key: 'setting', icon: <SettingOutlined />, label: '환경설정', disabled: true },
+            ]}
+            onClick={({ key }) => setSelectedMenuKey(key)}
+          />
+        </div>
+        <div className="guide-demo-description">
+          mode="inline" — 사이드바 / mode="horizontal" — 상단 GNB / inlineCollapsed — 아이콘 전용 축소 모드
+        </div>
+      </GuideDemoBox>
+
+      {/* PageHeader */}
+      <GuideDemoBox title="PageHeader (페이지 헤더)">
+        <div className="guide-sub-section">
+          <h5>기본 제목</h5>
+          <CustomPageHeader title="사용자 관리" />
+        </div>
+        <div className="guide-sub-section">
+          <h5>뒤로가기 + 보조 제목 + 부가 액션</h5>
+          <CustomPageHeader
+            title="사용자 상세"
+            onBack={() => {}}
+            subTitle="전체 12건"
+            extra={
+              <CustomSpace>
+                <CustomButton>수정</CustomButton>
+                <CustomButton danger>삭제</CustomButton>
+              </CustomSpace>
+            }
+          />
+        </div>
+        <div className="guide-sub-section">
+          <h5>등록 버튼 포함</h5>
+          <CustomPageHeader
+            title="공지사항"
+            extra={<CustomButton type="primary">등록</CustomButton>}
+          />
+        </div>
+        <div className="guide-demo-description">
+          onBack 전달 시 좌측에 뒤로가기 버튼 표시 / extra에 버튼·태그 등 ReactNode 배치 가능
+        </div>
       </GuideDemoBox>
 
       {/* Layout 안내 */}

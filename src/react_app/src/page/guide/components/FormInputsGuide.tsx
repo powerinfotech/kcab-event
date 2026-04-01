@@ -9,6 +9,7 @@ import CustomRangePicker from '@component/date/CustomRangePicker';
 import CustomDateRangePicker from '@component/date/CustomDateRangePicker';
 import CustomTimePicker from '@component/date/CustomTimePicker';
 import CustomMaskedInput from '@component/input/CustomMaskedInput';
+import CustomTimeRangePicker from '@component/date/CustomTimeRangePicker';
 import { GuideSection, GuideDemoBox, GuideStatusRow, GuideStatusItem } from './GuideSection';
 
 const FormInputsGuide = () => {
@@ -161,6 +162,24 @@ const FormInputsGuide = () => {
             <CustomDatePicker picker="month" locale={locale} disabled allowEmpty />
           </GuideStatusItem>
         </GuideStatusRow>
+      </GuideDemoBox>
+
+      {/* TimeRangePicker */}
+      <GuideDemoBox title="TimeRangePicker (시간 범위 선택)">
+        <GuideStatusRow>
+          <GuideStatusItem label="enabled">
+            <CustomTimeRangePicker format="HH:mm" placeholder={['시작 시간', '종료 시간']} />
+          </GuideStatusItem>
+          <GuideStatusItem label="30분 단위">
+            <CustomTimeRangePicker format="HH:mm" minuteStep={30} placeholder={['시작', '종료']} />
+          </GuideStatusItem>
+          <GuideStatusItem label="disabled">
+            <CustomTimeRangePicker format="HH:mm" disabled />
+          </GuideStatusItem>
+        </GuideStatusRow>
+        <div className="guide-demo-description">
+          시작·종료 시간을 하나의 피커에서 선택. 개별 관리가 필요하면 CustomTimePicker 두 개를 사용
+        </div>
       </GuideDemoBox>
     </GuideSection>
   );

@@ -11,6 +11,8 @@ import NavigationLayoutGuide from './components/NavigationLayoutGuide';
 import SearchFilterGuide from './components/SearchFilterGuide';
 import ChartsGuide from './components/ChartsGuide';
 import UtilityGuide from './components/UtilityGuide';
+import PopupGuide from './components/PopupGuide';
+import SpecialGuide from './components/SpecialGuide';
 
 const anchorItems = [
   { key: 'form-inputs', href: '#form-inputs', title: '폼 입력' },
@@ -21,6 +23,8 @@ const anchorItems = [
   { key: 'feedback', href: '#feedback', title: '피드백/알림' },
   { key: 'buttons-actions', href: '#buttons-actions', title: '버튼/액션' },
   { key: 'search-filter', href: '#search-filter', title: '검색/필터' },
+  { key: 'popup', href: '#popup', title: '팝업' },
+  { key: 'special', href: '#special', title: '특수 컴포넌트' },
   { key: 'charts', href: '#charts', title: '차트' },
   { key: 'utility', href: '#utility', title: '유틸리티' },
 ];
@@ -44,6 +48,8 @@ const Guide = ({ menuInfo }: { menuInfo?: MenuInfo }) => {
         <FeedbackGuide />
         <ButtonsActionsGuide />
         <SearchFilterGuide />
+        <PopupGuide />
+        <SpecialGuide />
         <ChartsGuide />
         <UtilityGuide />
       </main>

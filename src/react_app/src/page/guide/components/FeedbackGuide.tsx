@@ -7,13 +7,29 @@ import CustomDrawer from '@component/feedback/CustomDrawer';
 import CustomAlert from '@component/feedback/CustomAlert';
 import CustomSkeleton from '@component/feedback/CustomSkeleton';
 import CustomProgress from '@component/feedback/CustomProgress';
+import CustomPopconfirm from '@component/feedback/CustomPopconfirm';
+import CustomResult from '@component/feedback/CustomResult';
+import CustomSpin from '@component/feedback/CustomSpin';
+import CustomTable from '@component/display/CustomTable';
 import { GuideSection, GuideDemoBox, GuideStatusRow, GuideStatusItem } from './GuideSection';
 
 const { confirm } = Modal;
 
+const spinTableColumns = [
+  { title: 'ID', dataIndex: 'id', key: 'id', width: '20%', align: 'center' as const },
+  { title: '이름', dataIndex: 'name', key: 'name' },
+  { title: '부서', dataIndex: 'dept', key: 'dept' },
+];
+const spinTableData = [
+  { id: 1, name: '홍길동', dept: '개발팀' },
+  { id: 2, name: '김철수', dept: '인사팀' },
+];
+
 const FeedbackGuide = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [resultStatus, setResultStatus] = useState<'success' | 'error' | 'warning' | '404' | '403' | '500' | null>(null);
+  const [isSpinning, setIsSpinning] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
 
   const showConfirm = () => {
@@ -144,6 +160,139 @@ const FeedbackGuide = () => {
           <CustomProgress percent={100} />
           <CustomProgress percent={50} status="exception" />
           <CustomProgress type="circle" percent={75} size={80} />
+        </div>
+      </GuideDemoBox>
+
+      {/* Popconfirm */}
+      <GuideDemoBox title="Popconfirm (인라인 확인 팝업)">
+        <div className="guide-feedback-row">
+          <CustomPopconfirm
+            title="삭제 확인"
+            description="선택한 항목을 삭제하시겠습니까?"
+            onConfirm={() => messageApi.success('삭제되었습니다.')}
+          >
+            <CustomButton danger>삭제</CustomButton>
+          </CustomPopconfirm>
+          <CustomPopconfirm
+            title="초기화"
+            description="입력한 내용이 모두 초기화됩니다."
+            okText="초기화"
+            cancelText="돌아가기"
+            onConfirm={() => messageApi.info('초기화되었습니다.')}
+          >
+            <CustomButton>초기화</CustomButton>
+          </CustomPopconfirm>
+          <CustomPopconfirm
+            title="진행하시겠습니까?"
+            icon={null}
+            onConfirm={() => messageApi.success('진행합니다.')}
+          >
+            <CustomButton type="primary">아이콘 없이</CustomButton>
+          </CustomPopconfirm>
+        </div>
+        <div className="guide-demo-description">
+          Modal.confirm과 달리 요소 옆에 말풍선으로 표시. 삭제·초기화 등 가벼운 확인 동작에 사용
+        </div>
+      </GuideDemoBox>
+
+      {/* Spin */}
+      <GuideDemoBox title="Spin (영역 로딩 스피너)">
+        <GuideStatusRow>
+          <GuideStatusItem label="영역 감싸기">
+            <div>
+              <CustomButton
+                style={{ marginBottom: 12 }}
+                onClick={() => {
+                  setIsSpinning(true);
+                  setTimeout(() => setIsSpinning(false), 2000);
+                }}
+              >
+                로딩 시작 (2초)
+              </CustomButton>
+              <CustomSpin spinning={isSpinning} tip="데이터를 불러오는 중...">
+                <CustomTable
+                  rowKey="id"
+                  columns={spinTableColumns}
+                  dataSource={spinTableData}
+                  pagination={false}
+                />
+              </CustomSpin>
+            </div>
+          </GuideStatusItem>
+          <GuideStatusItem label="단독 스피너">
+            <CustomSpin />
+          </GuideStatusItem>
+          <GuideStatusItem label="small">
+            <CustomSpin size="small" />
+          </GuideStatusItem>
+          <GuideStatusItem label="large">
+            <CustomSpin size="large" />
+          </GuideStatusItem>
+        </GuideStatusRow>
+        <div className="guide-demo-description">
+          특정 영역만 로딩 처리. 전역 로딩은 CustomLoading(layout) 사용
+        </div>
+      </GuideDemoBox>
+
+      {/* Result */}
+      <GuideDemoBox title="Result (결과 상태 표시)">
+        <div className="guide-feedback-row" style={{ marginBottom: 16 }}>
+          <CustomButton type="primary" onClick={() => setResultStatus('success')}>성공</CustomButton>
+          <CustomButton onClick={() => setResultStatus('warning')}>경고</CustomButton>
+          <CustomButton danger onClick={() => setResultStatus('error')}>오류</CustomButton>
+          <CustomButton onClick={() => setResultStatus('404')}>404</CustomButton>
+          <CustomButton onClick={() => setResultStatus('403')}>403</CustomButton>
+          <CustomButton onClick={() => setResultStatus('500')}>500</CustomButton>
+        </div>
+        {resultStatus === 'success' && (
+          <CustomResult
+            status="success"
+            title="등록이 완료되었습니다."
+            subTitle="사용자 정보가 성공적으로 저장되었습니다."
+            extra={<CustomButton onClick={() => setResultStatus(null)}>닫기</CustomButton>}
+          />
+        )}
+        {resultStatus === 'warning' && (
+          <CustomResult
+            status="warning"
+            title="처리 중 일부 항목에서 문제가 발생했습니다."
+            subTitle="확인 후 다시 시도해주세요."
+            extra={<CustomButton onClick={() => setResultStatus(null)}>닫기</CustomButton>}
+          />
+        )}
+        {resultStatus === 'error' && (
+          <CustomResult
+            status="error"
+            title="처리에 실패하였습니다."
+            subTitle="잠시 후 다시 시도해주세요."
+            extra={<CustomButton onClick={() => setResultStatus(null)}>닫기</CustomButton>}
+          />
+        )}
+        {resultStatus === '404' && (
+          <CustomResult
+            status="404"
+            title="페이지를 찾을 수 없습니다."
+            extra={<CustomButton onClick={() => setResultStatus(null)}>닫기</CustomButton>}
+          />
+        )}
+        {resultStatus === '403' && (
+          <CustomResult
+            status="403"
+            title="접근 권한이 없습니다."
+            subTitle="관리자에게 문의하세요."
+            extra={<CustomButton onClick={() => setResultStatus(null)}>닫기</CustomButton>}
+          />
+        )}
+        {resultStatus === '500' && (
+          <CustomResult
+            status="500"
+            title="서버 오류가 발생하였습니다."
+            subTitle="잠시 후 다시 시도해주세요."
+            extra={<CustomButton onClick={() => setResultStatus(null)}>닫기</CustomButton>}
+          />
+        )}
+        <div className="guide-demo-description">
+          작업 완료·오류·권한 없음 등 결과 상태를 페이지 또는 영역에 표시. status: success / warning / error / 404 / 403 / 500
         </div>
       </GuideDemoBox>
     </GuideSection>
