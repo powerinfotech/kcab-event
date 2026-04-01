@@ -20,7 +20,7 @@ const CommonCodeManagement = ({handlersRef}: {onChange?: (flag: boolean) => void
         <>
             <section className="search-wrap">
                 <form>
-                    <span>ID/성명</span>
+                    <span>공통그룹코드/명</span>
                     <CustomInput
                         value={mgmt.searchText}
                         onChange={(e) => mgmt.setSearchText(e.target.value)}
