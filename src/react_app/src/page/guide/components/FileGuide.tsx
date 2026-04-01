@@ -71,19 +71,19 @@ const FileGuide = ({ menuSeq }: FileGuideProps) => {
       </GuideDemoBox>
 
       {/* ImageUpload */}
-      <GuideDemoBox title="ImageUpload (이미지 업로드)">
-        <GuideStatusRow>
-          <GuideStatusItem label="enabled (최대 3장)">
-            <CustomImageUpload maxCount={3} />
-          </GuideStatusItem>
-          <GuideStatusItem label="disabled">
-            <CustomImageUpload disabled />
-          </GuideStatusItem>
-        </GuideStatusRow>
-        <div className="guide-demo-description">
-          이미지 파일만 허용 (image/*) / 썸네일 미리보기 / 클릭하여 원본 크기 확대 가능 / maxCount 초과 시 업로드 버튼 자동 숨김
-        </div>
-      </GuideDemoBox>
+      {/*<GuideDemoBox title="ImageUpload (이미지 업로드)">*/}
+      {/*  <GuideStatusRow>*/}
+      {/*    <GuideStatusItem label="enabled (최대 3장)">*/}
+      {/*      <CustomImageUpload maxCount={3} />*/}
+      {/*    </GuideStatusItem>*/}
+      {/*    <GuideStatusItem label="disabled">*/}
+      {/*      <CustomImageUpload disabled />*/}
+      {/*    </GuideStatusItem>*/}
+      {/*  </GuideStatusRow>*/}
+      {/*  <div className="guide-demo-description">*/}
+      {/*    이미지 파일만 허용 (image/*) / 썸네일 미리보기 / 클릭하여 원본 크기 확대 가능 / maxCount 초과 시 업로드 버튼 자동 숨김*/}
+      {/*  </div>*/}
+      {/*</GuideDemoBox>*/}
     </GuideSection>
   );
 };
