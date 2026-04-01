@@ -1,12 +1,18 @@
 import React, { useState } from 'react';
-import { Modal, notification, message } from 'antd';
-import { ExclamationCircleOutlined } from '@ant-design/icons';
+import { Modal, message } from 'antd';
+import { ExclamationCircleOutlined, QuestionCircleOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import CustomButton from '@component/button/CustomButton';
 import CustomModal from '@component/feedback/CustomModal';
 import CustomDrawer from '@component/feedback/CustomDrawer';
 import CustomAlert from '@component/feedback/CustomAlert';
 import CustomSkeleton from '@component/feedback/CustomSkeleton';
 import CustomProgress from '@component/feedback/CustomProgress';
+import CustomNotification from '@component/feedback/CustomNotification';
+import CustomPopconfirm from '@component/feedback/CustomPopconfirm';
+import CustomPopover from '@component/feedback/CustomPopover';
+import CustomResult from '@component/feedback/CustomResult';
+import CustomSpin from '@component/feedback/CustomSpin';
+import CustomTooltip from '@component/feedback/CustomTooltip';
 import { GuideSection, GuideDemoBox, GuideStatusRow, GuideStatusItem } from './GuideSection';
 
 const { confirm } = Modal;
@@ -80,24 +86,24 @@ const FeedbackGuide = () => {
           <h5>Notification (상세 알림)</h5>
           <div className="guide-feedback-row">
             <CustomButton
-              onClick={() =>
-                notification.success({
-                  message: '처리 완료',
-                  description: '요청하신 작업이 성공적으로 완료되었습니다.',
-                })
-              }
+              onClick={() => CustomNotification.success('처리 완료', '요청하신 작업이 성공적으로 완료되었습니다.')}
             >
               성공 알림
             </CustomButton>
             <CustomButton
-              onClick={() =>
-                notification.error({
-                  message: '오류 발생',
-                  description: '서버와의 통신 중 오류가 발생하였습니다. 잠시 후 다시 시도해주세요.',
-                })
-              }
+              onClick={() => CustomNotification.error('오류 발생', '서버와의 통신 중 오류가 발생하였습니다.')}
             >
               오류 알림
+            </CustomButton>
+            <CustomButton
+              onClick={() => CustomNotification.warning('주의', '저장하지 않은 변경사항이 있습니다.')}
+            >
+              경고 알림
+            </CustomButton>
+            <CustomButton
+              onClick={() => CustomNotification.info('안내', '시스템 점검이 예정되어 있습니다.')}
+            >
+              정보 알림
             </CustomButton>
           </div>
         </div>
@@ -144,6 +150,134 @@ const FeedbackGuide = () => {
           <CustomProgress percent={100} />
           <CustomProgress percent={50} status="exception" />
           <CustomProgress type="circle" percent={75} size={80} />
+        </div>
+      </GuideDemoBox>
+
+      {/* Popconfirm */}
+      <GuideDemoBox title="Popconfirm (인라인 확인 팝업)">
+        <div className="guide-feedback-row">
+          <CustomPopconfirm
+            title="삭제 확인"
+            description="선택한 항목을 삭제하시겠습니까?"
+            onConfirm={() => messageApi.success('삭제되었습니다.')}
+          >
+            <CustomButton danger>삭제</CustomButton>
+          </CustomPopconfirm>
+          <CustomPopconfirm
+            title="초기화"
+            description="입력한 내용이 모두 사라집니다."
+            okText="초기화"
+            cancelText="돌아가기"
+            onConfirm={() => messageApi.info('초기화되었습니다.')}
+          >
+            <CustomButton>초기화</CustomButton>
+          </CustomPopconfirm>
+          <CustomPopconfirm
+            title="진행하시겠습니까?"
+            icon={null}
+            onConfirm={() => messageApi.success('진행되었습니다.')}
+          >
+            <CustomButton type="primary">아이콘 없이</CustomButton>
+          </CustomPopconfirm>
+        </div>
+      </GuideDemoBox>
+
+      {/* Popover */}
+      <GuideDemoBox title="Popover (팝오버)">
+        <div className="guide-feedback-row">
+          <CustomPopover
+            title="도움말"
+            content={<p>이 항목은 필수 입력 항목입니다.</p>}
+            trigger="hover"
+          >
+            <CustomButton icon={<QuestionCircleOutlined />}>hover</CustomButton>
+          </CustomPopover>
+          <CustomPopover
+            title="상세 정보"
+            content={
+              <div>
+                <p>이름: 홍길동</p>
+                <p>부서: 개발팀</p>
+                <p>직급: 과장</p>
+              </div>
+            }
+            trigger="click"
+          >
+            <CustomButton icon={<InfoCircleOutlined />}>click</CustomButton>
+          </CustomPopover>
+        </div>
+      </GuideDemoBox>
+
+      {/* Tooltip */}
+      <GuideDemoBox title="Tooltip (툴팁)">
+        <div className="guide-feedback-row">
+          <CustomTooltip title="클릭하면 저장됩니다.">
+            <CustomButton type="primary">저장</CustomButton>
+          </CustomTooltip>
+          <CustomTooltip title="도움말" placement="right">
+            <CustomButton icon={<QuestionCircleOutlined />}>right</CustomButton>
+          </CustomTooltip>
+          <CustomTooltip title="아래 방향" placement="bottom">
+            <CustomButton>bottom</CustomButton>
+          </CustomTooltip>
+          <CustomTooltip title="비활성화된 버튼 안내">
+            <span>
+              <CustomButton disabled>disabled</CustomButton>
+            </span>
+          </CustomTooltip>
+        </div>
+      </GuideDemoBox>
+
+      {/* Spin */}
+      <GuideDemoBox title="Spin (영역 로딩 스피너)">
+        <GuideStatusRow>
+          <GuideStatusItem label="영역 감싸기">
+            <CustomSpin spinning tip="불러오는 중...">
+              <div style={{ padding: 24, background: '#fafafa', borderRadius: 4, minWidth: 200 }}>
+                <p>테이블 또는 카드 영역</p>
+                <p>로딩 중에는 스피너가 덮습니다.</p>
+              </div>
+            </CustomSpin>
+          </GuideStatusItem>
+          <GuideStatusItem label="단독 (small)">
+            <CustomSpin size="small" />
+          </GuideStatusItem>
+          <GuideStatusItem label="단독 (default)">
+            <CustomSpin />
+          </GuideStatusItem>
+          <GuideStatusItem label="단독 (large)">
+            <CustomSpin size="large" />
+          </GuideStatusItem>
+        </GuideStatusRow>
+      </GuideDemoBox>
+
+      {/* Result */}
+      <GuideDemoBox title="Result (결과 화면)">
+        <div className="guide-sub-section">
+          <h5>success</h5>
+          <CustomResult
+            status="success"
+            title="등록이 완료되었습니다."
+            subTitle="사용자 정보가 성공적으로 저장되었습니다."
+            extra={<CustomButton type="primary">목록으로</CustomButton>}
+          />
+        </div>
+        <div className="guide-sub-section">
+          <h5>warning</h5>
+          <CustomResult
+            status="warning"
+            title="처리 중 일부 항목에서 문제가 발생했습니다."
+            extra={<CustomButton>확인</CustomButton>}
+          />
+        </div>
+        <div className="guide-sub-section">
+          <h5>error / 403 / 404 / 500</h5>
+          <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+            <CustomResult status="error" title="처리 실패" subTitle="오류가 발생하였습니다." />
+            <CustomResult status="403" title="접근 권한 없음" subTitle="관리자에게 문의하세요." />
+            <CustomResult status="404" title="페이지 없음" />
+            <CustomResult status="500" title="서버 오류" subTitle="잠시 후 다시 시도해주세요." />
+          </div>
         </div>
       </GuideDemoBox>
     </GuideSection>
