@@ -107,7 +107,7 @@ export function useCommonGroupCodeManagement() {
                 ) as ComGrpCdList[],
             });
             if (res.code !== HttpStatusCode.Ok) return;
-            message.success('저장이 완료 되었습니다.');
+            message.success('저장되었습니다.');
             await fetchList();
         } catch {
             // handled by axios interceptor

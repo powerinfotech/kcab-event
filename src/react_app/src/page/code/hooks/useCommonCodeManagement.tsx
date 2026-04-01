@@ -152,7 +152,7 @@ export function useCommonCodeManagement() {
                 comCdList: allItems,
             });
             if (res.code !== HttpStatusCode.Ok) return;
-            message.success('저장이 완료 되었습니다.');
+            message.success('저장되었습니다.');
             await fetchComCdList(selectedGrpCd.comGrpCdSeq);
         } catch {
             // handled by axios interceptor
