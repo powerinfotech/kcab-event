@@ -34,11 +34,11 @@
  */
 import React, {forwardRef, useState} from 'react';
 import {Radio, RadioProps, Tooltip} from 'antd';
-import {Control, Controller} from 'react-hook-form';
+import {Control, Controller, FieldValues} from 'react-hook-form';
 
 interface CustomRadioProps extends RadioProps {
     name:string;
-    control:Control<any>;
+    control:Control<FieldValues>;
     defaultValue?:any;
     onChangeValue?: (v:string) => void;
     options?: {value:any, label:string }[];

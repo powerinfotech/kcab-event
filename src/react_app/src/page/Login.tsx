@@ -23,7 +23,7 @@ const Login = () => {
         , control: saveFormControl
         , handleSubmit: saveFormHandleSubmit
         , setValue: saveFormSetValue
-        , getValues:saveFormGetValues} = useForm<{ userId: string, password: string, isRememberId:boolean,mode:string|null }>({mode:'onChange'});
+        , getValues:saveFormGetValues} = useForm({mode:'onChange'});
     const [cookies, setCookie, removeCookie] = useCookies(['id'], {doNotParse: true});
 
     const handleLogin = async() => {
@@ -84,7 +84,7 @@ const Login = () => {
         return data;
     };
 
-    const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement> | React.KeyboardEvent<HTMLElement>) => {
         if (event.key === 'Enter') {
             saveFormHandleSubmit(handleLogin)();
         }
@@ -116,15 +116,13 @@ const Login = () => {
         <>
             <div className='login-dim'></div>
             <div className='login-wrap'>
-                <h2 className='logo'>국가지점번호 센서관리 시스템</h2>
+                <h2 className='logo'>파워인포텍 리액트 공통</h2>
 
                 <form className={'ant-form'} onSubmit={saveFormHandleSubmit(handleLogin)}>
                     <div className={'ant-form-item ant-form-item-control-input'}>
                         <CustomValidFormInput
                             placeholder="아이디"
                             control={saveFormControl}
-                            onChangeValue={(v) => {
-                            }}
                             {...saveFormRegister('userId', {required: '아이디를 입력해주세요.'})}
                         />
                         <CustomValidFormInput
@@ -132,10 +130,8 @@ const Login = () => {
                             placeholder="비밀번호"
                             required={true}
                             control={saveFormControl}
-                            onChangeValue={(v) => {
-                            }}
                             {...saveFormRegister('password', {required: '비밀번호를 입력해주세요.'})}
-                            onKeyPress={handleKeyPress}
+                            onKeyDown={handleKeyPress}
                         />
                     </div>
 
@@ -158,7 +154,7 @@ const Login = () => {
 
 
                     <div className='copy-right'>
-                        Copyright © 국가지점번호 센서관리 시스템. All Rights Reserved.
+                        Copyright © 파워인포텍 리액트 공통. All Rights Reserved.
                     </div>
                 </form>
                 <Modal open={showFindIdModal} onCancel={()=> setShowFindIdModal(false)} footer={null} title={"아이디찾기"} destroyOnHidden>

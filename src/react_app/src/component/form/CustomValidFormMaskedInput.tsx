@@ -40,13 +40,13 @@
  */
 import React, {useState} from 'react';
 import {InputProps, Tooltip} from 'antd';
-import {Control, Controller} from 'react-hook-form';
+import {Control, Controller, FieldValues} from 'react-hook-form';
 import CustomMaskedInput, {MaskType} from '@component/input/CustomMaskedInput';
 
 interface CustomFormMaskedInputProps extends Omit<InputProps, 'onChange'> {
     name:string;
     defaultValue?:string;
-    control:Control<any>;
+    control:Control<FieldValues>;
     maskType: MaskType;
     customMask?: (value: string) => string;
     onChangeValue?:(v:string)=>void;

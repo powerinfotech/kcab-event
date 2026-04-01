@@ -1,6 +1,5 @@
-import { message } from '@util/antdMessage';
 import React, { useState } from 'react';
-import { Modal, notification} from 'antd';
+import { message, Modal, notification} from 'antd';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import CustomButton from '@component/button/CustomButton';
 import CustomModal from '@component/feedback/CustomModal';

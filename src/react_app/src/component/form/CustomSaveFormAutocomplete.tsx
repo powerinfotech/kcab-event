@@ -29,12 +29,12 @@
  */
 import React, {useState} from 'react';
 import {AutoComplete, AutoCompleteProps, Tooltip} from 'antd';
-import {Control, Controller} from 'react-hook-form';
+import {Control, Controller, FieldValues} from 'react-hook-form';
 
 interface CustomAutoCompleteProps extends AutoCompleteProps {
     name:string;
     defaultValue?:string;
-    control?:Control<any>;
+    control?:Control<FieldValues>;
     onChangeValue?:(v:string)=>void;
     size?:'small' | 'middle' | 'large' ;
     [key: string]: any;

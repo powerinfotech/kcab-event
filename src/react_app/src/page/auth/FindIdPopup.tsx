@@ -13,6 +13,7 @@ import {findUserInfo} from "@interface/auth/FindUser";
 interface ChangePasswordPopupProps extends ModalProps {
     onOk?: () => void;
     onCancel?: () => void;
+    onClose?: () => void;
 }
 
 const FindIdPopup = (props:ChangePasswordPopupProps) => {
@@ -23,7 +24,7 @@ const FindIdPopup = (props:ChangePasswordPopupProps) => {
         reset: findIdReset,
         setError: findIdError,
         handleSubmit:findIdHandleSubmit
-    } = useForm<findUserInfo>({mode:"onSubmit"});
+    } = useForm({mode:"onSubmit"});
 
     const[findInfo,SetFindInfo]= useState<findUserInfo>({
         userName:'',
