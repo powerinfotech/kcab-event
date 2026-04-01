@@ -54,7 +54,7 @@ const CustomAddressSearchModal = (props : CustomAddressSearchModalProps) => {
                     취소
                 </CustomButton>
             ]}
-            destroyOnClose={true}
+            destroyOnHidden={true}
         >
             <DaumPostcode
                 onComplete={props.onAddrSearchComplete}

@@ -8,7 +8,7 @@ import CustomStatistic from '@component/display/CustomStatistic';
 import CustomCard from '@component/display/CustomCard';
 import CustomDescriptions, { CustomDescriptionsItem } from '@component/display/CustomDescriptions';
 import CustomDirectoryTree from '@component/display/CustomDirectoryTree';
-import CustomCollapse, { CustomCollapsePanel } from '@component/display/CustomCollapse';
+import CustomCollapse from '@component/display/CustomCollapse';
 import CustomEmpty from '@component/display/CustomEmpty';
 import CustomProgress from '@component/display/CustomProgress';
 import CustomButton from '@component/button/CustomButton';
@@ -348,10 +348,10 @@ const DataDisplayGuide = () => {
             <CustomStatistic title="전체 사용자" value={1234} />
           </div>
           <div>
-            <CustomStatistic title="금일 접속자" value={89} prefix={<ArrowUpOutlined />} valueStyle={{ color: '#3f8600' }} />
+            <CustomStatistic title="금일 접속자" value={89} prefix={<ArrowUpOutlined />} styles={{ content: { color: '#3f8600' } }} />
           </div>
           <div>
-            <CustomStatistic title="오류 건수" value={3} prefix={<ArrowDownOutlined />} valueStyle={{ color: '#cf1322' }} />
+            <CustomStatistic title="오류 건수" value={3} prefix={<ArrowDownOutlined />} styles={{ content: { color: '#cf1322' } }} />
           </div>
           <div>
             <CustomStatistic title="처리율" value={93.5} suffix="%" precision={1} />
@@ -374,15 +374,14 @@ const DataDisplayGuide = () => {
           <CustomCollapse items={collapseItems} bordered={false} />
         </div>
         <div className="guide-sub-section">
-          <h5>Panel 방식 (v4 스타일)</h5>
-          <CustomCollapse defaultActiveKey={['p1']}>
-            <CustomCollapsePanel key="p1" header="기본 정보">
-              <p>이름, 부서, 직급 등 기본 정보가 들어갑니다.</p>
-            </CustomCollapsePanel>
-            <CustomCollapsePanel key="p2" header="추가 정보">
-              <p>비고, 첨부파일 등 추가 정보가 들어갑니다.</p>
-            </CustomCollapsePanel>
-          </CustomCollapse>
+          <h5>Panel 방식 (items API)</h5>
+          <CustomCollapse
+            defaultActiveKey={['p1']}
+            items={[
+              { key: 'p1', label: '기본 정보', children: <p>이름, 부서, 직급 등 기본 정보가 들어갑니다.</p> },
+              { key: 'p2', label: '추가 정보', children: <p>비고, 첨부파일 등 추가 정보가 들어갑니다.</p> },
+            ]}
+          />
         </div>
       </GuideDemoBox>
 

@@ -15,7 +15,7 @@
  * <CustomDivider>기본 정보</CustomDivider>
  *
  * // 텍스트 정렬
- * <CustomDivider orientation="left">검색 조건</CustomDivider>
+ * <CustomDivider titlePlacement="left">검색 조건</CustomDivider>
  *
  * // 세로 구분선 (인라인 요소 사이)
  * <span>항목1</span>

@@ -74,7 +74,7 @@ const FeedbackGuide = () => {
           title="상세 정보"
           open={drawerOpen}
           onClose={() => setDrawerOpen(false)}
-          width={400}
+          size="default"
         >
           <p>Drawer 내용입니다. 우측에서 슬라이드되는 패널입니다.</p>
           <p>상세 정보나 설정 등을 표시할 때 사용합니다.</p>
@@ -122,13 +122,13 @@ const FeedbackGuide = () => {
       {/* Alert */}
       <GuideDemoBox title="Alert (인라인 경고/안내)">
         <div className="guide-demo-content">
-          <CustomAlert message="정보 메시지입니다." type="info" showIcon />
-          <CustomAlert message="성공 메시지입니다." type="success" showIcon />
-          <CustomAlert message="경고 메시지입니다." type="warning" showIcon />
-          <CustomAlert message="오류 메시지입니다." type="error" showIcon />
+          <CustomAlert title="정보 메시지입니다." type="info" showIcon />
+          <CustomAlert title="성공 메시지입니다." type="success" showIcon />
+          <CustomAlert title="경고 메시지입니다." type="warning" showIcon />
+          <CustomAlert title="오류 메시지입니다." type="error" showIcon />
           <CustomAlert
-            message="닫기 가능한 알림"
-            description="이 알림은 사용자가 닫을 수 있습니다."
+            title="닫기 가능한 알림"
+            content="이 알림은 사용자가 닫을 수 있습니다."
             type="info"
             showIcon
             closable
@@ -209,7 +209,7 @@ const FeedbackGuide = () => {
               >
                 로딩 시작 (2초)
               </CustomButton>
-              <CustomSpin spinning={isSpinning} tip="데이터를 불러오는 중...">
+              <CustomSpin spinning={isSpinning} description="데이터를 불러오는 중...">
                 <CustomTable
                   rowKey="id"
                   columns={spinTableColumns}

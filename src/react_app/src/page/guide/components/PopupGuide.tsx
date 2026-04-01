@@ -145,7 +145,7 @@ const PopupGuide = () => {
         </CustomFormPopup>
 
         <div className="guide-demo-description">
-          react-hook-form handleSubmit을 onSubmit에 그대로 전달 / maskClosable=false, destroyOnClose=true 기본 적용 /
+          react-hook-form handleSubmit을 onSubmit에 그대로 전달 / maskClosable=false, destroyOnHidden=true 기본 적용 /
           OK 버튼 클릭 시 폼 유효성 검사 후 저장 핸들러 호출
         </div>
       </GuideDemoBox>

@@ -5,7 +5,7 @@
  * 폼을 포함한 모달 팝업의 공통 베이스 컴포넌트다.
  * onOk 클릭 시 react-hook-form의 handleSubmit을 호출하는 패턴을 캡슐화하여
  * 매번 히든 버튼(formRef)을 만들지 않아도 된다.
- * maskClosable=false, destroyOnClose=true를 기본 적용한다.
+ * maskClosable=false, destroyOnHidden=true를 기본 적용한다.
  *
  * @param onSubmit - OK 버튼 클릭 시 실행할 함수.
  *                  react-hook-form의 handleSubmit(handler)를 그대로 전달하면 된다.
@@ -71,7 +71,7 @@ const CustomFormPopup = ({onSubmit, children, ...modalProps}: CustomFormPopupPro
     return (
         <CustomModal
             mask={{ closable: false }}
-            destroyOnClose
+            destroyOnHidden
             {...modalProps}
             onOk={onSubmit}
         >

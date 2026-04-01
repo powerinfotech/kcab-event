@@ -61,9 +61,9 @@ const UtilityGuide = () => {
           <p>아래쪽 내용</p>
           <CustomDivider dashed />
           <p>점선 구분</p>
-          <CustomDivider orientation="left">좌측 텍스트</CustomDivider>
+          <CustomDivider titlePlacement="left">좌측 텍스트</CustomDivider>
           <p>좌측 텍스트 구분선</p>
-          <CustomDivider orientation="center">중앙 텍스트</CustomDivider>
+          <CustomDivider titlePlacement="center">중앙 텍스트</CustomDivider>
           <p>중앙 텍스트 구분선</p>
         </div>
       </GuideDemoBox>

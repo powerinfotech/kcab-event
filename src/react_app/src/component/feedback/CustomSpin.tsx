@@ -20,7 +20,7 @@
  * </CustomSpin>
  *
  * // 팁 메시지 표시
- * <CustomSpin spinning={isLoading} tip="데이터를 불러오는 중...">
+ * <CustomSpin spinning={isLoading} description="데이터를 불러오는 중...">
  *   <div>콘텐츠 영역</div>
  * </CustomSpin>
  *

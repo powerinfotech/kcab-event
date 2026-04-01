@@ -90,10 +90,10 @@ const NavigationLayoutGuide = () => {
           current={currentStep}
           onChange={setCurrentStep}
           items={[
-            { title: '기본정보', description: '필수 정보 입력', icon: <UserOutlined /> },
-            { title: '상세설정', description: '추가 정보 입력', icon: <SettingOutlined /> },
-            { title: '검토', description: '입력 내용 확인' },
-            { title: '완료', description: '등록 완료' },
+            { title: '기본정보', content: '필수 정보 입력', icon: <UserOutlined /> },
+            { title: '상세설정', content: '추가 정보 입력', icon: <SettingOutlined /> },
+            { title: '검토', content: '입력 내용 확인' },
+            { title: '완료', content: '등록 완료' },
           ]}
         />
         <div className="guide-demo-description">

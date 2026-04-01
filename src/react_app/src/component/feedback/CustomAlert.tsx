@@ -8,19 +8,19 @@
  * [사용 방법]
  * @example
  * // 정보
- * <CustomAlert type="info" message="데이터를 불러오는 중입니다." />
+ * <CustomAlert type="info" title="데이터를 불러오는 중입니다." />
  *
  * // 경고
- * <CustomAlert type="warning" message="저장하지 않은 변경사항이 있습니다." showIcon />
+ * <CustomAlert type="warning" title="저장하지 않은 변경사항이 있습니다." showIcon />
  *
  * // 오류 (닫기 가능)
- * <CustomAlert type="error" message="저장에 실패했습니다." closable />
+ * <CustomAlert type="error" title="저장에 실패했습니다." closable />
  *
  * // 설명 포함
  * <CustomAlert
  *   type="success"
- *   message="저장 완료"
- *   description="변경사항이 성공적으로 저장되었습니다."
+ *   title="저장 완료"
+ *   content="변경사항이 성공적으로 저장되었습니다."
  *   showIcon
  * />
  */

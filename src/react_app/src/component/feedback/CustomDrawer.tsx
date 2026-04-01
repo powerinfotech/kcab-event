@@ -15,7 +15,7 @@
  *   title="사용자 상세"
  *   open={open}
  *   onClose={() => setOpen(false)}
- *   width={480}
+ *   size="default"
  * >
  *   <p>상세 내용</p>
  * </CustomDrawer>
