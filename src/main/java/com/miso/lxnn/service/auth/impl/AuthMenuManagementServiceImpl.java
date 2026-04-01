@@ -16,6 +16,12 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.List;
 
+/**
+ * AuthMenuManagementServiceImpl - {@link AuthMenuManagementService} 구현체
+ *
+ * <p>권한-메뉴-버튼 매핑을 IudType에 따라 INSERT / UPDATE 처리한다.
+ * (DELETE는 지원하지 않음 — 사용 여부 {@code useYn} 필드로 비활성화만 한다.)</p>
+ */
 @Slf4j
 @Service("authMenuManagementService")
 public class AuthMenuManagementServiceImpl extends EgovAbstractServiceImpl implements AuthMenuManagementService {

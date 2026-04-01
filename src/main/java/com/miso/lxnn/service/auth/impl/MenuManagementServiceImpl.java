@@ -23,6 +23,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * MenuManagementServiceImpl - {@link MenuManagementService} 구현체
+ *
+ * <p>메뉴 저장 시 IudType으로 INSERT / UPDATE / DELETE를 분기한다.
+ * INSERT·UPDATE의 경우 버튼 목록을 기존 전체 삭제 후 재등록하는 방식으로 처리한다.</p>
+ *
+ * <p>{@link #selectUserPermittedMenuInfo}는 권한이 있는 말단 메뉴뿐 아니라
+ * 해당 메뉴까지의 상위 디렉토리 노드도 포함하여 사이드 메뉴 트리를 올바르게 구성한다.</p>
+ */
 @Slf4j
 @Service("menuManagementService")
 public class MenuManagementServiceImpl extends EgovAbstractServiceImpl implements MenuManagementService {

@@ -9,6 +9,11 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 
+/**
+ * UserServiceImpl - {@link UserService} 구현체
+ *
+ * <p>공통 사용자 조회 기능을 제공한다. UserDao를 통해 단순 아이디 기반 조회만 수행한다.</p>
+ */
 @Slf4j
 @Service("userService")
 public class UserServiceImpl extends EgovAbstractServiceImpl implements UserService {

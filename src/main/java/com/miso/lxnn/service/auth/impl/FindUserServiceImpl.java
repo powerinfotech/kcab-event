@@ -13,6 +13,12 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 
+/**
+ * FindUserServiceImpl - {@link FindUserService} 구현체
+ *
+ * <p>아이디·비밀번호 찾기 조회와 비밀번호 재설정을 처리한다.
+ * 비밀번호 재설정 시 BCrypt 해시화 후 DB에 저장하고 {@code passwordSetFlag}를 {@code true}로 갱신한다.</p>
+ */
 @Slf4j
 @Service("findUserService")
 public class FindUserServiceImpl implements FindUserService {

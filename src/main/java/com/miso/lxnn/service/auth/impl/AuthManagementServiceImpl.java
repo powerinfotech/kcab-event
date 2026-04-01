@@ -18,6 +18,12 @@ import javax.annotation.Resource;
 import javax.validation.Valid;
 import java.util.List;
 
+/**
+ * AuthManagementServiceImpl - {@link AuthManagementService} 구현체
+ *
+ * <p>권한 그룹·권한·권한-사용자를 IudType에 따라 분기 처리하며,
+ * 삭제 시 연관 테이블(권한, 권한-사용자, 권한-메뉴-버튼)을 연쇄 삭제한다.</p>
+ */
 @Slf4j
 @Service("authManagementService")
 public class AuthManagementServiceImpl extends EgovAbstractServiceImpl implements AuthManagementService {

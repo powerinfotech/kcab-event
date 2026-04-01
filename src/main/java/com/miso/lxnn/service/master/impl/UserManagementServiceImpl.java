@@ -15,6 +15,12 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.List;
 
+/**
+ * UserManagementServiceImpl - {@link UserManagementService} 구현체
+ *
+ * <p>사용자 등록 시 아이디 중복 체크와 비밀번호 필수 입력 검증을 수행하고,
+ * 비밀번호는 BCrypt로 해시화하여 저장한다.</p>
+ */
 @Slf4j
 @Service("userManagementService")
 public class UserManagementServiceImpl extends EgovAbstractServiceImpl implements UserManagementService {

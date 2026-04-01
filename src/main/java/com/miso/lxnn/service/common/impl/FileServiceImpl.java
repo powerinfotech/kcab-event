@@ -27,6 +27,16 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+/**
+ * FileServiceImpl - {@link FileService} 구현체
+ *
+ * <p>파일 처리 흐름:</p>
+ * <ul>
+ *   <li><b>업로드</b>: UUID 파일명으로 {@code ${file.path.dir}} 하위에 저장 → DB 등록</li>
+ *   <li><b>다운로드</b>: 경로 탈출({@code ..}) 방지 후 {@link org.springframework.core.io.UrlResource}로 스트리밍</li>
+ *   <li><b>삭제</b>: 파일 서버에서 실제 삭제하지 않고 DB에서만 논리 삭제 (파일 보존 정책)</li>
+ * </ul>
+ */
 @Slf4j
 @Service("fileService")
 public class FileServiceImpl implements FileService {

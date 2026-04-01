@@ -14,6 +14,12 @@ import javax.annotation.Resource;
 import javax.validation.Valid;
 import java.util.List;
 
+/**
+ * ComCdServiceImpl - {@link ComCdService} 구현체
+ *
+ * <p>공통 코드를 IudType에 따라 INSERT / UPDATE / DELETE 처리한다.
+ * 신규 코드 등록 시 {@code comStdCd}를 {@code comGrpCd + comCd}로 자동 조합한다.</p>
+ */
 @Slf4j
 @Service("comCdService")
 public class ComCdServiceImpl extends EgovAbstractServiceImpl implements ComCdService {

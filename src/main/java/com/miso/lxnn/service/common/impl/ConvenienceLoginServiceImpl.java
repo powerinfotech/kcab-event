@@ -12,6 +12,12 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
 
 
+/**
+ * ConvenienceLoginServiceImpl - {@link ConvenienceLoginService} 구현체
+ *
+ * <p>개발/로컬 환경에서만 활성화. 아이디로 사용자를 조회하고 세션에 저장한다.
+ * 사용자가 존재하지 않으면 {@link com.miso.lxnn.exception.custom.BusinessException}을 발생시킨다.</p>
+ */
 @Service("convenienceLoginService")
 public class ConvenienceLoginServiceImpl extends EgovAbstractServiceImpl implements ConvenienceLoginService {
     @Resource(name="userDao")
@@ -27,7 +33,7 @@ public class ConvenienceLoginServiceImpl extends EgovAbstractServiceImpl impleme
 
     @Override
     public void login(String userId) throws Exception {
-        LoginUser loginUser = LoginUser.covert(userDao.selectUser(userId));
+        LoginUser loginUser = LoginUser.convert(userDao.selectUser(userId));
         if(loginUser == null) {
             throw new BusinessException("사용자정보가 존재하지 않습니다.");
         }

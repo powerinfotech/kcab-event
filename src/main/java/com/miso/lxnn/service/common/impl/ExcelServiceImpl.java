@@ -12,6 +12,26 @@ import java.io.ByteArrayOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+/**
+ * ExcelServiceImpl - {@link ExcelService} 구현체
+ *
+ * <p>Apache POI를 사용하여 xlsx 형식 엑셀을 생성·파싱한다.</p>
+ *
+ * <h3>generateExcel 특징</h3>
+ * <ul>
+ *   <li>헤더 행: 굵은 글자 + 회색 배경 + 가운데 정렬 + 전체 테두리</li>
+ *   <li>데이터 행: 전체 테두리, 컬럼 너비는 {@link com.miso.lxnn.dto.common.ExcelColumn#getWidth()} 지정
+ *       (미지정 시 15자 기본값)</li>
+ *   <li>숫자·Boolean·날짜 타입 자동 처리</li>
+ * </ul>
+ *
+ * <h3>parseExcel 특징</h3>
+ * <ul>
+ *   <li>첫 번째 시트, 2행(인덱스 1)부터 읽는다</li>
+ *   <li>날짜 셀은 {@code "yyyy-MM-dd"} 형식의 문자열로 변환</li>
+ *   <li>정수 판별: 소수점 없는 NUMERIC은 {@code long}으로 반환</li>
+ * </ul>
+ */
 @Slf4j
 @Service("excelService")
 public class ExcelServiceImpl implements ExcelService {

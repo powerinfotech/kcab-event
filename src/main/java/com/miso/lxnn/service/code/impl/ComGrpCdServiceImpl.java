@@ -14,6 +14,12 @@ import javax.annotation.Resource;
 import javax.validation.Valid;
 import java.util.List;
 
+/**
+ * ComGrpCdServiceImpl - {@link ComGrpCdService} 구현체
+ *
+ * <p>공통 코드 그룹을 IudType에 따라 INSERT / UPDATE 처리한다.
+ * 코드 그룹은 DELETE를 지원하지 않으므로 {@code D}는 무시된다.</p>
+ */
 @Slf4j
 @Service("comGrpCdService")
 public class ComGrpCdServiceImpl extends EgovAbstractServiceImpl implements ComGrpCdService {

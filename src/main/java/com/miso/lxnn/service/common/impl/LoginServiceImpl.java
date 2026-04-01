@@ -19,6 +19,18 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+/**
+ * LoginServiceImpl - {@link LoginService} 구현체
+ *
+ * <p>로그인 처리 흐름:</p>
+ * <ol>
+ *   <li>아이디로 사용자 조회 → 없으면 예외</li>
+ *   <li>{@code mode=auto}가 아닐 경우 BCrypt 비밀번호 검증 → 불일치 시 예외</li>
+ *   <li>세션에 {@link com.miso.lxnn.dto.common.LoginUser} 저장</li>
+ *   <li>최종 로그인 일시 갱신 (실패해도 로그인 계속)</li>
+ *   <li>로그인 이력 기록 (실패해도 로그인 계속)</li>
+ * </ol>
+ */
 @Slf4j
 @Service("loginService")
 public class LoginServiceImpl extends EgovAbstractServiceImpl implements LoginService {
@@ -49,7 +61,7 @@ public class LoginServiceImpl extends EgovAbstractServiceImpl implements LoginSe
             throw new BusinessException("비밀번호가 일치하지 않습니다.");
         }
 
-        LoginUser loginUser = LoginUser.covert(user);
+        LoginUser loginUser = LoginUser.convert(user);
         httpSession.setAttribute("user", loginUser);
 
         try {
