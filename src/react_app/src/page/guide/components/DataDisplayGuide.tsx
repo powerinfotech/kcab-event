@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import CustomTable from '@component/display/CustomTable';
+import { Empty } from 'antd';
+import CustomTable, { IUD_COLUMN } from '@component/display/CustomTable';
 import CustomTag from '@component/display/CustomTag';
 import CustomBadge from '@component/display/CustomBadge';
 import CustomTimeline from '@component/display/CustomTimeline';
@@ -7,6 +8,10 @@ import CustomStatistic from '@component/display/CustomStatistic';
 import CustomCard from '@component/display/CustomCard';
 import CustomDescriptions, { CustomDescriptionsItem } from '@component/display/CustomDescriptions';
 import CustomDirectoryTree from '@component/display/CustomDirectoryTree';
+import CustomCollapse, { CustomCollapsePanel } from '@component/display/CustomCollapse';
+import CustomEmpty from '@component/display/CustomEmpty';
+import CustomProgress from '@component/display/CustomProgress';
+import CustomButton from '@component/button/CustomButton';
 import CustomSpace from '@component/button/CustomSpace';
 import CustomExcelDownload from '@component/upload/CustomExcelDownload';
 import CustomExcelUpload from '@component/upload/CustomExcelUpload';
@@ -84,6 +89,27 @@ const treeData = [
   },
 ];
 
+const iudTableColumns = [
+  IUD_COLUMN,
+  { title: '이름', dataIndex: 'name', key: 'name', width: '20%' },
+  { title: '부서', dataIndex: 'dept', key: 'dept', width: '20%', align: 'center' as const },
+  { title: '직급', dataIndex: 'position', key: 'position', width: '20%', align: 'center' as const },
+  { title: '이메일', dataIndex: 'email', key: 'email' },
+];
+
+const iudTableData = [
+  { id: 1, iudType: 'I', name: '신규등록자', dept: '개발팀', position: '사원', email: 'new@example.com' },
+  { id: 2, iudType: 'U', name: '홍길동', dept: '개발팀', position: '과장', email: 'hong@example.com' },
+  { id: 3, iudType: 'D', name: '삭제대상자', dept: '인사팀', position: '대리', email: 'del@example.com' },
+  { id: 4, iudType: null, name: '변경없음', dept: '기획팀', position: '부장', email: 'none@example.com' },
+];
+
+const collapseItems = [
+  { key: '1', label: '검색 필터', children: <p>날짜, 키워드, 상태 등 필터 영역이 들어갑니다.</p> },
+  { key: '2', label: '고급 설정', children: <p>추가적인 설정 옵션이 들어갑니다.</p> },
+  { key: '3', label: '도움말', children: <p>해당 화면의 사용 방법을 안내합니다.</p> },
+];
+
 const DataDisplayGuide = () => {
   const [uploadedData, setUploadedData] = useState<any[]>([]);
 
@@ -91,14 +117,50 @@ const DataDisplayGuide = () => {
     <GuideSection id="data-display" title="데이터 표시 (Data Display)" description="그리드, 트리, 카드, 태그 등 데이터 표시 컴포넌트">
       {/* DataGrid / DataTable */}
       <GuideDemoBox title="DataGrid / DataTable (CustomTable)">
-        <CustomTable
-          rowKey="id"
-          columns={tableColumns}
-          dataSource={tableData}
-          rowNoFlag
-          pagination={{ pageSize: 5 }}
-          scroll={{ x: 800 }}
-        />
+        <div className="guide-sub-section">
+          <h5>기본 (rowNoFlag — 오름차순 행 번호)</h5>
+          <CustomTable
+            rowKey="id"
+            columns={tableColumns}
+            dataSource={tableData}
+            rowNoFlag
+            pagination={{ pageSize: 5 }}
+            scroll={{ x: 800 }}
+          />
+        </div>
+        <div className="guide-sub-section">
+          <h5>rowNoDescFlag — 내림차순 행 번호</h5>
+          <CustomTable
+            rowKey="id"
+            columns={tableColumns}
+            dataSource={tableData}
+            rowNoDescFlag
+            pagination={{ pageSize: 5, total: tableData.length }}
+            scroll={{ x: 800 }}
+          />
+        </div>
+        <div className="guide-sub-section">
+          <h5>IUD_COLUMN — 신규/수정/삭제 상태 아이콘</h5>
+          <CustomTable
+            rowKey="id"
+            columns={iudTableColumns}
+            dataSource={iudTableData}
+            pagination={false}
+            scroll={{ x: 600 }}
+          />
+        </div>
+        <div className="guide-sub-section">
+          <h5>rowSelectedFlag — 클릭 행 강조</h5>
+          <CustomTable
+            rowKey="id"
+            columns={tableColumns}
+            dataSource={tableData}
+            rowNoFlag
+            rowSelectedFlag
+            pagination={false}
+            scroll={{ x: 800 }}
+          />
+        </div>
       </GuideDemoBox>
 
       {/* 엑셀 다운로드/업로드 */}
@@ -187,10 +249,20 @@ const DataDisplayGuide = () => {
           </div>
         </div>
         <div className="guide-sub-section">
+          <h5>Tag (closable — 닫기 가능)</h5>
+          <div className="guide-demo-row">
+            <CustomTag closable>닫기 가능</CustomTag>
+            <CustomTag closable color="success">완료</CustomTag>
+            <CustomTag closable color="processing">진행중</CustomTag>
+            <CustomTag closable color="error">오류</CustomTag>
+          </div>
+        </div>
+        <div className="guide-sub-section">
           <h5>Badge</h5>
           <div className="guide-demo-row">
             <CustomBadge count={5}><div className="guide-badge-placeholder">알림</div></CustomBadge>
             <CustomBadge count={99}><div className="guide-badge-placeholder">메시지</div></CustomBadge>
+            <CustomBadge count={200} overflowCount={99}><div className="guide-badge-placeholder">overflow</div></CustomBadge>
             <CustomBadge dot><div className="guide-badge-placeholder">업데이트</div></CustomBadge>
             <CustomBadge status="success" text="성공" />
             <CustomBadge status="error" text="실패" />
@@ -229,6 +301,81 @@ const DataDisplayGuide = () => {
           <div>
             <CustomStatistic title="처리율" value={93.5} suffix="%" precision={1} />
           </div>
+        </div>
+      </GuideDemoBox>
+
+      {/* Collapse */}
+      <GuideDemoBox title="Collapse (아코디언 / 접기·펼치기)">
+        <div className="guide-sub-section">
+          <h5>기본 (items API)</h5>
+          <CustomCollapse items={collapseItems} defaultActiveKey={['1']} />
+        </div>
+        <div className="guide-sub-section">
+          <h5>Accordion (하나만 열림)</h5>
+          <CustomCollapse items={collapseItems} accordion />
+        </div>
+        <div className="guide-sub-section">
+          <h5>테두리 없음 (bordered={false})</h5>
+          <CustomCollapse items={collapseItems} bordered={false} />
+        </div>
+        <div className="guide-sub-section">
+          <h5>Panel 방식 (v4 스타일)</h5>
+          <CustomCollapse defaultActiveKey={['p1']}>
+            <CustomCollapsePanel key="p1" header="기본 정보">
+              <p>이름, 부서, 직급 등 기본 정보가 들어갑니다.</p>
+            </CustomCollapsePanel>
+            <CustomCollapsePanel key="p2" header="추가 정보">
+              <p>비고, 첨부파일 등 추가 정보가 들어갑니다.</p>
+            </CustomCollapsePanel>
+          </CustomCollapse>
+        </div>
+      </GuideDemoBox>
+
+      {/* Progress */}
+      <GuideDemoBox title="Progress (진행률 표시)">
+        <div className="guide-sub-section">
+          <h5>Line (선형)</h5>
+          <CustomSpace direction="vertical" style={{ width: '100%' }}>
+            <CustomProgress percent={70} />
+            <CustomProgress percent={100} status="success" />
+            <CustomProgress percent={45} status="exception" />
+            <CustomProgress percent={50} strokeColor="#722ed1" />
+          </CustomSpace>
+        </div>
+        <div className="guide-sub-section">
+          <h5>Circle / Dashboard</h5>
+          <div className="guide-demo-row">
+            <CustomProgress type="circle" percent={75} />
+            <CustomProgress type="circle" percent={100} status="success" />
+            <CustomProgress type="circle" percent={40} status="exception" />
+            <CustomProgress type="dashboard" percent={80} />
+          </div>
+        </div>
+        <div className="guide-sub-section">
+          <h5>Steps (단계별)</h5>
+          <CustomProgress steps={5} percent={60} />
+        </div>
+      </GuideDemoBox>
+
+      {/* Empty */}
+      <GuideDemoBox title="Empty (빈 상태)">
+        <div className="guide-sub-section">
+          <h5>기본</h5>
+          <CustomEmpty />
+        </div>
+        <div className="guide-sub-section">
+          <h5>설명 문구 변경</h5>
+          <CustomEmpty description="검색 결과가 없습니다." />
+        </div>
+        <div className="guide-sub-section">
+          <h5>Simple 이미지</h5>
+          <CustomEmpty image={Empty.PRESENTED_IMAGE_SIMPLE} description="데이터 없음" />
+        </div>
+        <div className="guide-sub-section">
+          <h5>액션 버튼 포함</h5>
+          <CustomEmpty description="등록된 데이터가 없습니다.">
+            <CustomButton type="primary">새로 등록</CustomButton>
+          </CustomEmpty>
         </div>
       </GuideDemoBox>
     </GuideSection>
