@@ -1,5 +1,6 @@
+import { message } from '@util/antdMessage';
 import React, {useEffect, useState} from 'react';
-import {Input, message} from 'antd';
+import {Input} from 'antd';
 import type { TableColumnsType } from 'antd';
 import {HttpStatusCode} from 'axios';
 import IconTitle from '@icon/IconTitle';

@@ -1,3 +1,4 @@
+import { message } from '@util/antdMessage';
 /**
  * CustomExcelUpload - 엑셀 파일 업로드 버튼 컴포넌트
  *
@@ -27,7 +28,7 @@
  * />
  */
 import React from 'react';
-import {Upload, message} from 'antd';
+import {Upload} from 'antd';
 import {UploadOutlined} from '@ant-design/icons';
 import CustomButton from '@component/button/CustomButton';
 import {callExcelUpload, ExcelColumnDef} from '@api/CommonExcelApi';

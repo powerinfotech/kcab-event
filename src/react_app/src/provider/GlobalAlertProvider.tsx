@@ -32,10 +32,11 @@
  */
 import {useEffect, useRef} from 'react';
 import { useAtomValue } from 'jotai';
-import {Modal} from 'antd';
+import {App} from 'antd';
 import {alertAtom} from '@atom/alertAtom';
 
 const GlobalAlertProvider = () => {
+    const { modal } = App.useApp();
     const alertState = useAtomValue(alertAtom);
     const openedRef = useRef(false);
 
@@ -47,14 +48,14 @@ const GlobalAlertProvider = () => {
         if (openedRef.current) return;
         openedRef.current = true;
 
-        Modal.info({
+        modal.info({
             title: alertState.message,
             okText: alertState.okText,
             onOk: () => {
                 alertState.onClickOK?.();
             },
         });
-    }, [alertState]);
+    }, [alertState, modal]);
 
     return null;
 };

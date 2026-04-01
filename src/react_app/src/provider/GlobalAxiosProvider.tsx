@@ -1,3 +1,4 @@
+import { message } from '@util/antdMessage';
 /**
  * GlobalAxiosProvider - 전역 Axios 인터셉터 프로바이더
  *
@@ -42,7 +43,6 @@ import axios, {AxiosError, AxiosResponse, InternalAxiosRequestConfig} from 'axio
 import {useLoading} from '@hook/useLoading';
 import qs from 'qs';
 import {ErrorCode, ErrorResponse} from '@interface/common';
-import {message} from 'antd';
 
 interface GlobalAxiosInterceptorProps {
     children: React.ReactNode;

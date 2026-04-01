@@ -1,9 +1,10 @@
+import { message } from '@util/antdMessage';
 import CustomModal, {CustomModalProps} from '@component/feedback/CustomModal';
 import React, {useEffect, useRef, useState} from 'react';
 import {useForm} from 'react-hook-form';
 import CustomSaveFormInput from '@component/form/CustomSaveFormInput';
 import {ChangePassword, User} from '@interface/master/UserManagement';
-import {Button, message} from 'antd';
+import {Button} from 'antd';
 import {callChangePassword} from '@api/master/UserManagementApi';
 import {HttpStatusCode} from 'axios';
 

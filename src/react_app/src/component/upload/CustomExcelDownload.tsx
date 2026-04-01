@@ -1,3 +1,4 @@
+import { message } from '@util/antdMessage';
 /**
  * CustomExcelDownload - 엑셀 다운로드 버튼 컴포넌트
  *
@@ -35,7 +36,6 @@
  * />
  */
 import React from 'react';
-import {message} from 'antd';
 import {DownloadOutlined} from '@ant-design/icons';
 import CustomButton from '@component/button/CustomButton';
 import {callExcelDownload, ExcelColumnDef} from '@api/CommonExcelApi';

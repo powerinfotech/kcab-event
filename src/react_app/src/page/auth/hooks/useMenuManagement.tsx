@@ -1,5 +1,5 @@
+import { message } from '@util/antdMessage';
 import React, {useEffect, useRef, useState} from 'react';
-import {message} from 'antd';
 import {useForm} from 'react-hook-form';
 import {HttpStatusCode} from 'axios';
 import {DefaultOptionType} from 'rc-select/lib/Select';

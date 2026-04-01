@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { message } from 'antd';
+import { message } from '@util/antdMessage';
 import CustomFormPopup from '@component/popup/CustomFormPopup';
 import CustomSearchPopup from '@component/popup/CustomSearchPopup';
 import CustomButton from '@component/button/CustomButton';

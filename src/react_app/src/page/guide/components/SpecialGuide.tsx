@@ -11,7 +11,7 @@ import { useForm } from 'react-hook-form';
 import { GuideSection, GuideDemoBox, GuideStatusRow, GuideStatusItem } from './GuideSection';
 import { MenuBtnDetail, PageButtonHandlers } from '@interface/common';
 import { UserSearchResult } from '@interface/auth/AuthManagement';
-import { message } from 'antd';
+import { message } from '@util/antdMessage';
 
 /* ──────────────────────────────────
    MenuButtonBar 샘플 데이터

@@ -1,5 +1,5 @@
+import { message } from '@util/antdMessage';
 import {useEffect, useState} from 'react';
-import {message} from 'antd';
 import {useForm} from 'react-hook-form';
 import {HttpStatusCode} from 'axios';
 import type { TableColumnsType } from 'antd';

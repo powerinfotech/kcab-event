@@ -1,3 +1,4 @@
+import { message } from '@util/antdMessage';
 /**
  * CustomImageUpload - 이미지 업로드 + 미리보기 컴포넌트
  *
@@ -33,7 +34,7 @@
  * <CustomImageUpload fileList={images} disabled />
  */
 import React, {useState} from 'react';
-import {message, Modal, Upload} from 'antd';
+import {Modal, Upload} from 'antd';
 import type {UploadFile, UploadProps} from 'antd';
 import {DeleteOutlined, PlusOutlined} from '@ant-design/icons';
 import type {RcFile} from 'antd/es/upload/interface';
