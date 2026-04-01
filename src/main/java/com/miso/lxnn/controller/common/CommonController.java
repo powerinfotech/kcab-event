@@ -38,7 +38,7 @@ public class CommonController {
 
     private LoginUser resolveLoginInfoResponse(LoginUser loginUser) throws Exception {
         User user = userManagementService.selectUserInfo(loginUser.getUserId());
-        return user != null ? LoginUser.covert(user) : null;
+        return user != null ? LoginUser.convert(user) : null;
     }
 
     @GetMapping("/menu-info")
