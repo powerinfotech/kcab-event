@@ -4,12 +4,12 @@ import { callLogout } from '@api/CommonApi';
 import { HttpStatusCode } from 'axios';
 import IconLogout from '@icon/IconLogout';
 import IconAdmin from '@icon/IconAdmin';
-import { useRecoilValue } from 'recoil';
+import { useAtomValue } from 'jotai';
 import { sessionInfoAtom } from '@atom/sessionInfoAtom';
 import TabBar from '../../app/_components/TabBar';
 
 export default function TopBar() {
-  const sessionInfo = useRecoilValue(sessionInfoAtom);
+  const sessionInfo = useAtomValue(sessionInfoAtom);
 
   const logout = async () => {
     const data = await callLogout();

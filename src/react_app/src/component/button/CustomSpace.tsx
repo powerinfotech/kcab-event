@@ -14,7 +14,7 @@
  * </CustomSpace>
  *
  * // 간격 지정
- * <CustomSpace size="large" direction="vertical">
+ * <CustomSpace size="large" orientation="vertical">
  *   <CustomInput placeholder="이름" />
  *   <CustomInput placeholder="이메일" />
  * </CustomSpace>

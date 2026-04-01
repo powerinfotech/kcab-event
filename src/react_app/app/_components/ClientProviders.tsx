@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { RecoilRoot } from 'recoil';
 import { ConfigProvider } from 'antd';
 import locale from 'antd/locale/ko_KR';
 import GlobalAxiosProvider from '@provider/GlobalAxiosProvider';
@@ -12,8 +11,7 @@ import GlobalAlertProvider from '@provider/GlobalAlertProvider';
 
 export default function ClientProviders({ children }: { children: React.ReactNode }) {
   return (
-    <RecoilRoot>
-      <ConfigProvider locale={locale} theme={{
+    <ConfigProvider locale={locale} theme={{
           token: {
             colorPrimary: '#FFDD00',
             borderRadius: 4,
@@ -29,7 +27,6 @@ export default function ClientProviders({ children }: { children: React.ReactNod
           <GlobalAlertProvider />
           {children}
         </GlobalAxiosProvider>
-      </ConfigProvider>
-    </RecoilRoot>
+    </ConfigProvider>
   );
 }

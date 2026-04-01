@@ -2,7 +2,7 @@ import {useEffect, useState} from 'react';
 import {message} from 'antd';
 import {useForm} from 'react-hook-form';
 import {HttpStatusCode} from 'axios';
-import {ColumnsType} from 'antd/es/table';
+import type { TableColumnsType } from 'antd';
 import dayjs from 'dayjs';
 import {callDeleteUser, callGetUserList, callSaveUser} from '@api/master/UserManagementApi';
 import {User, UserList, UserListSearchParam} from '@interface/master/UserManagement';
@@ -12,7 +12,7 @@ import {IUD_COLUMN} from '@component/display/CustomTable';
 
 // ── Module-level constants ──
 
-export const columns: ColumnsType<any> = [
+export const columns: TableColumnsType<any> = [
     IUD_COLUMN,
     {
         title: <div className="tac">ID</div>,

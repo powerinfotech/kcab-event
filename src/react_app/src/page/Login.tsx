@@ -11,14 +11,14 @@ import {message, Modal} from "antd";
 import FindIdPopup from "@page/auth/FindIdPopup";
 import FindPasswordPopup from "@page/auth/FindPasswordPopup";
 import { useRouter } from 'next/navigation';
-import { useSetRecoilState } from 'recoil';
+import { useSetAtom } from 'jotai';
 import { sessionInfoAtom } from '@atom/sessionInfoAtom';
 import { menuInfoAtom } from '@atom/menuInfoAtom';
 
 const Login = () => {
     const router = useRouter();
-    const setSessionInfo = useSetRecoilState(sessionInfoAtom);
-    const setMenuInfoRecoil = useSetRecoilState(menuInfoAtom);
+    const setSessionInfo = useSetAtom(sessionInfoAtom);
+    const setMenuInfoRecoil = useSetAtom(menuInfoAtom);
     const {register: saveFormRegister
         , control: saveFormControl
         , handleSubmit: saveFormHandleSubmit

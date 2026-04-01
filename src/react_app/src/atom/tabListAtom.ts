@@ -1,4 +1,4 @@
-import { atom } from 'recoil';
+import { atomWithStorage, createJSONStorage } from 'jotai/utils';
 
 export interface TabItem {
   key: string;
@@ -9,33 +9,14 @@ export interface TabItem {
   menuNamePath: string;
 }
 
-const sessionStorageEffect = (key: string) => ({ setSelf, onSet }: any) => {
-  if (typeof window === 'undefined') return;
-  const saved = sessionStorage.getItem(key);
-  if (saved !== null) {
-    try {
-      setSelf(JSON.parse(saved));
-    } catch {
-      sessionStorage.removeItem(key);
-    }
-  }
-  onSet((newValue: any, _: any, isReset: boolean) => {
-    if (isReset) {
-      sessionStorage.removeItem(key);
-    } else {
-      sessionStorage.setItem(key, JSON.stringify(newValue));
-    }
-  });
-};
+export const tabListAtom = atomWithStorage<TabItem[]>(
+  'tabList',
+  [],
+  createJSONStorage(() => sessionStorage)
+);
 
-export const tabListAtom = atom<TabItem[]>({
-  key: 'tabList',
-  default: [],
-  effects_UNSTABLE: [sessionStorageEffect('tabList')],
-});
-
-export const activeTabKeyAtom = atom<string | null>({
-  key: 'activeTabKey',
-  default: null,
-  effects_UNSTABLE: [sessionStorageEffect('activeTabKey')],
-});
+export const activeTabKeyAtom = atomWithStorage<string | null>(
+  'activeTabKey',
+  null,
+  createJSONStorage(() => sessionStorage)
+);

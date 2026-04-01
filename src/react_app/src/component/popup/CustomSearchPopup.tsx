@@ -47,7 +47,7 @@ const CustomSearchPopup = ({ searchSection, tableTitle, totalCount, children, ..
     return (
         <CustomModal
             width={650}
-            maskClosable={false}
+            mask={{ closable: false }}
             {...modalProps}
         >
             {searchSection && (

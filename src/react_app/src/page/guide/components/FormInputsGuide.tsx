@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import locale from 'antd/es/date-picker/locale/ko_KR';
+import locale from 'antd/locale/ko_KR';
 import CustomInput from '@component/input/CustomInput';
 import CustomTextArea from '@component/input/CustomTextArea';
 import CustomInputNumber from '@component/input/CustomInputNumber';

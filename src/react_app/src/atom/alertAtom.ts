@@ -1,14 +1,10 @@
-import {atom} from 'recoil';
-
+import { atom } from 'jotai';
 
 export type AlertState = {
     message: string;
-    okText?:string;
+    okText?: string;
     onClickOK: () => void;
-    isOpen:boolean;
+    isOpen: boolean;
 };
 
-export const alertAtom = atom<AlertState>({
-    key: 'alertStatus',
-    default: undefined
-});
+export const alertAtom = atom<AlertState | undefined>(undefined);

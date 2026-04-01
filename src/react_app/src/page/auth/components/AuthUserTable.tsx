@@ -1,5 +1,5 @@
 import React from 'react';
-import {ColumnsType} from 'antd/es/table';
+import type { TableColumnsType } from 'antd';
 import dayjs from 'dayjs';
 import CustomCheckbox from '@component/select/CustomCheckbox';
 import CustomButton from '@component/button/CustomButton';
@@ -25,7 +25,7 @@ const AuthUserTable: React.FC<AuthUserTableProps> = ({
     onDeleteRow,
     onDataChange,
 }) => {
-    const columns: ColumnsType<AuthUserInfoList> = [
+    const columns: TableColumnsType<AuthUserInfoList> = [
         IUD_COLUMN,
         {title: '사용자ID', key: 'userId', dataIndex: 'userId', align: 'center', width: '25%'},
         {title: '사용자명', key: 'userName', dataIndex: 'userName', align: 'center', width: '25%'},

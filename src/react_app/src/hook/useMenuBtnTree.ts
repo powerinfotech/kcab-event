@@ -39,7 +39,7 @@
  * />
  */
 import React, {useState, useCallback} from 'react';
-import {ColumnsType} from 'antd/es/table';
+import type { TableColumnsType } from 'antd';
 import {AuthMenuBtnItem, AuthMenuBtnRow, BtnColumnInfo} from '@interface/auth/AuthMenuManagement';
 import {buildMenuBtnTree, getAllExpandKeys, foldLeafParents} from '@util/menuBtnTreeUtils';
 
@@ -70,7 +70,7 @@ interface UseMenuBtnTreeReturn {
     /** flat 데이터 → 트리 변환 + 원본 deep copy 보관 (변경 감지용) */
     loadTreeWithOrg: (flatList: AuthMenuBtnItem[]) => void;
     /** 메뉴명 + 버튼 체크박스 동적 컬럼 생성 */
-    buildDynamicColumns: (checkboxRenderer: (record: AuthMenuBtnRow, btn: BtnColumnInfo) => React.ReactNode) => ColumnsType<AuthMenuBtnRow>;
+    buildDynamicColumns: (checkboxRenderer: (record: AuthMenuBtnRow, btn: BtnColumnInfo) => React.ReactNode) => TableColumnsType<AuthMenuBtnRow>;
 }
 
 /**
@@ -129,7 +129,7 @@ export function useMenuBtnTree(options?: UseMenuBtnTreeOptions): UseMenuBtnTreeR
      */
     const buildDynamicColumns = useCallback((
         checkboxRenderer: (record: AuthMenuBtnRow, btn: BtnColumnInfo) => React.ReactNode,
-    ): ColumnsType<AuthMenuBtnRow> => {
+    ): TableColumnsType<AuthMenuBtnRow> => {
         const menuNmColumn = {
             title: '메뉴명',
             dataIndex: 'menuNm',

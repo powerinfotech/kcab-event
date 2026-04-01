@@ -4,13 +4,13 @@ import React, { useCallback } from 'react';
 import { Dropdown, Tooltip } from 'antd';
 import { CloseSquareOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
-import { useRecoilValue } from 'recoil';
+import { useAtomValue } from 'jotai';
 import { tabModeAtom } from '@atom/tabModeAtom';
 import useTabManager from '@hook/useTabManager';
 import { useMessage } from '@hook/useMessage';
 
 export default function TabBar() {
-  const tabMode = useRecoilValue(tabModeAtom);
+  const tabMode = useAtomValue(tabModeAtom);
   const { tabList, activeTabKey, activateTab, closeTab, closeOtherTabs, closeAllTabs } =
     useTabManager();
   const { confirm } = useMessage();

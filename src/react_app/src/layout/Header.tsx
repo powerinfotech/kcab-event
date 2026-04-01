@@ -6,7 +6,7 @@ import IconLogout from '@icon/IconLogout';
 import IconAdmin from '@icon/IconAdmin';
 import LogoImage from '../assets/images/logo.png';
 import {MenuInfo} from '@interface/auth/MenuManagement';
-import {useRecoilValue} from 'recoil';
+import { useAtomValue } from 'jotai';
 import {sessionInfoAtom} from '@atom/sessionInfoAtom';
 
 function ParentMenu({parentMenu}:{parentMenu:MenuInfo}) {
@@ -48,7 +48,7 @@ function Menu({menuInfo}: { menuInfo: MenuInfo[] }) {
 }
 
 const Header = ({menuInfo}: { menuInfo: MenuInfo[] }) => {
-    const sessionInfo = useRecoilValue(sessionInfoAtom);
+    const sessionInfo = useAtomValue(sessionInfoAtom);
     const [isMenuHovered, setIsMenuHovered] = useState(false);
 
     const handleMouseEnter = () => { setIsMenuHovered(true); };

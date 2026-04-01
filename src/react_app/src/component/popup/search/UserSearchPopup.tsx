@@ -36,7 +36,7 @@
  * // 폼 입력 필드와 연동 → UserSearchInput 컴포넌트 사용 권장
  */
 import React, {useEffect, useState} from 'react';
-import {ColumnsType} from 'antd/es/table';
+import type { TableColumnsType } from 'antd';
 import {HttpStatusCode} from 'axios';
 import CustomInput from '@component/input/CustomInput';
 import CustomCheckbox from '@component/select/CustomCheckbox';
@@ -46,7 +46,7 @@ import CustomSearchPopup from '@component/popup/CustomSearchPopup';
 import {UserSearchResult} from '@interface/auth/AuthManagement';
 import {callSearchUsers} from '@api/auth/AuthManagementApi';
 
-const USER_POPUP_COLUMNS: ColumnsType<UserSearchResult> = [
+const USER_POPUP_COLUMNS: TableColumnsType<UserSearchResult> = [
     {title: '사용자 ID', key: 'userId', dataIndex: 'userId', align: 'center', width: '50%'},
     {title: '사용자명', key: 'userName', dataIndex: 'userName', align: 'center', width: '50%'},
 ];

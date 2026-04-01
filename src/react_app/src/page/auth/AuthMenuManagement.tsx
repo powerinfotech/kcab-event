@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {Input, message} from 'antd';
-import {ColumnsType} from 'antd/es/table';
+import type { TableColumnsType } from 'antd';
 import {HttpStatusCode} from 'axios';
 import IconTitle from '@icon/IconTitle';
 import CustomTable from '@component/display/CustomTable';
@@ -58,7 +58,7 @@ const AuthMenuManagement = ({handlersRef}: {
     };
 
     // ──────────────────────────── 좌측 grid 칼럼 ────────────────────────────
-    const authColumns: ColumnsType<AuthMenuMgtAuth> = [
+    const authColumns: TableColumnsType<AuthMenuMgtAuth> = [
         {title: '권한그룹명', key: 'authGrpNm', dataIndex: 'authGrpNm', align: 'center', width: '20%'},
         {title: '권한명', key: 'authNm', dataIndex: 'authNm', align: 'center', width: '20%'},
         {title: '설명', key: 'authExpl', dataIndex: 'authExpl', align: 'left', width: '45%'},

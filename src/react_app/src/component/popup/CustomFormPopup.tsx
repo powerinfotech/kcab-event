@@ -70,7 +70,7 @@ interface CustomFormPopupProps extends Omit<CustomModalProps, 'onOk'> {
 const CustomFormPopup = ({onSubmit, children, ...modalProps}: CustomFormPopupProps) => {
     return (
         <CustomModal
-            maskClosable={false}
+            mask={{ closable: false }}
             destroyOnClose
             {...modalProps}
             onOk={onSubmit}

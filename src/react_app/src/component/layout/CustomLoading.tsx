@@ -30,13 +30,13 @@
  * stopLoading('fetchUser');
  */
 import {Spin} from 'antd';
-import {useRecoilValue} from 'recoil';
+import { useAtomValue } from 'jotai';
 import {loadingAtom} from '@atom/loadingAtom';
 import {Loading3QuartersOutlined} from '@ant-design/icons';
 import {useEffect} from 'react';
 
 const CustomLoading = () => {
-    const isLoading = useRecoilValue(loadingAtom);
+    const isLoading = useAtomValue(loadingAtom);
     const antIcon = <Loading3QuartersOutlined className="loading-icon" spin />;
 
     useEffect(() =>  {

@@ -1,6 +1,5 @@
-import {SessionUserInfo} from '@interface/common';
-import {atom} from 'recoil';
-
+import { SessionUserInfo } from '@interface/common';
+import { atom } from 'jotai';
 
 const defaultUserInfo: SessionUserInfo = {
     userId: '',
@@ -8,8 +7,4 @@ const defaultUserInfo: SessionUserInfo = {
     admYn: 'N',
 };
 
-export const sessionInfoAtom = atom<SessionUserInfo>({
-    key: 'sessionInfo',
-    default: defaultUserInfo
-});
-
+export const sessionInfoAtom = atom<SessionUserInfo>(defaultUserInfo);

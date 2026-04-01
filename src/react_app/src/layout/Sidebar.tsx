@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Tooltip } from 'antd';
 import { FileTextOutlined, AppstoreOutlined } from '@ant-design/icons';
 import { MenuInfo } from '@interface/auth/MenuManagement';
-import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { menuInfoAtom } from '@atom/menuInfoAtom';
 import { tabModeAtom } from '@atom/tabModeAtom';
 import { tabListAtom, activeTabKeyAtom } from '@atom/tabListAtom';
@@ -71,10 +71,10 @@ export default function Sidebar({
   onSubpanelOpenChange?: (open: boolean) => void;
 }) {
   const router = useRouter();
-  const menuInfo = useRecoilValue(menuInfoAtom);
-  const [tabMode, setTabMode] = useRecoilState(tabModeAtom);
-  const setTabList = useSetRecoilState(tabListAtom);
-  const setActiveTabKey = useSetRecoilState(activeTabKeyAtom);
+  const menuInfo = useAtomValue(menuInfoAtom);
+  const [tabMode, setTabMode] = useAtom(tabModeAtom);
+  const setTabList = useSetAtom(tabListAtom);
+  const setActiveTabKey = useSetAtom(activeTabKeyAtom);
   const { openTab } = useTabManager();
   const [subpanelOpen, setSubpanelOpen] = useState(false);
   const [selectedParentId, setSelectedParentId] = useState<number | null>(null);

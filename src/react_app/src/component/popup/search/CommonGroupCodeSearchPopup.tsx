@@ -35,7 +35,7 @@
  * />
  */
 import React, {useEffect, useState} from 'react';
-import {ColumnsType} from 'antd/es/table';
+import type { TableColumnsType } from 'antd';
 import {HttpStatusCode} from 'axios';
 import CustomInput from '@component/input/CustomInput';
 import CustomButton from '@component/button/CustomButton';
@@ -44,7 +44,7 @@ import CustomSearchPopup from '@component/popup/CustomSearchPopup';
 import {ComGrpCd} from '@interface/code/CommonGroupCode';
 import {callGetComGrpCdList} from '@api/code/CommonGroupCodeApi';
 
-const COM_GRP_CD_COLUMNS: ColumnsType<ComGrpCd> = [
+const COM_GRP_CD_COLUMNS: TableColumnsType<ComGrpCd> = [
     {title: '그룹코드', key: 'comGrpCd', dataIndex: 'comGrpCd', align: 'center', width: '35%'},
     {title: '그룹코드명', key: 'comGrpCdNm', dataIndex: 'comGrpCdNm', align: 'center', width: '35%'},
     {title: '사용여부', key: 'useYn', dataIndex: 'useYn', align: 'center', width: '30%'},

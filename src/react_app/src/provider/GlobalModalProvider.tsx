@@ -28,11 +28,11 @@
  * const { openModal, closeModal } = useCustomModal();
  * openModal(<MyModal onClose={closeModal} />);
  */
-import {useRecoilValue} from 'recoil';
+import { useAtomValue } from 'jotai';
 import {modalAtom} from '@atom/modalAtom';
 
 const GlobalModalProvider = () => {
-    const modal = useRecoilValue(modalAtom);
+    const modal = useAtomValue(modalAtom);
     return modal ?? null;
 };
 

@@ -48,7 +48,7 @@
 import React, {useEffect, useMemo, useState} from 'react';
 
 import {Table, TableProps} from 'antd';
-import {ColumnsType} from 'antd/es/table';
+import type { TableColumnsType } from 'antd';
 import {CheckCircleOutlined, DeleteOutlined, EditOutlined, PlusCircleOutlined} from '@ant-design/icons';
 import {IudType} from '@interface/common';
 
@@ -68,7 +68,7 @@ interface CustomPageParam {
     pageEditFlag: boolean;
 }
 
-const rowNoColumns: ColumnsType = [
+const rowNoColumns: TableColumnsType = [
     {
         title: 'NO',
         dataIndex: 'rowNo',

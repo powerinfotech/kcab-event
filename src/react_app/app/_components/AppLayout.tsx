@@ -6,7 +6,7 @@ import TopBar from '@layout/TopBar';
 import Footer from '@layout/Footer';
 import Login from '@page/Login';
 import { getUserLoginInfo, getUserMenuInfo } from '@api/CommonApi';
-import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { sessionInfoAtom } from '@atom/sessionInfoAtom';
 import { menuInfoAtom } from '@atom/menuInfoAtom';
 import { showErrorPageAtom } from '@atom/showErrorPageAtom';
@@ -17,9 +17,9 @@ const MemoizedTopBar = React.memo(TopBar);
 const MemoizedFooter = React.memo(Footer);
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const [sessionInfo, setSessionInfo] = useRecoilState(sessionInfoAtom);
-  const setMenuInfo = useSetRecoilState(menuInfoAtom);
-  const showErrorPage = useRecoilValue(showErrorPageAtom);
+  const [sessionInfo, setSessionInfo] = useAtom(sessionInfoAtom);
+  const setMenuInfo = useSetAtom(menuInfoAtom);
+  const showErrorPage = useAtomValue(showErrorPageAtom);
   const [isLogin, setIsLogin] = useState<boolean | undefined>(undefined);
   const [sidebarSubpanelOpen, setSidebarSubpanelOpen] = useState(false);
 

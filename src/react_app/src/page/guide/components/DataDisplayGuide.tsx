@@ -165,7 +165,7 @@ const DataDisplayGuide = () => {
 
       {/* 엑셀 다운로드/업로드 */}
       <GuideDemoBox title="엑셀 다운로드/업로드 (Excel Download/Upload)">
-        <CustomSpace direction="vertical" style={{ width: '100%' }} size="middle">
+        <CustomSpace orientation="vertical" style={{ width: '100%' }} size="middle">
           <CustomSpace>
             <CustomExcelDownload
               columns={excelColumns}
@@ -276,11 +276,11 @@ const DataDisplayGuide = () => {
         <div className="guide-timeline-wrap">
           <CustomTimeline
             items={[
-              { color: 'green', children: '시스템 배포 완료 (2024-03-20 14:00)' },
-              { color: 'blue', children: '테스트 승인 (2024-03-19 10:30)' },
-              { color: 'blue', children: 'QA 테스트 시작 (2024-03-18 09:00)' },
-              { color: 'gray', children: '개발 완료 (2024-03-15 18:00)' },
-              { color: 'gray', children: '요구사항 확정 (2024-03-10 11:00)' },
+              { color: 'green', content: '시스템 배포 완료 (2024-03-20 14:00)' },
+              { color: 'blue', content: '테스트 승인 (2024-03-19 10:30)' },
+              { color: 'blue', content: 'QA 테스트 시작 (2024-03-18 09:00)' },
+              { color: 'gray', content: '개발 완료 (2024-03-15 18:00)' },
+              { color: 'gray', content: '요구사항 확정 (2024-03-10 11:00)' },
             ]}
           />
         </div>
@@ -390,7 +390,7 @@ const DataDisplayGuide = () => {
       <GuideDemoBox title="Progress (진행률 표시)">
         <div className="guide-sub-section">
           <h5>Line (선형)</h5>
-          <CustomSpace direction="vertical" style={{ width: '100%' }}>
+          <CustomSpace orientation="vertical" style={{ width: '100%' }}>
             <CustomProgress percent={70} />
             <CustomProgress percent={100} status="success" />
             <CustomProgress percent={45} status="exception" />

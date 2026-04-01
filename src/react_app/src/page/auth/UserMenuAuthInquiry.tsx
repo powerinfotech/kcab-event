@@ -1,6 +1,6 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {message} from 'antd';
-import {ColumnsType} from 'antd/es/table';
+import type { TableColumnsType } from 'antd';
 import {HttpStatusCode} from 'axios';
 import IconTitle from '@icon/IconTitle';
 import CustomTable from '@component/display/CustomTable';
@@ -65,7 +65,7 @@ const UserMenuAuthInquiry = ({handlersRef}: {
     }, []);
 
     // ──────────────────────────── 좌측 grid 칼럼 ────────────────────────────
-    const authColumns: ColumnsType<AuthMenuMgtAuth> = [
+    const authColumns: TableColumnsType<AuthMenuMgtAuth> = [
         {title: '권한그룹', key: 'authGrpNm', dataIndex: 'authGrpNm', align: 'center', width: '25%'},
         {title: '권한명', key: 'authNm', dataIndex: 'authNm', align: 'center', width: '35%'},
         {
@@ -201,7 +201,7 @@ const UserMenuAuthInquiry = ({handlersRef}: {
                             rowKey={'authSeq'}
                             pagination={false}
                             rowNoFlag={true}
-                            columns={authColumns as ColumnsType<any>}
+                            columns={authColumns as TableColumnsType<any>}
                             dataSource={authDataSource}
                             rowSelectedFlag={false}
                             selectedRowIndex={selectedAuthRowIndex}
@@ -226,7 +226,7 @@ const UserMenuAuthInquiry = ({handlersRef}: {
                             columns={buildDynamicColumns((record, btn) => {
                                 const checked = record[`btn_${btn.btnSeq}_checked`] as boolean;
                                 return <CustomCheckbox checked={!!checked} disabled />;
-                            }) as ColumnsType<any>}
+                            }) as TableColumnsType<any>}
                             dataSource={treeDataSource}
                             rowNoFlag={false}
                             pagination={false}

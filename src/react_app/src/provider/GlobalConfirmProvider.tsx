@@ -34,12 +34,12 @@
  * if (ok2) { handleSave(); }
  */
 import {useEffect, useRef} from 'react';
-import {useRecoilValue} from 'recoil';
+import { useAtomValue } from 'jotai';
 import {confirmAtom} from '@atom/confirmAtom';
 import {Modal} from 'antd';
 
 const GlobalConfirmProvider = () => {
-    const confirmState = useRecoilValue(confirmAtom);
+    const confirmState = useAtomValue(confirmAtom);
     const openedRef = useRef(false);
 
     useEffect(() => {

@@ -28,7 +28,7 @@
  * }
  */
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useRecoilValue } from 'recoil';
+import { useAtomValue } from 'jotai';
 import { activeTabKeyAtom, tabListAtom } from '@atom/tabListAtom';
 import { callGetMenuBtnList } from '@api/CommonApi';
 import { MenuBtnDetail } from '@interface/common';
@@ -50,8 +50,8 @@ interface UsePermissionReturn {
  * if (hasButton('cfmSave')) { // 저장 버튼 표시 }
  */
 export function usePermission(menuSeq?: number): UsePermissionReturn {
-    const activeTabKey = useRecoilValue(activeTabKeyAtom);
-    const tabList = useRecoilValue(tabListAtom);
+    const activeTabKey = useAtomValue(activeTabKeyAtom);
+    const tabList = useAtomValue(tabListAtom);
 
     const resolvedMenuSeq = useMemo(() => {
         if (menuSeq != null) return menuSeq;

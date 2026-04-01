@@ -3,9 +3,8 @@ const nextConfig = {
   reactStrictMode: true,
   ...(process.env.NODE_ENV === 'production' ? { output: 'export' } : {}),
   images: { unoptimized: true },
-  eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
-...(process.env.NODE_ENV === 'development' ? {
+  ...(process.env.NODE_ENV === 'development' ? {
     async rewrites() {
       const apiTarget = process.env.BACKEND_URL || 'http://localhost:8080';
       return [
@@ -13,21 +12,21 @@ const nextConfig = {
       ];
     },
   } : {}),
-  webpack(config) {
-    const fileLoaderRule = config.module.rules.find((rule) =>
-      rule.test?.test?.('.svg')
-    );
-    config.module.rules.push(
-      { ...fileLoaderRule, test: /\.svg$/i, resourceQuery: /url/ },
-      {
-        test: /\.svg$/i,
-        issuer: /\.[jt]sx?$/,
-        resourceQuery: { not: /url/ },
-        use: ['@svgr/webpack'],
-      }
-    );
-    if (fileLoaderRule) fileLoaderRule.exclude = /\.svg$/i;
-    return config;
+  turbopack: {
+    root: __dirname,
+    rules: {
+      '*.svg': {
+        loaders: [
+          {
+            loader: '@svgr/webpack',
+            options: {
+              svgo: false,
+            },
+          },
+        ],
+        as: '*.js',
+      },
+    },
   },
 };
 

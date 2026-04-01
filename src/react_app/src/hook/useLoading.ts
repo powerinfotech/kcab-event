@@ -29,7 +29,7 @@
  * // 비정상 상태에서 로딩 강제 해제
  * clear();
  */
-import {useSetRecoilState} from 'recoil';
+import { useSetAtom } from 'jotai';
 import {loadingAtom} from '@atom/loadingAtom';
 import {useRef} from 'react';
 
@@ -42,7 +42,7 @@ import {useRef} from 'react';
  *   - clear():     로딩 큐 전체 초기화 (스피너 강제 해제)
  */
 export const useLoading = () => {
-    const setLoadings = useSetRecoilState<string[]>(loadingAtom);
+    const setLoadings = useSetAtom(loadingAtom);
     /** useRef로 동기적 큐 관리 (Recoil은 비동기라 즉시 반영 안 됨) */
     const loadingQueue = useRef<string[]>([]);
 

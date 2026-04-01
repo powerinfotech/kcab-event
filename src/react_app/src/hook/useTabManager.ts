@@ -35,7 +35,7 @@
  * <TabBar tabs={tabList} activeKey={activeTabKey} onTabClick={activateTab} />
  */
 import { useCallback, useRef } from 'react';
-import { useRecoilState, useRecoilValue } from 'recoil';
+import { useAtom, useAtomValue } from 'jotai';
 import { useRouter } from 'next/navigation';
 import { tabListAtom, activeTabKeyAtom } from '@atom/tabListAtom';
 import { tabModeAtom } from '@atom/tabModeAtom';
@@ -63,9 +63,9 @@ function updateUrl(url: string) {
 export default function useTabManager() {
   const router = useRouter();
   const { confirm } = useMessage();
-  const tabMode = useRecoilValue(tabModeAtom);
-  const [tabList, setTabList] = useRecoilState(tabListAtom);
-  const [activeTabKey, setActiveTabKey] = useRecoilState(activeTabKeyAtom);
+  const tabMode = useAtomValue(tabModeAtom);
+  const [tabList, setTabList] = useAtom(tabListAtom);
+  const [activeTabKey, setActiveTabKey] = useAtom(activeTabKeyAtom);
 
   // closeTab에서 최신 activeTabKey를 읽기 위한 ref
   const activeTabKeyRef = useRef(activeTabKey);

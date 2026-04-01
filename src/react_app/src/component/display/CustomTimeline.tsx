@@ -10,9 +10,9 @@
  *
  * <CustomTimeline
  *   items={[
- *     { color: 'green', children: '신청 접수 (2024-01-01)' },
- *     { color: 'blue',  children: '검토 중 (2024-01-03)' },
- *     { color: 'red',   children: '반려 (2024-01-05)', dot: <CloseCircleOutlined /> },
+ *     { color: 'green', content: '신청 접수 (2024-01-01)' },
+ *     { color: 'blue',  content: '검토 중 (2024-01-03)' },
+ *     { color: 'red',   content: '반려 (2024-01-05)', dot: <CloseCircleOutlined /> },
  *   ]}
  * />
  */

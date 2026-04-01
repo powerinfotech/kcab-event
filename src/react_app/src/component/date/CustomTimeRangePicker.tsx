@@ -34,14 +34,15 @@
  */
 import React from 'react';
 import {TimePicker} from 'antd';
-import locale from 'antd/es/date-picker/locale/ko_KR';
+import locale from 'antd/locale/ko_KR';
 import type {TimeRangePickerProps} from 'antd/es/time-picker';
 
 interface CustomTimeRangePickerProps extends TimeRangePickerProps {}
 
 const CustomTimeRangePicker = (props: CustomTimeRangePickerProps) => {
+    const allowEmpty: [boolean, boolean] = props.disabled && !props.value ? [true, true] : [false, false];
     return (
-        <TimePicker.RangePicker locale={locale} {...props} />
+        <TimePicker.RangePicker locale={locale} allowEmpty={allowEmpty} {...props} />
     );
 };
 

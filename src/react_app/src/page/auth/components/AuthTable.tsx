@@ -1,6 +1,6 @@
 import React from 'react';
 import {UseFormReturn} from 'react-hook-form';
-import {ColumnsType} from 'antd/es/table';
+import type { TableColumnsType } from 'antd';
 import CustomInput from '@component/input/CustomInput';
 import CustomCheckbox from '@component/select/CustomCheckbox';
 import CustomButton from '@component/button/CustomButton';
@@ -34,7 +34,7 @@ const AuthTable: React.FC<AuthTableProps> = ({
 }) => {
     const {register, control, setValue} = form;
 
-    const columns: ColumnsType<AuthInfoList> = [
+    const columns: TableColumnsType<AuthInfoList> = [
         IUD_COLUMN,
         {
             title: <span className="tit">권한명<em>*</em></span>,

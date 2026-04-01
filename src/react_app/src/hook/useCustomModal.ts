@@ -22,7 +22,7 @@
  * // 모달 닫기
  * closeModal();
  */
-import {useRecoilState} from 'recoil';
+import { useAtom } from 'jotai';
 import {modalAtom} from '@atom/modalAtom';
 import {ReactNode, useEffect, useState} from 'react';
 import {useDimmed} from '@hook/useDimmed';
@@ -36,7 +36,7 @@ import {useDimmed} from '@hook/useDimmed';
  *   - modal:               현재 모달 내용 (렌더링용, null이면 닫힌 상태)
  */
 export const useCustomModal = () => {
-    const [modal, setModal] = useRecoilState(modalAtom);
+    const [modal, setModal] = useAtom(modalAtom);
     const [showDimmed, setShowDimmed] = useState<boolean>(false);
     useDimmed(showDimmed);
 

@@ -91,7 +91,7 @@ const UserManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
                 open={mgmt.isOpen}
                 title={'비밀번호 변경'}
                 className="modal-min-w400"
-                maskClosable={false}
+                mask={{ closable: false }}
                 onOk={() => mgmt.setIsOpen(false)}
                 onCancel={() => mgmt.setIsOpen(false)}
             />

@@ -23,7 +23,6 @@
  *   <PageComponent onChange={handleChange} menuInfo={menu} handlersRef={ref} />
  * }
  */
-/// <reference types="webpack-env" />
 import dynamic from 'next/dynamic';
 import { MenuInfo } from '@interface/auth/MenuManagement';
 import { PageButtonHandlers } from '@interface/common';
@@ -41,16 +40,16 @@ type PageComponentProps = {
 /**
  * webpack require.context 타입 정의
  * - keys(): 등록된 모든 모듈 경로 목록
- * - (id): 특정 경로의 모듈을 lazy import
+ * - (id): 특정 경로의 모듈을 import
  */
 type PageContext = {
   keys: () => string[];
-  (id: string): Promise<{ default: React.ComponentType<PageComponentProps> }>;
+  (id: string): { default: React.ComponentType<PageComponentProps> };
 };
 
-// src/page 하위 모든 .tsx 파일을 lazy 모드로 등록
+// src/page 하위 모든 .tsx 파일 등록
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const pageContext: PageContext = require.context('../page', true, /\.tsx$/, 'lazy');
+const pageContext: PageContext = require.context('../page', true, /\.tsx$/);
 
 /** viewPath 별칭 매핑 (DB의 경로와 실제 파일 경로가 다를 때 사용) */
 const pathAliases: Record<string, string> = {};
@@ -101,7 +100,7 @@ export function getPageComponent(viewPath: string): React.ComponentType<PageComp
   }
 
   const LoadedComponent = dynamic(
-    () => pageContext(contextKey).then((mod) => mod.default),
+    () => Promise.resolve(pageContext(contextKey).default),
     { ssr: false }
   );
 

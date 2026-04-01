@@ -1,6 +1,6 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {useRouter} from 'next/navigation';
-import {ColumnsType} from 'antd/es/table';
+import type { TableColumnsType } from 'antd';
 import {useForm} from 'react-hook-form';
 import {HttpStatusCode} from 'axios';
 import {message} from 'antd';
@@ -123,7 +123,7 @@ export function useCommonGroupCodeManagement() {
 
     const comGrpCdRegExp = ALPHANUMERIC_REGEXP;
 
-    const columns: ColumnsType<ComGrpCdList> = [
+    const columns: TableColumnsType<ComGrpCdList> = [
         IUD_COLUMN,
         {
             title: <span className="tit">공통그룹코드<em>*</em></span>,

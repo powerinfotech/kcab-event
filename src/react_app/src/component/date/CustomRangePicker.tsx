@@ -33,15 +33,16 @@
  */
 import {RangePickerProps} from 'antd/es/date-picker';
 import {DatePicker} from 'antd';
-import locale from 'antd/es/date-picker/locale/ko_KR';
+import locale from 'antd/locale/ko_KR';
 
 interface CustomRangePickerProps extends RangePickerProps {}
 
 const {RangePicker} = DatePicker;
 
 const CustomRangePicker = (props: CustomRangePickerProps) => {
+    const allowEmpty: [boolean, boolean] = props.disabled && !props.value ? [true, true] : [false, false];
     return (
-        <RangePicker {...props} locale={locale} />
+        <RangePicker allowEmpty={allowEmpty} {...props} locale={locale} />
     );
 };
 

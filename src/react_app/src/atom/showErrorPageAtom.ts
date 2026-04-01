@@ -1,6 +1,3 @@
-import { atom } from 'recoil';
+import { atom } from 'jotai';
 
-export const showErrorPageAtom = atom<boolean>({
-  key: 'showErrorPage',
-  default: false,
-});
+export const showErrorPageAtom = atom<boolean>(false);

@@ -1,6 +1,3 @@
-import {atom} from 'recoil';
+import { atom } from 'jotai';
 
-export const loadingAtom = atom<string[]>({
-   key:'loadingStatus',
-   default:[]
-});
+export const loadingAtom = atom<string[]>([]);

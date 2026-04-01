@@ -31,12 +31,12 @@
  * await alert('오류가 발생했습니다.', '확인');
  */
 import {useEffect, useRef} from 'react';
-import {useRecoilValue} from 'recoil';
+import { useAtomValue } from 'jotai';
 import {Modal} from 'antd';
 import {alertAtom} from '@atom/alertAtom';
 
 const GlobalAlertProvider = () => {
-    const alertState = useRecoilValue(alertAtom);
+    const alertState = useAtomValue(alertAtom);
     const openedRef = useRef(false);
 
     useEffect(() => {

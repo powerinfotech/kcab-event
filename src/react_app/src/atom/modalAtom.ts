@@ -1,8 +1,4 @@
-import {atom} from 'recoil';
-import {ReactNode} from 'react';
+import { atom } from 'jotai';
+import { ReactNode } from 'react';
 
-
-export const modalAtom = atom<ReactNode>({
-    key: 'modalStatus',
-    default: null
-});
+export const modalAtom = atom<ReactNode>(null);

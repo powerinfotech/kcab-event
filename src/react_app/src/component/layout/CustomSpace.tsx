@@ -22,7 +22,7 @@
  * </CustomSpace>
  *
  * // 세로 방향
- * <CustomSpace direction="vertical" style={{ width: '100%' }}>
+ * <CustomSpace orientation="vertical" style={{ width: '100%' }}>
  *   <CustomInput placeholder="아이디" />
  *   <CustomInput placeholder="비밀번호" />
  * </CustomSpace>

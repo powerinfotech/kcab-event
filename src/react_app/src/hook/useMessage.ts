@@ -27,7 +27,7 @@
  *   reload(); // 확인 버튼 클릭 후 실행
  * };
  */
-import {useRecoilState} from 'recoil';
+import { useAtom } from 'jotai';
 import {confirmAtom} from '@atom/confirmAtom';
 import {alertAtom} from '@atom/alertAtom';
 
@@ -39,8 +39,8 @@ import {alertAtom} from '@atom/alertAtom';
  *   - alert(message?, okText?):                알림 다이얼로그 → Promise<boolean>
  */
 export const useMessage = () => {
-    const [confirmState, setConfirmState] = useRecoilState(confirmAtom);
-    const [alertState, setAlertState] = useRecoilState(alertAtom);
+    const [confirmState, setConfirmState] = useAtom(confirmAtom);
+    const [alertState, setAlertState] = useAtom(alertAtom);
 
     /**
      * 확인 다이얼로그 표시

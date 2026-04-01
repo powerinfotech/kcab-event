@@ -9,7 +9,7 @@ import ErrorPage404 from '@error/ErrorPage404';
 import { getPageComponent, getStaticRouteKey } from '@util/PageRegistry';
 import { MenuInfo } from '@interface/auth/MenuManagement';
 import { MenuBtnDetail, PageButtonHandlers } from '@interface/common';
-import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { menuInfoAtom } from '@atom/menuInfoAtom';
 import { showErrorPageAtom } from '@atom/showErrorPageAtom';
 import { tabModeAtom } from '@atom/tabModeAtom';
@@ -220,8 +220,8 @@ function MultiTabContent({
   menuInfo: MenuInfo[];
   onChange: (flag: boolean) => void;
 }) {
-  const [tabList, setTabList] = useRecoilState(tabListAtom);
-  const [activeTabKey, setActiveTabKey] = useRecoilState(activeTabKeyAtom);
+  const [tabList, setTabList] = useAtom(tabListAtom);
+  const [activeTabKey, setActiveTabKey] = useAtom(activeTabKeyAtom);
 
   // 현재 URL에 해당하는 탭이 없으면 자동 오픈하는 헬퍼
   const ensureTabForPath = useCallback(
@@ -315,9 +315,9 @@ function MultiTabContent({
 export default function MainContent() {
   const pathname = usePathname() ?? '/';
   const router = useRouter();
-  const menuInfo = useRecoilValue(menuInfoAtom);
-  const setShowErrorPage = useSetRecoilState(showErrorPageAtom);
-  const tabMode = useRecoilValue(tabModeAtom);
+  const menuInfo = useAtomValue(menuInfoAtom);
+  const setShowErrorPage = useSetAtom(showErrorPageAtom);
+  const tabMode = useAtomValue(tabModeAtom);
   const hasRedirected = useRef(false);
 
   // 리다이렉트 처리
