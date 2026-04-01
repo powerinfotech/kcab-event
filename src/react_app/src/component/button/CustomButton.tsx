@@ -26,9 +26,7 @@
 import React from 'react';
 import {Button, ButtonProps} from 'antd';
 
-interface CustomButtonProps  extends ButtonProps {
-    [key: string]: any;
-};
+interface CustomButtonProps extends ButtonProps {}
 
 const CustomButton  = (props:CustomButtonProps) => {
     return (
