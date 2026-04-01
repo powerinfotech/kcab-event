@@ -13,7 +13,7 @@ import type { MenuProps } from 'antd';
 import CustomButton from '@component/button/CustomButton';
 import CustomSpace from '@component/button/CustomSpace';
 import CustomDropdown, { CustomDropdownButton } from '@component/button/CustomDropdown';
-import CustomFloatButton, { CustomFloatButtonGroup } from '@component/button/CustomFloatButton';
+import CustomFloatButton, { CustomFloatButtonGroup, CustomFloatButtonBackTop } from '@component/button/CustomFloatButton';
 import { GuideSection, GuideDemoBox, GuideStatusRow, GuideStatusItem } from './GuideSection';
 
 const dropdownItems: MenuProps['items'] = [
@@ -66,6 +66,39 @@ const ButtonsActionsGuide = () => {
           </GuideStatusRow>
         </div>
         <div className="guide-sub-section">
+          <h5>Dashed (점선)</h5>
+          <GuideStatusRow>
+            <GuideStatusItem label="enabled">
+              <CustomButton type="dashed">Dashed 버튼</CustomButton>
+            </GuideStatusItem>
+            <GuideStatusItem label="disabled">
+              <CustomButton type="dashed" disabled>Dashed 버튼</CustomButton>
+            </GuideStatusItem>
+          </GuideStatusRow>
+        </div>
+        <div className="guide-sub-section">
+          <h5>Text (텍스트)</h5>
+          <GuideStatusRow>
+            <GuideStatusItem label="enabled">
+              <CustomButton type="text">Text 버튼</CustomButton>
+            </GuideStatusItem>
+            <GuideStatusItem label="disabled">
+              <CustomButton type="text" disabled>Text 버튼</CustomButton>
+            </GuideStatusItem>
+          </GuideStatusRow>
+        </div>
+        <div className="guide-sub-section">
+          <h5>Link (링크)</h5>
+          <GuideStatusRow>
+            <GuideStatusItem label="enabled">
+              <CustomButton type="link">Link 버튼</CustomButton>
+            </GuideStatusItem>
+            <GuideStatusItem label="disabled">
+              <CustomButton type="link" disabled>Link 버튼</CustomButton>
+            </GuideStatusItem>
+          </GuideStatusRow>
+        </div>
+        <div className="guide-sub-section">
           <h5>Danger (위험)</h5>
           <GuideStatusRow>
             <GuideStatusItem label="enabled">
@@ -73,6 +106,31 @@ const ButtonsActionsGuide = () => {
             </GuideStatusItem>
             <GuideStatusItem label="disabled">
               <CustomButton danger disabled>삭제</CustomButton>
+            </GuideStatusItem>
+          </GuideStatusRow>
+        </div>
+        <div className="guide-sub-section">
+          <h5>Large (대형)</h5>
+          <GuideStatusRow>
+            <GuideStatusItem label="기본">
+              <CustomButton size="large">대형 버튼</CustomButton>
+            </GuideStatusItem>
+            <GuideStatusItem label="primary">
+              <CustomButton size="large" type="primary">대형 Primary</CustomButton>
+            </GuideStatusItem>
+            <GuideStatusItem label="disabled">
+              <CustomButton size="large" disabled>대형 버튼</CustomButton>
+            </GuideStatusItem>
+          </GuideStatusRow>
+        </div>
+        <div className="guide-sub-section">
+          <h5>Loading (로딩)</h5>
+          <GuideStatusRow>
+            <GuideStatusItem label="기본">
+              <CustomButton loading>로딩 중</CustomButton>
+            </GuideStatusItem>
+            <GuideStatusItem label="primary">
+              <CustomButton type="primary" loading>로딩 중</CustomButton>
             </GuideStatusItem>
           </GuideStatusRow>
         </div>
@@ -128,6 +186,11 @@ const ButtonsActionsGuide = () => {
             <CustomFloatButton icon={<PlusOutlined />} tooltip="추가" />
           </CustomFloatButtonGroup>
         )}
+        <div className="guide-sub-section" style={{ marginTop: 16 }}>
+          <h5>BackTop (맨 위로)</h5>
+          <p style={{ fontSize: 13, color: '#888' }}>페이지를 일정 이상 스크롤하면 우하단에 맨 위로 이동 버튼이 나타납니다.</p>
+          <CustomFloatButtonBackTop visibilityHeight={200} />
+        </div>
       </GuideDemoBox>
     </GuideSection>
   );
