@@ -24,14 +24,14 @@ const FindPasswordPopup = (props:ChangePasswordPopupProps) => {
         ,handleSubmit: findPasswordHandleSubmit
         ,reset: findPassworReset
         ,setError: findPassworSetError
-    } = useForm<findUserInfo>({mode:'onSubmit'});
+    } = useForm({mode:'onSubmit'});
     const{
         control: changePasswordControl
         , register: changePasswordRegister
         , handleSubmit: changePasswordHandleSubmit
         , reset: changePasswordReset
         , setError: changePasswordSetError
-    } = useForm<ChangePassword>({mode:'onSubmit'});
+    } = useForm({mode:'onSubmit'});
     const[findInfo,SetFindInfo] = useState<findUserInfo>({
         userId:'',
         userName:'',

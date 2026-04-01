@@ -5,8 +5,8 @@ import ClientProviders from './_components/ClientProviders';
 import AppLayout from './_components/AppLayout';
 
 export const metadata: Metadata = {
-  title: '국가재난안전포탈 관리자',
-  description: '국가재난안전포탈 관리자',
+  title: '파워인포텍 리액트공통',
+  description: '파워인포텍 리액트공통',
 };
 
 export default function RootLayout({

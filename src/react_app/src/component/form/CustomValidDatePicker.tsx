@@ -29,13 +29,13 @@
  */
 import React, {useState} from 'react';
 import {DatePicker, DatePickerProps, Tooltip} from 'antd';
-import {Control, Controller} from 'react-hook-form';
+import {Control, Controller, FieldValues} from 'react-hook-form';
 import dayjs, {Dayjs} from 'dayjs';
 
 interface CustomDatePickerProps extends DatePickerProps {
     name:string;
     defaultValue?:Dayjs;
-    control:Control<any>;
+    control:Control<FieldValues>;
     onChange?: (event: any) => void;
     onChangeValue?: (v:Dayjs) => void;
     [key: string]: any;

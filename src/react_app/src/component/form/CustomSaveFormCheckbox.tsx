@@ -28,11 +28,11 @@
  */
 import React, {useState} from 'react';
 import {Checkbox, CheckboxProps, Tooltip} from 'antd';
-import {Control, Controller} from 'react-hook-form';
+import {Control, Controller, FieldValues} from 'react-hook-form';
 
 interface CustomCheckboxProps extends CheckboxProps {
     name:string;
-    control:Control<any>;
+    control:Control<FieldValues>;
     defaultValue?:boolean;
     onChangeValue?: (v:boolean) => void;
     [key: string]: any;

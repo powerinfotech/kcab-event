@@ -39,12 +39,12 @@
  */
 import React, {forwardRef, useState} from 'react';
 import {InputNumber, InputNumberProps, Tooltip} from 'antd';
-import {Control, Controller} from 'react-hook-form';
+import {Control, Controller, FieldValues} from 'react-hook-form';
 
 interface CustomFormInputNumberProps extends InputNumberProps {
     name:string;
     defaultValue?:number;
-    control:Control<any>;
+    control:Control<FieldValues>;
     onChangeValue?:(v:number|string|null)=>void;
     [key: string]: any;
 }

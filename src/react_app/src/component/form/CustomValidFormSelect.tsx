@@ -32,13 +32,13 @@
  */
 import React, {useState} from 'react';
 import {SelectProps, Tooltip} from 'antd';
-import {Control, Controller} from 'react-hook-form';
+import {Control, Controller, FieldValues} from 'react-hook-form';
 import CustomSelect from '@component/select/CustomSelect';
 
 interface CustomFormSelectProps extends SelectProps {
     name:string;
     defaultValue?:string;
-    control:Control<any>
+    control:Control<FieldValues>
     onChangeValue?:(v:string)=>void;
     [key: string]: any;
 };

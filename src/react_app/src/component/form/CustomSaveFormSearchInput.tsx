@@ -38,7 +38,7 @@
  */
 import React, {useEffect, useState} from 'react';
 import {Button, Input, InputProps, Tooltip} from 'antd';
-import {Control, Controller} from 'react-hook-form';
+import {Control, Controller, FieldValues} from 'react-hook-form';
 import {SearchOutlined} from "@ant-design/icons";
 import IconBtnSearch from "@icon/IconBtnSearch";
 
@@ -46,7 +46,7 @@ interface CustomFormSearchInputProps extends InputProps {
     regExp?:{value:RegExp, message:string};
     name:string;
     defaultValue?:string;
-    control:Control<any>;
+    control:Control<FieldValues>;
     onChangeValue?:(v:string)=>void;
     singleRow?:boolean;
     isNoTitle?: boolean;
