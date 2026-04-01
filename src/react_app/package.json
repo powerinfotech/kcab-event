@@ -22,7 +22,6 @@
     "antd": "^6.3.5",
     "axios": "^1.14.0",
     "dayjs": "^1.11.20",
-    "immer": "^11.1.4",
     "jotai": "^2.12.5",
     "lodash": "^4.17.21",
     "next": "^16.2.2",
@@ -42,7 +41,7 @@
     "@types/node": "^22.0.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-"env-cmd": "^11.0.0",
+    "env-cmd": "^11.0.0",
     "eslint": "^10.1.0",
     "eslint-config-next": "^16.2.2"
   }

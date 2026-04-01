@@ -28,12 +28,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       const res = await getUserLoginInfo();
       if (res != null && res.code === HttpStatusCode.Ok && res.item) {
         setIsLogin(true);
-        if (sessionInfo.userId !== res.item.userId)
-          setSessionInfo({
-            userId: res.item.userId,
-            userName: res.item.userName,
-            admYn: res.item.admYn ?? 'N',
-          });
+        setSessionInfo({
+          userId: res.item.userId,
+          userName: res.item.userName,
+          admYn: res.item.admYn ?? 'N',
+        });
 
         const menuRes = await getUserMenuInfo();
         if (menuRes?.code === HttpStatusCode.Ok && menuRes.item) {
@@ -45,11 +44,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     } catch {
       setIsLogin(false);
     }
-  }, [sessionInfo.userId, setSessionInfo, setMenuInfo]);
+  }, [setSessionInfo, setMenuInfo]);
 
   useEffect(() => {
     getLoginUserInfo();
-  }, [getLoginUserInfo]);
+  }, []);
 
   const onSubpanelOpenChange = useCallback((open: boolean) => {
     setSidebarSubpanelOpen(open);
