@@ -60,7 +60,20 @@ dependencies {
     implementation 'org.apache.poi:poi-ooxml:5.2.3'
 }
 
+task installFrontend(type: Exec) {
+    workingDir 'src/react_app'
+
+    inputs.file 'src/react_app/package.json'
+    inputs.file 'src/react_app/yarn.lock'
+    outputs.dir 'src/react_app/node_modules'
+
+    commandLine System.getProperty('os.name').toLowerCase().contains('windows')
+        ? ['cmd', '/c', 'yarn', 'install', '--frozen-lockfile']
+        : ['yarn', 'install', '--frozen-lockfile']
+}
+
 task buildFrontend(type: Exec) {
+    dependsOn installFrontend
     workingDir 'src/react_app'
 
     // [추가] 빌드에 영향을 주는 파일들을 입력값으로 지정
