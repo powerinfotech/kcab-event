@@ -6,6 +6,8 @@
  *
  * [사용 방법]
  * @example
+ * import CustomTag from '@component/display/CustomTag';
+ *
  * // 색상 태그
  * <CustomTag color="green">승인</CustomTag>
  * <CustomTag color="red">반려</CustomTag>

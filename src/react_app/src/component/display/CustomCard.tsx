@@ -7,6 +7,8 @@
  *
  * [사용 방법]
  * @example
+ * import CustomCard from '@component/display/CustomCard';
+ *
  * // 기본 카드
  * <CustomCard title="사용자 정보">
  *   <p>내용</p>

@@ -94,7 +94,7 @@ export const IUD_COLUMN = {
         if(value === IudType.D)
             return <DeleteOutlined />;
 
-        return <></>;
+        return null;
     }
 };
 
@@ -148,7 +148,7 @@ const CustomTable = (props: CustomTableProps) => {
         } else {
             setTargetDataSource(props.dataSource);
         }
-    }, [props.dataSource, paginationParam.pageEditFlag, paginationParam.page, paginationParam.pageSize, props.rowNoFlag]);
+    }, [props.dataSource, paginationParam.pageEditFlag, paginationParam.page, paginationParam.pageSize, props.rowNoFlag, props.rowNoDescFlag]);
 
     useEffect(() => {
         const handleResize = () => {

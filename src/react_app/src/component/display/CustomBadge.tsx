@@ -6,6 +6,8 @@
  *
  * [사용 방법]
  * @example
+ * import CustomBadge from '@component/display/CustomBadge';
+ *
  * // 숫자 뱃지
  * <CustomBadge count={5}>
  *   <BellOutlined />

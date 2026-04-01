@@ -30,11 +30,10 @@
  * <CustomCkEditor value={content} isEditable={isEdit} onChange={setContent} />
  */
 
-import React, {Component, useEffect, useRef} from 'react';
+import React, {useEffect, useRef} from 'react';
 
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
-import {isEditable} from "@testing-library/user-event/dist/utils";
 
 interface Props {
     value:string,

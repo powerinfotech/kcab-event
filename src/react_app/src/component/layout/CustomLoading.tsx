@@ -55,13 +55,11 @@ const CustomLoading = () => {
 
 
     return (
-      <>
-          <div className={`loading_wrap${isLoading.length > 0 ? '' : ' hide'}`}>
-              <div className={'loading_dim'}>
-                  <Spin indicator={antIcon} delay={1.5} />
-              </div>
-          </div>
-      </>
+        <div className={`loading_wrap${isLoading.length > 0 ? '' : ' hide'}`}>
+            <div className={'loading_dim'}>
+                <Spin indicator={antIcon} delay={1.5} />
+            </div>
+        </div>
     );
 
 };

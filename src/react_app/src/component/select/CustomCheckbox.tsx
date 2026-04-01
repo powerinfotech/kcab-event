@@ -18,9 +18,7 @@
 import React from 'react';
 import {Checkbox, CheckboxProps} from 'antd';
 
-interface CustomCheckboxProps extends CheckboxProps {
-    [key: string]: any;
-};
+interface CustomCheckboxProps extends CheckboxProps {}
 const CustomCheckbox = (props:CustomCheckboxProps) => {
 
     return (

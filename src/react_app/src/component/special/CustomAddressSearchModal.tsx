@@ -46,25 +46,23 @@ export interface CustomAddressSearchModalProps extends ModalProps{
 const CustomAddressSearchModal = (props : CustomAddressSearchModalProps) => {
 
     return (
-        <>
-            <Modal
-                open={props.open}
-                closable={false}
-                footer={[
-                    <CustomButton key="cancelAddressSearch" type="primary" onClick={props.onCancel}>
-                        취소
-                    </CustomButton>
-                ]}
-                destroyOnClose={true}
-            >
-                <DaumPostcode
-                    onComplete={props.onAddrSearchComplete}
-                    onClose={props.onAddrSearchClose}
-                    onSearch={props.onAddrSearch}
-                    autoClose={false}
-                />
-            </Modal>
-        </>
+        <Modal
+            open={props.open}
+            closable={false}
+            footer={[
+                <CustomButton key="cancelAddressSearch" type="primary" onClick={props.onCancel}>
+                    취소
+                </CustomButton>
+            ]}
+            destroyOnClose={true}
+        >
+            <DaumPostcode
+                onComplete={props.onAddrSearchComplete}
+                onClose={props.onAddrSearchClose}
+                onSearch={props.onAddrSearch}
+                autoClose={false}
+            />
+        </Modal>
     );
 };
 
