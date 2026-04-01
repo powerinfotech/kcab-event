@@ -52,4 +52,18 @@ public class FileController {
     public ResponseEntity<Resource> downloadFile(@RequestParam String filePath) throws Exception {
         return fileService.downloadFile(filePath);
     }
+
+    @DeleteMapping("/delete-file")
+    public ApiResponse<Void> deleteFile(@MisoSession LoginUser loginUser,
+                                        @RequestParam(value = "deleteFileList") String deleteFileListJson) throws Exception {
+        fileService.deleteFile(loginUser, deleteFileListJson);
+        return ApiResponse.ok(null);
+    }
+
+    @DeleteMapping("/delete-all-file")
+    public ApiResponse<Void> deleteAllFile(@MisoSession LoginUser loginUser,
+                                           @RequestParam(value = "fileSeq") Integer fileSeq) throws Exception {
+        fileService.deleteAllFile(loginUser, fileSeq);
+        return ApiResponse.ok(null);
+    }
 }

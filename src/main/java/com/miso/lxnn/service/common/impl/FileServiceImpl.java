@@ -185,7 +185,7 @@ public class FileServiceImpl implements FileService {
             File file = new File(uploadDir, fileDto.getFilePath());
             if (file.exists()) {
                 //파일 서버에서 삭제하지 말고 남기도록 주석처리
-                //file.delete();
+                file.delete();
             }
 
             fileDto.setUptUserSeq(loginUser.getUserSeq());
@@ -204,7 +204,7 @@ public class FileServiceImpl implements FileService {
             File file = new File(uploadDir, fileDto.getFilePath());
             if (file.exists()) {
                 //파일 서버에서 삭제하지 말고 남기도록 주석처리
-                //file.delete();
+                file.delete();
             }
 
             fileDto.setUptUserSeq(loginUser.getUserSeq());
