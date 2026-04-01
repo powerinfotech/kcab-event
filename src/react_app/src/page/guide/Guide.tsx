@@ -34,7 +34,8 @@ const Guide = ({ menuInfo }: { menuInfo?: MenuInfo }) => {
     <div className="guide-wrap">
       <aside className="guide-nav">
         <Anchor
-          affix={false}
+          affix={true}
+          offsetTop={64}
           items={anchorItems}
           targetOffset={80}
         />
