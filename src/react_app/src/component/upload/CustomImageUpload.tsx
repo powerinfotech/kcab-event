@@ -32,11 +32,11 @@
  * // 읽기 전용
  * <CustomImageUpload fileList={images} disabled />
  */
-import React, { useState } from 'react';
-import { Upload, Modal, message } from 'antd';
-import type { UploadFile, UploadProps } from 'antd';
-import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
-import type { RcFile } from 'antd/es/upload/interface';
+import React, {useState} from 'react';
+import {message, Modal, Upload} from 'antd';
+import type {UploadFile, UploadProps} from 'antd';
+import {DeleteOutlined, PlusOutlined} from '@ant-design/icons';
+import type {RcFile} from 'antd/es/upload/interface';
 
 interface CustomImageUploadProps {
   maxCount?: number;
@@ -53,11 +53,10 @@ const getBase64 = (file: File): Promise<string> =>
     reader.onerror = reject;
   });
 
-const CustomImageUpload = ({ maxCount = 5, disabled = false, fileList: propFileList, onChange }: CustomImageUploadProps) => {
+const CustomImageUpload = ({ maxCount = 5, disabled = false, fileList = [], onChange }: CustomImageUploadProps) => {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
   const [previewTitle, setPreviewTitle] = useState('');
-  const [fileList, setFileList] = useState<UploadFile[]>(propFileList ?? []);
 
   const handlePreview = async (file: UploadFile) => {
     if (!file.url && !file.preview && file.originFileObj) {
@@ -69,7 +68,6 @@ const CustomImageUpload = ({ maxCount = 5, disabled = false, fileList: propFileL
   };
 
   const handleChange: UploadProps['onChange'] = ({ fileList: newFileList }) => {
-    setFileList(newFileList);
     onChange?.(newFileList);
   };
 

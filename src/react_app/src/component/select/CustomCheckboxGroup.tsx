@@ -49,7 +49,8 @@
  * </CustomCheckboxGroup>
  */
 import React from 'react';
-import {Checkbox, CheckboxGroupProps} from 'antd';
+import {Checkbox} from 'antd';
+import type {CheckboxGroupProps} from 'antd/es/checkbox';
 
 interface CustomCheckboxGroupOption {
     value: any;

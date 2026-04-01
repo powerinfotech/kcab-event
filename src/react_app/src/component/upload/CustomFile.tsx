@@ -19,8 +19,8 @@
  *
  * [exports]
  * - default: CustomFile
- * - named:   FileDetailType  (파일 DTO 인터페이스)
- * - named:   CustomFile      (Ant Design UploadFile 확장 인터페이스)
+ * - named:   FileDetailType   (파일 DTO 인터페이스)
+ * - named:   CustomFileUpload (Ant Design UploadFile 확장 인터페이스 — 컴포넌트 내부 상태 타입)
  *
  * [사용 방법]
  * @example
@@ -101,7 +101,7 @@ export interface FileDetailType {
     iudType?: IudType;
 }
 
-export interface CustomFile extends UploadFile{
+export interface CustomFileUpload extends UploadFile{
     fileSeq?: number;
     fileDtlSeq?: number;
     sortSeq: number;
@@ -115,7 +115,7 @@ interface CustomFilePropsType {
 }
 
 const CustomFile = (props:CustomFilePropsType) => {
-    const fileDtoToAntdFile = (fileDto: FileDetailType): CustomFile => ({
+    const fileDtoToAntdFile = (fileDto: FileDetailType): CustomFileUpload => ({
         uid: fileDto.fileDtlSeq ? String(fileDto.fileDtlSeq) : fileDto.uid as string,
         fileSeq: fileDto.fileSeq,
         fileDtlSeq: fileDto.fileDtlSeq,
@@ -128,7 +128,7 @@ const CustomFile = (props:CustomFilePropsType) => {
         originFileObj: fileDto.originFileObj,
     });
 
-    const AntdFileToFileDto = (antdFileData: CustomFile): FileDetailType => ({
+    const AntdFileToFileDto = (antdFileData: CustomFileUpload): FileDetailType => ({
         uid: antdFileData.uid,
         fileSeq: antdFileData.fileSeq,
         fileDtlSeq: antdFileData.fileDtlSeq,
@@ -139,7 +139,7 @@ const CustomFile = (props:CustomFilePropsType) => {
         originFileObj: antdFileData.originFileObj
     });
 
-    const [fileList, setFileList] = useState<CustomFile[]>(props.fileList ? props.fileList.map(fileDtoToAntdFile) : []);
+    const [fileList, setFileList] = useState<CustomFileUpload[]>(props.fileList ? props.fileList.map(fileDtoToAntdFile) : []);
     const isInternalUpdate = useRef(false);
 
     const sensor = useSensor(PointerSensor, {
@@ -189,7 +189,7 @@ const CustomFile = (props:CustomFilePropsType) => {
             return;
         }
 
-        let newFileList: CustomFile[];
+        let newFileList: CustomFileUpload[];
 
         if(targetFileIdx > -1){
             let currentSrtSq = 1;
@@ -236,7 +236,7 @@ const CustomFile = (props:CustomFilePropsType) => {
                 iudType: IudType.I,
             };
 
-            const newFileListBase: CustomFile[] = cloneDeep(fileList);
+            const newFileListBase: CustomFileUpload[] = cloneDeep(fileList);
             newFileList = [...newFileListBase, newFileListItem];
         }
 

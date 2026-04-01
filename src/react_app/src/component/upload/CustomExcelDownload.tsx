@@ -14,10 +14,10 @@
  * @example
  * import CustomExcelDownload from '@component/upload/CustomExcelDownload';
  *
- * const excelColumns = [
- *   { header: '사용자 ID', key: 'userId' },
- *   { header: '사용자명', key: 'userName' },
- *   { header: '이메일', key: 'email' },
+ * const excelColumns: ExcelColumnDef[] = [
+ *   { headerName: '사용자 ID', dataIndex: 'userId' },
+ *   { headerName: '사용자명', dataIndex: 'userName' },
+ *   { headerName: '이메일',   dataIndex: 'email' },
  * ];
  *
  * <CustomExcelDownload
