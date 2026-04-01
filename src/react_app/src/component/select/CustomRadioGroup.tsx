@@ -10,6 +10,8 @@
  *
  * [사용 방법]
  * @example
+ * import CustomRadioGroup from '@component/select/CustomRadioGroup';
+ *
  * // options 배열 사용 (권장)
  * <CustomRadioGroup
  *   options={[

@@ -80,7 +80,9 @@ const CustomCkEditor = ({value,onChange,isEditable}: Props)=>{
                     }}
                     onReady={(editor) => {
                         editorRef.current = editor;
-                        editor.enableReadOnlyMode('custom-id');
+                        if (!isEditable) {
+                            editor.enableReadOnlyMode('custom-id');
+                        }
                     }}
                     onChange={ ( event, editor ) => {
                         const data = editor.getData();

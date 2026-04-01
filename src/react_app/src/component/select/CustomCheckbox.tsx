@@ -7,6 +7,8 @@
  *
  * [사용 방법]
  * @example
+ * import CustomCheckbox from '@component/select/CustomCheckbox';
+ *
  * // 단독 체크박스
  * <CustomCheckbox checked={isActive} onChange={(e) => setIsActive(e.target.checked)}>
  *   활성화

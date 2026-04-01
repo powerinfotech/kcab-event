@@ -53,7 +53,6 @@ interface CustomInputProps extends InputProps {
      * - validationPatterns.ts의 상수를 그대로 사용 가능
      */
     regExp?: { value: RegExp; message: string };
-    [key: string]: any;
 }
 
 /**

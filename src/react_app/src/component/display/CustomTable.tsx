@@ -54,7 +54,7 @@ import {IudType} from '@interface/common';
 
 const TABLE_HEIGHT_RATIO = 0.55;
 
-interface CustomTableProps extends TableProps {
+interface CustomTableProps<T extends object = any> extends TableProps<T> {
     rowNoFlag?: boolean;
     rowNoDescFlag?:boolean;
     showIudIcon?:boolean;
@@ -98,7 +98,7 @@ export const IUD_COLUMN = {
     }
 };
 
-const CustomTable = (props: CustomTableProps) => {
+const CustomTable = <T extends object = any>(props: CustomTableProps<T>) => {
     const targetPagination = props.pagination ?? false;
     const [targetDataSource, setTargetDataSource] = useState<any>();
     const [paginationParam, setPaginationParam] = useState<CustomPageParam>({

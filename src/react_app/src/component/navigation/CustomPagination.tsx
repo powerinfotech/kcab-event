@@ -8,6 +8,8 @@
  *
  * [사용 방법]
  * @example
+ * import CustomPagination from '@component/navigation/CustomPagination';
+ *
  * <CustomPagination
  *   current={currentPage}
  *   pageSize={10}

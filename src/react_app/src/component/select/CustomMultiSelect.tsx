@@ -40,7 +40,7 @@ const CustomMultiSelect = (props: CustomMultiSelectProps) => {
             mode="multiple"
             showSearch
             filterOption={(input, option) =>
-                String(option?.label ?? '').includes(input)
+                String(option?.label ?? '').toLowerCase().includes(input.toLowerCase())
             }
         />
     );

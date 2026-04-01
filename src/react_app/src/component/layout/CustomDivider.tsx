@@ -6,6 +6,8 @@
  *
  * [사용 방법]
  * @example
+ * import CustomDivider from '@component/layout/CustomDivider';
+ *
  * // 가로 구분선
  * <CustomDivider />
  *

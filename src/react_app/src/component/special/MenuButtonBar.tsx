@@ -8,8 +8,12 @@
  * [동작 방식]
  * 1. menuBtnList가 없거나 비어있으면 null 반환
  * 2. btnFuncCd를 ICON_MAP으로 조회하여 아이콘 자동 적용
- *    - cfmInit    → IconBtnRefresh (초기화)
- *    - cfmSearch  → IconBtnSearch  (조회)
+ *    - cfmInit    → IconBtnRefresh  (초기화)
+ *    - cfmSearch  → IconBtnSearch   (조회)
+ *    - cfmAdd     → PlusOutlined    (추가)
+ *    - cfmSave    → SaveOutlined    (저장)
+ *    - cfmDelete  → DeleteOutlined  (삭제)
+ *    - cfmExcel   → FileExcelOutlined (엑셀 다운로드)
  * 3. 버튼 클릭 → handlersRef.current[btnFuncCd]?.() 호출
  *
  * @param menuBtnList  - API에서 조회한 버튼 권한 목록
@@ -20,10 +24,11 @@
  * import MenuButtonBar from '@component/special/MenuButtonBar';
  *
  * const handlersRef = useRef<PageButtonHandlers>({
+ *   cfmInit:   handleReset,
  *   cfmSearch: handleSearch,
+ *   cfmAdd:    handleAdd,
  *   cfmSave:   handleSave,
  *   cfmDelete: handleDelete,
- *   cfmInit:   handleReset,
  * });
  *
  * // menuBtnList는 useMenuBtnTree 또는 usePermission으로 조회
@@ -35,6 +40,7 @@ import React from 'react';
 import CustomButton from '@component/button/CustomButton';
 import IconBtnRefresh from '@icon/IconBtnRefresh';
 import IconBtnSearch from '@icon/IconBtnSearch';
+import {DeleteOutlined, FileExcelOutlined, PlusOutlined, SaveOutlined} from '@ant-design/icons';
 import {MenuBtnDetail, PageButtonHandlers} from '@interface/common';
 
 interface MenuButtonBarProps {
@@ -43,8 +49,12 @@ interface MenuButtonBarProps {
 }
 
 const ICON_MAP: Record<string, React.ReactNode> = {
-    cfmInit: <IconBtnRefresh />,
+    cfmInit:   <IconBtnRefresh />,
     cfmSearch: <IconBtnSearch />,
+    cfmAdd:    <PlusOutlined />,
+    cfmSave:   <SaveOutlined />,
+    cfmDelete: <DeleteOutlined />,
+    cfmExcel:  <FileExcelOutlined />,
 };
 
 const MenuButtonBar = ({menuBtnList, handlersRef}: MenuButtonBarProps) => {
