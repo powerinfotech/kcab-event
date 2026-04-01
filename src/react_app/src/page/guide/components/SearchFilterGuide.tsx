@@ -85,18 +85,6 @@ const SearchFilterGuide = () => {
           </CustomFilterPanel>
         </div>
       </GuideDemoBox>
-
-      {/* QuickFilter */}
-      <GuideDemoBox title="QuickFilter (빠른 필터)">
-        <div className="guide-demo-row">
-          <CustomSearchBar
-            placeholder="테이블 빠른 검색"
-          />
-        </div>
-        <div className="guide-demo-description">
-          그리드 상단에 배치하는 빠른 필터. CustomSearchBar를 활용합니다.
-        </div>
-      </GuideDemoBox>
     </GuideSection>
   );
 };

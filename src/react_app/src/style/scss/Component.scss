@@ -722,3 +722,24 @@ z-index: 3001;
 .autocomplete-mr {
     margin-right: 2px;
 }
+
+.address-input-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    .address-zip-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+
+        .ant-input {
+            width: 140px;
+            flex-shrink: 0;
+        }
+
+        .ant-btn {
+            flex-shrink: 0;
+        }
+    }
+}
