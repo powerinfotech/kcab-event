@@ -9,6 +9,7 @@ import CustomRangePicker from '@component/date/CustomRangePicker';
 import CustomDateRangePicker from '@component/date/CustomDateRangePicker';
 import CustomTimePicker from '@component/date/CustomTimePicker';
 import CustomMaskedInput from '@component/input/CustomMaskedInput';
+import CustomSearchBar from '@component/input/CustomSearchBar';
 import CustomTimeRangePicker from '@component/date/CustomTimeRangePicker';
 import { GuideSection, GuideDemoBox, GuideStatusRow, GuideStatusItem } from './GuideSection';
 
@@ -162,6 +163,24 @@ const FormInputsGuide = () => {
             <CustomDatePicker picker="month" locale={locale} disabled allowEmpty />
           </GuideStatusItem>
         </GuideStatusRow>
+      </GuideDemoBox>
+
+      {/* SearchBar */}
+      <GuideDemoBox title="SearchBar (디바운스 검색 입력)">
+        <GuideStatusRow>
+          <GuideStatusItem label="기본 (300ms 디바운스)">
+            <CustomSearchBar placeholder="검색어를 입력하세요" onSearch={(v) => console.log('search:', v)} />
+          </GuideStatusItem>
+          <GuideStatusItem label="디바운스 없음">
+            <CustomSearchBar placeholder="버튼 클릭 시 검색" debounceMs={0} onSearch={(v) => console.log('search:', v)} />
+          </GuideStatusItem>
+          <GuideStatusItem label="disabled">
+            <CustomSearchBar placeholder="비활성" disabled />
+          </GuideStatusItem>
+        </GuideStatusRow>
+        <div className="guide-demo-description">
+          한글 IME 조합 완료 후 디바운스 시작 / debounceMs=0이면 버튼 클릭 시에만 검색
+        </div>
       </GuideDemoBox>
 
       {/* TimeRangePicker */}
