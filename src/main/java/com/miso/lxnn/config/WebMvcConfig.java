@@ -4,6 +4,7 @@ import com.miso.lxnn.config.interceptor.LogInterceptor;
 import com.miso.lxnn.config.interceptor.SessionCheckInterceptor;
 import com.miso.lxnn.util.formatter.LocalDateFormatter;
 import com.miso.lxnn.util.formatter.LocalDateTimeFormatter;
+import com.miso.lxnn.util.formatter.LocalTimeFormatter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;
@@ -129,6 +130,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
     public void addFormatters(FormatterRegistry registry) {
         registry.addFormatter(new LocalDateFormatter());
         registry.addFormatter(new LocalDateTimeFormatter());
+        registry.addFormatter(new LocalTimeFormatter());
     }
 
     /**
