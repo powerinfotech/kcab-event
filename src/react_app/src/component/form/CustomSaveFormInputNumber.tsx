@@ -61,7 +61,7 @@ interface CustomFormInputNumberProps extends InputNumberProps {
     defaultValue?:number;
     control:Control<any>;
     rules?: any;
-    onChangeValue?:(v:number|null)=>void;
+    onChangeValue?:(v:number|string|null)=>void;
     singleRow?:boolean;
     isNoTitle?: boolean;
     [key: string]: any;
