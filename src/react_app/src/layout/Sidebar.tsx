@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { Tooltip } from 'antd';
 import { FileTextOutlined, AppstoreOutlined } from '@ant-design/icons';
 import { MenuInfo } from '@interface/auth/MenuManagement';
@@ -9,6 +8,7 @@ import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { menuInfoAtom } from '@atom/menuInfoAtom';
 import { tabModeAtom } from '@atom/tabModeAtom';
 import { tabListAtom, activeTabKeyAtom } from '@atom/tabListAtom';
+import { currentPathAtom, pushPath } from '@atom/currentPathAtom';
 import useTabManager from '@hook/useTabManager';
 import LogoImage from '@image/powerInfoTech_logo.png';
 
@@ -18,15 +18,15 @@ function SidebarSubpanel({
   onMenuClick,
   tabMode,
   onTabOpen,
+  setCurrentPath,
 }: {
   menuInfo: MenuInfo[];
   selectedParentId: number | null;
   onMenuClick?: () => void;
   tabMode: boolean;
   onTabOpen: (menu: MenuInfo) => void;
+  setCurrentPath: (path: string) => void;
 }) {
-  const router = useRouter();
-
   if (selectedParentId === null) return null;
 
   const parent = menuInfo.find((m) => m.menuSeq === selectedParentId && m.menuTypeCd === 'D');
@@ -39,7 +39,7 @@ function SidebarSubpanel({
     if (tabMode) {
       onTabOpen(child);
     } else {
-      router.push(child.menuUrl);
+      pushPath(child.menuUrl, setCurrentPath);
     }
     onMenuClick?.();
   };
@@ -70,11 +70,11 @@ export default function Sidebar({
 }: {
   onSubpanelOpenChange?: (open: boolean) => void;
 }) {
-  const router = useRouter();
   const menuInfo = useAtomValue(menuInfoAtom);
   const [tabMode, setTabMode] = useAtom(tabModeAtom);
   const setTabList = useSetAtom(tabListAtom);
   const setActiveTabKey = useSetAtom(activeTabKeyAtom);
+  const setCurrentPath = useSetAtom(currentPathAtom);
   const { openTab } = useTabManager();
   const [subpanelOpen, setSubpanelOpen] = useState(false);
   const [selectedParentId, setSelectedParentId] = useState<number | null>(null);
@@ -101,7 +101,7 @@ export default function Sidebar({
       onMouseLeave={handleSubpanelClose}
     >
       <div className="sidebar_narrow">
-        <div className="sidebar_logo" onClick={() => router.push('/')}>
+        <div className="sidebar_logo" onClick={() => pushPath('/', setCurrentPath)}>
           <img src={typeof LogoImage === 'string' ? LogoImage : LogoImage.src} alt="Logo" />
         </div>
         <nav className="sidebar_narrow_menu">
@@ -148,6 +148,7 @@ export default function Sidebar({
           onMenuClick={handleSubpanelClose}
           tabMode={tabMode}
           onTabOpen={openTab}
+          setCurrentPath={setCurrentPath}
         />
       )}
     </aside>

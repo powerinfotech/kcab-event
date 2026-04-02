@@ -1,7 +1,6 @@
 'use client';
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
 import { Breadcrumb } from 'antd';
 import IconStepArrow from '@icon/IconStepArrow';
 import IconHome from '@icon/IconHome';
@@ -14,6 +13,7 @@ import { menuInfoAtom } from '@atom/menuInfoAtom';
 import { showErrorPageAtom } from '@atom/showErrorPageAtom';
 import { tabModeAtom } from '@atom/tabModeAtom';
 import { tabListAtom, activeTabKeyAtom, TabItem } from '@atom/tabListAtom';
+import { currentPathAtom } from '@atom/currentPathAtom';
 import { callGetMenuBtnList } from '@api/CommonApi';
 import { HttpStatusCode } from 'axios';
 import MenuButtonBar from '@component/special/MenuButtonBar';
@@ -103,7 +103,7 @@ function SinglePageContent({
   menuInfo: MenuInfo[];
   onChange: (flag: boolean) => void;
 }) {
-  const pathname = usePathname() ?? '/';
+  const pathname = useAtomValue(currentPathAtom);
   const handlersRef = useRef<PageButtonHandlers>({});
   const [menuBtnList, setMenuBtnList] = useState<MenuBtnDetail[]>([]);
 
@@ -313,12 +313,20 @@ function MultiTabContent({
 }
 
 export default function MainContent() {
-  const pathname = usePathname() ?? '/';
-  const router = useRouter();
+  const [currentPath, setCurrentPath] = useAtom(currentPathAtom);
   const menuInfo = useAtomValue(menuInfoAtom);
   const setShowErrorPage = useSetAtom(showErrorPageAtom);
   const tabMode = useAtomValue(tabModeAtom);
   const hasRedirected = useRef(false);
+
+  // 브라우저 뒤로/앞으로 버튼 시 currentPathAtom 동기화
+  useEffect(() => {
+    const handlePopState = () => {
+      setCurrentPath(window.location.pathname);
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [setCurrentPath]);
 
   // 리다이렉트 처리
   useEffect(() => {
@@ -326,10 +334,11 @@ export default function MainContent() {
     if (typeof window !== 'undefined' && window.location.href.includes('987654321')) {
       if (!hasRedirected.current) {
         hasRedirected.current = true;
-        router.replace('/');
+        window.history.replaceState(null, '', '/');
+        setCurrentPath('/');
       }
     }
-  }, [pathname, menuInfo, router]);
+  }, [currentPath, menuInfo, setCurrentPath]);
 
   const onChange = useCallback(
     (flag: boolean) => {

@@ -35,10 +35,10 @@
  * <TabBar tabs={tabList} activeKey={activeTabKey} onTabClick={activateTab} />
  */
 import { useCallback, useRef } from 'react';
-import { useAtom, useAtomValue } from 'jotai';
-import { useRouter } from 'next/navigation';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { tabListAtom, activeTabKeyAtom } from '@atom/tabListAtom';
 import { tabModeAtom } from '@atom/tabModeAtom';
+import { currentPathAtom, pushPath } from '@atom/currentPathAtom';
 import { useMessage } from '@hook/useMessage';
 import { MenuInfo } from '@interface/auth/MenuManagement';
 
@@ -61,8 +61,8 @@ function updateUrl(url: string) {
  * }
  */
 export default function useTabManager() {
-  const router = useRouter();
   const { confirm } = useMessage();
+  const setCurrentPath = useSetAtom(currentPathAtom);
   const tabMode = useAtomValue(tabModeAtom);
   const [tabList, setTabList] = useAtom(tabListAtom);
   const [activeTabKey, setActiveTabKey] = useAtom(activeTabKeyAtom);
@@ -149,7 +149,7 @@ export default function useTabManager() {
       if (activeTabKeyRef.current === key) {
         if (newList.length === 0) {
           setActiveTabKey(null);
-          router.push('/');
+          pushPath('/', setCurrentPath);
         } else {
           const nextIdx = Math.min(idx, newList.length - 1);
           const nextKey = newList[nextIdx].key;
@@ -158,7 +158,7 @@ export default function useTabManager() {
         }
       }
     },
-    [tabList, setTabList, setActiveTabKey, router],
+    [tabList, setTabList, setActiveTabKey, setCurrentPath],
   );
 
   /** 특정 탭으로 전환 (탭 클릭 시) */
@@ -184,8 +184,8 @@ export default function useTabManager() {
   const closeAllTabs = useCallback(() => {
     setTabList([]);
     setActiveTabKey(null);
-    router.push('/');
-  }, [setTabList, setActiveTabKey, router]);
+    pushPath('/', setCurrentPath);
+  }, [setTabList, setActiveTabKey, setCurrentPath]);
 
   return {
     tabMode,

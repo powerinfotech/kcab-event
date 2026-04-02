@@ -1,6 +1,6 @@
 import { message } from '@util/antdMessage';
 import React, {useEffect, useRef, useState} from 'react';
-import {useRouter} from 'next/navigation';
+import {useSetAtom} from 'jotai';
 import type { TableColumnsType } from 'antd';
 import {useForm} from 'react-hook-form';
 import {HttpStatusCode} from 'axios';
@@ -14,9 +14,10 @@ import {callGetComGrpCdList, callSaveComGrpCd} from '@api/code/CommonGroupCodeAp
 import {useMessage} from '@hook/useMessage';
 import {applyDataChange} from '@util/dataSourceUtils';
 import {ALPHANUMERIC_REGEXP} from '@util/validationPatterns';
+import {currentPathAtom, pushPath} from '@atom/currentPathAtom';
 
 export function useCommonGroupCodeManagement() {
-    const router = useRouter();
+    const setCurrentPath = useSetAtom(currentPathAtom);
     const form = useForm<any>({mode: 'onSubmit'});
     const {register, unregister, control, setValue} = form;
     const {confirm} = useMessage();
@@ -130,7 +131,7 @@ export function useCommonGroupCodeManagement() {
             key: 'comGrpCd', dataIndex: 'comGrpCd', align: 'center', width: 100, fixed: 'left',
             render: (value: string, record: ComGrpCdList) =>
                 record.rgstUserSeq
-                    ? <a onClick={() => router.push(`/com-cd-mgt?comGrpCd=${encodeURIComponent(value)}`)}>{value}</a>
+                    ? <a onClick={() => pushPath(`/com-cd-mgt?comGrpCd=${encodeURIComponent(value)}`, setCurrentPath)}>{value}</a>
                     : <EditableFormCell record={record} seqField="comGrpCdSeq" fieldSuffix="comGrpCd"
                           value={value} setValue={setValue} control={control} register={register}
                           onDataChange={handleDataChange} requiredMessage="분류코드는 필수입력입니다."
