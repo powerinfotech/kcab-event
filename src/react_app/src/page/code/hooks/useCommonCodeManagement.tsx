@@ -174,8 +174,8 @@ export function useCommonCodeManagement() {
     const floatRegExp = FLOAT_REGEXP;
 
     const grpColumns: TableColumnsType<ComGrpCdList> = [
-        {title: '공통그룹코드', key: 'comGrpCd', dataIndex: 'comGrpCd', align: 'center', width: 100},
-        {title: '공통그룹코드명', key: 'comGrpCdNm', dataIndex: 'comGrpCdNm', align: 'center', width: 120},
+        {title: '공통그룹코드', key: 'comGrpCd', dataIndex: 'comGrpCd', align: 'center', width: 120},
+        {title: '공통그룹코드명', key: 'comGrpCdNm', dataIndex: 'comGrpCdNm', align: 'center', width: ""},
         {title: '사용여부', key: 'useYn', dataIndex: 'useYn', align: 'center', width: 80,
             render: (value: string) => value === 'Y' ? '예' : '아니오'},
     ];

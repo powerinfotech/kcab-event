@@ -67,7 +67,7 @@ const UserMenuAuthInquiry = ({handlersRef}: {
     // ──────────────────────────── 좌측 grid 칼럼 ────────────────────────────
     const authColumns: TableColumnsType<AuthMenuMgtAuth> = [
         {title: '권한그룹', key: 'authGrpNm', dataIndex: 'authGrpNm', align: 'center', width: '25%'},
-        {title: '권한명', key: 'authNm', dataIndex: 'authNm', align: 'center', width: '35%'},
+        {title: '권한명', key: 'authNm', dataIndex: 'authNm', align: 'center', width: ""},
         {
             title: '사용여부', key: 'useYn', dataIndex: 'useYn', align: 'center', width: 80,
             render: (value: string) => <CustomCheckbox checked={value === 'Y'} disabled />,
@@ -179,7 +179,7 @@ const UserMenuAuthInquiry = ({handlersRef}: {
                 </form>
             </section>
 
-            <section className="board-wrap half-wrap type03">
+            <section className="board-wrap half-wrap type02">
                 {/* 좌측: 권한(역할)정보 */}
                 <div>
                     <div className="board-title-wrap">
