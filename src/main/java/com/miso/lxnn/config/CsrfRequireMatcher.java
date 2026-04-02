@@ -41,7 +41,7 @@ public class CsrfRequireMatcher implements RequestMatcher {
 	 * @return {@code true}이면 CSRF 토큰 검증 수행, {@code false}이면 건너뜀
 	 */
 	/** CSRF 검사를 제외할 URL 목록 */
-	private static final String[] EXCLUDED_URLS = { "/api/login", "/api/logout" };
+	private static final String[] EXCLUDED_URLS = { "/api/login" };
 
 	@Override
 	public boolean matches(HttpServletRequest request) {
