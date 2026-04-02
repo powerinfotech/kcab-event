@@ -73,6 +73,8 @@ const GlobalAxiosProvider = (props: GlobalAxiosInterceptorProps) => {
         }
 
         if (res.data.code === ErrorCode.INVALID_SESSION_ERROR) {
+            sessionStorage.removeItem('tabList');
+            sessionStorage.removeItem('activeTabKey');
             location.replace('/');
         }
 
