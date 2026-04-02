@@ -40,20 +40,11 @@ public class CsrfRequireMatcher implements RequestMatcher {
 	 * @param request 현재 HTTP 요청
 	 * @return {@code true}이면 CSRF 토큰 검증 수행, {@code false}이면 건너뜀
 	 */
-	/** CSRF 검사를 제외할 URL 목록 */
-	private static final String[] EXCLUDED_URLS = { "/api/login" };
-
 	@Override
 	public boolean matches(HttpServletRequest request) {
 		// 안전한 메서드(GET 등)는 CSRF 검사 불필요
 		if (ALLOWED_METHODS.matcher(request.getMethod()).matches())
 			return false;
-
-		// 로그인 등 CSRF 예외 경로는 검사 제외
-		String uri = request.getRequestURI();
-		for (String excluded : EXCLUDED_URLS) {
-			if (uri.equals(excluded)) return false;
-		}
 
 		// Swagger UI에서 온 요청은 CSRF 검사 제외 (개발/테스트 편의)
 		final String referer = request.getHeader("Referer");
