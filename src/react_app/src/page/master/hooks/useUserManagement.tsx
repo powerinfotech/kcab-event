@@ -60,6 +60,14 @@ export const columns: TableColumnsType<any> = [
         width: '14%',
     },
     {
+        title: <div className="tac">사용여부</div>,
+        key: 'useYn',
+        dataIndex: 'useYn',
+        align: 'center',
+        width: '6%',
+        render: (value: string) => value === 'Y' ? '예' : '아니오',
+    },
+    {
         title: <div className="tac">사용시작일</div>,
         key: 'strDate',
         dataIndex: 'strDate',
