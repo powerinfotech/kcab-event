@@ -3,7 +3,7 @@ package com.miso.lxnn.dao;
 import com.miso.lxnn.domain.MenuBtn;
 import com.miso.lxnn.dto.common.MenuBtnDetailDto;
 import org.apache.ibatis.annotations.Param;
-import org.egovframe.rte.psl.dataaccess.mapper.Mapper;
+import org.egovframe.rte.psl.dataaccess.mapper.EgovMapper;
 
 import java.util.List;
 
@@ -15,7 +15,7 @@ import java.util.List;
  *
  * @see com.miso.lxnn.service.auth.MenuManagementService
  */
-@Mapper("menuBtnDao")
+@EgovMapper("menuBtnDao")
 public interface MenuBtnDao {
     /** 메뉴에 연결된 전체 버튼 목록을 조회한다. */
     List<MenuBtn> selectByMenuSeq(@Param("menuSeq") Long menuSeq);

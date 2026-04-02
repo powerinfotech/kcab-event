@@ -3,7 +3,7 @@ package com.miso.lxnn.dao;
 import com.miso.lxnn.domain.ComGrpCd;
 import com.miso.lxnn.dto.code.ComGrpCdListDto;
 import org.apache.ibatis.annotations.Param;
-import org.egovframe.rte.psl.dataaccess.mapper.Mapper;
+import org.egovframe.rte.psl.dataaccess.mapper.EgovMapper;
 
 import java.util.List;
 
@@ -15,7 +15,7 @@ import java.util.List;
  *
  * @see com.miso.lxnn.service.code.ComGrpCdService
  */
-@Mapper("comGrpCdDao")
+@EgovMapper("comGrpCdDao")
 public interface ComGrpCdDao {
     /**
      * 공통 코드 그룹 목록을 조회한다.

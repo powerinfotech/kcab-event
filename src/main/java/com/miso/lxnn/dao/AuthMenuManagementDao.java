@@ -4,7 +4,7 @@ import com.miso.lxnn.domain.AuthMenuBtn;
 import com.miso.lxnn.dto.auth.AuthMenuBtnListDto;
 import com.miso.lxnn.dto.auth.AuthMenuMgtAuthListDto;
 import org.apache.ibatis.annotations.Param;
-import org.egovframe.rte.psl.dataaccess.mapper.Mapper;
+import org.egovframe.rte.psl.dataaccess.mapper.EgovMapper;
 
 import java.util.List;
 
@@ -15,7 +15,7 @@ import java.util.List;
  *
  * @see com.miso.lxnn.service.auth.AuthMenuManagementService
  */
-@Mapper("authMenuManagementDao")
+@EgovMapper("authMenuManagementDao")
 public interface AuthMenuManagementDao {
 
     /**

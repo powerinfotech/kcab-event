@@ -1,60 +1,61 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '2.7.12'
-    id 'io.spring.dependency-management' version '1.1.4'
+    id 'org.springframework.boot' version '3.5.6'
+    id 'io.spring.dependency-management' version '1.1.7'
 }
- 
+
 configurations {
 	all {
 		exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
 		exclude group: 'org.springframework.boot', module: 'org.springframework.boot:spring-boot-starter-logging'
 	}
 }
- 
+
 group = 'egovframework'
 version = '1.0.0'
-java.sourceCompatibility = JavaVersion.VERSION_17
- 
+java.sourceCompatibility = JavaVersion.VERSION_21
+
 repositories {
     mavenCentral()
     maven {
         url 'https://maven.egovframe.go.kr/maven'
     }
 }
- 
+
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-web:2.7.12'
-    implementation 'org.springframework.boot:spring-boot-starter-tomcat:2.7.12'
-    implementation 'org.apache.tomcat.embed:tomcat-embed-jasper:9.0.63'
-    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf:2.7.12'
-    implementation 'org.springframework.boot:spring-boot-starter-validation:2.7.12'
-    implementation 'org.springframework.boot:spring-boot-starter-jdbc:2.7.12'
-    developmentOnly 'org.springframework.boot:spring-boot-devtools:2.7.12'
-    implementation 'org.springframework.boot:spring-boot-starter-security:2.7.12'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-tomcat'
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
 
 
-    implementation ('org.egovframe.rte:org.egovframe.rte.ptl.mvc:4.2.0') {
+    implementation ('org.egovframe.rte:egovframe-rte-ptl-mvc:5.0.0') {
         exclude group: 'commons-logging', module: 'commons-logging'
     }
-    implementation 'org.egovframe.rte:org.egovframe.rte.psl.dataaccess:4.2.0'
-    implementation 'org.egovframe.rte:org.egovframe.rte.fdl.idgnr:4.2.0'
-    implementation 'org.egovframe.rte:org.egovframe.rte.fdl.property:4.2.0'
+    implementation 'org.egovframe.rte:egovframe-rte-psl-dataaccess:5.0.0'
+    implementation 'org.egovframe.rte:egovframe-rte-fdl-idgnr:5.0.0'
+    implementation 'org.egovframe.rte:egovframe-rte-fdl-property:5.0.0'
 
     implementation 'org.hsqldb:hsqldb:2.7.2:jdk8'
 
-    implementation 'org.projectlombok:lombok:1.18.28'
-    annotationProcessor 'org.projectlombok:lombok:1.18.28'
-    testImplementation 'org.projectlombok:lombok:1.18.28'
-    testAnnotationProcessor 'org.projectlombok:lombok:1.18.28'
+    implementation 'org.projectlombok:lombok:1.18.36'
+    annotationProcessor 'org.projectlombok:lombok:1.18.36'
+    testImplementation 'org.projectlombok:lombok:1.18.36'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.36'
 
-    implementation 'org.hibernate:hibernate-entitymanager:5.6.15.Final'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
     runtimeOnly 'org.postgresql:postgresql'
 
-    implementation 'org.springdoc:springdoc-openapi-ui:1.7.0'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6'
 
-    implementation 'com.navercorp.lucy:lucy-xss-servlet:2.0.1'
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+    // lucy-xss-servlet은 javax.servlet 기반이라 Spring Boot 3.x(jakarta)와 호환 불가 - 제거
+    // implementation 'com.navercorp.lucy:lucy-xss-servlet:2.0.1'
     implementation 'org.reflections:reflections:0.10.2'
 
     implementation 'org.apache.poi:poi-ooxml:5.2.3'
@@ -100,11 +101,11 @@ task copyFrontend(type: Copy) {
 }
 
 processResources.dependsOn copyFrontend
- 
+
 bootJar {
     exclude('org/projectlombok/lombok')
 }
- 
+
 test {
     useJUnitPlatform()
 }

@@ -1,10 +1,8 @@
 package com.miso.lxnn.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.navercorp.lucy.security.xss.servletfilter.XssEscapeServletFilter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -51,22 +49,8 @@ public class XSSConfig implements WebMvcConfigurer {
 
     private final ObjectMapper objectMapper;
 
-    /**
-     * Lucy XSS Servlet Filter 등록.
-     *
-     * <p>모든 URL({@code /*})에 대해 요청 파라미터의 XSS 위험 문자를 필터링한다.
-     * Lucy 필터 규칙은 {@code lucy-xss-servlet-filter-rule.xml}에서 설정한다.</p>
-     *
-     * @return 필터 등록 Bean
-     */
-    @Bean
-    public FilterRegistrationBean<XssEscapeServletFilter> filterRegistrationBean() {
-        FilterRegistrationBean<XssEscapeServletFilter> filterRegistration = new FilterRegistrationBean<>();
-        filterRegistration.setFilter(new XssEscapeServletFilter());
-        filterRegistration.setOrder(1);
-        filterRegistration.addUrlPatterns("/*");
-        return filterRegistration;
-    }
+    // Lucy XSS Servlet Filter는 javax.servlet 기반이라 Spring Boot 3.x(jakarta)와 호환되지 않아 제거됨
+    // XSS 방어가 필요한 경우 jakarta.servlet 호환 XSS 필터로 교체 필요
 
     /**
      * Jackson JSON 응답 XSS 이스케이프 컨버터 등록.

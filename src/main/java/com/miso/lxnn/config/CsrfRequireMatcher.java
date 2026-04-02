@@ -2,7 +2,7 @@ package com.miso.lxnn.config;
 
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.regex.Pattern;
 
 /**

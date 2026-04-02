@@ -8,8 +8,8 @@ import com.miso.lxnn.dto.common.LoginUser;
 import com.miso.lxnn.service.code.ComGrpCdService;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
-import javax.validation.Valid;
+import jakarta.annotation.Resource;
+import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController

@@ -3,7 +3,7 @@ package com.miso.lxnn.dto.common;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * LoginRequestDto - 로그인 요청 DTO

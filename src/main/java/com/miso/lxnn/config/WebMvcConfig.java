@@ -71,11 +71,11 @@ public class WebMvcConfig implements WebMvcConfigurer {
      */
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
+        // Spring Boot 3.x PathPatternParser 호환: /** 뒤에 추가 패턴 불가
+        // SPA 라우팅은 Next.js가 static export로 처리하므로 단순 패턴만 등록
         registry.addViewController("/{spring:[\\w\\-]+}").setViewName("forward:/");
-        registry.addViewController("/**/{spring:[\\w\\-]+}").setViewName("forward:/");
-        registry.addViewController("/{spring:\\w+}/**{spring:?!(\\.js|\\.css)$}").setViewName("forward:/");
-        // /api/로 시작하지 않는 모든 URL은 클라이언트 화면으로 포워딩
-        registry.addViewController("/{x:^(?!api$).*$}/**/{y:[\\w\\-]+}").setViewName("forward:/");
+        registry.addViewController("/{path1:[\\w\\-]+}/{path2:[\\w\\-]+}").setViewName("forward:/");
+        registry.addViewController("/{path1:[\\w\\-]+}/{path2:[\\w\\-]+}/{path3:[\\w\\-]+}").setViewName("forward:/");
     }
 
     /**

@@ -1,7 +1,7 @@
 package com.miso.lxnn.dao;
 
 import com.miso.lxnn.domain.LoginLog;
-import org.egovframe.rte.psl.dataaccess.mapper.Mapper;
+import org.egovframe.rte.psl.dataaccess.mapper.EgovMapper;
 
 /**
  * LoginLogDao - 로그인 이력 MyBatis 매퍼 인터페이스
@@ -11,7 +11,7 @@ import org.egovframe.rte.psl.dataaccess.mapper.Mapper;
  * @see com.miso.lxnn.service.common.LoginService
  * @see com.miso.lxnn.domain.LoginLog
  */
-@Mapper("loginLogDao")
+@EgovMapper("loginLogDao")
 public interface LoginLogDao {
     /** 로그인 이력을 등록한다. */
     void insertLoginLog(LoginLog loginLog) throws Exception;

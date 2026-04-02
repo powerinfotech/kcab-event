@@ -8,7 +8,7 @@ import com.miso.lxnn.dto.auth.AuthListDto;
 import com.miso.lxnn.dto.auth.AuthUserListDto;
 import com.miso.lxnn.dto.auth.UserSearchDto;
 import org.apache.ibatis.annotations.Param;
-import org.egovframe.rte.psl.dataaccess.mapper.Mapper;
+import org.egovframe.rte.psl.dataaccess.mapper.EgovMapper;
 
 import java.util.List;
 
@@ -20,7 +20,7 @@ import java.util.List;
  *
  * @see com.miso.lxnn.service.auth.AuthManagementService
  */
-@Mapper("authManagementDao")
+@EgovMapper("authManagementDao")
 public interface AuthManagementDao {
     /** 전체 권한 그룹 목록을 조회한다. */
     List<AuthGrpListDto> selectAuthGrpList() throws Exception;

@@ -9,7 +9,7 @@ import com.miso.lxnn.service.auth.FindUserService;
 import com.miso.lxnn.service.auth.MenuManagementService;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 @RestController
 @RequestMapping("/api/find-user")

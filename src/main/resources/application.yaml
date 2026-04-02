@@ -4,9 +4,7 @@ spring:
   output:
     ansi:
       enabled: always
-  mvc:
-    pathmatch:
-      matching-strategy: ant_path_matcher
+  mvc: {}
   thymeleaf:
     prefix: classpath:/templates/
     suffix: .html
@@ -54,7 +52,7 @@ server:
       enabled: false
   tomcat:
     relaxed-query-chars: '|,{,},[,]'
-  max-http-header-size: 400KB
+  max-http-request-header-size: 400KB
 
 logging.level:
   org.springframework: DEBUG

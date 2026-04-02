@@ -3,7 +3,7 @@ package com.miso.lxnn.dto.code;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import java.util.List;
 
 /**

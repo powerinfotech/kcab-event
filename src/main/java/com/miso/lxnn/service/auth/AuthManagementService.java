@@ -7,7 +7,7 @@ import com.miso.lxnn.dto.auth.AuthUserListDto;
 import com.miso.lxnn.dto.auth.UserSearchDto;
 import com.miso.lxnn.dto.common.LoginUser;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import java.util.List;
 
 /**

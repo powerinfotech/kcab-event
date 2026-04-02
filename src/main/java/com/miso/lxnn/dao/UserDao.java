@@ -6,7 +6,7 @@ import com.miso.lxnn.dto.master.UserComboListDto;
 import com.miso.lxnn.dto.master.UserListDto;
 import com.miso.lxnn.dto.master.UserListSearchDto;
 import org.apache.ibatis.annotations.Param;
-import org.egovframe.rte.psl.dataaccess.mapper.Mapper;
+import org.egovframe.rte.psl.dataaccess.mapper.EgovMapper;
 
 import java.util.List;
 
@@ -18,7 +18,7 @@ import java.util.List;
  * @see com.miso.lxnn.service.master.UserManagementService
  * @see com.miso.lxnn.service.common.LoginService
  */
-@Mapper("userDao")
+@EgovMapper("userDao")
 public interface UserDao {
     /**
      * 아이디로 사용자 정보를 조회한다 (비밀번호 포함).

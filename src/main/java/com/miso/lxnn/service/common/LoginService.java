@@ -2,7 +2,7 @@ package com.miso.lxnn.service.common;
 
 import com.miso.lxnn.dto.common.LoginRequestDto;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * LoginService - 로그인·로그아웃 서비스 인터페이스
@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletRequest;
  * <p>사용자 인증, 세션 생성, 로그인 이력 기록 및 로그아웃 기능을 제공한다.</p>
  *
  * @see com.miso.lxnn.service.common.impl.LoginServiceImpl
- * @see com.miso.lxnn.controller.LoginController
+ * @see com.miso.lxnn.controller.common.LoginController
  */
 public interface LoginService {
     /**

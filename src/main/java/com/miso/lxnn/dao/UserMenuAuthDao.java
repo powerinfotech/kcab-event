@@ -3,7 +3,7 @@ package com.miso.lxnn.dao;
 import com.miso.lxnn.dto.auth.AuthMenuBtnListDto;
 import com.miso.lxnn.dto.auth.AuthMenuMgtAuthListDto;
 import org.apache.ibatis.annotations.Param;
-import org.egovframe.rte.psl.dataaccess.mapper.Mapper;
+import org.egovframe.rte.psl.dataaccess.mapper.EgovMapper;
 
 import java.util.List;
 
@@ -15,7 +15,7 @@ import java.util.List;
  *
  * @see com.miso.lxnn.service.auth.UserMenuAuthService
  */
-@Mapper("userMenuAuthDao")
+@EgovMapper("userMenuAuthDao")
 public interface UserMenuAuthDao {
     /**
      * 사용자에게 배정된 권한 목록을 조회한다.

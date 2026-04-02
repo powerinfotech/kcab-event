@@ -4,7 +4,7 @@ import com.miso.lxnn.dto.code.ComGrpCdListDto;
 import com.miso.lxnn.dto.code.ComGrpCdSaveDto;
 import com.miso.lxnn.dto.common.LoginUser;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import java.util.List;
 
 /**

@@ -2,7 +2,7 @@ package com.miso.lxnn.dao;
 
 import com.miso.lxnn.dto.common.FileDetailDto;
 import org.apache.ibatis.annotations.Param;
-import org.egovframe.rte.psl.dataaccess.mapper.Mapper;
+import org.egovframe.rte.psl.dataaccess.mapper.EgovMapper;
 
 import java.util.List;
 /**
@@ -12,7 +12,7 @@ import java.util.List;
  *
  * @see com.miso.lxnn.service.common.FileService
  */
-@Mapper("fileDao")
+@EgovMapper("fileDao")
 public interface FileDao {
     /**
      * 파일 그룹에 속한 파일 상세 목록을 조회한다.
