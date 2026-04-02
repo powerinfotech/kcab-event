@@ -1,6 +1,6 @@
 package com.miso.lxnn.util;
 
-import com.miso.lxnn.SafetyAdminApplication;
+import com.miso.lxnn.PowerReactApplication;
 import org.reflections.Reflections;
 import org.reflections.util.ConfigurationBuilder;
 import org.springframework.stereotype.Component;
@@ -46,7 +46,7 @@ import java.util.stream.Collectors;
  */
 @Component
 public class EnumCodeUtil {
-    private static  final String ENUM_PATH = SafetyAdminApplication.class.getPackageName()+".enums.";
+    private static  final String ENUM_PATH = PowerReactApplication.class.getPackageName()+".enums.";
     /** 코드 값으로 사용할 enum 필드명 (기본값) */
     public static final String TEXT_VALUE  = "value";
 

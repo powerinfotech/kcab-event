@@ -1,6 +1,6 @@
 package com.miso.lxnn.config;
 
-import com.miso.lxnn.SafetyAdminApplication;
+import com.miso.lxnn.PowerReactApplication;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.annotation.MapperScan;
@@ -52,7 +52,7 @@ public class DataSourceConfig {
         PathMatchingResourcePatternResolver pmrpr = new PathMatchingResourcePatternResolver();
         SqlSessionFactoryBean sqlSessionFactoryBean = new SqlSessionFactoryBean();
         sqlSessionFactoryBean.setDataSource(dataSource);
-        sqlSessionFactoryBean.setTypeAliasesPackage(SafetyAdminApplication.class.getPackageName() + ".domain");
+        sqlSessionFactoryBean.setTypeAliasesPackage(PowerReactApplication.class.getPackageName() + ".domain");
         sqlSessionFactoryBean.setConfigLocation(pmrpr.getResource("classpath:/mybatis-config.xml"));
         sqlSessionFactoryBean.setMapperLocations(pmrpr.getResources("classpath:/mappers/*.xml"));
         return sqlSessionFactoryBean.getObject();

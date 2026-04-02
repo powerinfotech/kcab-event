@@ -1,5 +1,5 @@
-# safety_admin
-국가재난안전망 관리자
+# power_react
+Power React Admin
 
 
 REACT APP 구동(MAC OS)
