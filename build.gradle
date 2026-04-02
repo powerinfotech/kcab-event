@@ -68,6 +68,10 @@ task installFrontend(type: Exec) {
     inputs.file 'src/react_app/yarn.lock'
     outputs.dir 'src/react_app/node_modules'
 
+    if (!System.getProperty('os.name').toLowerCase().contains('windows')) {
+        environment 'PATH', "/opt/homebrew/bin:${System.getenv('PATH')}"
+    }
+
     commandLine System.getProperty('os.name').toLowerCase().contains('windows')
         ? ['cmd', '/c', 'yarn', 'install', '--frozen-lockfile']
         : ['yarn', 'install', '--frozen-lockfile']
@@ -85,6 +89,10 @@ task buildFrontend(type: Exec) {
 
     // [추가] 빌드 결과물이 나오는 폴더를 출력값으로 지정
     outputs.dir 'src/react_app/out'
+
+    if (!System.getProperty('os.name').toLowerCase().contains('windows')) {
+        environment 'PATH', "/opt/homebrew/bin:${System.getenv('PATH')}"
+    }
 
     commandLine System.getProperty('os.name').toLowerCase().contains('windows')
         ? ['cmd', '/c', 'yarn', 'build']
