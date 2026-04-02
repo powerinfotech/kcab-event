@@ -6,6 +6,7 @@ import org.springframework.security.config.annotation.web.configuration.*;
 import org.springframework.security.config.annotation.web.configurers.*;
 import org.springframework.security.web.*;
 import org.springframework.security.web.csrf.*;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 
 /**
  * SecurityConfig - Spring Security 보안 설정
@@ -51,10 +52,15 @@ public class SecurityConfig {
      */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
+        // Spring Security 6.x: CSRF 토큰 즉시 로딩 설정 (deferred 비활성화)
+        CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
+        requestHandler.setCsrfRequestAttributeName(null); // 토큰을 즉시 로딩하도록 설정
+
         httpSecurity
                 .csrf(csrf -> csrf
                     .requireCsrfProtectionMatcher(new CsrfRequireMatcher())
-                    .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
+                    .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                    .csrfTokenRequestHandler(requestHandler))
                 .formLogin(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize.anyRequest().permitAll());
 
