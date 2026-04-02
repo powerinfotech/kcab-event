@@ -19,7 +19,7 @@ import { HttpStatusCode } from 'axios';
 import MenuButtonBar from '@component/special/MenuButtonBar';
 
 /** 개별 탭 페이지 렌더링 (멀티탭 모드에서 사용) */
-function TabPage({
+const TabPage = React.memo(function TabPage({
   tab,
   menuInfo,
   isActive,
@@ -93,7 +93,7 @@ function TabPage({
       </div>
     </div>
   );
-}
+});
 
 /** 싱글 페이지 모드 컴포넌트 */
 function SinglePageContent({
