@@ -18,6 +18,8 @@ export function pushPath(
 ) {
   if (typeof window !== 'undefined') {
     window.history.pushState(null, '', url);
+    setCurrentPath(window.location.pathname);
+  } else {
+    setCurrentPath(url);
   }
-  setCurrentPath(url);
 }
