@@ -2,6 +2,7 @@ import React from 'react';
 import CustomButton from '@component/button/CustomButton';
 import CustomTable from '@component/display/CustomTable';
 import CustomInput from '@component/input/CustomInput';
+import CustomCheckbox from '@component/select/CustomCheckbox';
 import IconTitle from '@icon/IconTitle';
 import {PageButtonHandlers} from '@interface/common';
 import {usePageHandlers} from '@hook/usePageHandlers';
@@ -27,6 +28,12 @@ const CommonCodeManagement = ({handlersRef}: {onChange?: (flag: boolean) => void
                         onKeyDown={mgmt.handleKeyDown}
                         className="w200"
                     />
+                    <span className="ml10">
+                        <CustomCheckbox
+                            checked={mgmt.showAll}
+                            onChange={(e) => mgmt.setShowAll(e.target.checked)}
+                        >전체보기</CustomCheckbox>
+                    </span>
                 </form>
             </section>
 

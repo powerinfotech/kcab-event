@@ -25,6 +25,7 @@ export function useCommonCodeManagement() {
     const tempSeqRef = useRef(-1);
 
     const [searchText, setSearchText] = useState(searchParams?.get('comGrpCd') ?? '');
+    const [showAll, setShowAll] = useState(false);
     const [grpDataSource, setGrpDataSource] = useState<ComGrpCdList[]>([]);
     const [selectedGrpRowIndex, setSelectedGrpRowIndex] = useState<number | undefined>(undefined);
     const [selectedGrpCd, setSelectedGrpCd] = useState<ComGrpCdList | null>(null);
@@ -38,8 +39,9 @@ export function useCommonCodeManagement() {
     const handleDataChange = (record: ComCdList, key: string, value: any) =>
         applyDataChange(setComCdDataSource, 'comCdSeq', record, key, value);
 
-    const fetchGrpList = async () => {
-        const res = await callGetComGrpCdList(searchText);
+    const fetchGrpList = async (showAllFlag?: boolean) => {
+        const useYn = (showAllFlag ?? showAll) ? undefined : 'Y';
+        const res = await callGetComGrpCdList(searchText, useYn);
         if (res.code === HttpStatusCode.Ok) {
             const items = structuredClone(res.item);
             setGrpDataSource(items);
@@ -88,6 +90,7 @@ export function useCommonCodeManagement() {
             if (!await confirm('저장하지 않은 정보는 초기화됩니다. 계속 하시겠습니까?')) return;
         }
         setSearchText('');
+        setShowAll(false);
         setGrpDataSource([]);
         setSelectedGrpRowIndex(undefined);
         setSelectedGrpCd(null);
@@ -173,6 +176,8 @@ export function useCommonCodeManagement() {
     const grpColumns: TableColumnsType<ComGrpCdList> = [
         {title: '공통그룹코드', key: 'comGrpCd', dataIndex: 'comGrpCd', align: 'center', width: 100},
         {title: '공통그룹코드명', key: 'comGrpCdNm', dataIndex: 'comGrpCdNm', align: 'center', width: 120},
+        {title: '사용여부', key: 'useYn', dataIndex: 'useYn', align: 'center', width: 80,
+            render: (value: string) => value === 'Y' ? '예' : '아니오'},
     ];
 
     const comCdColumns: TableColumnsType<ComCdList> = [
@@ -252,6 +257,8 @@ export function useCommonCodeManagement() {
         form,
         searchText,
         setSearchText,
+        showAll,
+        setShowAll,
         grpDataSource,
         selectedGrpRowIndex,
         comCdDataSource,

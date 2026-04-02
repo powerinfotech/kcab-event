@@ -30,6 +30,9 @@
 			,upt_date_time::timestamp AS upt_date_time
 		FROM tb_com_grp_cd
 		WHERE 1=1
+		<if test="useYn != null and useYn != ''">
+			AND use_yn = #{useYn}
+		</if>
 		<if test="searchText != null and searchText != ''">
 			AND (
 				upper(com_grp_cd) LIKE '%' || upper(#{searchText}) || '%'

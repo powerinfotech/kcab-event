@@ -28,8 +28,8 @@ public class ComGrpCdServiceImpl extends EgovAbstractServiceImpl implements ComG
     private ComGrpCdDao comGrpCdDao;
 
     @Override
-    public List<ComGrpCdListDto> selectComGrpCdList(String searchText) throws Exception {
-        return comGrpCdDao.selectComGrpCdList(searchText);
+    public List<ComGrpCdListDto> selectComGrpCdList(String searchText, String useYn) throws Exception {
+        return comGrpCdDao.selectComGrpCdList(searchText, useYn);
     }
 
     @Override

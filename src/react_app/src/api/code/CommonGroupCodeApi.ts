@@ -2,8 +2,8 @@ import axios from 'axios';
 import {ApiResponse} from '@interface/common';
 import {ComGrpCdList, ComGrpCdSaveData} from '@interface/code/CommonGroupCode';
 
-export const callGetComGrpCdList = async (searchText?: string) => {
-    const {data} = await axios.get<ApiResponse<ComGrpCdList[]>>('/api/com-grp-cd/list', {params: {searchText}});
+export const callGetComGrpCdList = async (searchText?: string, useYn?: string) => {
+    const {data} = await axios.get<ApiResponse<ComGrpCdList[]>>('/api/com-grp-cd/list', {params: {searchText, useYn}});
     return data;
 };
 

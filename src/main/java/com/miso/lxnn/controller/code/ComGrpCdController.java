@@ -22,8 +22,9 @@ public class ComGrpCdController {
     @GetMapping("/list")
     public ApiResponse<List<ComGrpCdListDto>> selectComGrpCdList(
             @MisoSession LoginUser loginUser,
-            @RequestParam(required = false) String searchText) throws Exception {
-        return ApiResponse.ok(comGrpCdService.selectComGrpCdList(searchText));
+            @RequestParam(required = false) String searchText,
+            @RequestParam(required = false) String useYn) throws Exception {
+        return ApiResponse.ok(comGrpCdService.selectComGrpCdList(searchText, useYn));
     }
 
     @PostMapping("/save")

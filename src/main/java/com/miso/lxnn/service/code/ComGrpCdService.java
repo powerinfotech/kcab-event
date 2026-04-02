@@ -21,7 +21,7 @@ public interface ComGrpCdService {
      *
      * @param searchText 그룹명 검색어 ({@code null}이면 전체)
      */
-    List<ComGrpCdListDto> selectComGrpCdList(String searchText) throws Exception;
+    List<ComGrpCdListDto> selectComGrpCdList(String searchText, String useYn) throws Exception;
     /**
      * 공통 코드 그룹을 일괄 저장한다 (트랜잭션).
      *

@@ -22,7 +22,7 @@ public interface ComGrpCdDao {
      *
      * @param searchText 그룹명 검색어 ({@code null}이면 전체)
      */
-    List<ComGrpCdListDto> selectComGrpCdList(@Param("searchText") String searchText) throws Exception;
+    List<ComGrpCdListDto> selectComGrpCdList(@Param("searchText") String searchText, @Param("useYn") String useYn) throws Exception;
     /** 공통 코드 그룹을 등록한다. */
     void insertComGrpCd(ComGrpCd comGrpCd) throws Exception;
     /** 공통 코드 그룹을 수정한다. */
