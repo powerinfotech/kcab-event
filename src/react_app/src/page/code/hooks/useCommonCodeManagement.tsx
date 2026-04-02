@@ -1,6 +1,5 @@
 import { message } from '@util/antdMessage';
 import React, {useEffect, useRef, useState} from 'react';
-import {useSearchParams} from 'next/navigation';
 import type { TableColumnsType } from 'antd';
 import {useForm} from 'react-hook-form';
 import {HttpStatusCode} from 'axios';
@@ -18,13 +17,15 @@ import {applyDataChange} from '@util/dataSourceUtils';
 import {ALPHANUMERIC_REGEXP, INTEGER_REGEXP, FLOAT_REGEXP} from '@util/validationPatterns';
 
 export function useCommonCodeManagement() {
-    const searchParams = useSearchParams();
     const form = useForm<any>({mode: 'onSubmit'});
     const {register, unregister, control, setValue} = form;
     const {confirm} = useMessage();
     const tempSeqRef = useRef(-1);
 
-    const [searchText, setSearchText] = useState(searchParams?.get('comGrpCd') ?? '');
+    const [searchText, setSearchText] = useState(() => {
+        if (typeof window === 'undefined') return '';
+        return new URLSearchParams(window.location.search).get('comGrpCd') ?? '';
+    });
     const [showAll, setShowAll] = useState(false);
     const [grpDataSource, setGrpDataSource] = useState<ComGrpCdList[]>([]);
     const [selectedGrpRowIndex, setSelectedGrpRowIndex] = useState<number | undefined>(undefined);
