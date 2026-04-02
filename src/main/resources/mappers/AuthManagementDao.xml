@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.miso.lxnn.dao.AuthManagementDao">
+<mapper namespace="com.power.dao.AuthManagementDao">
 
 	<!-- ═══ tb_auth_grp ═══ -->
-	<select id="selectAuthGrpList" resultType="com.miso.lxnn.dto.auth.AuthGrpListDto">
+	<select id="selectAuthGrpList" resultType="com.power.dto.auth.AuthGrpListDto">
 		SELECT
 			 auth_grp_seq
 			,auth_grp_nm
@@ -17,7 +17,7 @@
 		ORDER BY auth_grp_seq
 	</select>
 
-	<insert id="insertAuthGrp" parameterType="com.miso.lxnn.domain.AuthGrp" useGeneratedKeys="true" keyProperty="authGrpSeq">
+	<insert id="insertAuthGrp" parameterType="com.power.domain.AuthGrp" useGeneratedKeys="true" keyProperty="authGrpSeq">
 		INSERT INTO tb_auth_grp
 		(
 			 auth_grp_nm
@@ -39,7 +39,7 @@
 		)
 	</insert>
 
-	<update id="updateAuthGrp" parameterType="com.miso.lxnn.domain.AuthGrp">
+	<update id="updateAuthGrp" parameterType="com.power.domain.AuthGrp">
 		UPDATE tb_auth_grp
 		SET auth_grp_nm = #{authGrpNm}
 		   ,auth_grp_expl = #{authGrpExpl}
@@ -55,7 +55,7 @@
 	</delete>
 
 	<!-- ═══ tb_auth ═══ -->
-	<select id="selectAuthList" parameterType="java.lang.Integer" resultType="com.miso.lxnn.dto.auth.AuthListDto">
+	<select id="selectAuthList" parameterType="java.lang.Integer" resultType="com.power.dto.auth.AuthListDto">
 		SELECT
 			 auth_seq
 			,auth_grp_seq
@@ -71,7 +71,7 @@
 		ORDER BY auth_seq
 	</select>
 
-	<insert id="insertAuth" parameterType="com.miso.lxnn.domain.Auth" useGeneratedKeys="true" keyProperty="authSeq">
+	<insert id="insertAuth" parameterType="com.power.domain.Auth" useGeneratedKeys="true" keyProperty="authSeq">
 		INSERT INTO tb_auth
 		(
 			 auth_grp_seq
@@ -95,7 +95,7 @@
 		)
 	</insert>
 
-	<update id="updateAuth" parameterType="com.miso.lxnn.domain.Auth">
+	<update id="updateAuth" parameterType="com.power.domain.Auth">
 		UPDATE tb_auth
 		SET auth_nm = #{authNm}
 		   ,auth_expl = #{authExpl}
@@ -116,7 +116,7 @@
 	</delete>
 
 	<!-- ═══ tb_auth_user ═══ -->
-	<select id="selectAuthUserList" resultType="com.miso.lxnn.dto.auth.AuthUserListDto">
+	<select id="selectAuthUserList" resultType="com.power.dto.auth.AuthUserListDto">
 		SELECT
 			 tau.auth_user_seq
 			,tau.auth_grp_seq
@@ -138,7 +138,7 @@
 		ORDER BY tau.auth_user_seq
 	</select>
 
-	<insert id="insertAuthUser" parameterType="com.miso.lxnn.domain.AuthUser" useGeneratedKeys="true" keyProperty="authUserSeq">
+	<insert id="insertAuthUser" parameterType="com.power.domain.AuthUser" useGeneratedKeys="true" keyProperty="authUserSeq">
 		INSERT INTO tb_auth_user
 		(
 			 auth_grp_seq
@@ -166,7 +166,7 @@
 		)
 	</insert>
 
-	<update id="updateAuthUser" parameterType="com.miso.lxnn.domain.AuthUser">
+	<update id="updateAuthUser" parameterType="com.power.domain.AuthUser">
 		UPDATE tb_auth_user
 		SET use_yn = #{useYn}
 		   ,str_dt = #{strDt}
@@ -202,7 +202,7 @@
 	</delete>
 
 	<!-- ═══ user search ═══ -->
-	<select id="selectUserSearchList" resultType="com.miso.lxnn.dto.auth.UserSearchDto">
+	<select id="selectUserSearchList" resultType="com.power.dto.auth.UserSearchDto">
 		SELECT
 			 tu.user_seq
 			,tu.user_id

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.miso.lxnn.dao.AuthMenuManagementDao">
+<mapper namespace="com.power.dao.AuthMenuManagementDao">
 
 	<!-- 좌측 grid: 권한 목록 (tb_auth + tb_auth_grp JOIN) -->
-	<select id="selectAuthListWithGroup" resultType="com.miso.lxnn.dto.auth.AuthMenuMgtAuthListDto">
+	<select id="selectAuthListWithGroup" resultType="com.power.dto.auth.AuthMenuMgtAuthListDto">
 		SELECT
 			 ta.auth_seq
 			,ta.auth_grp_seq
@@ -20,7 +20,7 @@
 	</select>
 
 	<!-- 우측 tree: 메뉴 트리 + 버튼별 권한 (MenuDao.xml CTE 패턴 재사용) -->
-	<select id="selectAuthMenuBtnList" resultType="com.miso.lxnn.dto.auth.AuthMenuBtnListDto">
+	<select id="selectAuthMenuBtnList" resultType="com.power.dto.auth.AuthMenuBtnListDto">
 		WITH RECURSIVE menu_record (
 			menu_seq, up_menu_seq, menu_nm, menu_type_cd,
 			use_yn, sort_seq, level, sort_seq_path, path, cycle
@@ -84,7 +84,7 @@
 		ORDER BY mr.sort_seq_path, tb.sort_seq
 	</select>
 
-	<insert id="insertAuthMenuBtn" parameterType="com.miso.lxnn.domain.AuthMenuBtn" useGeneratedKeys="true" keyProperty="authMenuBtnSeq">
+	<insert id="insertAuthMenuBtn" parameterType="com.power.domain.AuthMenuBtn" useGeneratedKeys="true" keyProperty="authMenuBtnSeq">
 		INSERT INTO tb_auth_menu_btn (
 			 auth_grp_seq
 			,auth_seq
@@ -108,7 +108,7 @@
 		)
 	</insert>
 
-	<update id="updateAuthMenuBtn" parameterType="com.miso.lxnn.domain.AuthMenuBtn">
+	<update id="updateAuthMenuBtn" parameterType="com.power.domain.AuthMenuBtn">
 		UPDATE tb_auth_menu_btn
 		SET use_yn = #{useYn}
 		   ,upt_user_seq = #{uptUserSeq}

@@ -56,7 +56,7 @@ server:
 
 logging.level:
   org.springframework: DEBUG
-  com.miso.lxnn: DEBUG
+  com.power: DEBUG
   sql: TRACE
 
 

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.miso.lxnn.dao.UserDao">
+<mapper namespace="com.power.dao.UserDao">
 
-	<select id="selectUser" resultType="com.miso.lxnn.domain.User">
+	<select id="selectUser" resultType="com.power.domain.User">
 		SELECT
 		     user_seq
 			,user_id
@@ -30,7 +30,7 @@
 		AND use_yn = 'Y'
 	</select>
 
-	<select id="selectUserLoginCheck" parameterType="com.miso.lxnn.dto.common.LoginRequestDto" resultType="java.lang.Integer">
+	<select id="selectUserLoginCheck" parameterType="com.power.dto.common.LoginRequestDto" resultType="java.lang.Integer">
 		SELECT
 		     COUNT(*)
 		FROM TB_USER
@@ -45,7 +45,7 @@
 
 
 
-	<select id="selectUserList" resultType="com.miso.lxnn.dto.master.UserListDto">
+	<select id="selectUserList" resultType="com.power.dto.master.UserListDto">
 		SELECT DISTINCT
 			 tu.user_seq
 			,tu.user_id
@@ -80,7 +80,7 @@
 		ORDER BY tu.user_seq
 	</select>
 
-	<select id="selectUserComboList" resultType="com.miso.lxnn.dto.master.UserComboListDto">
+	<select id="selectUserComboList" resultType="com.power.dto.master.UserComboListDto">
 		SELECT
 			tu.user_id
 		   ,tu.user_name
@@ -94,7 +94,7 @@
 		ORDER BY tu.user_seq
 	</select>
 	
-	<select id="selectUserIdValidation" parameterType="com.miso.lxnn.domain.User"  resultType="boolean">
+	<select id="selectUserIdValidation" parameterType="com.power.domain.User"  resultType="boolean">
 		SELECT EXISTS(
 		    SELECT 1
 		    FROM TB_USER
@@ -103,7 +103,7 @@
 		)
 	</select>
 
-	<insert id="insertUser" parameterType="com.miso.lxnn.domain.User" useGeneratedKeys="true" keyProperty="userSeq">
+	<insert id="insertUser" parameterType="com.power.domain.User" useGeneratedKeys="true" keyProperty="userSeq">
 		INSERT INTO TB_USER
 		(
 			 user_id
@@ -147,7 +147,7 @@
 		)
 	</insert>
 
-	<update id="updateUser" parameterType="com.miso.lxnn.domain.User" >
+	<update id="updateUser" parameterType="com.power.domain.User" >
 		UPDATE TB_USER
 		SET user_id = #{userId}
 		  ,user_name  = #{userName}
@@ -167,11 +167,11 @@
 		WHERE user_seq = #{userSeq}
 	</update>
 
-	<delete id="deleteUser" parameterType="com.miso.lxnn.domain.User" >
+	<delete id="deleteUser" parameterType="com.power.domain.User" >
 		DELETE FROM TB_USER
 		WHERE user_seq = #{userSeq}
 	</delete>
-	<update id="updatePassword" parameterType="com.miso.lxnn.domain.User" >
+	<update id="updatePassword" parameterType="com.power.domain.User" >
 		UPDATE tb_user
 		SET password = #{password}
 		,upt_date_time = now()
