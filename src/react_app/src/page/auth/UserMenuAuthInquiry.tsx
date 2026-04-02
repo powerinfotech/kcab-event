@@ -1,5 +1,6 @@
 import { message } from '@util/antdMessage';
 import React, {useEffect, useRef, useState} from 'react';
+import {useForm, Controller} from 'react-hook-form';
 import type { TableColumnsType } from 'antd';
 import {HttpStatusCode} from 'axios';
 import IconTitle from '@icon/IconTitle';
@@ -23,9 +24,10 @@ const UserMenuAuthInquiry = ({handlersRef}: {
     menuInfo?: any;
     handlersRef?: React.MutableRefObject<PageButtonHandlers>;
 }) => {
-    const [searchUserId, setSearchUserId] = useState('');
-    const [searchUserName, setSearchUserName] = useState('');
-    const [showAllAuth, setShowAllAuth] = useState(false);
+    const searchForm = useForm<{searchUserId: string; searchUserName: string; showAllAuth: boolean}>({
+        defaultValues: {searchUserId: '', searchUserName: '', showAllAuth: false},
+    });
+
     const [authDataSource, setAuthDataSource] = useState<AuthMenuMgtAuth[]>([]);
     const [selectedAuthRowIndex, setSelectedAuthRowIndex] = useState(-1);
 
@@ -39,17 +41,7 @@ const UserMenuAuthInquiry = ({handlersRef}: {
     } = useMenuBtnTree();
 
     const pendingSearchRef = useRef(false);
-    const searchUserIdRef = useRef('');
-    const showAllAuthRef = useRef(false);
     const initialBtnColumnsRef = useRef<BtnColumnInfo[]>([]);
-
-    useEffect(() => {
-        searchUserIdRef.current = searchUserId;
-    }, [searchUserId]);
-
-    useEffect(() => {
-        showAllAuthRef.current = showAllAuth;
-    }, [showAllAuth]);
 
     useEffect(() => {
         callGetBtnList().then(res => {
@@ -94,8 +86,8 @@ const UserMenuAuthInquiry = ({handlersRef}: {
 
     // ──────────────────────────── 사용자 팝업에서 선택 ────────────────────────────
     const handleUserSelect = (user: UserSearchResult) => {
-        setSearchUserId(user.userId);
-        setSearchUserName(user.userName);
+        searchForm.setValue('searchUserId', user.userId);
+        searchForm.setValue('searchUserName', user.userName);
     };
 
     // ──────────────────────────── 권한 행 클릭 ────────────────────────────
@@ -103,8 +95,8 @@ const UserMenuAuthInquiry = ({handlersRef}: {
         if (index === selectedAuthRowIndex) return;
         setSelectedAuthRowIndex(index);
 
-        if (showAllAuthRef.current) {
-            handleSearchAllAuthMenuBtn(searchUserIdRef.current);
+        if (searchForm.getValues('showAllAuth')) {
+            handleSearchAllAuthMenuBtn(searchForm.getValues('searchUserId'));
         } else {
             handleSearchAuthMenuBtn(record.authGrpSeq, record.authSeq);
         }
@@ -112,7 +104,7 @@ const UserMenuAuthInquiry = ({handlersRef}: {
 
     // ──────────────────────────── 조회 ────────────────────────────
     const handleSearch = () => {
-        if (!searchUserIdRef.current) {
+        if (!searchForm.getValues('searchUserId')) {
             message.info('사용자를 선택해 주세요.');
             return;
         }
@@ -122,7 +114,7 @@ const UserMenuAuthInquiry = ({handlersRef}: {
         loadTree([]);
         setBtnColumns(initialBtnColumnsRef.current);
 
-        callGetUserAuthList(searchUserIdRef.current).then(res => {
+        callGetUserAuthList(searchForm.getValues('searchUserId')).then(res => {
             if (res.code === HttpStatusCode.Ok) {
                 setAuthDataSource(res.item);
             }
@@ -131,9 +123,7 @@ const UserMenuAuthInquiry = ({handlersRef}: {
 
     // ──────────────────────────── 초기화 ────────────────────────────
     const handleReset = () => {
-        setSearchUserId('');
-        setSearchUserName('');
-        setShowAllAuth(false);
+        searchForm.reset({searchUserId: '', searchUserName: '', showAllAuth: false});
         setAuthDataSource([]);
         setSelectedAuthRowIndex(-1);
         loadTree([]);
@@ -148,8 +138,8 @@ const UserMenuAuthInquiry = ({handlersRef}: {
             const firstAuth = authDataSource[0];
             setSelectedAuthRowIndex(0);
 
-            if (showAllAuthRef.current) {
-                handleSearchAllAuthMenuBtn(searchUserIdRef.current);
+            if (searchForm.getValues('showAllAuth')) {
+                handleSearchAllAuthMenuBtn(searchForm.getValues('searchUserId'));
             } else {
                 handleSearchAuthMenuBtn(firstAuth.authGrpSeq, firstAuth.authSeq);
             }
@@ -167,13 +157,27 @@ const UserMenuAuthInquiry = ({handlersRef}: {
             <section className="search-wrap">
                 <form onSubmit={(e) => { e.preventDefault(); handleSearch(); }}>
                     <span>사용자</span>
-                    <UserSearchInput
-                        value={searchUserId}
-                        onChange={handleUserSelect}
+                    <Controller
+                        name={'searchUserId'}
+                        defaultValue={''}
+                        control={searchForm.control}
+                        render={({field}) => (
+                            <UserSearchInput
+                                value={field.value}
+                                onChange={handleUserSelect}
+                            />
+                        )}
                     />
-                    <CustomCheckbox
-                        checked={showAllAuth}
-                        onChange={(e: any) => setShowAllAuth(e.target.checked)}
+                    <Controller
+                        name={'showAllAuth'}
+                        defaultValue={false}
+                        control={searchForm.control}
+                        render={({field}) => (
+                            <CustomCheckbox
+                                checked={field.value}
+                                onChange={field.onChange}
+                            />
+                        )}
                     />
                     <span>해당 사용자의 모든 권한 보기</span>
                 </form>

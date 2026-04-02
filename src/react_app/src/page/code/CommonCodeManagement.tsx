@@ -1,4 +1,5 @@
 import React from 'react';
+import {Controller} from 'react-hook-form';
 import CustomButton from '@component/button/CustomButton';
 import CustomTable from '@component/display/CustomTable';
 import CustomInput from '@component/input/CustomInput';
@@ -22,18 +23,32 @@ const CommonCodeManagement = ({handlersRef}: {onChange?: (flag: boolean) => void
             <section className="search-wrap">
                 <form>
                     <span>공통그룹코드/명</span>
-                    <CustomInput
-                        value={mgmt.searchText}
-                        onChange={(e) => mgmt.setSearchText(e.target.value)}
-                        onKeyDown={mgmt.handleKeyDown}
-                        className="w200"
+                    <Controller
+                        name={'searchText'}
+                        defaultValue={''}
+                        control={mgmt.searchForm.control}
+                        render={({field}) => (
+                            <CustomInput
+                                value={field.value}
+                                onChange={field.onChange}
+                                onKeyDown={mgmt.handleKeyDown}
+                                className="w200"
+                            />
+                        )}
                     />
-                    <span className="ml10">
-                        <CustomCheckbox
-                            checked={mgmt.showAll}
-                            onChange={(e) => mgmt.setShowAll(e.target.checked)}
-                        >전체보기</CustomCheckbox>
-                    </span>
+                    <Controller
+                        name={'showAll'}
+                        defaultValue={false}
+                        control={mgmt.searchForm.control}
+                        render={({field}) => (
+                            <span className="ml10">
+                                <CustomCheckbox
+                                    checked={field.value}
+                                    onChange={field.onChange}
+                                >전체보기</CustomCheckbox>
+                            </span>
+                        )}
+                    />
                 </form>
             </section>
 

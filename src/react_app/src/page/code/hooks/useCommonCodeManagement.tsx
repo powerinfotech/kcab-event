@@ -22,11 +22,13 @@ export function useCommonCodeManagement() {
     const {confirm} = useMessage();
     const tempSeqRef = useRef(-1);
 
-    const [searchText, setSearchText] = useState(() => {
-        if (typeof window === 'undefined') return '';
-        return new URLSearchParams(window.location.search).get('comGrpCd') ?? '';
+    const searchForm = useForm<{searchText: string; showAll: boolean}>({
+        defaultValues: {
+            searchText: typeof window === 'undefined' ? '' : (new URLSearchParams(window.location.search).get('comGrpCd') ?? ''),
+            showAll: false,
+        },
     });
-    const [showAll, setShowAll] = useState(false);
+
     const [grpDataSource, setGrpDataSource] = useState<ComGrpCdList[]>([]);
     const [selectedGrpRowIndex, setSelectedGrpRowIndex] = useState<number | undefined>(undefined);
     const [selectedGrpCd, setSelectedGrpCd] = useState<ComGrpCdList | null>(null);
@@ -41,8 +43,8 @@ export function useCommonCodeManagement() {
         applyDataChange(setComCdDataSource, 'comCdSeq', record, key, value);
 
     const fetchGrpList = async (showAllFlag?: boolean) => {
-        const useYn = (showAllFlag ?? showAll) ? undefined : 'Y';
-        const res = await callGetComGrpCdList(searchText, useYn);
+        const useYn = (showAllFlag ?? searchForm.getValues('showAll')) ? undefined : 'Y';
+        const res = await callGetComGrpCdList(searchForm.getValues('searchText'), useYn);
         if (res.code === HttpStatusCode.Ok) {
             const items = structuredClone(res.item);
             setGrpDataSource(items);
@@ -90,8 +92,7 @@ export function useCommonCodeManagement() {
         if (isChanged) {
             if (!await confirm('저장하지 않은 정보는 초기화됩니다. 계속 하시겠습니까?')) return;
         }
-        setSearchText('');
-        setShowAll(false);
+        searchForm.reset({searchText: '', showAll: false});
         setGrpDataSource([]);
         setSelectedGrpRowIndex(undefined);
         setSelectedGrpCd(null);
@@ -256,10 +257,7 @@ export function useCommonCodeManagement() {
 
     return {
         form,
-        searchText,
-        setSearchText,
-        showAll,
-        setShowAll,
+        searchForm,
         grpDataSource,
         selectedGrpRowIndex,
         comCdDataSource,

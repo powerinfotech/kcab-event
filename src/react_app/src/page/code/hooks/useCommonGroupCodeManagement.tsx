@@ -23,7 +23,8 @@ export function useCommonGroupCodeManagement() {
     const {confirm} = useMessage();
     const tempSeqRef = useRef(-1);
 
-    const [searchText, setSearchText] = useState('');
+    const searchForm = useForm<{searchText: string}>({defaultValues: {searchText: ''}});
+
     const [dataSource, setDataSource] = useState<ComGrpCdList[]>([]);
     const [orgDataSource, setOrgDataSource] = useState<ComGrpCdList[]>([]);
     const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
@@ -34,7 +35,7 @@ export function useCommonGroupCodeManagement() {
         applyDataChange(setDataSource, 'comGrpCdSeq', record, key, value);
 
     const fetchList = async () => {
-        const res = await callGetComGrpCdList(searchText);
+        const res = await callGetComGrpCdList(searchForm.getValues('searchText'));
         if (res.code === HttpStatusCode.Ok) {
             setOrgDataSource(structuredClone(res.item));
             setDataSource(structuredClone(res.item));
@@ -55,7 +56,7 @@ export function useCommonGroupCodeManagement() {
         }
         setDataSource(structuredClone(orgDataSource));
         setSelectedRowKeys([]);
-        setSearchText('');
+        searchForm.reset({searchText: ''});
     };
 
     const handleAddRow = () => {
@@ -198,8 +199,7 @@ export function useCommonGroupCodeManagement() {
 
     return {
         form,
-        searchText,
-        setSearchText,
+        searchForm,
         dataSource,
         selectedRowKeys,
         setSelectedRowKeys,

@@ -1,4 +1,5 @@
 import React from 'react';
+import {Controller} from 'react-hook-form';
 import CustomTable from '@component/display/CustomTable';
 import CustomInput from '@component/input/CustomInput';
 import IconTitle from '@icon/IconTitle';
@@ -22,11 +23,18 @@ const CommonGroupCodeManagement = ({handlersRef}: {onChange?: (flag: boolean) =>
             <section className="search-wrap">
                 <form>
                     <span>공통그룹코드/명</span>
-                    <CustomInput
-                        value={mgmt.searchText}
-                        onChange={(e) => mgmt.setSearchText(e.target.value)}
-                        onKeyDown={mgmt.handleKeyDown}
-                        className="w200"
+                    <Controller
+                        name={'searchText'}
+                        defaultValue={''}
+                        control={mgmt.searchForm.control}
+                        render={({field}) => (
+                            <CustomInput
+                                value={field.value}
+                                onChange={field.onChange}
+                                onKeyDown={mgmt.handleKeyDown}
+                                className="w200"
+                            />
+                        )}
                     />
                 </form>
             </section>

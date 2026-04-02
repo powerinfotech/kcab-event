@@ -1,10 +1,11 @@
 import { message } from '@util/antdMessage';
 import React, {useEffect, useState} from 'react';
-import {Input} from 'antd';
+import {useForm, Controller} from 'react-hook-form';
 import type { TableColumnsType } from 'antd';
 import {HttpStatusCode} from 'axios';
 import IconTitle from '@icon/IconTitle';
 import CustomTable from '@component/display/CustomTable';
+import CustomInput from '@component/input/CustomInput';
 import CustomCheckbox from '@component/select/CustomCheckbox';
 import CustomButton from '@component/button/CustomButton';
 import {IudType, PageButtonHandlers} from '@interface/common';
@@ -28,11 +29,11 @@ const AuthMenuManagement = ({handlersRef}: {
     handlersRef?: React.MutableRefObject<PageButtonHandlers>;
 }) => {
     const {confirm} = useMessage();
+    const searchForm = useForm<{searchAuthNm: string}>({defaultValues: {searchAuthNm: ''}});
 
     // 좌측: 권한정보
     const [authDataSource, setAuthDataSource] = useState<AuthMenuMgtAuth[]>([]);
     const [selectedAuthRowIndex, setSelectedAuthRowIndex] = useState(-1);
-    const [searchAuthNm, setSearchAuthNm] = useState('');
 
     // 우측: 메뉴버튼권한 (useMenuBtnTree 훅 사용)
     const {
@@ -132,7 +133,7 @@ const AuthMenuManagement = ({handlersRef}: {
 
     // ──────────────────────────── 권한 목록 조회 ────────────────────────────
     const handleSearchAuthList = (authNm?: string) => {
-        callGetAuthMenuMgtAuthList(authNm !== undefined ? authNm : searchAuthNm).then(res => {
+        callGetAuthMenuMgtAuthList(authNm !== undefined ? authNm : searchForm.getValues('searchAuthNm')).then(res => {
             if (res.code === HttpStatusCode.Ok) {
                 setRowAuthSeq(-1);
                 setRowAuthGrpSeq(-1);
@@ -213,7 +214,7 @@ const AuthMenuManagement = ({handlersRef}: {
             if (!result) return;
             loadTreeWithOrg([]); // confirm 후 즉시 트리 리셋
         }
-        setSearchAuthNm('');
+        searchForm.reset({searchAuthNm: ''});
         handleSearchAuthList('');
     };
 
@@ -245,11 +246,18 @@ const AuthMenuManagement = ({handlersRef}: {
             <section className="search-wrap">
                 <form onSubmit={(e) => { e.preventDefault(); handleSearch(); }}>
                     <span>권한명</span>
-                    <Input
-                        placeholder="권한명을 입력해 주세요."
-                        value={searchAuthNm}
-                        onChange={(e) => setSearchAuthNm(e.target.value)}
-                        className="w200"
+                    <Controller
+                        name={'searchAuthNm'}
+                        defaultValue={''}
+                        control={searchForm.control}
+                        render={({field}) => (
+                            <CustomInput
+                                placeholder="권한명을 입력해 주세요."
+                                value={field.value}
+                                onChange={field.onChange}
+                                className="w200"
+                            />
+                        )}
                     />
                 </form>
             </section>
