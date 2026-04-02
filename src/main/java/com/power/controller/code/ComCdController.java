@@ -1,6 +1,6 @@
 package com.power.controller.code;
 
-import com.power.annotation.MisoSession;
+import com.power.annotation.PowerSession;
 import com.power.dto.code.ComCdListDto;
 import com.power.dto.code.ComCdSaveDto;
 import com.power.dto.common.ApiResponse;
@@ -21,14 +21,14 @@ public class ComCdController {
 
     @GetMapping("/list")
     public ApiResponse<List<ComCdListDto>> selectComCdList(
-            @MisoSession LoginUser loginUser,
+            @PowerSession LoginUser loginUser,
             @RequestParam Long comGrpCdSeq) throws Exception {
         return ApiResponse.ok(comCdService.selectComCdList(comGrpCdSeq));
     }
 
     @PostMapping("/save")
     public ApiResponse<Void> saveComCd(
-            @MisoSession LoginUser loginUser,
+            @PowerSession LoginUser loginUser,
             @RequestBody @Valid ComCdSaveDto saveDto) throws Exception {
         comCdService.saveComCd(saveDto, loginUser);
         return ApiResponse.ok();

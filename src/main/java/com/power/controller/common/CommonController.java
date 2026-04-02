@@ -1,6 +1,6 @@
 package com.power.controller.common;
 
-import com.power.annotation.MisoSession;
+import com.power.annotation.PowerSession;
 import com.power.dto.common.ApiResponse;
 import com.power.dto.common.LoginUser;
 import com.power.dto.auth.MenuListDto;
@@ -30,7 +30,7 @@ public class CommonController {
 
 
     @GetMapping("/login-info")
-    public ApiResponse<LoginUser> loginInfo(@MisoSession LoginUser loginUser) throws Exception {
+    public ApiResponse<LoginUser> loginInfo(@PowerSession LoginUser loginUser) throws Exception {
         if (loginUser == null)
             return ApiResponse.ok(null);
         return ApiResponse.ok(resolveLoginInfoResponse(loginUser));
@@ -42,7 +42,7 @@ public class CommonController {
     }
 
     @GetMapping("/menu-info")
-    public ApiResponse<List<MenuListDto>> menuInfo(@MisoSession LoginUser loginUser) throws Exception {
+    public ApiResponse<List<MenuListDto>> menuInfo(@PowerSession LoginUser loginUser) throws Exception {
         if(loginUser ==null)
             return ApiResponse.ok(null);
         String userId = loginUser.getUserId();
@@ -51,14 +51,14 @@ public class CommonController {
     }
 
     @GetMapping("/user-list")
-    public ApiResponse<List<UserListDto>> userList(@MisoSession LoginUser loginUser, UserListSearchDto userListSearchDto) throws Exception {
+    public ApiResponse<List<UserListDto>> userList(@PowerSession LoginUser loginUser, UserListSearchDto userListSearchDto) throws Exception {
         if(loginUser ==null)
             return ApiResponse.ok(null);
         return ApiResponse.ok(userManagementService.selectUserList(userListSearchDto));
     }
 
     @GetMapping("/menu-btn-list")
-    public ApiResponse<List<MenuBtnDetailDto>> menuBtnList(@MisoSession LoginUser loginUser, @RequestParam("menuSeq") Long menuSeq) throws Exception {
+    public ApiResponse<List<MenuBtnDetailDto>> menuBtnList(@PowerSession LoginUser loginUser, @RequestParam("menuSeq") Long menuSeq) throws Exception {
         if(loginUser == null)
             return ApiResponse.ok(null);
         String userId = loginUser.getUserId();

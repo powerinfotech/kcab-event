@@ -54,7 +54,7 @@ import java.util.List;
  *
  * <h4>5. ArgumentResolver 등록</h4>
  * <ul>
- *   <li>{@link LoginUserArgumentResolver}: {@code @MisoSession LoginUser} 파라미터 자동 주입</li>
+ *   <li>{@link LoginUserArgumentResolver}: {@code @PowerSession LoginUser} 파라미터 자동 주입</li>
  * </ul>
  */
 @RequiredArgsConstructor
@@ -134,7 +134,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
     }
 
     /**
-     * {@code @MisoSession LoginUser} 파라미터 자동 주입을 위한 ArgumentResolver 등록.
+     * {@code @PowerSession LoginUser} 파라미터 자동 주입을 위한 ArgumentResolver 등록.
      */
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolverList) {

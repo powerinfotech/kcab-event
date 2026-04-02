@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * MisoSession - 세션 사용자 정보 주입 애노테이션
+ * PowerSession - 세션 사용자 정보 주입 애노테이션
  *
  * <p>컨트롤러 메서드 파라미터에 붙이면
  * {@link com.power.config.LoginUserArgumentResolver}가 HTTP 세션에서
@@ -16,7 +16,7 @@ import java.lang.annotation.Target;
  * <pre>
  * // 컨트롤러 메서드에서 세션 사용자 정보를 직접 받는다
  * {@literal @}GetMapping("/api/my-info")
- * public ApiResponse{@literal <}User{@literal >} getMyInfo({@literal @}MisoSession LoginUser loginUser) {
+ * public ApiResponse{@literal <}User{@literal >} getMyInfo({@literal @}PowerSession LoginUser loginUser) {
  *     return ApiResponse.ok(loginUser);
  * }
  * </pre>
@@ -26,5 +26,5 @@ import java.lang.annotation.Target;
  */
 @Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface MisoSession {
+public @interface PowerSession {
 }

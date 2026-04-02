@@ -1,6 +1,6 @@
 package com.power.controller.auth;
 
-import com.power.annotation.MisoSession;
+import com.power.annotation.PowerSession;
 import com.power.dto.auth.AuthMenuBtnListDto;
 import com.power.dto.auth.AuthMenuBtnSaveParamDto;
 import com.power.dto.auth.AuthMenuMgtAuthListDto;
@@ -22,14 +22,14 @@ public class AuthMenuManagementController {
 
     @GetMapping("/auth-list")
     public ApiResponse<List<AuthMenuMgtAuthListDto>> selectAuthList(
-            @MisoSession LoginUser loginUser,
+            @PowerSession LoginUser loginUser,
             @RequestParam(value = "authNm", required = false) String authNm) throws Exception {
         return ApiResponse.ok(authMenuManagementService.selectAuthListWithGroup(authNm));
     }
 
     @GetMapping("/auth-menu-btn-list")
     public ApiResponse<List<AuthMenuBtnListDto>> selectAuthMenuBtnList(
-            @MisoSession LoginUser loginUser,
+            @PowerSession LoginUser loginUser,
             @RequestParam("authGrpSeq") Integer authGrpSeq,
             @RequestParam("authSeq") Integer authSeq) throws Exception {
         return ApiResponse.ok(authMenuManagementService.selectAuthMenuBtnList(authGrpSeq, authSeq));
@@ -37,7 +37,7 @@ public class AuthMenuManagementController {
 
     @PostMapping("/save")
     public ApiResponse<Void> save(
-            @MisoSession LoginUser loginUser,
+            @PowerSession LoginUser loginUser,
             @RequestBody @Valid AuthMenuBtnSaveParamDto param) throws Exception {
         authMenuManagementService.save(loginUser, param.getAuthGrpSeq(), param.getAuthSeq(), param.getSaveList());
         return ApiResponse.ok();

@@ -10,7 +10,7 @@ import lombok.Setter;
  *
  * <p>로그인 성공 시 {@link com.power.domain.User} 엔티티의 민감 정보(비밀번호 등)를 제외한
  * 핵심 정보만 추출하여 HTTP 세션({@code "user"} 속성)에 저장한다.
- * 컨트롤러에서는 {@link com.power.annotation.MisoSession}을 통해 자동으로 주입받는다.</p>
+ * 컨트롤러에서는 {@link com.power.annotation.PowerSession}을 통해 자동으로 주입받는다.</p>
  *
  * <h3>사용 예시</h3>
  * <pre>
@@ -20,12 +20,12 @@ import lombok.Setter;
  *
  * // 컨트롤러에서 주입받기
  * {@literal @}GetMapping("/api/my-info")
- * public ApiResponse{@literal <}LoginUser{@literal >} getMyInfo({@literal @}MisoSession LoginUser loginUser) {
+ * public ApiResponse{@literal <}LoginUser{@literal >} getMyInfo({@literal @}PowerSession LoginUser loginUser) {
  *     return ApiResponse.ok(loginUser);
  * }
  * </pre>
  *
- * @see com.power.annotation.MisoSession
+ * @see com.power.annotation.PowerSession
  * @see com.power.config.LoginUserArgumentResolver
  */
 @Setter

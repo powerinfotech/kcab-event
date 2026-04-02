@@ -1,6 +1,6 @@
 package com.power.controller.common;
 
-import com.power.annotation.MisoSession;
+import com.power.annotation.PowerSession;
 import com.power.dto.common.*;
 import com.power.service.common.FileService;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +24,7 @@ public class FileController {
     }
 
     @PostMapping("/save-file")
-    public ApiResponse<FileResponseDto> saveFile(@MisoSession LoginUser loginUser,
+    public ApiResponse<FileResponseDto> saveFile(@PowerSession LoginUser loginUser,
                                                  @RequestPart(value = "insertFiles", required = false) List<MultipartFile> insertFiles,
                                                  @RequestParam(value = "fileSeq", required = false) Integer fileSeq,
                                                  @RequestParam(value = "insertFileMetaList", required = false) String insertFileMetaListJson,
@@ -54,14 +54,14 @@ public class FileController {
     }
 
     @DeleteMapping("/delete-file")
-    public ApiResponse<Void> deleteFile(@MisoSession LoginUser loginUser,
+    public ApiResponse<Void> deleteFile(@PowerSession LoginUser loginUser,
                                         @RequestParam(value = "deleteFileList") String deleteFileListJson) throws Exception {
         fileService.deleteFile(loginUser, deleteFileListJson);
         return ApiResponse.ok(null);
     }
 
     @DeleteMapping("/delete-all-file")
-    public ApiResponse<Void> deleteAllFile(@MisoSession LoginUser loginUser,
+    public ApiResponse<Void> deleteAllFile(@PowerSession LoginUser loginUser,
                                            @RequestParam(value = "fileSeq") Integer fileSeq) throws Exception {
         fileService.deleteAllFile(loginUser, fileSeq);
         return ApiResponse.ok(null);

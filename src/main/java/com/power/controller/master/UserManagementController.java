@@ -1,6 +1,6 @@
 package com.power.controller.master;
 
-import com.power.annotation.MisoSession;
+import com.power.annotation.PowerSession;
 import com.power.dto.common.LoginUser;
 import com.power.dto.common.ApiResponse;
 import com.power.domain.User;
@@ -27,19 +27,19 @@ public class UserManagementController {
     }
 
     @PostMapping("/save-user")
-    public ApiResponse<UserSaveDto> saveUser(@MisoSession LoginUser LoginUser, @RequestBody @Valid UserSaveDto userSaveDto) throws Exception {
+    public ApiResponse<UserSaveDto> saveUser(@PowerSession LoginUser LoginUser, @RequestBody @Valid UserSaveDto userSaveDto) throws Exception {
         userManagementService.saveUser(userSaveDto, LoginUser);
         return ApiResponse.ok(userSaveDto);
     }
 
     @PostMapping("/delete-user")
-    public ApiResponse<Void> deleteUser(@MisoSession LoginUser LoginUser, @RequestBody User user) throws Exception {
+    public ApiResponse<Void> deleteUser(@PowerSession LoginUser LoginUser, @RequestBody User user) throws Exception {
         userManagementService.deleteUser(user, LoginUser);
         return ApiResponse.ok();
     }
 
     @PostMapping("/change-password")
-    public ApiResponse<Void> changePassword(@MisoSession LoginUser LoginUser, @RequestBody @Valid UserChangePasswordDto userChangePasswordDto) throws Exception {
+    public ApiResponse<Void> changePassword(@PowerSession LoginUser LoginUser, @RequestBody @Valid UserChangePasswordDto userChangePasswordDto) throws Exception {
         userManagementService.changePassword(userChangePasswordDto, LoginUser);
         return ApiResponse.ok();
     }

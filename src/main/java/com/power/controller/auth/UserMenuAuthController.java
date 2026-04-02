@@ -1,6 +1,6 @@
 package com.power.controller.auth;
 
-import com.power.annotation.MisoSession;
+import com.power.annotation.PowerSession;
 import com.power.dto.auth.AuthMenuBtnListDto;
 import com.power.dto.auth.AuthMenuMgtAuthListDto;
 import com.power.dto.common.ApiResponse;
@@ -23,14 +23,14 @@ public class UserMenuAuthController {
 
     @GetMapping("/auth-list")
     public ApiResponse<List<AuthMenuMgtAuthListDto>> selectUserAuthList(
-            @MisoSession LoginUser loginUser,
+            @PowerSession LoginUser loginUser,
             @RequestParam("userId") String userId) throws Exception {
         return ApiResponse.ok(userMenuAuthService.selectUserAuthList(userId));
     }
 
     @GetMapping("/all-menu-btn-list")
     public ApiResponse<List<AuthMenuBtnListDto>> selectUserAllAuthMenuBtnList(
-            @MisoSession LoginUser loginUser,
+            @PowerSession LoginUser loginUser,
             @RequestParam("userId") String userId) throws Exception {
         return ApiResponse.ok(userMenuAuthService.selectUserAllAuthMenuBtnList(userId));
     }

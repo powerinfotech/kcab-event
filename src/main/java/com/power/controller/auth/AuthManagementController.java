@@ -1,6 +1,6 @@
 package com.power.controller.auth;
 
-import com.power.annotation.MisoSession;
+import com.power.annotation.PowerSession;
 import com.power.dto.auth.AuthGrpListDto;
 import com.power.dto.auth.AuthListDto;
 import com.power.dto.auth.AuthManagementSaveDto;
@@ -23,32 +23,32 @@ public class AuthManagementController {
     private AuthManagementService authManagementService;
 
     @GetMapping("/auth-grp-list")
-    public ApiResponse<List<AuthGrpListDto>> selectAuthGrpList(@MisoSession LoginUser loginUser) throws Exception {
+    public ApiResponse<List<AuthGrpListDto>> selectAuthGrpList(@PowerSession LoginUser loginUser) throws Exception {
         return ApiResponse.ok(authManagementService.selectAuthGrpList());
     }
 
     @GetMapping("/auth-list")
-    public ApiResponse<List<AuthListDto>> selectAuthList(@MisoSession LoginUser loginUser,
+    public ApiResponse<List<AuthListDto>> selectAuthList(@PowerSession LoginUser loginUser,
                                                          @RequestParam Integer authGrpSeq) throws Exception {
         return ApiResponse.ok(authManagementService.selectAuthList(authGrpSeq));
     }
 
     @GetMapping("/auth-user-list")
-    public ApiResponse<List<AuthUserListDto>> selectAuthUserList(@MisoSession LoginUser loginUser,
+    public ApiResponse<List<AuthUserListDto>> selectAuthUserList(@PowerSession LoginUser loginUser,
                                                                   @RequestParam Integer authGrpSeq,
                                                                   @RequestParam Integer authSeq) throws Exception {
         return ApiResponse.ok(authManagementService.selectAuthUserList(authGrpSeq, authSeq));
     }
 
     @GetMapping("/user-search")
-    public ApiResponse<List<UserSearchDto>> selectUserSearchList(@MisoSession LoginUser loginUser,
+    public ApiResponse<List<UserSearchDto>> selectUserSearchList(@PowerSession LoginUser loginUser,
                                                                   @RequestParam(required = false) String searchText,
                                                                   @RequestParam(required = false, defaultValue = "true") Boolean excludeUnused) throws Exception {
         return ApiResponse.ok(authManagementService.selectUserSearchList(searchText, excludeUnused));
     }
 
     @PostMapping("/save")
-    public ApiResponse<Void> saveAuthManagement(@MisoSession LoginUser loginUser,
+    public ApiResponse<Void> saveAuthManagement(@PowerSession LoginUser loginUser,
                                                  @RequestBody @Valid AuthManagementSaveDto saveDto) throws Exception {
         authManagementService.saveAuthManagement(saveDto, loginUser);
         return ApiResponse.ok();

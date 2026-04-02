@@ -1,6 +1,6 @@
 package com.power.controller.auth;
 
-import com.power.annotation.MisoSession;
+import com.power.annotation.PowerSession;
 import com.power.domain.User;
 import com.power.dto.common.ApiResponse;
 import com.power.dto.common.LoginUser;

@@ -1,6 +1,6 @@
 package com.power.controller.auth;
 
-import com.power.annotation.MisoSession;
+import com.power.annotation.PowerSession;
 import com.power.domain.Btn;
 import com.power.domain.MenuBtn;
 import com.power.dto.common.ApiResponse;
@@ -24,7 +24,7 @@ public class MenuManagementController {
 
     @Parameter(name = "loginUser", hidden = true)
     @GetMapping("/menu-list")
-    public ApiResponse<List<MenuListDto>> selectMenuList(@MisoSession LoginUser loginUser) throws Exception {
+    public ApiResponse<List<MenuListDto>> selectMenuList(@PowerSession LoginUser loginUser) throws Exception {
         String userId = loginUser.getUserId();
         return ApiResponse.ok(menuManagementService.selectMenuInfo(userId));
     }
@@ -41,7 +41,7 @@ public class MenuManagementController {
 
     @Parameter(name = "loginUser", hidden = true)
     @PostMapping("/save")
-    public ApiResponse<Void> saveMenu(@MisoSession LoginUser loginUser, @RequestBody @Valid MenuSaveDto menuSaveDto) throws Exception {
+    public ApiResponse<Void> saveMenu(@PowerSession LoginUser loginUser, @RequestBody @Valid MenuSaveDto menuSaveDto) throws Exception {
         menuManagementService.saveMenu(loginUser, menuSaveDto);
         return ApiResponse.ok();
     }
