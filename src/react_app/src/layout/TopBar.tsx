@@ -13,7 +13,11 @@ export default function TopBar() {
 
   const logout = async () => {
     const data = await callLogout();
-    if (data.code === HttpStatusCode.Ok) location.href = location.pathname;
+    if (data.code === HttpStatusCode.Ok) {
+      sessionStorage.removeItem('tabList');
+      sessionStorage.removeItem('activeTabKey');
+      location.href = location.pathname;
+    }
   };
 
   return (

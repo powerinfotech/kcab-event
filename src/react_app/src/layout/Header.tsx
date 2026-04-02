@@ -56,8 +56,11 @@ const Header = ({menuInfo}: { menuInfo: MenuInfo[] }) => {
 
     const logout = async () => {
        const data = await callLogout();
-       if(data.code === HttpStatusCode.Ok)
+       if(data.code === HttpStatusCode.Ok) {
+           sessionStorage.removeItem('tabList');
+           sessionStorage.removeItem('activeTabKey');
            location.href = location.pathname;
+       }
     };
 
     const defaultMenu = (menuList: MenuInfo[]) => {
