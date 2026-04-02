@@ -101,7 +101,12 @@ export default function Sidebar({
       onMouseLeave={handleSubpanelClose}
     >
       <div className="sidebar_narrow">
-        <div className="sidebar_logo" onClick={() => pushPath('/', setCurrentPath)}>
+        <div className="sidebar_logo" onClick={() => {
+          pushPath('/', setCurrentPath);
+          if (tabMode) {
+            setActiveTabKey(null);
+          }
+        }}>
           <img src={typeof LogoImage === 'string' ? LogoImage : LogoImage.src} alt="Logo" />
         </div>
         <nav className="sidebar_narrow_menu">
