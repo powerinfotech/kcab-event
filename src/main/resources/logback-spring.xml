@@ -2,7 +2,7 @@
 <configuration scan="true" scanPeriod="30 seconds">
 
     <property name="LOGS_ABSOLUTE_PATH" value="./logs" />
-    <property name="SERVICE_NAME" value="miso-lxnn"/>
+    <property name="SERVICE_NAME" value="power-next-lxnn"/>
 
     <!-- ===== CONSOLE Appender ===== -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
