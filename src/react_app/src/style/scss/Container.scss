@@ -567,19 +567,60 @@
 
 .auth-mgmt-layout {
     display: flex;
-    gap: 16px;
+    gap: 20px;
     align-items: flex-start;
 }
 .auth-mgmt-left {
-    flex: 0 0 38%;
+    flex: 0 0 34%;
     min-width: 0;
+    position: relative;
+
+    &::after {
+        content: '';
+        position: absolute;
+        right: -14px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 0;
+        height: 0;
+        border-top: 8px solid transparent;
+        border-bottom: 8px solid transparent;
+        border-left: 8px solid $gray80;
+    }
 }
 .auth-mgmt-right {
     flex: 1;
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
+}
+.auth-section-card {
+    border: 1px solid $gray90;
+    border-radius: 8px;
+
+    .ant-card-body {
+        padding: 16px;
+    }
+
+    &--group {
+        border-left: 3px solid $PrimaryMain;
+    }
+}
+.auth-context-tag {
+    margin-left: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    vertical-align: middle;
+}
+.auth-empty-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    background: $gray98;
+    border: 1px dashed $gray80;
+    border-radius: 4px;
 }
 
 .search-input-w250 {

@@ -42,6 +42,7 @@ const AuthManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
                         onDeleteRow={mgmt.handleDeleteRowAuth}
                         onDataChange={mgmt.handleDataChangeAuth}
                         form={mgmt.form}
+                        selectedGroupName={mgmt.selectedAuthGrp?.authGrpNm}
                     />
 
                     <AuthUserTable
@@ -51,6 +52,8 @@ const AuthManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
                         onOpenUserPopup={mgmt.handleOpenUserPopup}
                         onDeleteRow={mgmt.handleDeleteRowAuthUser}
                         onDataChange={mgmt.handleDataChangeAuthUser}
+                        selectedGroupName={mgmt.selectedAuthGrp?.authGrpNm}
+                        selectedAuthName={mgmt.selectedAuth?.authNm}
                     />
                 </div>
             </section>

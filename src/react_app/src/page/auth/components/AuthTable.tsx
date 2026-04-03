@@ -5,6 +5,9 @@ import CustomInput from '@component/input/CustomInput';
 import CustomCheckbox from '@component/select/CustomCheckbox';
 import CustomButton from '@component/button/CustomButton';
 import CustomTable, {IUD_COLUMN} from '@component/display/CustomTable';
+import CustomCard from '@component/display/CustomCard';
+import CustomTag from '@component/display/CustomTag';
+import CustomEmpty from '@component/display/CustomEmpty';
 import EditableFormCell from '@component/special/EditableFormCell';
 import IconTitle from '@icon/IconTitle';
 import {AuthInfoList} from '@interface/auth/AuthManagement';
@@ -19,6 +22,7 @@ interface AuthTableProps {
     onDeleteRow: () => void;
     onDataChange: (record: AuthInfoList, key: string, value: any) => void;
     form: UseFormReturn<any>;
+    selectedGroupName?: string;
 }
 
 const AuthTable: React.FC<AuthTableProps> = ({
@@ -31,6 +35,7 @@ const AuthTable: React.FC<AuthTableProps> = ({
     onDeleteRow,
     onDataChange,
     form,
+    selectedGroupName,
 }) => {
     const {register, control, setValue} = form;
 
@@ -59,31 +64,42 @@ const AuthTable: React.FC<AuthTableProps> = ({
     ];
 
     return (
-        <div>
+        <CustomCard className="auth-section-card" bordered={false}>
             <div className="board-title-wrap">
-                <h3 className="title"><IconTitle/>권한정보<span className="total-count">{dataSource.length}건</span></h3>
+                <h3 className="title">
+                    <IconTitle/>권한정보
+                    {selectedGroupName && <CustomTag color="gold" className="auth-context-tag">{selectedGroupName}</CustomTag>}
+                    <span className="total-count">{dataSource.length}건</span>
+                </h3>
                 <div className="box-btn">
-                    <CustomButton type="default" size="small" onClick={onAddRow}>+ 행추가</CustomButton>
-                    <CustomButton type="default" size="small" onClick={onDeleteRow}>- 행삭제</CustomButton>
+                    <CustomButton type="default" size="small" onClick={onAddRow} disabled={!selectedGroupName}>+ 행추가</CustomButton>
+                    <CustomButton type="default" size="small" onClick={onDeleteRow} disabled={!selectedGroupName}>- 행삭제</CustomButton>
                 </div>
             </div>
             <div className="board-cont-wrap">
-                <CustomTable
-                    onRow={(record: any, index?: number) => ({
-                        onClick: () => {
-                            if (index !== selectedRowIndex) onRowClick(record, index ?? -1);
-                        },
-                    })}
-                    rowSelection={{
-                        selectedRowKeys,
-                        onChange: (keys: React.Key[]) => onSelectedRowKeysChange(keys),
-                    }}
-                    rowKey={'authSeq'} pagination={false} rowNoFlag={true} rowSelectedFlag={true}
-                    columns={columns} dataSource={dataSource}
-                    selectedRowIndex={selectedRowIndex}
-                />
+                {!selectedGroupName ? (
+                    <div className="auth-empty-state">
+                        <CustomEmpty description="좌측에서 권한그룹을 선택하면 해당 그룹의 권한 목록이 표시됩니다." />
+                    </div>
+                ) : (
+                    <CustomTable
+                        onRow={(record: any, index?: number) => ({
+                            onClick: () => {
+                                if (index !== selectedRowIndex) onRowClick(record, index ?? -1);
+                            },
+                        })}
+                        rowSelection={{
+                            selectedRowKeys,
+                            onChange: (keys: React.Key[]) => onSelectedRowKeysChange(keys),
+                        }}
+                        rowKey={'authSeq'} pagination={false} rowNoFlag={true} rowSelectedFlag={true}
+                        columns={columns} dataSource={dataSource}
+                        selectedRowIndex={selectedRowIndex}
+                        locale={{ emptyText: <CustomEmpty description="등록된 권한이 없습니다. '행추가' 버튼으로 권한을 추가하세요." /> }}
+                    />
+                )}
             </div>
-        </div>
+        </CustomCard>
     );
 };
 

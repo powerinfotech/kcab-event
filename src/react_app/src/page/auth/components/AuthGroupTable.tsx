@@ -5,6 +5,7 @@ import CustomInput from '@component/input/CustomInput';
 import CustomCheckbox from '@component/select/CustomCheckbox';
 import CustomButton from '@component/button/CustomButton';
 import CustomTable, {IUD_COLUMN} from '@component/display/CustomTable';
+import CustomCard from '@component/display/CustomCard';
 import EditableFormCell from '@component/special/EditableFormCell';
 import IconTitle from '@icon/IconTitle';
 import {AuthGrpList} from '@interface/auth/AuthManagement';
@@ -63,7 +64,7 @@ const AuthGroupTable: React.FC<AuthGroupTableProps> = ({
     ];
 
     return (
-        <div className="auth-mgmt-left">
+        <CustomCard className="auth-mgmt-left auth-section-card auth-section-card--group" bordered={false}>
             <div className="board-title-wrap">
                 <h3 className="title"><IconTitle/>권한그룹정보<span className="total-count">{dataSource.length}건</span></h3>
                 <div className="box-btn">
@@ -87,7 +88,7 @@ const AuthGroupTable: React.FC<AuthGroupTableProps> = ({
                     selectedRowIndex={selectedRowIndex}
                 />
             </div>
-        </div>
+        </CustomCard>
     );
 };
 

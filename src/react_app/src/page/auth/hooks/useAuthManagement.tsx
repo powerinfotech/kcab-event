@@ -356,6 +356,10 @@ export function useAuthManagement() {
         isUserPopupOpen,
         setIsUserPopupOpen,
 
+        // Derived (선택 컨텍스트)
+        selectedAuthGrp,
+        selectedAuth,
+
         // Top-level
         handleReset,
         handleSearchAuthGrpList,
