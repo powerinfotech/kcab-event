@@ -1,4 +1,4 @@
-import { message } from '@util/antdMessage';
+import {message} from '@util/antdMessage';
 import React, {useEffect, useRef, useState} from 'react';
 import {useForm} from 'react-hook-form';
 import {HttpStatusCode} from 'axios';
@@ -12,14 +12,8 @@ import IconFile from '@icon/IconFile';
 import IconFolder from '@icon/IconFolder';
 
 const EMPTY_MENU: EmptyMenu = {
-    menuSeq: undefined,
-    upMenuSeq: undefined,
-    menuNm: '',
-    menuTypeCd: undefined,
-    menuViewPath: '',
-    menuUrl: '',
-    useYn: undefined,
-    sortSeq: undefined,
+    menuSeq: undefined, upMenuSeq: undefined, menuNm: '', menuTypeCd: undefined,
+    menuViewPath: '', menuUrl: '', useYn: undefined, sortSeq: undefined,
 };
 
 const getTreeKey = (v: MenuInfo, menuList: MenuInfo[]): React.Key =>
@@ -110,6 +104,11 @@ export function useMenuManagement() {
     const [menuBtnState, setMenuBtnState] = useState<MenuBtnState[]>([]);
     const newItemBtnInitializedRef = useRef(false);
 
+    // ── Tab State (신규) ──
+    const [activeTab, setActiveTab] = useState<string>('info');
+
+    // ── Helpers ──
+
     const getCurrentRowDataSourceBySeq = (menuSeq: number | React.Key) => {
         if (typeof menuSeq === 'string' && menuSeq.startsWith('_new_')) {
             const parts = menuSeq.split('_');
@@ -128,6 +127,8 @@ export function useMenuManagement() {
                 .map(v => ({value: v.menuSeq as any, label: v.menuNm, level: v.level}))
         );
     };
+
+    // ── Selection ──
 
     const onSelectChange = async (keys: any[]) => {
         setSelectedKeys(keys);
@@ -184,6 +185,8 @@ export function useMenuManagement() {
         }
     };
 
+    // ── Data Change ──
+
     const handleDataChanged = () => {
         const formData = saveForm.getValues();
         const changedDataSource = dataSource.map(item => {
@@ -227,6 +230,8 @@ export function useMenuManagement() {
         markMenuUpdatedByButtonChange();
     };
 
+    // ── CRUD ──
+
     const handleSave = async (value: MenuInfo) => {
         if (!isRowSelected) {
             message.info('선택한 메뉴가 없습니다.');
@@ -262,7 +267,6 @@ export function useMenuManagement() {
             });
             onSelectChange(rowSeq);
         }
-
     };
 
     const handleSearch = async () => {
@@ -297,6 +301,7 @@ export function useMenuManagement() {
             iudType: IudType.I,
         } as MenuInfo;
         setDataSource(orgDataSource.concat([newMenu]));
+        setActiveTab('info');
     };
 
     const handleDelete = async () => {
@@ -335,7 +340,7 @@ export function useMenuManagement() {
         setRowSeq([]);
     };
 
-    // --- Tree building & filtering ---
+    // ── Tree ──
 
     const createMenuTree = (menuList: MenuInfo[]) => {
         if (menuList.length < 1) return;
@@ -384,7 +389,7 @@ export function useMenuManagement() {
         }
     };
 
-    // --- Effects ---
+    // ── Effects ──
 
     useEffect(() => {
         if (!dataSource.length) return;
@@ -423,29 +428,26 @@ export function useMenuManagement() {
     }, [btnList.length]);
 
     return {
-        // Forms
         searchForm,
         saveForm,
 
-        // Tree state
         treeData,
         expandedKey,
         selectable,
         selectedKeys,
 
-        // Data state
         dataSource,
         parentMenuCombo,
 
-        // UI state
         isEditable,
         isViewMenu,
 
-        // Button state
         btnList,
         menuBtnState,
 
-        // Handlers
+        activeTab,
+        setActiveTab,
+
         onSelect,
         onExpand,
         expandTree,

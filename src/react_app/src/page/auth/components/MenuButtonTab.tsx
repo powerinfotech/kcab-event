@@ -1,10 +1,10 @@
 import React from 'react';
 import CustomInput from '@component/input/CustomInput';
-import IconTitle from '@icon/IconTitle';
+import CustomEmpty from '@component/display/CustomEmpty';
 import {BtnInfo} from '@interface/auth/MenuManagement';
 import {MenuBtnState} from '../hooks/useMenuManagement';
 
-interface MenuButtonInfoPanelProps {
+interface MenuButtonTabProps {
     btnList: BtnInfo[];
     menuBtnState: MenuBtnState[];
     isEditable: boolean;
@@ -12,28 +12,30 @@ interface MenuButtonInfoPanelProps {
     onUpdateBtnNm: (btnSeq: number, btnNm: string, prevBtnNm: string) => void;
 }
 
-const MenuButtonInfoPanel: React.FC<MenuButtonInfoPanelProps> = ({
+const MenuButtonTab: React.FC<MenuButtonTabProps> = ({
     btnList,
     menuBtnState,
     isEditable,
     onUpdateUseYn,
     onUpdateBtnNm,
-}) => (
-    <div className="bottom-right">
-        <div className="board-title-wrap mt16">
-            <h3 className="title">
-                <IconTitle />
-                버튼정보
-            </h3>
-        </div>
+}) => {
+    if (!isEditable) {
+        return (
+            <div className="board-cont-wrap">
+                <CustomEmpty description="좌측 트리에서 메뉴를 선택하세요."/>
+            </div>
+        );
+    }
+
+    return (
         <div className="board-cont-wrap button-info-two-column">
             <div className="button-info-box">
                 <div className="button-info-header">기본버튼(권한설정)</div>
                 <table className="tbl type02">
                     <colgroup>
-                        <col className="w120" />
-                        <col className="w080" />
-                        <col className="w080" />
+                        <col className="w120"/>
+                        <col className="w080"/>
+                        <col className="w080"/>
                     </colgroup>
                     <thead>
                         <tr>
@@ -52,7 +54,7 @@ const MenuButtonInfoPanel: React.FC<MenuButtonInfoPanelProps> = ({
                                     <td>
                                         <input
                                             type="radio"
-                                            name={`btn_use_${btn.btnSeq}`}
+                                            name={`btn_use_v2_${btn.btnSeq}`}
                                             checked={useYn === 'Y'}
                                             onChange={() => onUpdateUseYn(btn.btnSeq, 'Y', useYn)}
                                             disabled={!isEditable}
@@ -61,7 +63,7 @@ const MenuButtonInfoPanel: React.FC<MenuButtonInfoPanelProps> = ({
                                     <td>
                                         <input
                                             type="radio"
-                                            name={`btn_use_${btn.btnSeq}`}
+                                            name={`btn_use_v2_${btn.btnSeq}`}
                                             checked={useYn === 'N'}
                                             onChange={() => onUpdateUseYn(btn.btnSeq, 'N', useYn)}
                                             disabled={!isEditable}
@@ -77,10 +79,10 @@ const MenuButtonInfoPanel: React.FC<MenuButtonInfoPanelProps> = ({
                 <div className="button-info-header">커스텀버튼(권한설정)</div>
                 <table className="tbl type02">
                     <colgroup>
-                        <col className="w120" />
-                        <col className="w200" />
-                        <col className="w080" />
-                        <col className="w080" />
+                        <col className="w120"/>
+                        <col className="w200"/>
+                        <col className="w080"/>
+                        <col className="w080"/>
                     </colgroup>
                     <thead>
                         <tr>
@@ -109,7 +111,7 @@ const MenuButtonInfoPanel: React.FC<MenuButtonInfoPanelProps> = ({
                                     <td>
                                         <input
                                             type="radio"
-                                            name={`btn_custom_use_${btn.btnSeq}`}
+                                            name={`btn_custom_use_v2_${btn.btnSeq}`}
                                             checked={useYn === 'Y'}
                                             onChange={() => onUpdateUseYn(btn.btnSeq, 'Y', useYn)}
                                             disabled={!isEditable}
@@ -118,7 +120,7 @@ const MenuButtonInfoPanel: React.FC<MenuButtonInfoPanelProps> = ({
                                     <td>
                                         <input
                                             type="radio"
-                                            name={`btn_custom_use_${btn.btnSeq}`}
+                                            name={`btn_custom_use_v2_${btn.btnSeq}`}
                                             checked={useYn === 'N'}
                                             onChange={() => onUpdateUseYn(btn.btnSeq, 'N', useYn)}
                                             disabled={!isEditable}
@@ -131,7 +133,7 @@ const MenuButtonInfoPanel: React.FC<MenuButtonInfoPanelProps> = ({
                 </table>
             </div>
         </div>
-    </div>
-);
+    );
+};
 
-export default MenuButtonInfoPanel;
+export default MenuButtonTab;
