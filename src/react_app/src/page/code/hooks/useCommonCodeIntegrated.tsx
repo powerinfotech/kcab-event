@@ -134,12 +134,13 @@ export function useCommonCodeIntegrated() {
     // ── Group CRUD ──
     const handleAddGrp = () => {
         const tempSeq = tempSeqRef.current--;
+        const maxSort = grpDataSource.reduce((max, v) => Math.max(max, v.sortSeq ?? 0), 0);
         setGrpDataSource(prev => [...prev, {
             comGrpCdSeq: tempSeq, comGrpCd: '', comGrpCdNm: '', comGrpCdDesc: '',
             ref01: '', ref02: '', ref03: '', ref04: '', ref05: '',
             ref06: '', ref07: '', ref08: '', ref09: '', ref10: '',
             ref11: '', ref12: '', ref13: '', ref14: '', ref15: '',
-            useYn: 'Y', iudType: IudType.I,
+            sortSeq: maxSort + 1, useYn: 'Y', iudType: IudType.I,
         }]);
     };
 
@@ -168,13 +169,14 @@ export function useCommonCodeIntegrated() {
             return;
         }
         const tempSeq = tempSeqRef.current--;
+        const maxSort = comCdDataSource.reduce((max, v) => Math.max(max, v.sortSeq ?? 0), 0);
         setComCdDataSource(prev => [...prev, {
             comCdSeq: tempSeq, comGrpCdSeq: selectedGrpCd.comGrpCdSeq,
             comCd: '', comStdCd: '', comCdNm: '', comCdDesc: '',
             refval01: '', refval02: '', refval03: '', refval04: '', refval05: '',
             refval06: '', refval07: '', refval08: '', refval09: '', refval10: '',
             refval11: '', refval12: '', refval13: '', refval14: '', refval15: '',
-            sortSeq: 0, useYn: 'Y', iudType: IudType.I,
+            sortSeq: maxSort + 1, useYn: 'Y', iudType: IudType.I,
         }]);
     };
 
@@ -263,8 +265,8 @@ export function useCommonCodeIntegrated() {
     const grpColumns: TableColumnsType<ComGrpCdList> = [
         IUD_COLUMN,
         {
-            title: <span className="tit">공통그룹코드<em>*</em></span>,
-            key: 'comGrpCd', dataIndex: 'comGrpCd', align: 'center', width: 120,
+            title: <span className="tit">그룹코드<em>*</em></span>,
+            key: 'comGrpCd', dataIndex: 'comGrpCd', align: 'center', width: 90,
             render: (value: string, record: ComGrpCdList) =>
                 record.rgstUserSeq
                     ? <span>{value}</span>
@@ -278,6 +280,15 @@ export function useCommonCodeIntegrated() {
             render: (value: string, record: ComGrpCdList) =>
                 <CustomInput value={value} maxLength={100}
                     onChange={(e) => handleGrpDataChange(record, 'comGrpCdNm', e.target.value)}/>,
+        },
+        {
+            title: '정렬', key: 'sortSeq', dataIndex: 'sortSeq', align: 'right', width: 60,
+            render: (value: number, record: ComGrpCdList) =>
+                <CustomInput value={value ?? ''} maxLength={10} style={{textAlign: 'right'}}
+                    onChange={(e) => {
+                        const v = e.target.value.replace(/\D/g, '');
+                        handleGrpDataChange(record, 'sortSeq', v === '' ? null : Number(v));
+                    }}/>,
         },
         {
             title: '사용', key: 'useYn', dataIndex: 'useYn', align: 'center', width: 60,
@@ -297,7 +308,7 @@ export function useCommonCodeIntegrated() {
             IUD_COLUMN,
             {
                 title: <span className="tit">공통코드<em>*</em></span>,
-                key: 'comCd', dataIndex: 'comCd', align: 'center', width: 100, fixed: 'left',
+                key: 'comCd', dataIndex: 'comCd', align: 'center', width: 80, fixed: 'left',
                 render: (value: string, record: ComCdList) =>
                     record.rgstUserSeq
                         ? <span>{value}</span>
@@ -319,7 +330,7 @@ export function useCommonCodeIntegrated() {
                         onChange={(e) => handleComCdDataChange(record, 'comCdDesc', e.target.value)}/>,
             },
             {
-                title: '정렬', key: 'sortSeq', dataIndex: 'sortSeq', align: 'center', width: 70,
+                title: '정렬', key: 'sortSeq', dataIndex: 'sortSeq', align: 'right', width: 70,
                 render: (value: number, record: ComCdList) =>
                     <CustomInput value={value ?? ''} maxLength={10}
                         onChange={(e) => {

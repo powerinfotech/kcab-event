@@ -30,6 +30,10 @@ const Login = () => {
         const param =   {userId:saveFormGetValues('userId'), password:saveFormGetValues('password')};
         const {data} = await axios.post<ApiResponse<boolean>>('/api/login',param);
         if(data.code === HttpStatusCode.Ok) {
+            // 이전 세션의 탭 정보 초기화
+            sessionStorage.removeItem('tabList');
+            sessionStorage.removeItem('activeTabKey');
+
             const ret = await getUserLoginInfo();
             if(ret.code === HttpStatusCode.Ok) {
                 saveFormGetValues('isRememberId')?setCookie('id', saveFormGetValues('userId')): removeCookie('id');
@@ -60,6 +64,10 @@ const Login = () => {
         const param =   {userId:saveFormGetValues('userId'), password:saveFormGetValues('password'), mode:"auto"};
         const {data} = await axios.post<ApiResponse<boolean>>('/api/login',param);
         if(data.code === HttpStatusCode.Ok) {
+            // 이전 세션의 탭 정보 초기화
+            sessionStorage.removeItem('tabList');
+            sessionStorage.removeItem('activeTabKey');
+
             const ret = await getUserLoginInfo();
             if(ret.code === HttpStatusCode.Ok) {
                 saveFormGetValues('isRememberId')?setCookie('id', saveFormGetValues('userId')): removeCookie('id');

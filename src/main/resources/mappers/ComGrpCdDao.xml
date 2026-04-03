@@ -23,6 +23,7 @@
 			,ref13
 			,ref14
 			,ref15
+			,sort_seq
 			,use_yn
 			,rgst_user_seq
 			,rgst_date_time::timestamp AS rgst_date_time
@@ -39,7 +40,7 @@
 				OR upper(com_grp_cd_nm) LIKE '%' || upper(#{searchText}) || '%'
 			)
 		</if>
-		ORDER BY com_grp_cd
+		ORDER BY sort_seq, com_grp_cd
 	</select>
 
 	<insert id="insertComGrpCd" parameterType="com.power.domain.ComGrpCd" useGeneratedKeys="true" keyProperty="comGrpCdSeq">
@@ -63,6 +64,7 @@
 			,ref13
 			,ref14
 			,ref15
+			,sort_seq
 			,use_yn
 			,rgst_user_seq
 			,rgst_date_time
@@ -88,6 +90,7 @@
 			,#{ref13}
 			,#{ref14}
 			,#{ref15}
+			,#{sortSeq}
 			,#{useYn}
 			,#{rgstUserSeq}
 			,now()
@@ -115,6 +118,7 @@
 		   ,ref13         = #{ref13}
 		   ,ref14         = #{ref14}
 		   ,ref15         = #{ref15}
+		   ,sort_seq      = #{sortSeq}
 		   ,use_yn        = #{useYn}
 		   ,upt_user_seq  = #{uptUserSeq}
 		   ,upt_date_time = now()

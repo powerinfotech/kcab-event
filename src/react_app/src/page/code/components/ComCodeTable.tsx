@@ -56,7 +56,7 @@ const ComCodeTable: React.FC<ComCodeTableProps> = ({
                         rowNoFlag={true}
                         columns={columns}
                         dataSource={dataSource}
-                        scroll={{x: scrollX, y: undefined}}
+                        scroll={{x: '100%', y: undefined}}
                     />
                 )}
             </div>

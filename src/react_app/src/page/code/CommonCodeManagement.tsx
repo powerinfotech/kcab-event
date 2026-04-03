@@ -55,7 +55,7 @@ const CommonCodeManagement = ({handlersRef}: {onChange?: (flag: boolean) => void
             <section className="board-wrap half-wrap type02">
                 <div>
                     <div className="board-title-wrap">
-                        <h3 className="title"><IconTitle/>공통그룹코드목록<span className="total-count">{mgmt.grpDataSource.length}건</span></h3>
+                        <h3 className="title"><IconTitle/>그룹코드목록<span className="total-count">{mgmt.grpDataSource.length}건</span></h3>
                     </div>
                     <div className="board-cont-wrap">
                         <CustomTable

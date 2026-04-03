@@ -27,6 +27,7 @@ public class ComGrpCd {
     private String ref13;
     private String ref14;
     private String ref15;
+    private Integer sortSeq;
     private String useYn;
     private Long rgstUserSeq;
     private LocalDateTime rgstDateTime;

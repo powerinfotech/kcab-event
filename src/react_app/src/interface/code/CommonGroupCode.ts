@@ -20,6 +20,7 @@ export interface ComGrpCd {
     ref13: string;
     ref14: string;
     ref15: string;
+    sortSeq: number;
     useYn: string;
     rgstUserSeq?: number;
 }

@@ -6,7 +6,6 @@ import {PageButtonHandlers} from '@interface/common';
 import {usePageHandlers} from '@hook/usePageHandlers';
 import {useCommonCodeIntegrated} from './hooks/useCommonCodeIntegrated';
 import GrpCodeTable from './components/GrpCodeTable';
-import GrpCodeDetailForm from './components/GrpCodeDetailForm';
 import ComCodeTable from './components/ComCodeTable';
 
 const CommonCodeIntegrated = ({handlersRef}: {onChange?: (flag: boolean) => void; menuInfo?: any; handlersRef?: React.MutableRefObject<PageButtonHandlers>}) => {
@@ -22,7 +21,7 @@ const CommonCodeIntegrated = ({handlersRef}: {onChange?: (flag: boolean) => void
         <>
             <section className="search-wrap">
                 <form>
-                    <span>공통그룹코드/명</span>
+                    <span>코드/명</span>
                     <Controller
                         name={'searchText'}
                         defaultValue={''}
@@ -52,8 +51,8 @@ const CommonCodeIntegrated = ({handlersRef}: {onChange?: (flag: boolean) => void
                 </form>
             </section>
 
-            <section className="board-wrap half-wrap type02">
-                <div>
+            <section className="board-wrap half-wrap type02" style={{display: 'flex', gap: 4, overflow: 'hidden'}}>
+                <div style={{flex: 35, minWidth: 0}}>
                     <GrpCodeTable
                         dataSource={mgmt.grpDataSource}
                         columns={mgmt.grpColumns}
@@ -63,15 +62,12 @@ const CommonCodeIntegrated = ({handlersRef}: {onChange?: (flag: boolean) => void
                         onRowClick={mgmt.handleGrpRowClick}
                         onAddRow={mgmt.handleAddGrp}
                         onDeleteRow={mgmt.handleDeleteGrp}
-                    />
-
-                    <GrpCodeDetailForm
                         selectedGrpCd={mgmt.selectedGrpCd}
                         onDetailChange={mgmt.handleGrpDetailChange}
                     />
                 </div>
 
-                <div>
+                <div style={{flex: 65, minWidth: 0, overflow: 'hidden'}}>
                     <ComCodeTable
                         dataSource={mgmt.comCdDataSource}
                         columns={mgmt.dynamicComCdColumns}
