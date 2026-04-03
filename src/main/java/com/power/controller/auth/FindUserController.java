@@ -26,7 +26,7 @@ public class FindUserController {
         return ApiResponse.ok(findUserService.findUserPassword(user));
     }
     @PostMapping("/change-password")
-    public ApiResponse<Void> changePassword (@RequestBody UserChangePasswordDto user)  throws Exception {
+    public ApiResponse<Void> changePassword (@RequestBody UserChangePasswordDto user)  {
         findUserService.changePassword(user);
         return ApiResponse.ok();
     }

@@ -21,11 +21,11 @@ public interface ComCdDao {
      *
      * @param comGrpCdSeq 코드 그룹 고유 순번
      */
-    List<ComCdListDto> selectComCdList(@Param("comGrpCdSeq") Long comGrpCdSeq) throws Exception;
+    List<ComCdListDto> selectComCdList(@Param("comGrpCdSeq") Long comGrpCdSeq);
     /** 공통 코드를 등록한다. */
-    void insertComCd(ComCd comCd) throws Exception;
+    void insertComCd(ComCd comCd);
     /** 공통 코드를 수정한다. */
-    void updateComCd(ComCd comCd) throws Exception;
+    void updateComCd(ComCd comCd);
     /** 공통 코드를 삭제한다. */
-    void deleteComCd(@Param("comCdSeq") Long comCdSeq) throws Exception;
+    void deleteComCd(@Param("comCdSeq") Long comCdSeq);
 }

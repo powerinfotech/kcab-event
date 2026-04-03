@@ -43,12 +43,12 @@ public class MenuManagementServiceImpl extends EgovAbstractServiceImpl implement
     private MenuBtnDao menuBtnDao;
 
     @Override
-    public List<MenuListDto> selectMenuInfo(String userId) throws Exception {
+    public List<MenuListDto> selectMenuInfo(String userId) {
         return menuDao.selectMenuList(userId);
     }
 
     @Override
-    public List<MenuListDto> selectUserPermittedMenuInfo(String userId) throws Exception {
+    public List<MenuListDto> selectUserPermittedMenuInfo(String userId) {
         List<MenuListDto> allMenus = menuDao.selectMenuList(userId);
         List<Long> permittedMenuSeqs = menuDao.selectUserPermittedMenuSeqs(userId);
         Set<Long> permittedSet = new HashSet<>(permittedMenuSeqs);
@@ -74,28 +74,28 @@ public class MenuManagementServiceImpl extends EgovAbstractServiceImpl implement
     }
 
     @Override
-    public List<MenuBtnDetailDto> selectUserPermittedMenuBtnList(String userId, Long menuSeq) throws Exception {
+    public List<MenuBtnDetailDto> selectUserPermittedMenuBtnList(String userId, Long menuSeq) {
         return menuBtnDao.selectUserPermittedMenuBtnList(userId, menuSeq);
     }
 
     @Override
-    public List<Btn> selectBtnList() throws Exception {
+    public List<Btn> selectBtnList() {
         return btnDao.selectBtnList();
     }
 
     @Override
-    public List<MenuBtn> selectMenuBtnList(Long menuSeq) throws Exception {
+    public List<MenuBtn> selectMenuBtnList(Long menuSeq) {
         return menuBtnDao.selectByMenuSeq(menuSeq);
     }
 
     @Override
-    public List<MenuBtnDetailDto> selectActiveMenuBtnList(Long menuSeq) throws Exception {
+    public List<MenuBtnDetailDto> selectActiveMenuBtnList(Long menuSeq) {
         return menuBtnDao.selectActiveByMenuSeq(menuSeq);
     }
 
     @Override
     @Transactional("transactionManager")
-    public void saveMenu(LoginUser loginUser, MenuSaveDto menuSaveDto) throws Exception {
+    public void saveMenu(LoginUser loginUser, MenuSaveDto menuSaveDto) {
         Integer userSeq = loginUser.getUserSeq();
 
         if (menuSaveDto.getIudType() == IudType.I) {
@@ -129,7 +129,7 @@ public class MenuManagementServiceImpl extends EgovAbstractServiceImpl implement
     }
 
     @Override
-    public void deleteMenu(Integer menuSeq) throws Exception {
+    public void deleteMenu(Integer menuSeq) {
         menuDao.deleteMenu(menuSeq);
     }
 }

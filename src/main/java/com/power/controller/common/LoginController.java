@@ -22,7 +22,7 @@ public class LoginController {
 
 
     @PostMapping("/api/login")
-    public @ResponseBody ApiResponse<Void> login(HttpServletRequest request, @Valid @RequestBody LoginRequestDto loginInfo, BindingResult bindingResult) throws Exception {
+    public @ResponseBody ApiResponse<Void> login(HttpServletRequest request, @Valid @RequestBody LoginRequestDto loginInfo, BindingResult bindingResult) {
         customValidator.validate(loginInfo, bindingResult);
         loginService.login(loginInfo, request);
         return ApiResponse.ok();
@@ -30,7 +30,7 @@ public class LoginController {
 
 
     @PostMapping("/api/logout")
-    public @ResponseBody ApiResponse<Void> logout() throws Exception {
+    public @ResponseBody ApiResponse<Void> logout() {
         loginService.logout();
         return ApiResponse.ok();
     }

@@ -32,28 +32,28 @@ public class AuthManagementServiceImpl extends EgovAbstractServiceImpl implement
     private AuthManagementDao authManagementDao;
 
     @Override
-    public List<AuthGrpListDto> selectAuthGrpList() throws Exception {
+    public List<AuthGrpListDto> selectAuthGrpList() {
         return authManagementDao.selectAuthGrpList();
     }
 
     @Override
-    public List<AuthListDto> selectAuthList(Integer authGrpSeq) throws Exception {
+    public List<AuthListDto> selectAuthList(Integer authGrpSeq) {
         return authManagementDao.selectAuthList(authGrpSeq);
     }
 
     @Override
-    public List<AuthUserListDto> selectAuthUserList(Integer authGrpSeq, Integer authSeq) throws Exception {
+    public List<AuthUserListDto> selectAuthUserList(Integer authGrpSeq, Integer authSeq) {
         return authManagementDao.selectAuthUserList(authGrpSeq, authSeq);
     }
 
     @Override
-    public List<UserSearchDto> selectUserSearchList(String searchText, Boolean excludeUnused) throws Exception {
+    public List<UserSearchDto> selectUserSearchList(String searchText, Boolean excludeUnused) {
         return authManagementDao.selectUserSearchList(searchText, excludeUnused);
     }
 
     @Override
     @Transactional("transactionManager")
-    public void saveAuthManagement(@Valid AuthManagementSaveDto saveDto, LoginUser loginUser) throws Exception {
+    public void saveAuthManagement(@Valid AuthManagementSaveDto saveDto, LoginUser loginUser) {
         if (saveDto.getAuthGrpList() != null) {
             for (AuthGrpListDto grp : saveDto.getAuthGrpList()) {
                 if (grp.getIudType() == null) continue;

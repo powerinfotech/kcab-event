@@ -19,23 +19,23 @@ import java.util.List;
  */
 public interface AuthManagementService {
     /** 전체 권한 그룹 목록을 조회한다. */
-    List<AuthGrpListDto> selectAuthGrpList() throws Exception;
+    List<AuthGrpListDto> selectAuthGrpList();
     /** 권한 그룹에 속한 권한 목록을 조회한다. */
-    List<AuthListDto> selectAuthList(Integer authGrpSeq) throws Exception;
+    List<AuthListDto> selectAuthList(Integer authGrpSeq);
     /** 권한에 배정된 사용자 목록을 조회한다. */
-    List<AuthUserListDto> selectAuthUserList(Integer authGrpSeq, Integer authSeq) throws Exception;
+    List<AuthUserListDto> selectAuthUserList(Integer authGrpSeq, Integer authSeq);
     /**
      * 권한 배정 시 사용자를 검색한다.
      *
      * @param searchText    아이디 또는 이름 검색어
      * @param excludeUnused 비활성 사용자 제외 여부
      */
-    List<UserSearchDto> selectUserSearchList(String searchText, Boolean excludeUnused) throws Exception;
+    List<UserSearchDto> selectUserSearchList(String searchText, Boolean excludeUnused);
     /**
      * 권한 그룹·권한·권한-사용자를 일괄 저장한다 (트랜잭션).
      *
      * @param saveDto   변경 목록이 담긴 저장 DTO
      * @param loginUser 현재 로그인 사용자 (등록자·수정자 설정에 사용)
      */
-    void saveAuthManagement(@Valid AuthManagementSaveDto saveDto, LoginUser loginUser) throws Exception;
+    void saveAuthManagement(@Valid AuthManagementSaveDto saveDto, LoginUser loginUser);
 }

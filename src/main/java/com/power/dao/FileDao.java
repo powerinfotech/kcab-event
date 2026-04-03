@@ -19,22 +19,22 @@ public interface FileDao {
      *
      * @param fileSeq 파일 그룹 순번
      */
-    List<FileDetailDto> selectFile(@Param("fileSeq") Integer fileSeq) throws Exception;
+    List<FileDetailDto> selectFile(@Param("fileSeq") Integer fileSeq);
     /**
      * 파일 그룹 순번의 존재 여부를 확인한다.
      *
      * @param fileSeq 파일 그룹 순번
      * @return 존재하면 {@code true}
      */
-    Boolean checkExistFileSeq(@Param("fileSeq") Integer fileSeq) throws Exception;
+    Boolean checkExistFileSeq(@Param("fileSeq") Integer fileSeq);
     /** 파일 그룹(tb_file)을 등록한다. */
-    void insertFile(FileDetailDto fileDetailDto) throws Exception;
+    void insertFile(FileDetailDto fileDetailDto);
     /** 파일 상세(tb_file_dtl)를 등록한다. */
-    void insertFileDetail(FileDetailDto fileDetailDto) throws Exception;
+    void insertFileDetail(FileDetailDto fileDetailDto);
     /** 파일 상세를 수정한다 (삭제 여부 등). */
-    void updateFileDetail(FileDetailDto fileDetailDto) throws Exception;
+    void updateFileDetail(FileDetailDto fileDetailDto);
     /** 파일 그룹을 삭제한다. */
-    void deleteFile(FileDetailDto fileDetailDto) throws Exception;
+    void deleteFile(FileDetailDto fileDetailDto);
     /** 파일 상세를 삭제한다. */
-    void deleteFileDetail(FileDetailDto fileDetailDto) throws Exception;
+    void deleteFileDetail(FileDetailDto fileDetailDto);
 }

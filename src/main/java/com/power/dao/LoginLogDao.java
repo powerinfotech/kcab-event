@@ -14,5 +14,5 @@ import org.egovframe.rte.psl.dataaccess.mapper.EgovMapper;
 @EgovMapper("loginLogDao")
 public interface LoginLogDao {
     /** 로그인 이력을 등록한다. */
-    void insertLoginLog(LoginLog loginLog) throws Exception;
+    void insertLoginLog(LoginLog loginLog);
 }

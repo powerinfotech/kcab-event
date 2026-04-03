@@ -23,14 +23,14 @@ public class ComGrpCdController {
     public ApiResponse<List<ComGrpCdListDto>> selectComGrpCdList(
             @PowerSession LoginUser loginUser,
             @RequestParam(required = false) String searchText,
-            @RequestParam(required = false) String useYn) throws Exception {
+            @RequestParam(required = false) String useYn) {
         return ApiResponse.ok(comGrpCdService.selectComGrpCdList(searchText, useYn));
     }
 
     @PostMapping("/save")
     public ApiResponse<Void> saveComGrpCd(
             @PowerSession LoginUser loginUser,
-            @RequestBody @Valid ComGrpCdSaveDto saveDto) throws Exception {
+            @RequestBody @Valid ComGrpCdSaveDto saveDto) {
         comGrpCdService.saveComGrpCd(saveDto, loginUser);
         return ApiResponse.ok();
     }

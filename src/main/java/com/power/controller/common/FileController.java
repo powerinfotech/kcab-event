@@ -18,7 +18,7 @@ public class FileController {
     private final FileService fileService;
 
     @GetMapping("/file-list")
-    public ApiResponse<List<FileDetailDto>> selectFileList(@RequestParam(value = "fileSeq", required = false) Integer fileSeq) throws Exception {
+    public ApiResponse<List<FileDetailDto>> selectFileList(@RequestParam(value = "fileSeq", required = false) Integer fileSeq) {
         List<FileDetailDto> fileList = fileService.getFileList(fileSeq);
         return ApiResponse.ok(fileList);
     }
@@ -29,7 +29,7 @@ public class FileController {
                                                  @RequestParam(value = "fileSeq", required = false) Integer fileSeq,
                                                  @RequestParam(value = "insertFileMetaList", required = false) String insertFileMetaListJson,
                                                  @RequestParam(value = "updateFileList", required = false)  String updateFileListJson,
-                                                 @RequestParam(value = "deleteFileList", required = false) String deleteFileListJson) throws Exception {
+                                                 @RequestParam(value = "deleteFileList", required = false) String deleteFileListJson) {
 
         Integer resFileSeq = fileSeq;
 
@@ -49,20 +49,20 @@ public class FileController {
     }
 
     @GetMapping("/download-file")
-    public ResponseEntity<Resource> downloadFile(@RequestParam String filePath) throws Exception {
+    public ResponseEntity<Resource> downloadFile(@RequestParam String filePath) {
         return fileService.downloadFile(filePath);
     }
 
     @DeleteMapping("/delete-file")
     public ApiResponse<Void> deleteFile(@PowerSession LoginUser loginUser,
-                                        @RequestParam(value = "deleteFileList") String deleteFileListJson) throws Exception {
+                                        @RequestParam(value = "deleteFileList") String deleteFileListJson) {
         fileService.deleteFile(loginUser, deleteFileListJson);
         return ApiResponse.ok(null);
     }
 
     @DeleteMapping("/delete-all-file")
     public ApiResponse<Void> deleteAllFile(@PowerSession LoginUser loginUser,
-                                           @RequestParam(value = "fileSeq") Integer fileSeq) throws Exception {
+                                           @RequestParam(value = "fileSeq") Integer fileSeq) {
         fileService.deleteAllFile(loginUser, fileSeq);
         return ApiResponse.ok(null);
     }

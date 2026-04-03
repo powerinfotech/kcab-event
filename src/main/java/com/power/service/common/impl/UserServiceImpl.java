@@ -21,7 +21,7 @@ public class UserServiceImpl extends EgovAbstractServiceImpl implements UserServ
     private UserDao userDao;
 
     @Override
-    public User selectUserInfo(String userId) throws Exception {
+    public User selectUserInfo(String userId) {
         return userDao.selectUser(userId);
     }
 

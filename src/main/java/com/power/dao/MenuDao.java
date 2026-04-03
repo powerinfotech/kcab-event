@@ -22,17 +22,17 @@ public interface MenuDao {
      *
      * @param userId 사용자 아이디 (권한 필터링에 사용)
      */
-    List<MenuListDto> selectMenuList(String userId) throws Exception;
+    List<MenuListDto> selectMenuList(String userId);
     /**
      * 사용자가 권한을 가진 메뉴 순번 목록을 조회한다.
      *
      * @param userId 로그인 아이디
      */
-    List<Long> selectUserPermittedMenuSeqs(String userId) throws Exception;
+    List<Long> selectUserPermittedMenuSeqs(String userId);
     /** 메뉴를 등록한다. */
-    void insertMenu(Menu menu) throws Exception;
+    void insertMenu(Menu menu);
     /** 메뉴를 수정한다. */
-    void updateMenu(Menu menu) throws Exception;
+    void updateMenu(Menu menu);
     /** 메뉴를 삭제한다. */
-    void deleteMenu(@Param("menuSeq") Integer menuSeq) throws Exception;
+    void deleteMenu(@Param("menuSeq") Integer menuSeq);
 }

@@ -21,7 +21,7 @@ public interface ExcelService {
      * @param dataList 행 데이터 목록 (키: {@link ExcelColumn#getDataIndex()})
      * @return xlsx 형식의 엑셀 파일 바이트 배열
      */
-    byte[] generateExcel(List<ExcelColumn> columns, List<Map<String, Object>> dataList) throws Exception;
+    byte[] generateExcel(List<ExcelColumn> columns, List<Map<String, Object>> dataList);
 
     /**
      * 엑셀 파일을 파싱하여 행 데이터 목록으로 변환한다.
@@ -31,5 +31,5 @@ public interface ExcelService {
      * @param columns 컬럼 정의 목록 (순서대로 Map 키로 매핑)
      * @return 행 데이터 목록 (키: {@link ExcelColumn#getDataIndex()})
      */
-    List<Map<String, Object>> parseExcel(MultipartFile file, List<ExcelColumn> columns) throws Exception;
+    List<Map<String, Object>> parseExcel(MultipartFile file, List<ExcelColumn> columns);
 }

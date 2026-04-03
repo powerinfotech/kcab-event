@@ -23,7 +23,7 @@ public interface AuthMenuManagementDao {
      *
      * @param authNm 권한명 검색어 ({@code null}이면 전체)
      */
-    List<AuthMenuMgtAuthListDto> selectAuthListWithGroup(@Param("authNm") String authNm) throws Exception;
+    List<AuthMenuMgtAuthListDto> selectAuthListWithGroup(@Param("authNm") String authNm);
 
     /**
      * 권한에 할당된 메뉴-버튼 목록을 재귀 CTE로 계층 전개하여 조회한다.
@@ -34,11 +34,11 @@ public interface AuthMenuManagementDao {
     List<AuthMenuBtnListDto> selectAuthMenuBtnList(
             @Param("authGrpSeq") Integer authGrpSeq,
             @Param("authSeq") Integer authSeq
-    ) throws Exception;
+    );
 
     /** 권한-메뉴-버튼 매핑을 등록한다. */
-    void insertAuthMenuBtn(AuthMenuBtn authMenuBtn) throws Exception;
+    void insertAuthMenuBtn(AuthMenuBtn authMenuBtn);
 
     /** 권한-메뉴-버튼 매핑을 수정한다. */
-    void updateAuthMenuBtn(AuthMenuBtn authMenuBtn) throws Exception;
+    void updateAuthMenuBtn(AuthMenuBtn authMenuBtn);
 }

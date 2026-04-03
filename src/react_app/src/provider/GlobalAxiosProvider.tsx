@@ -107,6 +107,7 @@ const GlobalAxiosProvider = (props: GlobalAxiosInterceptorProps) => {
         return () => {
             axios.interceptors.request.eject(regInterceptors);
             axios.interceptors.response.eject(resInterceptors);
+            loading.clear();
         };
     }, []);
 

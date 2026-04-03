@@ -49,7 +49,7 @@ public class LoginServiceImpl extends EgovAbstractServiceImpl implements LoginSe
     }
 
     @Override
-    public void login(LoginRequestDto loginRequestDto, HttpServletRequest request) throws Exception {
+    public void login(LoginRequestDto loginRequestDto, HttpServletRequest request) {
         User user = userDao.selectUser(loginRequestDto.getUserId());
 
         if (user == null) {
@@ -83,7 +83,7 @@ public class LoginServiceImpl extends EgovAbstractServiceImpl implements LoginSe
     }
 
     @Override
-    public void logout() throws Exception {
+    public void logout() {
         httpSession.invalidate();
     }
 

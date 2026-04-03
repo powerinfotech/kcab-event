@@ -37,7 +37,7 @@ import java.util.*;
 public class ExcelServiceImpl implements ExcelService {
 
     @Override
-    public byte[] generateExcel(List<ExcelColumn> columns, List<Map<String, Object>> dataList) throws Exception {
+    public byte[] generateExcel(List<ExcelColumn> columns, List<Map<String, Object>> dataList) {
         try (XSSFWorkbook workbook = new XSSFWorkbook()) {
             Sheet sheet = workbook.createSheet("Sheet1");
 
@@ -91,11 +91,13 @@ public class ExcelServiceImpl implements ExcelService {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             workbook.write(out);
             return out.toByteArray();
+        } catch (java.io.IOException e) {
+            throw new RuntimeException("엑셀 파일 생성 실패", e);
         }
     }
 
     @Override
-    public List<Map<String, Object>> parseExcel(MultipartFile file, List<ExcelColumn> columns) throws Exception {
+    public List<Map<String, Object>> parseExcel(MultipartFile file, List<ExcelColumn> columns) {
         List<Map<String, Object>> result = new ArrayList<>();
 
         try (Workbook workbook = WorkbookFactory.create(file.getInputStream())) {
@@ -112,6 +114,8 @@ public class ExcelServiceImpl implements ExcelService {
                 }
                 result.add(rowData);
             }
+        } catch (java.io.IOException e) {
+            throw new RuntimeException("엑셀 파일 파싱 실패", e);
         }
 
         return result;

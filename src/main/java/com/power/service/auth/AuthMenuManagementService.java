@@ -20,7 +20,7 @@ public interface AuthMenuManagementService {
      *
      * @param authNm 권한명 검색어 ({@code null}이면 전체)
      */
-    List<AuthMenuMgtAuthListDto> selectAuthListWithGroup(String authNm) throws Exception;
+    List<AuthMenuMgtAuthListDto> selectAuthListWithGroup(String authNm);
 
     /**
      * 권한에 할당된 메뉴-버튼 목록을 조회한다.
@@ -28,7 +28,7 @@ public interface AuthMenuManagementService {
      * @param authGrpSeq 권한 그룹 순번
      * @param authSeq    권한 순번
      */
-    List<AuthMenuBtnListDto> selectAuthMenuBtnList(Integer authGrpSeq, Integer authSeq) throws Exception;
+    List<AuthMenuBtnListDto> selectAuthMenuBtnList(Integer authGrpSeq, Integer authSeq);
 
     /**
      * 권한-메뉴-버튼 허용 목록을 저장한다 (트랜잭션).
@@ -39,5 +39,5 @@ public interface AuthMenuManagementService {
      * @param saveList   변경 항목 목록 (I/U만 처리, D는 지원하지 않음)
      */
     void save(LoginUser loginUser, Integer authGrpSeq, Integer authSeq,
-              List<AuthMenuBtnSaveItemDto> saveList) throws Exception;
+              List<AuthMenuBtnSaveItemDto> saveList);
 }

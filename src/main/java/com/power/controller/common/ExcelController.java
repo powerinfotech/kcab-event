@@ -27,7 +27,7 @@ public class ExcelController {
     private final ObjectMapper objectMapper;
 
     @PostMapping("/download")
-    public ResponseEntity<byte[]> downloadExcel(@RequestBody ExcelDownloadRequest request) throws Exception {
+    public ResponseEntity<byte[]> downloadExcel(@RequestBody ExcelDownloadRequest request) {
         byte[] excelData = excelService.generateExcel(request.getColumns(), request.getDataList());
 
         String fileName = request.getFileName() != null ? request.getFileName() : "export";
@@ -42,7 +42,7 @@ public class ExcelController {
     @PostMapping("/upload")
     public ApiResponse<List<Map<String, Object>>> uploadExcel(
             @RequestPart("file") MultipartFile file,
-            @RequestParam("columns") String columnsJson) throws Exception {
+            @RequestParam("columns") String columnsJson) throws com.fasterxml.jackson.core.JsonProcessingException {
 
         List<ExcelColumn> columns = objectMapper.readValue(columnsJson, new TypeReference<List<ExcelColumn>>() {});
         List<Map<String, Object>> result = excelService.parseExcel(file, columns);

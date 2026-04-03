@@ -39,7 +39,7 @@ public class FindUserServiceImpl implements FindUserService {
     }
 
     @Override
-    public void changePassword(UserChangePasswordDto userChangePasswordDto) throws Exception {
+    public void changePassword(UserChangePasswordDto userChangePasswordDto) {
         User user = userDao.selectUser(userChangePasswordDto.getUserId());
         user.setPasswordSetFlag(true);
         user.setPassword(CryptoUtil.encodePassword(userChangePasswordDto.getPassword()));

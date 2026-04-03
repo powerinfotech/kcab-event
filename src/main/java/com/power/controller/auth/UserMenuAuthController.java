@@ -24,14 +24,14 @@ public class UserMenuAuthController {
     @GetMapping("/auth-list")
     public ApiResponse<List<AuthMenuMgtAuthListDto>> selectUserAuthList(
             @PowerSession LoginUser loginUser,
-            @RequestParam("userId") String userId) throws Exception {
+            @RequestParam("userId") String userId) {
         return ApiResponse.ok(userMenuAuthService.selectUserAuthList(userId));
     }
 
     @GetMapping("/all-menu-btn-list")
     public ApiResponse<List<AuthMenuBtnListDto>> selectUserAllAuthMenuBtnList(
             @PowerSession LoginUser loginUser,
-            @RequestParam("userId") String userId) throws Exception {
+            @RequestParam("userId") String userId) {
         return ApiResponse.ok(userMenuAuthService.selectUserAllAuthMenuBtnList(userId));
     }
 }

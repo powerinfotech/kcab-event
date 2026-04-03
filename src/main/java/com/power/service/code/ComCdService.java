@@ -20,12 +20,12 @@ public interface ComCdService {
      *
      * @param comGrpCdSeq 코드 그룹 순번
      */
-    List<ComCdListDto> selectComCdList(Long comGrpCdSeq) throws Exception;
+    List<ComCdListDto> selectComCdList(Long comGrpCdSeq);
     /**
      * 공통 코드를 일괄 저장한다 (트랜잭션).
      *
      * @param saveDto   변경 목록이 담긴 저장 DTO
      * @param loginUser 현재 로그인 사용자 (등록자·수정자 설정에 사용)
      */
-    void saveComCd(@Valid ComCdSaveDto saveDto, LoginUser loginUser) throws Exception;
+    void saveComCd(@Valid ComCdSaveDto saveDto, LoginUser loginUser);
 }

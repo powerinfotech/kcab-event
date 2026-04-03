@@ -32,7 +32,7 @@ public class ConvenienceLoginServiceImpl extends EgovAbstractServiceImpl impleme
 
 
     @Override
-    public void login(String userId) throws Exception {
+    public void login(String userId) {
         LoginUser loginUser = LoginUser.convert(userDao.selectUser(userId));
         if(loginUser == null) {
             throw new BusinessException("사용자정보가 존재하지 않습니다.");

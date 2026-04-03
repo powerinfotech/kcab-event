@@ -21,10 +21,10 @@ public interface LoginService {
      * @param request   클라이언트 IP·User-Agent 수집용 HTTP 요청
      * @throws com.power.exception.custom.BusinessException 사용자가 없거나 비밀번호 불일치 시
      */
-    void login(LoginRequestDto loginInfo, HttpServletRequest request) throws Exception;
+    void login(LoginRequestDto loginInfo, HttpServletRequest request);
 
     /**
      * 현재 세션을 무효화(로그아웃)한다.
      */
-    void logout() throws Exception;
+    void logout();
 }

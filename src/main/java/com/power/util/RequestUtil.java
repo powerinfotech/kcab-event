@@ -39,30 +39,23 @@ public class RequestUtil {
      * @param request 현재 HTTP 요청
      * @return 클라이언트 IP 문자열 (예: {@code "192.168.1.1"})
      */
+    private static final String[] IP_HEADERS = {
+            "X-Forwarded-For", "Proxy-Client-IP", "WL-Proxy-Client-IP",
+            "HTTP_X_FORWARDED_FOR", "X-Real-IP", "X-RealIP", "REMOTE_ADDR"
+    };
+
     public static String getClientIp(HttpServletRequest request) {
-        String clientIp = request.getHeader("X-Forwarded-For");
-        if (clientIp == null || clientIp.isEmpty() || "unknown".equalsIgnoreCase(clientIp)) {
-            clientIp = request.getHeader("Proxy-Client-IP");
+        for (String header : IP_HEADERS) {
+            String clientIp = request.getHeader(header);
+            if (clientIp != null && !clientIp.isEmpty() && !"unknown".equalsIgnoreCase(clientIp)) {
+                // X-Forwarded-For는 "client, proxy1, proxy2" 형식이므로 첫 번째 IP를 추출
+                if (clientIp.contains(",")) {
+                    clientIp = clientIp.split(",")[0].trim();
+                }
+                return clientIp;
+            }
         }
-        if (clientIp == null || clientIp.isEmpty() || "unknown".equalsIgnoreCase(clientIp)) {
-            clientIp = request.getHeader("WL-Proxy-Client-IP");
-        }
-        if (clientIp == null || clientIp.isEmpty() || "unknown".equalsIgnoreCase(clientIp)) {
-            clientIp = request.getHeader("HTTP_X_FORWARDED_FOR");
-        }
-        if (clientIp  == null || clientIp.isEmpty() || "unknown".equalsIgnoreCase(clientIp )) {
-            clientIp  = request.getHeader("X-Real-IP");
-        }
-        if (clientIp  == null || clientIp.isEmpty() || "unknown".equalsIgnoreCase(clientIp )) {
-            clientIp  = request.getHeader("X-RealIP");
-        }
-        if (clientIp  == null || clientIp.isEmpty() || "unknown".equalsIgnoreCase(clientIp )) {
-            clientIp  = request.getHeader("REMOTE_ADDR");
-        }
-        if (clientIp == null || clientIp.isEmpty() || "unknown".equalsIgnoreCase(clientIp)) {
-            clientIp = request.getRemoteAddr();
-        }
-        return clientIp;
+        return request.getRemoteAddr();
     }
 
     /**

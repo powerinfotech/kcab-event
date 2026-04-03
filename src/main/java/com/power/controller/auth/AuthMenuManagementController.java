@@ -23,7 +23,7 @@ public class AuthMenuManagementController {
     @GetMapping("/auth-list")
     public ApiResponse<List<AuthMenuMgtAuthListDto>> selectAuthList(
             @PowerSession LoginUser loginUser,
-            @RequestParam(value = "authNm", required = false) String authNm) throws Exception {
+            @RequestParam(value = "authNm", required = false) String authNm) {
         return ApiResponse.ok(authMenuManagementService.selectAuthListWithGroup(authNm));
     }
 
@@ -31,14 +31,14 @@ public class AuthMenuManagementController {
     public ApiResponse<List<AuthMenuBtnListDto>> selectAuthMenuBtnList(
             @PowerSession LoginUser loginUser,
             @RequestParam("authGrpSeq") Integer authGrpSeq,
-            @RequestParam("authSeq") Integer authSeq) throws Exception {
+            @RequestParam("authSeq") Integer authSeq) {
         return ApiResponse.ok(authMenuManagementService.selectAuthMenuBtnList(authGrpSeq, authSeq));
     }
 
     @PostMapping("/save")
     public ApiResponse<Void> save(
             @PowerSession LoginUser loginUser,
-            @RequestBody @Valid AuthMenuBtnSaveParamDto param) throws Exception {
+            @RequestBody @Valid AuthMenuBtnSaveParamDto param) {
         authMenuManagementService.save(loginUser, param.getAuthGrpSeq(), param.getAuthSeq(), param.getSaveList());
         return ApiResponse.ok();
     }

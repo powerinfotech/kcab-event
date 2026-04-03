@@ -17,5 +17,5 @@ public interface UserService {
      * @param userId 로그인 아이디
      * @return 사용자 엔티티, 없으면 {@code null}
      */
-    User selectUserInfo(String userId) throws Exception;
+    User selectUserInfo(String userId);
 }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
@@ -42,7 +43,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  * // 3. src/main/resources/lucy-xss-servlet-filter-rule.xml 규칙 파일 작성
  * </pre>
  */
-// @Configuration  ← XSS 방어 적용 시 주석 해제
+@Configuration
 @Slf4j
 @RequiredArgsConstructor
 public class XSSConfig implements WebMvcConfigurer {

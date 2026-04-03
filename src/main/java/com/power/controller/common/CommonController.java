@@ -30,19 +30,19 @@ public class CommonController {
 
 
     @GetMapping("/login-info")
-    public ApiResponse<LoginUser> loginInfo(@PowerSession LoginUser loginUser) throws Exception {
+    public ApiResponse<LoginUser> loginInfo(@PowerSession LoginUser loginUser) {
         if (loginUser == null)
             return ApiResponse.ok(null);
         return ApiResponse.ok(resolveLoginInfoResponse(loginUser));
     }
 
-    private LoginUser resolveLoginInfoResponse(LoginUser loginUser) throws Exception {
+    private LoginUser resolveLoginInfoResponse(LoginUser loginUser) {
         User user = userManagementService.selectUserInfo(loginUser.getUserId());
         return user != null ? LoginUser.convert(user) : null;
     }
 
     @GetMapping("/menu-info")
-    public ApiResponse<List<MenuListDto>> menuInfo(@PowerSession LoginUser loginUser) throws Exception {
+    public ApiResponse<List<MenuListDto>> menuInfo(@PowerSession LoginUser loginUser) {
         if(loginUser ==null)
             return ApiResponse.ok(null);
         String userId = loginUser.getUserId();
@@ -51,14 +51,14 @@ public class CommonController {
     }
 
     @GetMapping("/user-list")
-    public ApiResponse<List<UserListDto>> userList(@PowerSession LoginUser loginUser, UserListSearchDto userListSearchDto) throws Exception {
+    public ApiResponse<List<UserListDto>> userList(@PowerSession LoginUser loginUser, UserListSearchDto userListSearchDto) {
         if(loginUser ==null)
             return ApiResponse.ok(null);
         return ApiResponse.ok(userManagementService.selectUserList(userListSearchDto));
     }
 
     @GetMapping("/menu-btn-list")
-    public ApiResponse<List<MenuBtnDetailDto>> menuBtnList(@PowerSession LoginUser loginUser, @RequestParam("menuSeq") Long menuSeq) throws Exception {
+    public ApiResponse<List<MenuBtnDetailDto>> menuBtnList(@PowerSession LoginUser loginUser, @RequestParam("menuSeq") Long menuSeq) {
         if(loginUser == null)
             return ApiResponse.ok(null);
         String userId = loginUser.getUserId();

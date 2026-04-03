@@ -139,7 +139,13 @@ public class GlobalExceptionResolver {
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ErrorDefaultResponse handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
-        return ErrorDefaultResponse.of(ErrorCode.INVALID_PARAMETER_ERROR);
+        String message = e.getBindingResult().getFieldErrors().stream()
+                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                .collect(java.util.stream.Collectors.joining(", "));
+        if (message.isBlank()) {
+            return ErrorDefaultResponse.of(ErrorCode.INVALID_PARAMETER_ERROR);
+        }
+        return ErrorDefaultResponse.of(ErrorCode.INVALID_PARAMETER_ERROR, message);
     }
 
     /**

@@ -23,7 +23,7 @@ public interface FileService {
      *
      * @param fileSeq 파일 그룹 순번
      */
-    List<FileDetailDto> getFileList(Integer fileSeq) throws Exception;
+    List<FileDetailDto> getFileList(Integer fileSeq);
     /**
      * 파일을 서버에 저장하고 DB에 등록한다.
      *
@@ -32,14 +32,14 @@ public interface FileService {
      * @param insertFiles            업로드된 멀티파트 파일 목록
      * @return 생성된 파일 그룹 순번 ({@code fileSeq})
      */
-    Integer addFile(LoginUser loginUser, String insertFileMetaListJson, List<MultipartFile> insertFiles) throws Exception;
+    Integer addFile(LoginUser loginUser, String insertFileMetaListJson, List<MultipartFile> insertFiles);
     /**
      * 파일 상세 정보를 수정한다 (삭제 여부, 정렬 순서 등).
      *
      * @param loginUser          현재 로그인 사용자
      * @param updateFileListJson 수정할 파일 목록 JSON 문자열
      */
-    void updateFile(LoginUser loginUser, String updateFileListJson) throws Exception;
+    void updateFile(LoginUser loginUser, String updateFileListJson);
     /**
      * 파일을 다운로드한다.
      * 경로 탈출({@code ..}) 시도는 400 Bad Request로 거부한다.
@@ -47,19 +47,19 @@ public interface FileService {
      * @param filePath 서버 저장 경로 (DB의 {@code file_path} 값)
      * @return 파일 다운로드 ResponseEntity
      */
-    ResponseEntity<Resource> downloadFile(String filePath) throws Exception;
+    ResponseEntity<Resource> downloadFile(String filePath);
     /**
      * 지정한 파일 목록을 논리 삭제한다 (파일 서버에서 실제 삭제하지 않음).
      *
      * @param loginUser          현재 로그인 사용자
      * @param deleteFileListJson 삭제할 파일 목록 JSON 문자열
      */
-    void deleteFile(LoginUser loginUser, String deleteFileListJson) throws Exception;
+    void deleteFile(LoginUser loginUser, String deleteFileListJson);
     /**
      * 파일 그룹 전체를 논리 삭제한다.
      *
      * @param loginUser 현재 로그인 사용자
      * @param fileSeq   파일 그룹 순번
      */
-    void deleteAllFile(LoginUser loginUser, Integer fileSeq) throws Exception;
+    void deleteAllFile(LoginUser loginUser, Integer fileSeq);
 }

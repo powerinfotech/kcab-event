@@ -33,5 +33,5 @@ public interface FindUserService {
      *
      * @param user 비밀번호 변경 요청 DTO (BCrypt 해시화 후 DB 저장)
      */
-    void changePassword(UserChangePasswordDto user) throws Exception;
+    void changePassword(UserChangePasswordDto user);
 }

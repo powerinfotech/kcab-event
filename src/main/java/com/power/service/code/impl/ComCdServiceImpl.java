@@ -28,13 +28,13 @@ public class ComCdServiceImpl extends EgovAbstractServiceImpl implements ComCdSe
     private ComCdDao comCdDao;
 
     @Override
-    public List<ComCdListDto> selectComCdList(Long comGrpCdSeq) throws Exception {
+    public List<ComCdListDto> selectComCdList(Long comGrpCdSeq) {
         return comCdDao.selectComCdList(comGrpCdSeq);
     }
 
     @Override
     @Transactional("transactionManager")
-    public void saveComCd(@Valid ComCdSaveDto saveDto, LoginUser loginUser) throws Exception {
+    public void saveComCd(@Valid ComCdSaveDto saveDto, LoginUser loginUser) {
         if (saveDto.getComCdList() == null) return;
 
         String comGrpCd = saveDto.getComGrpCd();

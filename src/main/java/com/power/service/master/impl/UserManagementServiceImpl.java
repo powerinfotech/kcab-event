@@ -28,23 +28,23 @@ public class UserManagementServiceImpl extends EgovAbstractServiceImpl implement
     private UserDao userDao;
 
     @Override
-    public User selectUserInfo(String userId) throws Exception {
+    public User selectUserInfo(String userId) {
 
          return userDao.selectUser(userId);
     }
 
     @Override
-    public List<UserListDto> selectUserList(UserListSearchDto param) throws Exception {
+    public List<UserListDto> selectUserList(UserListSearchDto param) {
         return userDao.selectUserList(param);
     }
 
     @Override
-    public List<UserComboListDto> selectUserComboList(String searchText) throws Exception {
+    public List<UserComboListDto> selectUserComboList(String searchText) {
         return userDao.selectUserComboList(searchText);
     }
 
     @Override
-    public void saveUser(UserSaveDto user, LoginUser loginUser) throws Exception {
+    public void saveUser(UserSaveDto user, LoginUser loginUser) {
 
 
         if(user.getIudType() == IudType.I) {
@@ -66,12 +66,12 @@ public class UserManagementServiceImpl extends EgovAbstractServiceImpl implement
     }
 
     @Override
-    public void deleteUser(User user, LoginUser loginUser) throws Exception {
+    public void deleteUser(User user, LoginUser loginUser) {
         userDao.deleteUser(user);
     }
 
     @Override
-    public void changePassword(UserChangePasswordDto userChangePasswordDto, LoginUser LoginUser) throws Exception {
+    public void changePassword(UserChangePasswordDto userChangePasswordDto, LoginUser LoginUser) {
         userDao.updatePassword(UserChangePasswordDto.from(userChangePasswordDto, LoginUser));
     }
 }

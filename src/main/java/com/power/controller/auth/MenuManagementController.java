@@ -24,31 +24,31 @@ public class MenuManagementController {
 
     @Parameter(name = "loginUser", hidden = true)
     @GetMapping("/menu-list")
-    public ApiResponse<List<MenuListDto>> selectMenuList(@PowerSession LoginUser loginUser) throws Exception {
+    public ApiResponse<List<MenuListDto>> selectMenuList(@PowerSession LoginUser loginUser) {
         String userId = loginUser.getUserId();
         return ApiResponse.ok(menuManagementService.selectMenuInfo(userId));
     }
 
     @GetMapping("/btn-list")
-    public ApiResponse<List<Btn>> selectBtnList() throws Exception {
+    public ApiResponse<List<Btn>> selectBtnList() {
         return ApiResponse.ok(menuManagementService.selectBtnList());
     }
 
     @GetMapping("/menu-btn-list")
-    public ApiResponse<List<MenuBtn>> selectMenuBtnList(@RequestParam("menuSeq") Long menuSeq) throws Exception {
+    public ApiResponse<List<MenuBtn>> selectMenuBtnList(@RequestParam("menuSeq") Long menuSeq) {
         return ApiResponse.ok(menuManagementService.selectMenuBtnList(menuSeq));
     }
 
     @Parameter(name = "loginUser", hidden = true)
     @PostMapping("/save")
-    public ApiResponse<Void> saveMenu(@PowerSession LoginUser loginUser, @RequestBody @Valid MenuSaveDto menuSaveDto) throws Exception {
+    public ApiResponse<Void> saveMenu(@PowerSession LoginUser loginUser, @RequestBody @Valid MenuSaveDto menuSaveDto) {
         menuManagementService.saveMenu(loginUser, menuSaveDto);
         return ApiResponse.ok();
     }
 
     @Parameter(name = "loginUser", hidden = true)
     @DeleteMapping("/delete/{menuSeq}")
-    public ApiResponse<Void> deleteMenu(@PathVariable("menuSeq") @NotNull Integer menuSeq) throws Exception {
+    public ApiResponse<Void> deleteMenu(@PathVariable("menuSeq") @NotNull Integer menuSeq) {
         menuManagementService.deleteMenu(menuSeq);
         return ApiResponse.ok();
     }

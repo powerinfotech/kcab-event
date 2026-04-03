@@ -1,6 +1,8 @@
 package com.power.util;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
@@ -28,6 +30,7 @@ import org.springframework.stereotype.Component;
  *   <li>발송 실패 시 {@link org.springframework.mail.MailException}이 전파된다.</li>
  * </ul>
  */
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class MailUtil {
@@ -43,12 +46,19 @@ public class MailUtil {
      * @throws org.springframework.mail.MailException SMTP 발송 실패 시
      */
     public void sendEmail(String to, String subject, String body) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(to);
-        message.setSubject(subject);
-        message.setText(body);
-
-        mailSender.send(message);
+        if (to == null || to.isBlank()) {
+            throw new IllegalArgumentException("수신자 이메일 주소는 필수입니다.");
+        }
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(to);
+            message.setSubject(subject);
+            message.setText(body);
+            mailSender.send(message);
+        } catch (MailException e) {
+            log.error("[MailUtil] 이메일 발송 실패 - 수신자: {}, 제목: {}", to, subject, e);
+            throw e;
+        }
     }
 
 }

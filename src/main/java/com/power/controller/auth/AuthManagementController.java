@@ -23,33 +23,33 @@ public class AuthManagementController {
     private AuthManagementService authManagementService;
 
     @GetMapping("/auth-grp-list")
-    public ApiResponse<List<AuthGrpListDto>> selectAuthGrpList(@PowerSession LoginUser loginUser) throws Exception {
+    public ApiResponse<List<AuthGrpListDto>> selectAuthGrpList(@PowerSession LoginUser loginUser) {
         return ApiResponse.ok(authManagementService.selectAuthGrpList());
     }
 
     @GetMapping("/auth-list")
     public ApiResponse<List<AuthListDto>> selectAuthList(@PowerSession LoginUser loginUser,
-                                                         @RequestParam Integer authGrpSeq) throws Exception {
+                                                         @RequestParam Integer authGrpSeq) {
         return ApiResponse.ok(authManagementService.selectAuthList(authGrpSeq));
     }
 
     @GetMapping("/auth-user-list")
     public ApiResponse<List<AuthUserListDto>> selectAuthUserList(@PowerSession LoginUser loginUser,
                                                                   @RequestParam Integer authGrpSeq,
-                                                                  @RequestParam Integer authSeq) throws Exception {
+                                                                  @RequestParam Integer authSeq) {
         return ApiResponse.ok(authManagementService.selectAuthUserList(authGrpSeq, authSeq));
     }
 
     @GetMapping("/user-search")
     public ApiResponse<List<UserSearchDto>> selectUserSearchList(@PowerSession LoginUser loginUser,
                                                                   @RequestParam(required = false) String searchText,
-                                                                  @RequestParam(required = false, defaultValue = "true") Boolean excludeUnused) throws Exception {
+                                                                  @RequestParam(required = false, defaultValue = "true") Boolean excludeUnused) {
         return ApiResponse.ok(authManagementService.selectUserSearchList(searchText, excludeUnused));
     }
 
     @PostMapping("/save")
     public ApiResponse<Void> saveAuthManagement(@PowerSession LoginUser loginUser,
-                                                 @RequestBody @Valid AuthManagementSaveDto saveDto) throws Exception {
+                                                 @RequestBody @Valid AuthManagementSaveDto saveDto) {
         authManagementService.saveAuthManagement(saveDto, loginUser);
         return ApiResponse.ok();
     }

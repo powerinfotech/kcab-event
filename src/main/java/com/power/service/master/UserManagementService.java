@@ -20,19 +20,19 @@ public interface UserManagementService {
      *
      * @param userId 로그인 아이디
      */
-    User selectUserInfo(String userId) throws Exception;
+    User selectUserInfo(String userId);
     /**
      * 검색 조건에 맞는 사용자 목록을 조회한다.
      *
      * @param param 검색 조건 DTO
      */
-    List<UserListDto> selectUserList(UserListSearchDto param) throws Exception;
+    List<UserListDto> selectUserList(UserListSearchDto param);
     /**
      * 콤보박스용 사용자 목록을 조회한다.
      *
      * @param searchText 아이디·이름 검색어
      */
-    List<UserComboListDto> selectUserComboList(String searchText) throws Exception;
+    List<UserComboListDto> selectUserComboList(String searchText);
     /**
      * 사용자를 등록({@code I}) 또는 수정({@code U})한다.
      * 등록 시 아이디 중복 여부와 비밀번호 입력 여부를 검증한다.
@@ -40,19 +40,19 @@ public interface UserManagementService {
      * @param user      저장 요청 DTO
      * @param LoginUser 현재 로그인 사용자 (등록자·수정자 설정에 사용)
      */
-    void saveUser(UserSaveDto user, LoginUser LoginUser) throws Exception;
+    void saveUser(UserSaveDto user, LoginUser LoginUser);
     /**
      * 사용자를 삭제한다.
      *
      * @param user      삭제할 사용자 정보
      * @param LoginUser 현재 로그인 사용자
      */
-    void deleteUser(User user, LoginUser LoginUser) throws Exception;
+    void deleteUser(User user, LoginUser LoginUser);
     /**
      * 비밀번호를 변경한다.
      *
      * @param user      비밀번호 변경 요청 DTO
      * @param LoginUser 현재 로그인 사용자 (수정자 설정에 사용)
      */
-    void changePassword(UserChangePasswordDto user, LoginUser LoginUser) throws Exception;
+    void changePassword(UserChangePasswordDto user, LoginUser LoginUser);
 }

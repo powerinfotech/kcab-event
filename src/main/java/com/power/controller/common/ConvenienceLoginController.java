@@ -15,7 +15,7 @@ public class ConvenienceLoginController {
 
 
     @RequestMapping("/secure-login")
-    public String convenienceLogin(@RequestParam("LX_USER") String id) throws Exception {
+    public String convenienceLogin(@RequestParam("LX_USER") String id) {
         convenienceLoginService.login(id);
         return "redirect:/";
     }

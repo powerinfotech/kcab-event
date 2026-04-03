@@ -54,18 +54,23 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public List<FileDetailDto> getFileList(Integer fileSeq) throws Exception{
+    public List<FileDetailDto> getFileList(Integer fileSeq){
         return fileDao.selectFile(fileSeq);
     }
 
     @Override
-    public Integer addFile(LoginUser loginUser, String insertFileMetaListJson, List<MultipartFile> insertFiles) throws Exception {
+    public Integer addFile(LoginUser loginUser, String insertFileMetaListJson, List<MultipartFile> insertFiles) {
         if(insertFiles == null) return null;
 
-        List<FileDetailDto> insertFileMetaList = objectMapper.readValue(
-                insertFileMetaListJson,
-                new TypeReference<List<FileDetailDto>>() {}
-        );
+        List<FileDetailDto> insertFileMetaList;
+        try {
+            insertFileMetaList = objectMapper.readValue(
+                    insertFileMetaListJson,
+                    new TypeReference<List<FileDetailDto>>() {}
+            );
+        } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+            throw new RuntimeException("파일 메타 JSON 파싱 실패", e);
+        }
 
         List<FileDetailDto> insertFileDtlList = new ArrayList<>();
 
@@ -138,10 +143,15 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public void updateFile(LoginUser loginUser, String updateFileListJson) throws Exception{
+    public void updateFile(LoginUser loginUser, String updateFileListJson){
         if (updateFileListJson == null) return;
 
-        List<FileDetailDto> updateFileList = objectMapper.readValue(updateFileListJson, new TypeReference<List<FileDetailDto>>() {});
+        List<FileDetailDto> updateFileList;
+        try {
+            updateFileList = objectMapper.readValue(updateFileListJson, new TypeReference<List<FileDetailDto>>() {});
+        } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+            throw new RuntimeException("파일 메타 JSON 파싱 실패", e);
+        }
 
         for (FileDetailDto fileDto : updateFileList) {
             fileDto.setUptUserSeq(loginUser.getUserSeq());
@@ -151,7 +161,7 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public ResponseEntity<org.springframework.core.io.Resource> downloadFile(String filePath) throws Exception{
+    public ResponseEntity<org.springframework.core.io.Resource> downloadFile(String filePath){
         // 경로 탈출 방지
         if (filePath.contains("..")) {
             return ResponseEntity.badRequest().build();
@@ -164,7 +174,12 @@ public class FileServiceImpl implements FileService {
             return ResponseEntity.notFound().build();
         }
 
-        org.springframework.core.io.Resource resource = new UrlResource(file.toURI());
+        org.springframework.core.io.Resource resource;
+        try {
+            resource = new UrlResource(file.toURI());
+        } catch (java.net.MalformedURLException e) {
+            throw new RuntimeException("잘못된 파일 경로: " + filePath, e);
+        }
 
         String encodedFileName = URLEncoder.encode(file.getName(), StandardCharsets.UTF_8)
                 .replaceAll("\\+", "%20");
@@ -176,10 +191,15 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public void deleteFile(LoginUser loginUser, String deleteFileListJson) throws Exception{
+    public void deleteFile(LoginUser loginUser, String deleteFileListJson){
         if (deleteFileListJson == null) return;
 
-        List<FileDetailDto> deleteFileList = objectMapper.readValue(deleteFileListJson, new TypeReference<List<FileDetailDto>>() {});
+        List<FileDetailDto> deleteFileList;
+        try {
+            deleteFileList = objectMapper.readValue(deleteFileListJson, new TypeReference<List<FileDetailDto>>() {});
+        } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+            throw new RuntimeException("파일 메타 JSON 파싱 실패", e);
+        }
 
         for (FileDetailDto fileDto : deleteFileList) {
             File file = new File(uploadDir, fileDto.getFilePath());
@@ -195,7 +215,7 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public void deleteAllFile(LoginUser loginUser, Integer fileSeq) throws Exception{
+    public void deleteAllFile(LoginUser loginUser, Integer fileSeq){
         List<FileDetailDto> existFileList = fileDao.selectFile(fileSeq);
 
         if(existFileList.isEmpty()) return;

@@ -21,12 +21,12 @@ public interface ComGrpCdService {
      *
      * @param searchText 그룹명 검색어 ({@code null}이면 전체)
      */
-    List<ComGrpCdListDto> selectComGrpCdList(String searchText, String useYn) throws Exception;
+    List<ComGrpCdListDto> selectComGrpCdList(String searchText, String useYn);
     /**
      * 공통 코드 그룹을 일괄 저장한다 (트랜잭션).
      *
      * @param saveDto   변경 목록이 담긴 저장 DTO
      * @param loginUser 현재 로그인 사용자 (등록자·수정자 설정에 사용)
      */
-    void saveComGrpCd(@Valid ComGrpCdSaveDto saveDto, LoginUser loginUser) throws Exception;
+    void saveComGrpCd(@Valid ComGrpCdSaveDto saveDto, LoginUser loginUser);
 }

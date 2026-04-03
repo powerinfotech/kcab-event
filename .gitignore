@@ -27,6 +27,11 @@ bin/
 /node_module
 /target
 
+### Environment files ###
+src/react_app/.env.local
+src/react_app/.env.dev
+src/react_app/.env.prod
+
 ### Spring Boot static (빌드 시 copyFrontend로 생성됨) ###
 src/main/resources/static/
 

@@ -16,5 +16,5 @@ public interface ConvenienceLoginService {
      * @param userId 로그인 아이디
      * @throws com.power.exception.custom.BusinessException 사용자 정보가 없을 경우
      */
-    void login(String userId) throws Exception;
+    void login(String userId);
 }

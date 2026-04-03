@@ -26,37 +26,37 @@ public interface UserDao {
      * @param userId 로그인 아이디
      * @return 사용자 엔티티, 없으면 {@code null}
      */
-    User selectUser(@Param("userId") String userId) throws Exception;
+    User selectUser(@Param("userId") String userId);
     /**
      * 로그인 아이디·비밀번호 일치 여부를 확인한다.
      *
      * @param loginRequestDto 로그인 요청 DTO
      * @return 일치하면 양수, 불일치하면 0
      */
-    Integer selectUserLoginCheck(LoginRequestDto loginRequestDto) throws Exception;
+    Integer selectUserLoginCheck(LoginRequestDto loginRequestDto);
     /** 검색 조건에 맞는 사용자 목록을 조회한다. */
-    List<UserListDto> selectUserList(UserListSearchDto param) throws Exception;
+    List<UserListDto> selectUserList(UserListSearchDto param);
     /**
      * 콤보박스용 사용자 목록을 조회한다.
      *
      * @param searchText 아이디 또는 이름 검색어 ({@code null}이면 전체)
      */
-    List<UserComboListDto> selectUserComboList(@Param("searchText") String searchText) throws Exception;
+    List<UserComboListDto> selectUserComboList(@Param("searchText") String searchText);
     /**
      * 아이디 중복 여부를 확인한다.
      *
      * @param userId 검사할 로그인 아이디
      * @return 이미 존재하면 {@code true}
      */
-    Boolean selectUserIdValidation(@Param("userId") String userId) throws Exception;
+    Boolean selectUserIdValidation(@Param("userId") String userId);
     /** 사용자를 등록한다. */
-    void insertUser(User user) throws Exception;
+    void insertUser(User user);
     /** 사용자 정보를 수정한다. */
-    void updateUser(User user) throws Exception;
+    void updateUser(User user);
     /** 사용자를 삭제한다. */
-    void deleteUser(User user) throws Exception;
+    void deleteUser(User user);
     /** 비밀번호를 변경한다. */
-    void updatePassword(User user) throws Exception;
+    void updatePassword(User user);
     /** 최종 로그인 일시를 현재 시각으로 갱신한다. */
-    void updateLoginDateTime(@Param("userSeq") Long userSeq) throws Exception;
+    void updateLoginDateTime(@Param("userSeq") Long userSeq);
 }

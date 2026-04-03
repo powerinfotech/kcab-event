@@ -22,12 +22,12 @@ public interface UserMenuAuthDao {
      *
      * @param userId 로그인 아이디
      */
-    List<AuthMenuMgtAuthListDto> selectUserAuthList(@Param("userId") String userId) throws Exception;
+    List<AuthMenuMgtAuthListDto> selectUserAuthList(@Param("userId") String userId);
 
     /**
      * 사용자의 모든 권한에서 허용된 메뉴-버튼 목록을 통합 조회한다.
      *
      * @param userId 로그인 아이디
      */
-    List<AuthMenuBtnListDto> selectUserAllAuthMenuBtnList(@Param("userId") String userId) throws Exception;
+    List<AuthMenuBtnListDto> selectUserAllAuthMenuBtnList(@Param("userId") String userId);
 }

@@ -24,12 +24,12 @@ public class UserMenuAuthServiceImpl extends EgovAbstractServiceImpl implements 
     private UserMenuAuthDao userMenuAuthDao;
 
     @Override
-    public List<AuthMenuMgtAuthListDto> selectUserAuthList(String userId) throws Exception {
+    public List<AuthMenuMgtAuthListDto> selectUserAuthList(String userId) {
         return userMenuAuthDao.selectUserAuthList(userId);
     }
 
     @Override
-    public List<AuthMenuBtnListDto> selectUserAllAuthMenuBtnList(String userId) throws Exception {
+    public List<AuthMenuBtnListDto> selectUserAllAuthMenuBtnList(String userId) {
         return userMenuAuthDao.selectUserAllAuthMenuBtnList(userId);
     }
 }

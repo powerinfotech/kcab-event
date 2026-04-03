@@ -28,13 +28,13 @@ public class ComGrpCdServiceImpl extends EgovAbstractServiceImpl implements ComG
     private ComGrpCdDao comGrpCdDao;
 
     @Override
-    public List<ComGrpCdListDto> selectComGrpCdList(String searchText, String useYn) throws Exception {
+    public List<ComGrpCdListDto> selectComGrpCdList(String searchText, String useYn) {
         return comGrpCdDao.selectComGrpCdList(searchText, useYn);
     }
 
     @Override
     @Transactional("transactionManager")
-    public void saveComGrpCd(@Valid ComGrpCdSaveDto saveDto, LoginUser loginUser) throws Exception {
+    public void saveComGrpCd(@Valid ComGrpCdSaveDto saveDto, LoginUser loginUser) {
         if (saveDto.getComGrpCdList() == null) return;
 
         for (ComGrpCdListDto item : saveDto.getComGrpCdList()) {

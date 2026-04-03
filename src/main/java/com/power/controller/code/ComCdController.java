@@ -22,14 +22,14 @@ public class ComCdController {
     @GetMapping("/list")
     public ApiResponse<List<ComCdListDto>> selectComCdList(
             @PowerSession LoginUser loginUser,
-            @RequestParam Long comGrpCdSeq) throws Exception {
+            @RequestParam Long comGrpCdSeq) {
         return ApiResponse.ok(comCdService.selectComCdList(comGrpCdSeq));
     }
 
     @PostMapping("/save")
     public ApiResponse<Void> saveComCd(
             @PowerSession LoginUser loginUser,
-            @RequestBody @Valid ComCdSaveDto saveDto) throws Exception {
+            @RequestBody @Valid ComCdSaveDto saveDto) {
         comCdService.saveComCd(saveDto, loginUser);
         return ApiResponse.ok();
     }

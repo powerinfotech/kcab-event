@@ -3,7 +3,7 @@ const nextConfig = {
   reactStrictMode: true,
   ...(process.env.NODE_ENV === 'production' ? { output: 'export' } : {}),
   images: { unoptimized: true },
-  typescript: { ignoreBuildErrors: true },
+  typescript: { ignoreBuildErrors: true }, // TODO: TS 에러 수정 후 false로 변경 (현재 35건 이상의 에러 존재)
   sassOptions: { silenceDeprecations: ['import'] },
   ...(process.env.NODE_ENV === 'development' ? {
     async rewrites() {

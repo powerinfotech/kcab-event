@@ -22,24 +22,24 @@ public class UserManagementController {
     private UserManagementService userManagementService;
 
     @GetMapping("/user-list")
-    public ApiResponse<List<UserListDto>> selectUserList(UserListSearchDto searchParam) throws Exception {
+    public ApiResponse<List<UserListDto>> selectUserList(UserListSearchDto searchParam) {
         return ApiResponse.ok(userManagementService.selectUserList(searchParam));
     }
 
     @PostMapping("/save-user")
-    public ApiResponse<UserSaveDto> saveUser(@PowerSession LoginUser LoginUser, @RequestBody @Valid UserSaveDto userSaveDto) throws Exception {
+    public ApiResponse<UserSaveDto> saveUser(@PowerSession LoginUser LoginUser, @RequestBody @Valid UserSaveDto userSaveDto) {
         userManagementService.saveUser(userSaveDto, LoginUser);
         return ApiResponse.ok(userSaveDto);
     }
 
     @PostMapping("/delete-user")
-    public ApiResponse<Void> deleteUser(@PowerSession LoginUser LoginUser, @RequestBody User user) throws Exception {
+    public ApiResponse<Void> deleteUser(@PowerSession LoginUser LoginUser, @RequestBody User user) {
         userManagementService.deleteUser(user, LoginUser);
         return ApiResponse.ok();
     }
 
     @PostMapping("/change-password")
-    public ApiResponse<Void> changePassword(@PowerSession LoginUser LoginUser, @RequestBody @Valid UserChangePasswordDto userChangePasswordDto) throws Exception {
+    public ApiResponse<Void> changePassword(@PowerSession LoginUser LoginUser, @RequestBody @Valid UserChangePasswordDto userChangePasswordDto) {
         userManagementService.changePassword(userChangePasswordDto, LoginUser);
         return ApiResponse.ok();
     }

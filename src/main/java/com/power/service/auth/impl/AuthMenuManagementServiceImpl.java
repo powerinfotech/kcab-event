@@ -30,19 +30,19 @@ public class AuthMenuManagementServiceImpl extends EgovAbstractServiceImpl imple
     private AuthMenuManagementDao authMenuManagementDao;
 
     @Override
-    public List<AuthMenuMgtAuthListDto> selectAuthListWithGroup(String authNm) throws Exception {
+    public List<AuthMenuMgtAuthListDto> selectAuthListWithGroup(String authNm) {
         return authMenuManagementDao.selectAuthListWithGroup(authNm);
     }
 
     @Override
-    public List<AuthMenuBtnListDto> selectAuthMenuBtnList(Integer authGrpSeq, Integer authSeq) throws Exception {
+    public List<AuthMenuBtnListDto> selectAuthMenuBtnList(Integer authGrpSeq, Integer authSeq) {
         return authMenuManagementDao.selectAuthMenuBtnList(authGrpSeq, authSeq);
     }
 
     @Override
     @Transactional("transactionManager")
     public void save(LoginUser loginUser, Integer authGrpSeq, Integer authSeq,
-                     List<AuthMenuBtnSaveItemDto> saveList) throws Exception {
+                     List<AuthMenuBtnSaveItemDto> saveList) {
         if (saveList == null) return;
 
         for (AuthMenuBtnSaveItemDto item : saveList) {

@@ -4,6 +4,7 @@ import React from 'react';
 import { ConfigProvider, App } from 'antd';
 import locale from 'antd/locale/ko_KR';
 import GlobalAxiosProvider from '@provider/GlobalAxiosProvider';
+import ErrorBoundary from '@component/layout/ErrorBoundary';
 import CustomLoading from '@component/layout/CustomLoading';
 import GlobalModalProvider from '@provider/GlobalModalProvider';
 import GlobalConfirmProvider from '@provider/GlobalConfirmProvider';
@@ -23,13 +24,15 @@ export default function ClientProviders({ children }: { children: React.ReactNod
         }}>
       <App>
         <AntdAppBridge />
-        <GlobalAxiosProvider>
-          <CustomLoading />
-          <GlobalModalProvider />
-          <GlobalConfirmProvider />
-          <GlobalAlertProvider />
-          {children}
-        </GlobalAxiosProvider>
+        <ErrorBoundary>
+          <GlobalAxiosProvider>
+            <CustomLoading />
+            <GlobalModalProvider />
+            <GlobalConfirmProvider />
+            <GlobalAlertProvider />
+            {children}
+          </GlobalAxiosProvider>
+        </ErrorBoundary>
       </App>
     </ConfigProvider>
   );
