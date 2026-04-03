@@ -6,12 +6,15 @@ import IconLogout from '@icon/IconLogout';
 import IconAdmin from '@icon/IconAdmin';
 import { useAtomValue } from 'jotai';
 import { sessionInfoAtom } from '@atom/sessionInfoAtom';
+import { useMessage } from '@hook/useMessage';
 import TabBar from '../../app/_components/TabBar';
 
 export default function TopBar() {
   const sessionInfo = useAtomValue(sessionInfoAtom);
+  const { confirm } = useMessage();
 
   const logout = async () => {
+    if (!await confirm('로그아웃하시겠습니까?')) return;
     const data = await callLogout();
     if (data.code === HttpStatusCode.Ok) {
       sessionStorage.removeItem('tabList');

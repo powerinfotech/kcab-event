@@ -8,6 +8,7 @@ import LogoImage from '../assets/images/logo.png';
 import {MenuInfo} from '@interface/auth/MenuManagement';
 import { useAtomValue } from 'jotai';
 import {sessionInfoAtom} from '@atom/sessionInfoAtom';
+import {useMessage} from '@hook/useMessage';
 
 function ParentMenu({parentMenu}:{parentMenu:MenuInfo}) {
     return (
@@ -49,12 +50,14 @@ function Menu({menuInfo}: { menuInfo: MenuInfo[] }) {
 
 const Header = ({menuInfo}: { menuInfo: MenuInfo[] }) => {
     const sessionInfo = useAtomValue(sessionInfoAtom);
+    const {confirm} = useMessage();
     const [isMenuHovered, setIsMenuHovered] = useState(false);
 
     const handleMouseEnter = () => { setIsMenuHovered(true); };
     const handleMouseLeave = () => { setIsMenuHovered(false); };
 
     const logout = async () => {
+       if (!await confirm('로그아웃하시겠습니까?')) return;
        const data = await callLogout();
        if(data.code === HttpStatusCode.Ok) {
            sessionStorage.removeItem('tabList');
