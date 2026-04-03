@@ -6,6 +6,7 @@ import com.power.util.formatter.LocalDateFormatter;
 import com.power.util.formatter.LocalDateTimeFormatter;
 import com.power.util.formatter.LocalTimeFormatter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -63,6 +64,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     private final LoginUserArgumentResolver loginUserArgumentResolver;
 
+    @Value("${cors.allowed-origins:*}")
+    private String allowedOrigins;
+
     /**
      * SPA(Single Page Application) 클라이언트 라우팅 지원을 위한 View Controller 등록.
      *
@@ -87,7 +91,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")
-                .allowedOrigins("*")
+                .allowedOrigins(allowedOrigins.split(","))
                 .allowedHeaders("*")
                 .allowedMethods("OPTIONS", "GET", "POST", "PUT", "DELETE")
                 .maxAge(300);

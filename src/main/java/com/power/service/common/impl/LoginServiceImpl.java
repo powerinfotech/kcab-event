@@ -66,7 +66,7 @@ public class LoginServiceImpl extends EgovAbstractServiceImpl implements LoginSe
 
         try {
             userDao.updateLoginDateTime(loginUser.getUserSeq().longValue());
-        } catch (Exception e) {
+        } catch (org.springframework.dao.DataAccessException e) {
             log.warn("최종 로그인일시 갱신 실패(로그인은 정상 처리): {}", e.getMessage());
         }
 
@@ -77,7 +77,7 @@ public class LoginServiceImpl extends EgovAbstractServiceImpl implements LoginSe
                             .accessIp(RequestUtil.getClientIp(request))
                             .userAgent(RequestUtil.getUserAgent(request))
                             .build());
-        } catch (Exception e) {
+        } catch (org.springframework.dao.DataAccessException e) {
             log.warn("로그인 로그 저장 실패(로그인은 정상 처리): {}", e.getMessage());
         }
     }

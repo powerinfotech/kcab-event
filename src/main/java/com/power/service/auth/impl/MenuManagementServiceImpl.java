@@ -129,6 +129,7 @@ public class MenuManagementServiceImpl extends EgovAbstractServiceImpl implement
     }
 
     @Override
+    @Transactional("transactionManager")
     public void deleteMenu(Integer menuSeq) {
         menuDao.deleteMenu(menuSeq);
     }

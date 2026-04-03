@@ -41,12 +41,11 @@ const Login = () => {
                     });
                 }
 
-                getUserMenuInfo().then((res)=> {
-                    if(res.code === HttpStatusCode.Ok && res.item) {
-                        setMenuInfoRecoil(res.item);
-                        defaultMenu();
-                    }
-                });
+                const menuRes = await getUserMenuInfo();
+                if(menuRes.code === HttpStatusCode.Ok && menuRes.item) {
+                    setMenuInfoRecoil(menuRes.item);
+                    defaultMenu();
+                }
             }
         }
 
@@ -72,12 +71,11 @@ const Login = () => {
                     });
                 }
 
-                getUserMenuInfo().then((res)=> {
-                    if(res.code === HttpStatusCode.Ok && res.item) {
-                        setMenuInfoRecoil(res.item);
-                        defaultMenu();
-                    }
-                });
+                const menuRes = await getUserMenuInfo();
+                if(menuRes.code === HttpStatusCode.Ok && menuRes.item) {
+                    setMenuInfoRecoil(menuRes.item);
+                    defaultMenu();
+                }
             }
         }
 

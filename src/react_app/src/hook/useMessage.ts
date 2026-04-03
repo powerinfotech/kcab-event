@@ -58,11 +58,11 @@ export const useMessage = () => {
                 okText: okText ?? '확인',
                 cancelText: cancelText ?? '취소',
                 onClickOK: () => {
-                    setConfirmState({...confirmState, message: '', isOpen:false});
+                    setConfirmState(prev => ({...prev, message: '', isOpen: false}));
                     resolve(true);
                 },
                 onClickCancel: () => {
-                    setConfirmState({...confirmState,  message: '', isOpen:false});
+                    setConfirmState(prev => ({...prev, message: '', isOpen: false}));
                     resolve(false);
                 },
                 isOpen:true
@@ -83,7 +83,7 @@ export const useMessage = () => {
                 message: message ?? '',
                 okText: okText ?? '확인',
                 onClickOK: () => {
-                    setAlertState({...alertState, message: '', isOpen:false});
+                    setAlertState(prev => ({...prev, message: '', isOpen: false}));
                     resolve(true);
                 },
                 isOpen:true

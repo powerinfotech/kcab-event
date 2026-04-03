@@ -10,9 +10,13 @@ import {RcFile} from "antd/es/upload/interface";
 export const getViewCmCode = async (props:any) => {
     const viewCmCode: CommonCodeMap = {};
     for(const cmGroupCode of props.cmGroupCodeList) {
-        const {data} = await axios.get<CommonCodeMap>(`/api/common-code/${cmGroupCode}`);
-        viewCmCode[cmGroupCode] = data.item;
-
+        try {
+            const {data} = await axios.get<CommonCodeMap>(`/api/common-code/${cmGroupCode}`);
+            viewCmCode[cmGroupCode] = data.item;
+        } catch (e) {
+            console.error(`코드 조회 실패: ${cmGroupCode}`, e);
+            viewCmCode[cmGroupCode] = [];
+        }
     }
     return  viewCmCode;
 };

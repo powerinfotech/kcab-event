@@ -44,6 +44,14 @@ public class ExcelController {
             @RequestPart("file") MultipartFile file,
             @RequestParam("columns") String columnsJson) throws com.fasterxml.jackson.core.JsonProcessingException {
 
+        if (file.isEmpty()) {
+            throw new com.power.exception.custom.ValidationException("파일이 비어있습니다.");
+        }
+        String originalFilename = file.getOriginalFilename();
+        if (originalFilename == null || (!originalFilename.endsWith(".xlsx") && !originalFilename.endsWith(".xls"))) {
+            throw new com.power.exception.custom.ValidationException("엑셀 파일(.xlsx, .xls)만 업로드 가능합니다.");
+        }
+
         List<ExcelColumn> columns = objectMapper.readValue(columnsJson, new TypeReference<List<ExcelColumn>>() {});
         List<Map<String, Object>> result = excelService.parseExcel(file, columns);
         return ApiResponse.ok(result);

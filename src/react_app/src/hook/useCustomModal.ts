@@ -53,7 +53,7 @@ export const useCustomModal = () => {
     // 모달 상태에 따라 배경 딤 처리
     useEffect(() => {
         setShowDimmed(modal !== null);
-    }, []);
+    }, [modal]);
 
     return {openModal, closeModal, modal};
 };

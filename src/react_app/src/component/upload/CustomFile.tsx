@@ -201,6 +201,7 @@ const CustomFile = (props:CustomFilePropsType) => {
                 const isRemoved = newFile.status === 'removed';
 
                 if (isRemoved && fileData.iudType === IudType.I) {
+                    if (fileData.url?.startsWith('blob:')) URL.revokeObjectURL(fileData.url);
                     return null;
                 } else {
                     return {

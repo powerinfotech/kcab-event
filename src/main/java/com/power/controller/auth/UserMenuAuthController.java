@@ -6,6 +6,7 @@ import com.power.dto.auth.AuthMenuMgtAuthListDto;
 import com.power.dto.common.ApiResponse;
 import com.power.dto.common.LoginUser;
 import com.power.service.auth.UserMenuAuthService;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,14 +25,14 @@ public class UserMenuAuthController {
     @GetMapping("/auth-list")
     public ApiResponse<List<AuthMenuMgtAuthListDto>> selectUserAuthList(
             @PowerSession LoginUser loginUser,
-            @RequestParam("userId") String userId) {
+            @RequestParam("userId") @NotBlank String userId) {
         return ApiResponse.ok(userMenuAuthService.selectUserAuthList(userId));
     }
 
     @GetMapping("/all-menu-btn-list")
     public ApiResponse<List<AuthMenuBtnListDto>> selectUserAllAuthMenuBtnList(
             @PowerSession LoginUser loginUser,
-            @RequestParam("userId") String userId) {
+            @RequestParam("userId") @NotBlank String userId) {
         return ApiResponse.ok(userMenuAuthService.selectUserAllAuthMenuBtnList(userId));
     }
 }

@@ -73,8 +73,12 @@ const GlobalAxiosProvider = (props: GlobalAxiosInterceptorProps) => {
         }
 
         if (res.data.code === ErrorCode.INVALID_SESSION_ERROR) {
-            sessionStorage.removeItem('tabList');
-            sessionStorage.removeItem('activeTabKey');
+            try {
+                sessionStorage.removeItem('tabList');
+                sessionStorage.removeItem('activeTabKey');
+            } catch (e) {
+                // 프라이빗 브라우징 등에서 sessionStorage 접근 실패 가능
+            }
             location.replace('/');
         }
 
@@ -92,6 +96,7 @@ const GlobalAxiosProvider = (props: GlobalAxiosInterceptorProps) => {
 
     useEffect(() => {
         axios.defaults.withCredentials = true;
+        axios.defaults.timeout = 30000;
         axios.defaults.transitional = {
             clarifyTimeoutError: true,
             forcedJSONParsing: true,

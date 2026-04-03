@@ -35,7 +35,7 @@ public class MenuManagementController {
     }
 
     @GetMapping("/menu-btn-list")
-    public ApiResponse<List<MenuBtn>> selectMenuBtnList(@RequestParam("menuSeq") Long menuSeq) {
+    public ApiResponse<List<MenuBtn>> selectMenuBtnList(@RequestParam("menuSeq") @NotNull Long menuSeq) {
         return ApiResponse.ok(menuManagementService.selectMenuBtnList(menuSeq));
     }
 

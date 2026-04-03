@@ -110,7 +110,10 @@ public class FileServiceImpl implements FileService {
             /* tb_file_dtl 테이블에 insert하기 위한 dto 생성 */
             FileDetailDto insertFileDtl = new FileDetailDto();
 
-            insertFileDtl.setFileSeq(Objects.requireNonNull(fileMeta).getFileSeq());
+            if (fileMeta == null) {
+                throw new com.power.exception.custom.BusinessException("파일 메타데이터를 찾을 수 없습니다: " + originalFileName);
+            }
+            insertFileDtl.setFileSeq(fileMeta.getFileSeq());
             insertFileDtl.setMenuSeq(fileMeta.getMenuSeq());
             insertFileDtl.setFileNm(originalFileName);
             insertFileDtl.setFilePath(filePath);
@@ -162,13 +165,14 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public ResponseEntity<org.springframework.core.io.Resource> downloadFile(String filePath){
-        // 경로 탈출 방지
-        if (filePath.contains("..")) {
+        // 경로 탈출 방지: 정규화 후 uploadDir 하위인지 검증
+        Path uploadDirPath = Paths.get(uploadDir).toAbsolutePath().normalize();
+        Path normalizedPath = Paths.get(filePath).toAbsolutePath().normalize();
+        if (!normalizedPath.startsWith(uploadDirPath)) {
             return ResponseEntity.badRequest().build();
         }
 
-        Path fileDirPath = Paths.get(filePath).normalize();
-        File file = fileDirPath.toFile();
+        File file = normalizedPath.toFile();
 
         if (!file.exists()) {
             return ResponseEntity.notFound().build();
@@ -202,7 +206,7 @@ public class FileServiceImpl implements FileService {
         }
 
         for (FileDetailDto fileDto : deleteFileList) {
-            File file = new File(uploadDir, fileDto.getFilePath());
+            File file = new File(fileDto.getFilePath());
             if (file.exists()) {
                 //파일 서버에서 삭제하지 말고 남기도록 주석처리
                 file.delete();
@@ -221,7 +225,7 @@ public class FileServiceImpl implements FileService {
         if(existFileList.isEmpty()) return;
 
         for(FileDetailDto fileDto : existFileList){
-            File file = new File(uploadDir, fileDto.getFilePath());
+            File file = new File(fileDto.getFilePath());
             if (file.exists()) {
                 //파일 서버에서 삭제하지 말고 남기도록 주석처리
                 file.delete();

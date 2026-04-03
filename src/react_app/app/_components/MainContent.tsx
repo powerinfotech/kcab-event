@@ -261,15 +261,23 @@ function MultiTabContent({
     ensureTabForPath(currentPath);
   }, [menuInfo, ensureTabForPath]);
 
+  // currentPathAtom 변경 시 해당 탭 오픈 (pushPath 호출 시)
+  const currentPath = useAtomValue(currentPathAtom);
+  useEffect(() => {
+    if (currentPath && currentPath !== '/') {
+      ensureTabForPath(currentPath);
+    }
+  }, [currentPath, ensureTabForPath]);
+
   // 브라우저 뒤로/앞으로 버튼 처리
   useEffect(() => {
     const handlePopState = () => {
-      const currentPath = window.location.pathname;
-      if (currentPath === '/') {
+      const popPath = window.location.pathname;
+      if (popPath === '/') {
         setActiveTabKey(null);
         return;
       }
-      ensureTabForPath(currentPath);
+      ensureTabForPath(popPath);
     };
 
     window.addEventListener('popstate', handlePopState);
