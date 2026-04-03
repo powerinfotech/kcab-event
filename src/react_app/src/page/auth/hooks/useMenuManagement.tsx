@@ -278,9 +278,20 @@ export function useMenuManagement() {
         setSelectedKeys([]);
         setRowSeq([]);
         const res = await callGetMenuInfo();
-        setIsRowSelected(false);
-        setDataSource(structuredClone(res.item));
+        const list = structuredClone(res.item);
+        setDataSource(list);
         setOrgDataSource(structuredClone(res.item));
+
+        // 첫 번째 항목 자동 선택
+        if (list.length > 0) {
+            const firstKey = list[0].menuSeq;
+            newItemBtnInitializedRef.current = false;
+            setRowSeq([firstKey]);
+            setIsRowSelected(true);
+            onSelectChange([firstKey]);
+        } else {
+            setIsRowSelected(false);
+        }
     };
 
     const handleAdd = async () => {

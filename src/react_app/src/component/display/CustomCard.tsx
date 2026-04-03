@@ -32,9 +32,10 @@ import {Card, CardProps} from 'antd';
 
 interface CustomCardProps extends CardProps {}
 
-const CustomCard = (props: CustomCardProps) => {
+const CustomCard = ({bordered, ...rest}: CustomCardProps) => {
+    const variant = bordered === false ? 'borderless' : rest.variant;
     return (
-        <Card {...props} />
+        <Card {...rest} variant={variant} />
     );
 };
 
