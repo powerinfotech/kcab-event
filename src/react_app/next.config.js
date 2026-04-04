@@ -7,7 +7,7 @@ const nextConfig = {
   sassOptions: { silenceDeprecations: ['import'] },
   ...(process.env.NODE_ENV === 'development' ? {
     async rewrites() {
-      const apiTarget = process.env.BACKEND_URL || 'http://localhost:8080';
+      const apiTarget = process.env.BACKEND_URL || 'http://localhost:8070';
       return [
         { source: '/api/:path*', destination: `${apiTarget}/api/:path*` },
       ];
