@@ -13,6 +13,9 @@ import ChartsGuide from './components/ChartsGuide';
 import UtilityGuide from './components/UtilityGuide';
 import PopupGuide from './components/PopupGuide';
 import SpecialGuide from './components/SpecialGuide';
+import HooksUtilsGuide from './components/HooksUtilsGuide';
+import CrudPatternGuide from './components/CrudPatternGuide';
+import ExtraComponentsGuide from './components/ExtraComponentsGuide';
 
 const anchorItems = [
   { key: 'form-inputs', href: '#form-inputs', title: '폼 입력' },
@@ -27,6 +30,9 @@ const anchorItems = [
   { key: 'special', href: '#special', title: '특수 컴포넌트' },
   { key: 'charts', href: '#charts', title: '차트' },
   { key: 'utility', href: '#utility', title: '유틸리티' },
+  { key: 'hooks-utils', href: '#hooks-utils', title: '훅/유틸리티' },
+  { key: 'extra-components', href: '#extra-components', title: '추가 컴포넌트' },
+  { key: 'crud-pattern', href: '#crud-pattern', title: 'CRUD 패턴' },
 ];
 
 const Guide = ({ menuInfo }: { menuInfo?: MenuInfo }) => {
@@ -53,6 +59,9 @@ const Guide = ({ menuInfo }: { menuInfo?: MenuInfo }) => {
         <SpecialGuide />
         <ChartsGuide />
         <UtilityGuide />
+        <HooksUtilsGuide />
+        <ExtraComponentsGuide />
+        <CrudPatternGuide />
       </main>
     </div>
   );
