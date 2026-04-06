@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Button } from 'antd';
+import { CodeOutlined } from '@ant-design/icons';
 
 interface GuideSectionProps {
   id: string;
@@ -10,6 +12,7 @@ interface GuideSectionProps {
 interface GuideDemoBoxProps {
   title: string;
   children: React.ReactNode;
+  codeExample?: string;
 }
 
 export const GuideSection = ({ id, title, description, children }: GuideSectionProps) => {
@@ -24,13 +27,32 @@ export const GuideSection = ({ id, title, description, children }: GuideSectionP
   );
 };
 
-export const GuideDemoBox = ({ title, children }: GuideDemoBoxProps) => {
+export const GuideDemoBox = ({ title, children, codeExample }: GuideDemoBoxProps) => {
+  const [showCode, setShowCode] = useState(false);
+
   return (
     <div className="guide-demo-box">
-      <h4 className="guide-demo-title">{title}</h4>
+      <div className="guide-demo-title">
+        <h4>{title}</h4>
+        {codeExample && (
+          <Button
+            type="text"
+            size="small"
+            icon={<CodeOutlined />}
+            onClick={() => setShowCode(!showCode)}
+          >
+            {showCode ? '코드 닫기' : '코드 보기'}
+          </Button>
+        )}
+      </div>
       <div className="guide-demo-content">
         {children}
       </div>
+      {showCode && codeExample && (
+        <div className="guide-code-block">
+          <pre><code>{codeExample}</code></pre>
+        </div>
+      )}
     </div>
   );
 };
