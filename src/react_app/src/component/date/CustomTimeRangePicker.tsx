@@ -42,7 +42,7 @@ interface CustomTimeRangePickerProps extends TimeRangePickerProps {}
 const CustomTimeRangePicker = (props: CustomTimeRangePickerProps) => {
     const allowEmpty: [boolean, boolean] = props.disabled && !props.value ? [true, true] : [false, false];
     return (
-        <TimePicker.RangePicker locale={locale} allowEmpty={allowEmpty} {...props} />
+        <TimePicker.RangePicker locale={locale} needConfirm={false} allowEmpty={allowEmpty} {...props} />
     );
 };
 

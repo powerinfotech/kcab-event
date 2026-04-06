@@ -40,7 +40,7 @@ interface CustomTimePickerProps extends TimePickerProps {}
 
 const CustomTimePicker = (props: CustomTimePickerProps) => {
     return (
-        <TimePicker locale={locale} {...props} />
+        <TimePicker locale={locale} needConfirm={false} {...props} />
     );
 };
 

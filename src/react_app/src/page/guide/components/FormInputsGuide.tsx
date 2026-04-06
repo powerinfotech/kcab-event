@@ -11,6 +11,8 @@ import CustomTimePicker from '@component/date/CustomTimePicker';
 import CustomMaskedInput from '@component/input/CustomMaskedInput';
 import CustomSearchBar from '@component/input/CustomSearchBar';
 import CustomTimeRangePicker from '@component/date/CustomTimeRangePicker';
+import UserSearchPopup from '@component/popup/search/UserSearchPopup';
+import { UserSearchResult } from '@interface/auth/AuthManagement';
 import { GuideSection, GuideDemoBox, GuideStatusRow, GuideStatusItem } from './GuideSection';
 
 /* ───────── 코드 예제 상수 ───────── */
@@ -430,7 +432,7 @@ const [month, setMonth] = useState<Dayjs | null>(null);
 const SEARCH_BAR_CODE = `import CustomSearchBar from '@component/input/CustomSearchBar';
 
 // ① 기본 사용 (300ms 디바운스 - 타이핑 멈추면 자동 검색)
-// ※ onSearch는 (value: string) => void 형태
+// ※ onSearch는 (value: string, source?: string) => void 형태
 <CustomSearchBar
   placeholder="검색어를 입력하세요"
   onSearch={(value) => fetchData(value)}
@@ -456,10 +458,45 @@ const handleSearch = (keyword: string) => {
 };
 <CustomSearchBar placeholder="이름, 이메일 검색" onSearch={handleSearch} />
 
+// ⑥ 사용자 조회 팝업 연동 (엔터/돋보기 클릭 시 팝업, X 클릭 시 무시)
+// → source 인자로 'clear'(X버튼) / 'input'(엔터) 등 구분 가능
+import UserSearchPopup from '@component/popup/search/UserSearchPopup';
+
+const [popupOpen, setPopupOpen] = useState(false);
+const [keyword, setKeyword] = useState('');
+const [selectedUser, setSelectedUser] = useState<UserSearchResult | null>(null);
+
+<CustomSearchBar
+  placeholder="사용자 검색"
+  debounceMs={0}
+  onSearch={(v, source) => {
+    if (source === 'clear') return;  // X 버튼 클릭 시 팝업 안 열림
+    setKeyword(v);
+    setPopupOpen(true);
+  }}
+/>
+
+<UserSearchPopup
+  open={popupOpen}
+  onClose={() => setPopupOpen(false)}
+  initialKeyword={keyword}    // 입력한 검색어가 팝업에 자동 입력 + 조회
+  onSelect={(user) => {
+    setSelectedUser(user);
+    setPopupOpen(false);
+  }}
+/>
+
 // ── Props 정리 ──
-// onSearch?: (value: string) => void - 검색어 전달 콜백
+// onSearch?: (value: string, source?: string) => void - 검색어 + 트리거 구분
+//   source: 'clear' = X버튼 클릭, 'input' = 엔터, undefined = 돋보기 버튼
 // debounceMs?: number - 디바운스 대기 시간 ms (기본: 300, 0이면 버튼 클릭만)
-// ※ 한글 IME 조합 완료 후에만 디바운스 시작 (중간 조합에서 불필요한 API 호출 방지)`;
+// ※ 한글 IME 조합 완료 후에만 디바운스 시작 (중간 조합에서 불필요한 API 호출 방지)
+
+// ── UserSearchPopup Props ──
+// open: boolean              - 팝업 표시 여부
+// onClose: () => void        - 팝업 닫기
+// onSelect: (user) => void   - 사용자 선택 콜백
+// initialKeyword?: string    - 팝업 열릴 때 초기 검색어 (자동 조회)`;
 
 const TIME_RANGE_PICKER_CODE = `import CustomTimeRangePicker from '@component/date/CustomTimeRangePicker';
 import { Dayjs } from 'dayjs';
@@ -508,6 +545,9 @@ const FormInputsGuide = () => {
   const [numberValue, setNumberValue] = useState<number | null>(123456);
   const [phoneValue, setPhoneValue] = useState('01012345678');
   const [bizNoValue, setBizNoValue] = useState('1234567890');
+  const [userPopupOpen, setUserPopupOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<UserSearchResult | null>(null);
+  const [userSearchKeyword, setUserSearchKeyword] = useState('');
 
   return (
     <GuideSection id="form-inputs" title="폼 입력 (Form Inputs)" description="텍스트, 숫자, 날짜 등 다양한 폼 입력 컴포넌트">
@@ -667,6 +707,33 @@ const FormInputsGuide = () => {
             <CustomSearchBar placeholder="비활성" disabled />
           </GuideStatusItem>
         </GuideStatusRow>
+        <GuideStatusRow>
+          <GuideStatusItem label="사용자 조회 팝업 연동 (엔터/돋보기 클릭)">
+            <CustomSearchBar
+              placeholder="사용자 검색"
+              debounceMs={0}
+              onSearch={(v, source) => {
+                if (source === 'clear') return;
+                setUserSearchKeyword(v);
+                setUserPopupOpen(true);
+              }}
+            />
+            {selectedUser && (
+              <div className="guide-demo-description" style={{ marginTop: 4 }}>
+                선택된 사용자: {selectedUser.userName} ({selectedUser.userId})
+              </div>
+            )}
+          </GuideStatusItem>
+        </GuideStatusRow>
+        <UserSearchPopup
+          open={userPopupOpen}
+          onClose={() => setUserPopupOpen(false)}
+          initialKeyword={userSearchKeyword}
+          onSelect={(user) => {
+            setSelectedUser(user);
+            setUserPopupOpen(false);
+          }}
+        />
         <div className="guide-demo-description">
           한글 IME 조합 완료 후 디바운스 시작 / debounceMs=0이면 버튼 클릭 시에만 검색
         </div>

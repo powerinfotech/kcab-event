@@ -10,6 +10,108 @@ import CustomSelect from '@component/select/CustomSelect';
 import CustomTable from '@component/display/CustomTable';
 import { GuideSection, GuideDemoBox, GuideStatusRow, GuideStatusItem } from './GuideSection';
 
+/* ───────── 코드 예제 상수 ───────── */
+
+const FORM_POPUP_CODE = `import CustomFormPopup from '@component/popup/CustomFormPopup';
+import { useForm } from 'react-hook-form';
+
+// ① 기본 사용
+const [open, setOpen] = useState<boolean>(false);
+const { register, handleSubmit, reset, setValue, watch } = useForm<FormValues>({
+  defaultValues: { userName: '', dept: '' },
+});
+
+const handleSave = (values: FormValues) => {
+  // 저장 로직
+  reset();
+  setOpen(false);
+};
+
+<CustomFormPopup
+  title="사용자 등록"
+  open={open}
+  onSubmit={handleSubmit(handleSave)}
+  onCancel={() => { reset(); setOpen(false); }}
+  width={480}
+>
+  <form>
+    <table className="form-table">
+      <tbody>
+        <tr>
+          <th className="required">이름</th>
+          <td><CustomInput {...register('userName')} /></td>
+        </tr>
+      </tbody>
+    </table>
+  </form>
+</CustomFormPopup>
+
+// ── Props 정리 ──
+// onSubmit       - handleSubmit을 그대로 전달 (onOk 대체)
+// maskClosable   - 기본값 false (배경 클릭으로 닫히지 않음)
+// destroyOnHidden - 기본값 true (닫힐 때 DOM 제거)
+// CustomModalProps 확장 (title, open, onCancel, width 등)`;
+
+const SEARCH_POPUP_CODE = `import CustomSearchPopup from '@component/popup/CustomSearchPopup';
+import UserSearchPopup from '@component/popup/search/UserSearchPopup';
+
+// ① CustomSearchPopup 기본 사용
+const [open, setOpen] = useState<boolean>(false);
+const [keyword, setKeyword] = useState<string>('');
+const [result, setResult] = useState<SearchRow[]>([]);
+const [selected, setSelected] = useState<SearchRow | null>(null);
+
+<CustomSearchPopup
+  title="사용자 검색"
+  open={open}
+  onOk={handleOk}
+  onCancel={() => setOpen(false)}
+  tableTitle="조회 결과"
+  totalCount={result.length}
+  searchSection={
+    <CustomSpace>
+      <CustomInput
+        placeholder="이름 또는 부서로 검색"
+        value={keyword}
+        onChange={(e) => setKeyword(e.target.value)}
+        onPressEnter={handleSearch}
+      />
+      <CustomButton type="primary" onClick={handleSearch}>조회</CustomButton>
+    </CustomSpace>
+  }
+>
+  <CustomTable
+    rowKey="id"
+    columns={columns}
+    dataSource={result}
+    rowSelection={{ type: 'radio', selectedRowKeys: selected ? [selected.id] : [] }}
+    onRow={(record) => ({
+      onDoubleClick: () => { setSelected(record); handleOk(); },
+    })}
+  />
+</CustomSearchPopup>
+
+// ② UserSearchPopup (사용자 전용 검색 팝업)
+const [userPopupOpen, setUserPopupOpen] = useState<boolean>(false);
+<UserSearchPopup
+  open={userPopupOpen}
+  onClose={() => setUserPopupOpen(false)}
+  onSelect={(user) => { /* 선택 처리 */ }}
+  initialKeyword=""
+/>
+
+// ── CustomSearchPopup Props 정리 ──
+// searchSection - 검색 조건 영역 (ReactNode)
+// tableTitle    - 결과 테이블 제목
+// totalCount    - 결과 건수 (자동 표시)
+// 기본 너비 650px, 더블클릭 즉시 선택 지원
+
+// ── UserSearchPopup Props 정리 ──
+// open           - 팝업 열림 여부
+// onClose        - 닫기 콜백
+// onSelect       - 사용자 선택 콜백 (UserSearchResult)
+// initialKeyword - 초기 검색어`;
+
 /* ──────────────────────────────────
    FormPopup 샘플
 ────────────────────────────────── */
@@ -102,7 +204,7 @@ const PopupGuide = () => {
       {contextHolder}
 
       {/* CustomFormPopup */}
-      <GuideDemoBox title="FormPopup (폼 입력 팝업)">
+      <GuideDemoBox title="FormPopup (폼 입력 팝업)" codeExample={FORM_POPUP_CODE}>
         <GuideStatusItem label="기본">
           <CustomButton type="primary" onClick={() => setFormPopupOpen(true)}>
             사용자 등록 팝업 열기
@@ -151,7 +253,7 @@ const PopupGuide = () => {
       </GuideDemoBox>
 
       {/* CustomSearchPopup */}
-      <GuideDemoBox title="SearchPopup (검색 팝업)">
+      <GuideDemoBox title="SearchPopup (검색 팝업)" codeExample={SEARCH_POPUP_CODE}>
         <GuideStatusRow>
           <GuideStatusItem label="선택된 항목">
             {selectedRow ? (

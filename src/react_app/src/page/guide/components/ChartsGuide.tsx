@@ -28,6 +28,253 @@ try {
   // @ant-design/charts not installed
 }
 
+/* ───────── 코드 예제 상수 ───────── */
+
+const BAR_CHART_CODE = `import { Column } from '@ant-design/charts';
+
+// ① 데이터 구조
+const data = [
+  { month: '1월', value: 380 },
+  { month: '2월', value: 520 },
+];
+
+// ② 기본 설정
+<Column
+  data={data}
+  xField="month"        // X축 필드
+  yField="value"        // Y축 필드
+  colorField="month"    // 색상 구분 필드
+  label={{
+    text: 'value',      // 라벨에 표시할 필드
+    position: 'top',    // 라벨 위치
+  }}
+/>
+
+// ── 주요 Config Props ──
+// xField / yField   - 축 매핑 필드
+// colorField        - 색상 구분 필드
+// label             - 라벨 설정 { text, position }
+// style             - 스타일 { fill, fillOpacity }`;
+
+const LINE_CHART_CODE = `import { Line } from '@ant-design/charts';
+
+// ① 다중 라인 데이터 구조
+const data = [
+  { month: '1월', category: '접속자', value: 120 },
+  { month: '1월', category: '신규가입', value: 45 },
+];
+
+// ② 기본 설정
+<Line
+  data={data}
+  xField="month"
+  yField="value"
+  colorField="category"   // 라인별 색상 구분
+  shapeField="smooth"     // 부드러운 곡선
+  point={{
+    shapeField: 'point',
+    sizeField: 4,
+  }}
+/>
+
+// ── 주요 Config Props ──
+// shapeField="smooth" - 곡선 처리
+// colorField          - 다중 라인 구분
+// point               - 포인트 표시 설정`;
+
+const PIE_CHART_CODE = `import { Pie } from '@ant-design/charts';
+
+// ① 데이터 구조
+const data = [
+  { type: '개발팀', value: 45 },
+  { type: '기획팀', value: 20 },
+];
+
+// ② 기본 원형 차트
+<Pie
+  data={data}
+  angleField="value"     // 각도 필드
+  colorField="type"      // 색상 구분 필드
+  label={{ text: 'type', position: 'outside' }}
+  interaction={{ elementHighlight: true }}
+/>
+
+// ── 주요 Config Props ──
+// angleField  - 비율 계산 필드
+// colorField  - 색상 구분 필드
+// label       - 라벨 설정 { text, position: 'outside'|'inside' }
+// interaction - 인터랙션 { elementHighlight }`;
+
+const DOUGHNUT_CHART_CODE = `import { Pie } from '@ant-design/charts';
+
+// ① 도넛 차트 = Pie + innerRadius
+<Pie
+  data={data}
+  angleField="value"
+  colorField="type"
+  innerRadius={0.6}        // 도넛 비율 (0~1)
+  label={{ text: 'type', position: 'outside' }}
+  annotations={[{
+    type: 'text',
+    style: {
+      text: '전체\\n100',
+      x: '50%', y: '50%',
+      textAlign: 'center',
+      fontSize: 16,
+      fontWeight: 'bold',
+    },
+  }]}
+/>
+
+// ── 주요 Config Props ──
+// innerRadius  - 도넛 내부 반지름 비율 (0.6 = 60%)
+// annotations  - 중앙 텍스트 등 주석`;
+
+const AREA_CHART_CODE = `import { Area } from '@ant-design/charts';
+
+// ① 기본 설정
+<Area
+  data={data}
+  xField="month"
+  yField="value"
+  shapeField="smooth"    // 부드러운 곡선
+/>
+
+// ── 주요 Config Props ──
+// shapeField="smooth"  - 곡선 영역
+// style                - 영역 스타일 { fill, fillOpacity }`;
+
+const HORIZONTAL_BAR_CODE = `import { Bar } from '@ant-design/charts';
+
+// ① 가로 막대 차트
+<Bar
+  data={data}
+  xField="category"     // 카테고리 (세로축)
+  yField="value"        // 값 (가로축)
+  colorField="category"
+  label={{
+    text: 'value',
+    position: 'right',  // 라벨 위치
+  }}
+/>
+
+// ── 주요 Config Props ──
+// Column과 동일하나 가로 방향으로 렌더링
+// xField이 세로축, yField가 가로축`;
+
+const DUAL_AXES_CODE = `import { DualAxes } from '@ant-design/charts';
+
+// ① 데이터 구조 (하나의 배열에 두 축 데이터 포함)
+const data = [
+  { month: '1월', sales: 380, rate: 12.5 },
+];
+
+// ② 이중 축 설정
+<DualAxes
+  data={data}
+  xField="month"
+  children={[
+    {
+      type: 'interval',         // 막대
+      yField: 'sales',
+      style: { fillOpacity: 0.8 },
+    },
+    {
+      type: 'line',             // 라인
+      yField: 'rate',
+      shapeField: 'smooth',
+      style: { stroke: '#f04864', lineWidth: 2 },
+      axis: { y: { position: 'right' } },
+    },
+  ]}
+/>
+
+// ── 주요 Config Props ──
+// children  - 차트 시리즈 배열 [{ type, yField, axis }]
+// type      - 'interval'(막대), 'line'(꺾은선)
+// axis.y.position - 'right'로 오른쪽 축 사용`;
+
+const SCATTER_CHART_CODE = `import { Scatter } from '@ant-design/charts';
+
+// ① 데이터 구조
+const data = [
+  { x: 10, y: 25, category: 'A' },
+];
+
+// ② 기본 설정
+<Scatter
+  data={data}
+  xField="x"
+  yField="y"
+  colorField="category"
+  sizeField={5}
+  shapeField="point"
+/>
+
+// ── 주요 Config Props ──
+// sizeField   - 포인트 크기
+// colorField  - 색상 구분 필드
+// shapeField  - 포인트 모양`;
+
+const RADAR_CHART_CODE = `import { Radar } from '@ant-design/charts';
+
+// ① 데이터 구조
+const data = [
+  { item: '기술력', score: 85 },
+  { item: '안정성', score: 70 },
+];
+
+// ② 기본 설정
+<Radar
+  data={data}
+  xField="item"
+  yField="score"
+  area={{ style: { fillOpacity: 0.3 } }}
+  point={{ sizeField: 4 }}
+/>
+
+// ── 주요 Config Props ──
+// area   - 영역 채우기 { style: { fillOpacity } }
+// point  - 꼭짓점 포인트 { sizeField }`;
+
+const GAUGE_CHART_CODE = `import { Gauge } from '@ant-design/charts';
+
+// ① 기본 설정
+<Gauge
+  data={{
+    target: 75,       // 현재 값
+    total: 100,       // 전체 값
+    name: '달성률',
+  }}
+  legend={false}
+/>
+
+// ── 주요 Config Props ──
+// data.target - 현재 값
+// data.total  - 전체 값 (비율 계산)
+// data.name   - 표시 이름
+// legend      - 범례 표시 여부`;
+
+const WATERFALL_CHART_CODE = `import { Waterfall } from '@ant-design/charts';
+
+// ① 데이터 구조
+const data = [
+  { category: '매출', value: 1000 },
+  { category: '인건비', value: -300 },
+  { category: '순이익', value: 530, isTotal: true },
+];
+
+// ② 기본 설정
+<Waterfall
+  data={data}
+  xField="category"
+  yField="value"
+/>
+
+// ── 주요 Config Props ──
+// isTotal  - 합계 항목 표시 (데이터에 포함)
+// 양수는 증가, 음수는 감소로 자동 표현`;
+
 const barData = [
   { month: '1월', value: 380 },
   { month: '2월', value: 520 },
@@ -135,7 +382,7 @@ const ChartsGuide = () => {
     <GuideSection id="charts" title="차트 / 시각화 (Charts)" description="@ant-design/charts 기반 차트 컴포넌트">
       <div className="guide-chart-row">
         {/* BarChart */}
-        <GuideDemoBox title="BarChart (막대 차트)">
+        <GuideDemoBox title="BarChart (막대 차트)" codeExample={BAR_CHART_CODE}>
           <div className="guide-chart-container">
             <Column
               data={barData}
@@ -151,7 +398,7 @@ const ChartsGuide = () => {
         </GuideDemoBox>
 
         {/* LineChart */}
-        <GuideDemoBox title="LineChart (꺾은선 차트)">
+        <GuideDemoBox title="LineChart (꺾은선 차트)" codeExample={LINE_CHART_CODE}>
           <div className="guide-chart-container">
             <Line
               data={lineData}
@@ -170,7 +417,7 @@ const ChartsGuide = () => {
 
       <div className="guide-chart-row">
         {/* PieChart */}
-        <GuideDemoBox title="PieChart (원형 차트)">
+        <GuideDemoBox title="PieChart (원형 차트)" codeExample={PIE_CHART_CODE}>
           <div className="guide-chart-container">
             <Pie
               data={pieData}
@@ -188,7 +435,7 @@ const ChartsGuide = () => {
         </GuideDemoBox>
 
         {/* DoughnutChart */}
-        <GuideDemoBox title="DoughnutChart (도넛 차트)">
+        <GuideDemoBox title="DoughnutChart (도넛 차트)" codeExample={DOUGHNUT_CHART_CODE}>
           <div className="guide-chart-container">
             <Pie
               data={pieData}
@@ -221,7 +468,7 @@ const ChartsGuide = () => {
       </div>
 
       {/* AreaChart */}
-      <GuideDemoBox title="AreaChart (영역 차트)">
+      <GuideDemoBox title="AreaChart (영역 차트)" codeExample={AREA_CHART_CODE}>
         <div className="guide-chart-container">
           <Area
             data={areaData}
@@ -234,7 +481,7 @@ const ChartsGuide = () => {
 
       <div className="guide-chart-row">
         {/* Bar (가로 막대) */}
-        <GuideDemoBox title="BarChart (가로 막대 차트)">
+        <GuideDemoBox title="BarChart (가로 막대 차트)" codeExample={HORIZONTAL_BAR_CODE}>
           <div className="guide-chart-container">
             <Bar
               data={horizontalBarData}
@@ -250,7 +497,7 @@ const ChartsGuide = () => {
         </GuideDemoBox>
 
         {/* DualAxes (이중 축) */}
-        <GuideDemoBox title="DualAxes (이중 축 차트)">
+        <GuideDemoBox title="DualAxes (이중 축 차트)" codeExample={DUAL_AXES_CODE}>
           <div className="guide-chart-container">
             <DualAxes
               data={dualAxesData}
@@ -276,7 +523,7 @@ const ChartsGuide = () => {
 
       <div className="guide-chart-row">
         {/* Scatter (산점도) */}
-        <GuideDemoBox title="ScatterChart (산점도)">
+        <GuideDemoBox title="ScatterChart (산점도)" codeExample={SCATTER_CHART_CODE}>
           <div className="guide-chart-container">
             <Scatter
               data={scatterData}
@@ -290,7 +537,7 @@ const ChartsGuide = () => {
         </GuideDemoBox>
 
         {/* Radar (레이더) */}
-        <GuideDemoBox title="RadarChart (레이더 차트)">
+        <GuideDemoBox title="RadarChart (레이더 차트)" codeExample={RADAR_CHART_CODE}>
           <div className="guide-chart-container">
             <Radar
               data={radarData}
@@ -309,7 +556,7 @@ const ChartsGuide = () => {
 
       <div className="guide-chart-row">
         {/* Gauge (게이지) */}
-        <GuideDemoBox title="Gauge (게이지 차트)">
+        <GuideDemoBox title="Gauge (게이지 차트)" codeExample={GAUGE_CHART_CODE}>
           <div className="guide-chart-container">
             <Gauge
               data={{
@@ -323,7 +570,7 @@ const ChartsGuide = () => {
         </GuideDemoBox>
 
         {/* Waterfall (워터폴) */}
-        <GuideDemoBox title="WaterfallChart (워터폴 차트)">
+        <GuideDemoBox title="WaterfallChart (워터폴 차트)" codeExample={WATERFALL_CHART_CODE}>
           <div className="guide-chart-container">
             <Waterfall
               data={waterfallData}

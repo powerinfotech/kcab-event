@@ -55,9 +55,11 @@ export interface UserSearchPopupProps {
     open: boolean;
     onClose: () => void;
     onSelect: (user: UserSearchResult) => void;
+    /** 팝업 열릴 때 초기 검색어 (있으면 자동 조회) */
+    initialKeyword?: string;
 }
 
-const UserSearchPopup = ({open, onClose, onSelect}: UserSearchPopupProps) => {
+const UserSearchPopup = ({open, onClose, onSelect, initialKeyword}: UserSearchPopupProps) => {
     const [userSearchList, setUserSearchList] = useState<UserSearchResult[]>([]);
     const [userSearchText, setUserSearchText] = useState('');
     const [excludeUnused, setExcludeUnused] = useState(true);
@@ -65,10 +67,11 @@ const UserSearchPopup = ({open, onClose, onSelect}: UserSearchPopupProps) => {
 
     useEffect(() => {
         if (open) {
-            setUserSearchText('');
+            const keyword = initialKeyword ?? '';
+            setUserSearchText(keyword);
             setExcludeUnused(true);
             setSelectedUserRowIndex(-1);
-            callSearchUsers('', true).then(res => {
+            callSearchUsers(keyword, true).then(res => {
                 if (res.code === HttpStatusCode.Ok) setUserSearchList(res.item);
             });
         }

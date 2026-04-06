@@ -7,6 +7,58 @@ import { GuideSection, GuideDemoBox, GuideStatusRow, GuideStatusItem } from './G
 import { callSaveFiles } from '@api/CommonApi';
 import { HttpStatusCode } from 'axios';
 
+/* ───────── 코드 예제 상수 ───────── */
+
+const FILE_UPLOAD_CODE = `import CustomFile, { FileDetailType } from '@component/upload/CustomFile';
+import { callSaveFiles } from '@api/CommonApi';
+
+// ① 편집 모드 (업로드 + 드래그앤드롭 정렬)
+const [fileList, setFileList] = useState<FileDetailType[]>([]);
+const [fileSeq, setFileSeq] = useState<number | null>(null);
+
+<CustomFile
+  fileList={fileList}
+  onFileListChange={setFileList}
+  isEditable
+/>
+
+// ② 파일 저장 API 호출
+const handleSave = async () => {
+  const res = await callSaveFiles(fileSeq, menuSeq, fileList);
+  if (res.code === HttpStatusCode.Ok) {
+    setFileSeq(res.item.fileSeq);
+    setFileList(res.item.fileList ?? []);
+  }
+};
+
+// ── Props 정리 ──
+// fileList          - 파일 목록 (FileDetailType[])
+// onFileListChange  - 파일 목록 변경 콜백
+// isEditable        - 편집 가능 여부 (true: 업로드/삭제 가능)
+// 최대 5개 파일, 10MB 제한
+// 드래그앤드롭 정렬 지원
+// IUD 추적 (Insert/Update/Delete 상태 관리)
+
+// ── 관련 컴포넌트 ──
+// CustomImageUpload - 이미지 전용 업로드 (upload/CustomImageUpload)
+//   Props: maxCount, disabled, 이미지 파일만 허용, 썸네일 미리보기
+// CustomExcelUpload - 엑셀 파일 업로드 (upload/CustomExcelUpload)
+// CustomExcelDownload - 엑셀 파일 다운로드 (upload/CustomExcelDownload)`;
+
+const FILE_READONLY_CODE = `import CustomFile, { FileDetailType } from '@component/upload/CustomFile';
+
+// ① 읽기 전용 모드
+<CustomFile
+  fileList={fileList}
+  onFileListChange={() => {}}
+  isEditable={false}
+/>
+
+// ── 읽기 전용 모드 특징 ──
+// 업로드/삭제 버튼 숨김
+// 파일 다운로드만 가능
+// 드래그앤드롭 정렬 비활성화`;
+
 interface FileGuideProps {
   menuSeq?: number;
 }
@@ -38,7 +90,7 @@ const FileGuide = ({ menuSeq }: FileGuideProps) => {
   return (
     <GuideSection id="file" title="파일 관련 (File)" description="파일 업로드, 드래그앤드롭, 이미지 업로드 컴포넌트">
       {/* FileUpload / DragDropUpload */}
-      <GuideDemoBox title="FileUpload / DragDropUpload (CustomFile)">
+      <GuideDemoBox title="FileUpload / DragDropUpload (CustomFile)" codeExample={FILE_UPLOAD_CODE}>
         <GuideStatusRow>
           <GuideStatusItem label="편집 모드">
             <CustomFile
@@ -58,7 +110,7 @@ const FileGuide = ({ menuSeq }: FileGuideProps) => {
         </div>
       </GuideDemoBox>
 
-      <GuideDemoBox title="FileUpload (읽기 전용)">
+      <GuideDemoBox title="FileUpload (읽기 전용)" codeExample={FILE_READONLY_CODE}>
         <GuideStatusRow>
           <GuideStatusItem label="readOnly (파일 없음)">
             <CustomFile

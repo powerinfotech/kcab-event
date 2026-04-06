@@ -13,6 +13,159 @@ import { MenuBtnDetail, PageButtonHandlers } from '@interface/common';
 import { UserSearchResult } from '@interface/auth/AuthManagement';
 import { message } from 'antd';
 
+/* ───────── 코드 예제 상수 ───────── */
+
+const ADDRESS_INPUT_CODE = `import CustomAddressInput from '@component/special/CustomAddressInput';
+
+// ① 기본 사용 (우편번호 + 주소 + 상세주소)
+const [zipCode, setZipCode] = useState<string>('');
+const [address, setAddress] = useState<string>('');
+const [addressDetail, setAddressDetail] = useState<string>('');
+
+<CustomAddressInput
+  zipCode={zipCode}
+  address={address}
+  addressDetail={addressDetail}
+  onChange={({ zipCode: zc, address: addr }) => {
+    setZipCode(zc);
+    setAddress(addr);
+  }}
+  onChangeDetail={(e) => setAddressDetail(e.target.value)}
+/>
+
+// ② 상세주소 없이 (onChangeDetail 미전달 시 상세주소 입력란 숨김)
+<CustomAddressInput
+  zipCode={zipCode}
+  address={address}
+  onChange={({ zipCode: zc, address: addr }) => { setZipCode(zc); setAddress(addr); }}
+/>
+
+// ③ disabled
+<CustomAddressInput zipCode="06235" address="서울특별시 강남구" onChange={() => {}} disabled />
+
+// ── Props 정리 ──
+// zipCode        - 우편번호
+// address        - 기본 주소
+// addressDetail  - 상세 주소 (optional)
+// onChange       - 주소 선택 콜백 ({ zipCode, address })
+// onChangeDetail - 상세주소 입력 콜백 (전달 시 상세주소 입력란 표시)
+// disabled       - 비활성화
+// react-daum-postcode 팝업 연동`;
+
+const CKEDITOR_CODE = `import CustomCkEditor from '@component/special/CustomCkEditor';
+
+// ① 편집 모드
+const [content, setContent] = useState<string>('<p>초기 내용</p>');
+<CustomCkEditor value={content} isEditable={true} onChange={setContent} />
+
+// ② 읽기 전용 (배경색 회색, 편집 불가)
+<CustomCkEditor value={content} isEditable={false} onChange={setContent} />
+
+// ── Props 정리 ──
+// value      - HTML 문자열
+// isEditable - 편집 가능 여부 (false: 회색 배경, 편집 불가)
+// onChange   - 내용 변경 콜백 (string)
+// toolbar=[] 고정 (툴바 없음), 높이 200px 고정`;
+
+const USER_SEARCH_INPUT_CODE = `import UserSearchInput from '@component/special/UserSearchInput';
+import { UserSearchResult } from '@interface/auth/AuthManagement';
+
+// ① 기본 사용
+const [selectedUser, setSelectedUser] = useState<UserSearchResult | null>(null);
+<UserSearchInput
+  value={selectedUser?.userName ?? ''}
+  onChange={(user) => setSelectedUser(user)}
+  placeholder="사용자를 검색하세요"
+/>
+
+// ② react-hook-form Controller와 연동
+<Controller
+  name="userId"
+  control={control}
+  render={({ field }) => (
+    <UserSearchInput
+      value={field.value}
+      onChange={(user) => { field.onChange(user.userId); }}
+    />
+  )}
+/>
+
+// ── Props 정리 ──
+// value       - 표시할 텍스트 값
+// onChange    - 사용자 선택 콜백 (UserSearchResult)
+// placeholder - 안내 텍스트
+// 읽기 전용 Input + 검색 버튼 조합, 클릭 시 UserSearchPopup 오픈`;
+
+const MENU_BUTTON_BAR_CODE = `import MenuButtonBar from '@component/special/MenuButtonBar';
+import { MenuBtnDetail, PageButtonHandlers } from '@interface/common';
+
+// ① 기본 사용
+const menuBtnList: MenuBtnDetail[] = [
+  { btnSeq: 1, btnFuncCd: 'cfmInit',   btnNm: '초기화' },
+  { btnSeq: 2, btnFuncCd: 'cfmSearch', btnNm: '조회' },
+  { btnSeq: 3, btnFuncCd: 'cfmAdd',    btnNm: '추가' },
+  { btnSeq: 4, btnFuncCd: 'cfmSave',   btnNm: '저장' },
+  { btnSeq: 5, btnFuncCd: 'cfmDelete', btnNm: '삭제' },
+  { btnSeq: 6, btnFuncCd: 'cfmExcel',  btnNm: '엑셀' },
+];
+
+const handlersRef = useRef<PageButtonHandlers>({
+  cfmInit:   () => { /* 초기화 */ },
+  cfmSearch: () => { /* 조회 */ },
+  cfmAdd:    () => { /* 추가 */ },
+  cfmSave:   () => { /* 저장 */ },
+  cfmDelete: () => { /* 삭제 */ },
+  cfmExcel:  () => { /* 엑셀 다운로드 */ },
+});
+
+<MenuButtonBar menuBtnList={menuBtnList} handlersRef={handlersRef} />
+
+// ── Props 정리 ──
+// menuBtnList  - API에서 조회한 버튼 권한 목록 (MenuBtnDetail[])
+// handlersRef  - 버튼 핸들러 ref (PageButtonHandlers)
+// btnFuncCd 코드: cfmInit, cfmSearch, cfmAdd, cfmSave, cfmDelete, cfmExcel
+// btnFuncCd에 따라 아이콘 자동 매핑`;
+
+const EDITABLE_FORM_CELL_CODE = `import EditableFormCell from '@component/special/EditableFormCell';
+import { useForm } from 'react-hook-form';
+
+// ① 테이블 컬럼 render에서 사용
+const { control, register, setValue } = useForm();
+
+const columns = [
+  {
+    title: '이름 (편집 가능)',
+    dataIndex: 'userName',
+    render: (value: string, record: SampleRow) => (
+      <EditableFormCell
+        record={record}
+        seqField="userSeq"
+        fieldSuffix="userName"
+        value={value}
+        setValue={setValue}
+        control={control}
+        register={register}
+        onDataChange={handleDataChange}
+        requiredMessage="이름을 입력해주세요."
+        maxLength={50}
+      />
+    ),
+  },
+];
+
+// ── Props 정리 ──
+// record          - 현재 행 데이터
+// seqField        - PK 필드명 (fieldName 생성에 사용)
+// fieldSuffix     - 필드 접미사 (fieldName = record[seqField]_fieldSuffix)
+// value           - 현재 값
+// setValue        - react-hook-form setValue
+// control         - react-hook-form control
+// register        - react-hook-form register
+// onDataChange    - 데이터 변경 콜백 (record, key, value)
+// requiredMessage - 필수 입력 메시지
+// maxLength       - 최대 글자 수
+// regExp          - 정규식 검증`;
+
 /* ──────────────────────────────────
    MenuButtonBar 샘플 데이터
 ────────────────────────────────── */
@@ -125,7 +278,7 @@ const SpecialGuide = () => {
       {contextHolder}
 
       {/* AddressInput */}
-      <GuideDemoBox title="AddressInput (주소 검색 입력)">
+      <GuideDemoBox title="AddressInput (주소 검색 입력)" codeExample={ADDRESS_INPUT_CODE}>
         <GuideStatusRow>
           <GuideStatusItem label="기본 (우편번호 + 주소 + 상세주소)">
             <CustomAddressInput
@@ -166,7 +319,7 @@ const SpecialGuide = () => {
       </GuideDemoBox>
 
       {/* CkEditor */}
-      <GuideDemoBox title="CkEditor (리치 텍스트 에디터)">
+      <GuideDemoBox title="CkEditor (리치 텍스트 에디터)" codeExample={CKEDITOR_CODE}>
         <div style={{ marginBottom: 8 }}>
           <CustomButton
             type={isEditable ? 'primary' : 'default'}
@@ -189,7 +342,7 @@ const SpecialGuide = () => {
       </GuideDemoBox>
 
       {/* UserSearchInput */}
-      <GuideDemoBox title="UserSearchInput (사용자 검색 입력)">
+      <GuideDemoBox title="UserSearchInput (사용자 검색 입력)" codeExample={USER_SEARCH_INPUT_CODE}>
         <GuideStatusRow>
           <GuideStatusItem label="기본">
             <UserSearchInput
@@ -213,7 +366,7 @@ const SpecialGuide = () => {
       </GuideDemoBox>
 
       {/* MenuButtonBar */}
-      <GuideDemoBox title="MenuButtonBar (메뉴 권한 버튼 바)">
+      <GuideDemoBox title="MenuButtonBar (메뉴 권한 버튼 바)" codeExample={MENU_BUTTON_BAR_CODE}>
         <MenuButtonBar menuBtnList={sampleMenuBtnList} handlersRef={handlersRef} />
         <div className="guide-demo-description" style={{ marginTop: 12 }}>
           API에서 조회한 버튼 권한 목록(menuBtnList)을 기반으로 동적 렌더링 /
@@ -222,7 +375,7 @@ const SpecialGuide = () => {
       </GuideDemoBox>
 
       {/* EditableFormCell */}
-      <GuideDemoBox title="EditableFormCell (테이블 인라인 편집 셀)">
+      <GuideDemoBox title="EditableFormCell (테이블 인라인 편집 셀)" codeExample={EDITABLE_FORM_CELL_CODE}>
         <CustomTable
           rowKey="userSeq"
           columns={editableColumns}

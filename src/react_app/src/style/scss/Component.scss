@@ -134,6 +134,13 @@ z-index: 3001;
     color:$gray20;
     border-color:$gray80;
 
+    &.ant-btn-icon-only {
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
     &.ant-btn-sm{
         background:$gray100;
         border-color:$gray80;
@@ -152,9 +159,18 @@ z-index: 3001;
 
     &.ant-input-search-button{
         height: 35px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         background:$brandYellow;
         color:$gray20;
         border-color:$brandYellow;
+
+        .ant-btn-icon {
+            margin-inline-end: 0;
+            margin: 0;
+        }
 
         &:not(:disabled):not(.ant-btn-disabled):hover{
             background:$brandYellowDarken;

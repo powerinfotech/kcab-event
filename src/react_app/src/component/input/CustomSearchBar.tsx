@@ -40,7 +40,7 @@ import type { SearchProps } from 'antd/es/input';
 const { Search } = Input;
 
 interface CustomSearchBarProps extends Omit<SearchProps, 'onSearch'> {
-  onSearch?: (value: string) => void;
+  onSearch?: (value: string, source?: string) => void;
   debounceMs?: number;
 }
 
@@ -49,8 +49,8 @@ const CustomSearchBar = ({ onSearch, debounceMs = 300, ...rest }: CustomSearchBa
   const isComposingRef = useRef(false);
 
   const handleSearch = useCallback(
-    (value: string) => {
-      onSearch?.(value);
+    (value: string, _event?: React.SyntheticEvent, info?: { source?: string }) => {
+      onSearch?.(value, info?.source);
     },
     [onSearch]
   );
