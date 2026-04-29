@@ -34,7 +34,7 @@
  */
 import React from 'react';
 import {TimePicker} from 'antd';
-import locale from 'antd/locale/ko_KR';
+import locale from 'antd/es/date-picker/locale/ko_KR';
 import type {TimeRangePickerProps} from 'antd/es/time-picker';
 
 interface CustomTimeRangePickerProps extends TimeRangePickerProps {}

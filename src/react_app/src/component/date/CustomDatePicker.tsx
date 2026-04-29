@@ -34,9 +34,10 @@
  * // react-hook-form과 함께 사용 시 → CustomSaveFormDatePicker / CustomValidDatePicker 사용 권장
  */
 import {DatePicker, DatePickerProps} from 'antd';
-import locale from 'antd/locale/ko_KR';
+import {Dayjs} from 'dayjs';
+import locale from 'antd/es/date-picker/locale/ko_KR';
 
-interface CustomDatePickerProps extends DatePickerProps {}
+interface CustomDatePickerProps extends DatePickerProps<Dayjs, false> {}
 
 const CustomDatePicker = (props: CustomDatePickerProps) => {
     return (

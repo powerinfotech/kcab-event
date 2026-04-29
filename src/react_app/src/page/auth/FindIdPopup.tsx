@@ -24,7 +24,7 @@ const FindIdPopup = (props:ChangePasswordPopupProps) => {
         reset: findIdReset,
         setError: findIdError,
         handleSubmit:findIdHandleSubmit
-    } = useForm({mode:"onSubmit"});
+    } = useForm<findUserInfo>({mode:"onSubmit"});
 
     const[findInfo,SetFindInfo]= useState<findUserInfo>({
         userName:'',
@@ -77,7 +77,7 @@ const FindIdPopup = (props:ChangePasswordPopupProps) => {
                             title={'이름'}
                             control={findIdControl}
                             required={true}
-                            onChangeValue={(v) => SetFindInfo({...findInfo, userName: v})}
+                            onChangeValue={(v: string) => SetFindInfo({...findInfo, userName: v})}
                             {...findIdRegister('userName', {required: '이름을 입력하세요.'})}
                         />
                     </div>
@@ -90,7 +90,7 @@ const FindIdPopup = (props:ChangePasswordPopupProps) => {
                             title={'휴대폰번호'}
                             control={findIdControl}
                             required={true}
-                            onChangeValue={(v) => SetFindInfo({...findInfo, hpNo: v})}
+                            onChangeValue={(v: string) => SetFindInfo({...findInfo, hpNo: v})}
                             {...findIdRegister('hpNo', {required: '휴대폰번호를 입력하세요.'})}
 
                         />

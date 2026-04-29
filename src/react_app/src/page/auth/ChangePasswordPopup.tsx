@@ -66,7 +66,7 @@ const ChangePasswordPopup = (props:ChangePasswordPopupProps) => {
                         type={'password'}
                         control={changePasswordFormControl}
                         required={true}
-                        onChangeValue={(v)=>setInfo({...info, password:v})}
+                        onChangeValue={(v: string)=>setInfo({...info, password:v})}
                         {...changePasswordFormRegister('password', {required:'비밀번호를 입력하세요.'})}
                     />
                     <CustomSaveFormInput

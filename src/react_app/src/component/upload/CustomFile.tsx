@@ -211,7 +211,7 @@ const CustomFile = (props:CustomFilePropsType) => {
                     };
                 }
             })
-            .filter((fileData): fileData is CustomFile => fileData !== null)
+            .filter((fileData): fileData is CustomFileUpload => fileData !== null)
             .map((fileData) => {
                 let sortSeq = 0;
 

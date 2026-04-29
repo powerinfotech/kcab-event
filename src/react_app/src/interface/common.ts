@@ -1,4 +1,4 @@
-import {DefaultOptionType} from 'rc-select/lib/Select';
+import {DefaultOptionType} from 'antd/es/select';
 
 export interface ApiResponse<T> {
     item:T;

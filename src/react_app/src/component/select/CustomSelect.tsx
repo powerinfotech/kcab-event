@@ -30,7 +30,9 @@
 import React from 'react';
 import {Select, SelectProps} from 'antd';
 
-interface CustomSelectProps extends SelectProps {}
+interface CustomSelectProps extends SelectProps {
+    name?: string;
+}
 
 const CustomSelect = (props: CustomSelectProps) => {
     return (

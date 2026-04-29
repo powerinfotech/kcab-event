@@ -2,7 +2,7 @@ import {message} from '@util/antdMessage';
 import React, {useEffect, useRef, useState} from 'react';
 import {useForm} from 'react-hook-form';
 import {HttpStatusCode} from 'axios';
-import {DefaultOptionType} from 'rc-select/lib/Select';
+import {DefaultOptionType} from 'antd/es/select';
 import {FolderOpenOutlined, PlusCircleOutlined, CheckCircleOutlined} from '@ant-design/icons';
 import {callDeleteMenu, callGetBtnList, callGetMenuBtnList, callGetMenuInfo, callSaveMenu} from '@api/auth/MenuManagementApi';
 import {BtnInfo, EmptyMenu, MenuBtnInfo, MenuInfo, MenuListSearchParam, MenuTree, MenuType} from '@interface/auth/MenuManagement';

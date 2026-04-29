@@ -2,10 +2,14 @@ import axios from 'axios';
 import {User} from '@interface/master/UserManagement';
 import {ApiResponse, CommonCodeMap, IudType, MenuBtnDetail} from '@interface/common';
 import {MenuInfo} from '@interface/auth/MenuManagement';
-import {Role} from '@interface/auth/RoleManagement';
 import {FileDetailType} from "@component/upload/CustomFile";
 import {RcFile} from "antd/es/upload/interface";
 
+export interface Role {
+    roleSeq?: number;
+    roleName?: string;
+    [key: string]: unknown;
+}
 
 export const getViewCmCode = async (props:any) => {
     const viewCmCode: CommonCodeMap = {};
@@ -15,7 +19,7 @@ export const getViewCmCode = async (props:any) => {
             viewCmCode[cmGroupCode] = data.item;
         } catch (e) {
             console.error(`코드 조회 실패: ${cmGroupCode}`, e);
-            viewCmCode[cmGroupCode] = [];
+            viewCmCode[cmGroupCode] = {};
         }
     }
     return  viewCmCode;

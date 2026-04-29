@@ -17,7 +17,7 @@ const UserManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
 
     usePageHandlers(handlersRef, {
         cfmInit: mgmt.handleReset,
-        cfmSearch: mgmt.handleSearchList,
+        cfmSearch: () => mgmt.handleSearchList(),
         cfmAdd: () => mgmt.handleAdd(),
         cfmDelete: () => mgmt.handleDelete(),
         cfmSave: mgmt.saveForm.handleSubmit(mgmt.handleSave),
@@ -26,7 +26,7 @@ const UserManagement = ({handlersRef}: {onChange?: (flag: boolean) => void; menu
     return (
         <>
         <section className="search-wrap">
-            <form onSubmit={mgmt.searchForm.handleSubmit(mgmt.handleSearchList)}>
+            <form onSubmit={mgmt.searchForm.handleSubmit(() => mgmt.handleSearchList())}>
                 <span>ID/성명</span>
                 <Controller
                     name={'idOrName'}

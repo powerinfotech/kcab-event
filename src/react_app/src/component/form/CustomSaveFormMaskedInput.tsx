@@ -54,13 +54,13 @@
  */
 import React, {forwardRef, useState} from 'react';
 import {InputProps, Tooltip} from 'antd';
-import {Control, Controller, FieldValues} from 'react-hook-form';
+import {Controller} from 'react-hook-form';
 import CustomMaskedInput, {MaskType} from '@component/input/CustomMaskedInput';
 
 interface CustomFormMaskedInputProps extends Omit<InputProps, 'onChange'> {
     name:string;
     defaultValue?:string;
-    control:Control<FieldValues>;
+    control:any;
     rules?: any;
     maskType: MaskType;
     customMask?: (value: string) => string;

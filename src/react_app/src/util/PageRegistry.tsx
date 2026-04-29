@@ -49,6 +49,10 @@ type PageContext = {
 
 // src/page 하위 모든 .tsx 파일 등록
 // eslint-disable-next-line @typescript-eslint/no-require-imports
+declare const require: NodeRequire & {
+  context: (directory: string, useSubdirectories: boolean, regExp: RegExp) => PageContext;
+};
+
 const pageContext: PageContext = require.context('../page', true, /\.tsx$/);
 
 /** viewPath 별칭 매핑 (DB의 경로와 실제 파일 경로가 다를 때 사용) */

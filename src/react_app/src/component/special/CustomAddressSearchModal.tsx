@@ -44,13 +44,16 @@ export interface CustomAddressSearchModalProps extends ModalProps{
 }
 
 const CustomAddressSearchModal = (props : CustomAddressSearchModalProps) => {
+    const handleCancel = () => {
+        props.onCancel?.({} as React.MouseEvent<HTMLButtonElement>);
+    };
 
     return (
         <Modal
             open={props.open}
             closable={false}
             footer={[
-                <CustomButton key="cancelAddressSearch" type="primary" onClick={props.onCancel}>
+                <CustomButton key="cancelAddressSearch" type="primary" onClick={handleCancel}>
                     취소
                 </CustomButton>
             ]}

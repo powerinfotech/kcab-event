@@ -170,12 +170,12 @@ const columns = [
    MenuButtonBar 샘플 데이터
 ────────────────────────────────── */
 const sampleMenuBtnList: MenuBtnDetail[] = [
-  { btnSeq: 1, btnFuncCd: 'cfmInit',   btnNm: '초기화' },
-  { btnSeq: 2, btnFuncCd: 'cfmSearch', btnNm: '조회' },
-  { btnSeq: 3, btnFuncCd: 'cfmAdd',    btnNm: '추가' },
-  { btnSeq: 4, btnFuncCd: 'cfmSave',   btnNm: '저장' },
-  { btnSeq: 5, btnFuncCd: 'cfmDelete', btnNm: '삭제' },
-  { btnSeq: 6, btnFuncCd: 'cfmExcel',  btnNm: '엑셀' },
+  { btnSeq: 1, sortSeq: 1, btnFuncCd: 'cfmInit',   btnNm: '초기화' },
+  { btnSeq: 2, sortSeq: 2, btnFuncCd: 'cfmSearch', btnNm: '조회' },
+  { btnSeq: 3, sortSeq: 3, btnFuncCd: 'cfmAdd',    btnNm: '추가' },
+  { btnSeq: 4, sortSeq: 4, btnFuncCd: 'cfmSave',   btnNm: '저장' },
+  { btnSeq: 5, sortSeq: 5, btnFuncCd: 'cfmDelete', btnNm: '삭제' },
+  { btnSeq: 6, sortSeq: 6, btnFuncCd: 'cfmExcel',  btnNm: '엑셀' },
 ];
 
 /* ──────────────────────────────────

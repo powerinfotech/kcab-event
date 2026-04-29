@@ -46,13 +46,13 @@
  */
 import React, {forwardRef, useEffect, useState} from 'react';
 import {Input, InputProps, Tooltip} from 'antd';
-import {Control, Controller, FieldValues} from 'react-hook-form';
+import {Controller} from 'react-hook-form';
 
 interface CustomFormInputProps extends InputProps {
     regExp?:{value:RegExp, message:string};
     name:string;
     defaultValue?:string;
-    control:Control<FieldValues>;
+    control:any;
     rules?: any;
     onChangeValue?:(v:string)=>void;
     singleRow?:boolean;

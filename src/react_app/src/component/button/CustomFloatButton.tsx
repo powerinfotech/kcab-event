@@ -33,7 +33,9 @@
  */
 import React from 'react';
 import {FloatButton} from 'antd';
-import type {FloatButtonProps, FloatButtonGroupProps, BackTopProps} from 'antd/es/float-button/interface';
+import type {FloatButtonProps} from 'antd/es/float-button/FloatButton';
+import type {FloatButtonGroupProps} from 'antd/es/float-button/FloatButtonGroup';
+import type {BackTopProps} from 'antd/es/float-button/BackTop';
 
 interface CustomFloatButtonProps extends FloatButtonProps {}
 
@@ -43,11 +45,13 @@ const CustomFloatButton = (props: CustomFloatButtonProps) => {
     );
 };
 
-interface CustomFloatButtonGroupProps extends FloatButtonGroupProps {}
+interface CustomFloatButtonGroupProps extends Omit<FloatButtonGroupProps, 'children'> {
+    children?: React.ReactNode;
+}
 
 const CustomFloatButtonGroup = (props: CustomFloatButtonGroupProps) => {
     return (
-        <FloatButton.Group {...props} />
+        <FloatButton.Group {...props}>{props.children}</FloatButton.Group>
     );
 };
 

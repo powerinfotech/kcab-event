@@ -33,7 +33,7 @@
  */
 import {RangePickerProps} from 'antd/es/date-picker';
 import {DatePicker} from 'antd';
-import locale from 'antd/locale/ko_KR';
+import locale from 'antd/es/date-picker/locale/ko_KR';
 
 interface CustomRangePickerProps extends RangePickerProps {}
 

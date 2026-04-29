@@ -28,7 +28,7 @@
 import React, {useCallback} from 'react';
 import {InputNumber, InputNumberProps} from 'antd';
 
-interface CustomInputNumberProps extends InputNumberProps {
+interface CustomInputNumberProps extends InputNumberProps<number> {
     selectOnFocus?: boolean;
 }
 

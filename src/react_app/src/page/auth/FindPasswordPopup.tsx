@@ -24,14 +24,14 @@ const FindPasswordPopup = (props:ChangePasswordPopupProps) => {
         ,handleSubmit: findPasswordHandleSubmit
         ,reset: findPassworReset
         ,setError: findPassworSetError
-    } = useForm({mode:'onSubmit'});
+    } = useForm<findUserInfo>({mode:'onSubmit'});
     const{
         control: changePasswordControl
         , register: changePasswordRegister
         , handleSubmit: changePasswordHandleSubmit
         , reset: changePasswordReset
         , setError: changePasswordSetError
-    } = useForm({mode:'onSubmit'});
+    } = useForm<ChangePassword>({mode:'onSubmit'});
     const[findInfo,SetFindInfo] = useState<findUserInfo>({
         userId:'',
         userName:'',
@@ -107,7 +107,7 @@ const FindPasswordPopup = (props:ChangePasswordPopupProps) => {
         control={findPasswordControl} title={'사용자Id'}
     required={true}
     {...findPasswordRegister('userId',{required:'아이디를 입력하세요'})}
-    onChangeValue={(v) => SetFindInfo({...findInfo, userId: v})}
+    onChangeValue={(v: string) => SetFindInfo({...findInfo, userId: v})}
 
     />
     </div>
@@ -118,7 +118,7 @@ const FindPasswordPopup = (props:ChangePasswordPopupProps) => {
     <CustomValidFormInput
         control={findPasswordControl}
     title={'사용자이름'}
-    onChangeValue={(v) => SetFindInfo({...findInfo, userName: v})}
+    onChangeValue={(v: string) => SetFindInfo({...findInfo, userName: v})}
     {...findPasswordRegister('userName',{required:'아이디를 입력하세요'})}
     />
     </div>
@@ -129,7 +129,7 @@ const FindPasswordPopup = (props:ChangePasswordPopupProps) => {
     <CustomValidFormInput
         control={findPasswordControl}
     title={'휴대폰번호'}
-    onChangeValue={(v) => SetFindInfo({...findInfo, hpNo: v})}
+    onChangeValue={(v: string) => SetFindInfo({...findInfo, hpNo: v})}
     {...findPasswordRegister('hpNo',{required:'아이디를 입력하세요'})}
     />
     </div>
@@ -157,7 +157,7 @@ const FindPasswordPopup = (props:ChangePasswordPopupProps) => {
         type={'password'}
         control={changePasswordControl}
         required={true}
-        onChangeValue={(v) => SetChangeInfo({...changeInfo, password: v})}
+        onChangeValue={(v: string) => SetChangeInfo({...changeInfo, password: v})}
         {...changePasswordRegister('password', {required: '비밀번호를 입력하세요.'})}
         />
         </div>

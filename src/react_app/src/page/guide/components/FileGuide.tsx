@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button} from 'antd';
+import { Button, message} from 'antd';
 import { SaveOutlined } from '@ant-design/icons';
 import CustomFile, { FileDetailType } from '@component/upload/CustomFile';
 import CustomImageUpload from '@component/upload/CustomImageUpload';

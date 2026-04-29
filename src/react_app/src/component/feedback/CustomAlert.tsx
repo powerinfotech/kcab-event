@@ -27,11 +27,13 @@
 import React from 'react';
 import {Alert, AlertProps} from 'antd';
 
-interface CustomAlertProps extends AlertProps {}
+interface CustomAlertProps extends AlertProps {
+    content?: React.ReactNode;
+}
 
-const CustomAlert = (props: CustomAlertProps) => {
+const CustomAlert = ({content, description, ...props}: CustomAlertProps) => {
     return (
-        <Alert {...props} />
+        <Alert {...props} description={description ?? content} />
     );
 };
 

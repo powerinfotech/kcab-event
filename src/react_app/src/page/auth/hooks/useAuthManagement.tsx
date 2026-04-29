@@ -126,7 +126,7 @@ export function useAuthManagement() {
             selectedAuthGrpRowKeys, setSelectedAuthGrpRowKeys, 'authGrpSeq',
         );
         if (!removedKeys) return;
-        removedKeys.forEach(seq => unregister(`${seq}_authGrpNm`));
+        removedKeys.forEach(seq => unregister(`${String(seq)}_authGrpNm`));
         setSelectedAuthGrpRowIndex(-1);
     };
 

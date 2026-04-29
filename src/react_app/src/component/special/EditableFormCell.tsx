@@ -94,7 +94,7 @@ function EditableFormCell<T extends Record<string, any>>({
             required={true}
             maxLength={maxLength}
             regExp={regExp}
-            onChangeValue={(v) => {
+            onChangeValue={(v: string) => {
                 const finalValue = transformValue ? transformValue(v) : v;
                 onDataChange(record, fieldSuffix, finalValue);
             }}

@@ -34,11 +34,11 @@
  */
 import React, {forwardRef, useState} from 'react';
 import {Radio, RadioProps, Tooltip} from 'antd';
-import {Control, Controller, FieldValues} from 'react-hook-form';
+import {Controller} from 'react-hook-form';
 
 interface CustomRadioProps extends RadioProps {
     name:string;
-    control:Control<FieldValues>;
+    control:any;
     defaultValue?:any;
     onChangeValue?: (v:string) => void;
     options?: {value:any, label:string }[];
@@ -75,7 +75,7 @@ const CustomSaveFormRadio = forwardRef<HTMLDivElement, CustomRadioProps>(({name,
                                       onMouseEnter={() => setFocus(true)}
                                       onMouseLeave={() => setFocus(false)}
                                   >
-                                      {options&&options.map((item)=> {
+                                      {options&&options.map((item: {value: any, label: string})=> {
                                           return <Radio key={item.value} value={item.value}>{item.label}</Radio>;
                                       })}
                                 </Radio.Group>

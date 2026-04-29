@@ -32,12 +32,12 @@
 import React, {forwardRef, useState} from 'react';
 import {Input, Tooltip} from 'antd';
 import type {TextAreaProps} from 'antd/es/input';
-import {Control, Controller, FieldValues} from 'react-hook-form';
+import {Controller} from 'react-hook-form';
 
 interface CustomFormTextAreaProps extends TextAreaProps {
     name:string;
     defaultValue?:string;
-    control:Control<FieldValues>;
+    control:any;
     onChangeValue?:(v:string)=>void;
     [key: string]: any;
 }

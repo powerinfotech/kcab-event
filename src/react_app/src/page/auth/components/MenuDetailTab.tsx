@@ -1,6 +1,6 @@
 import React from 'react';
 import {UseFormReturn} from 'react-hook-form';
-import {DefaultOptionType} from 'rc-select/lib/Select';
+import {DefaultOptionType} from 'antd/es/select';
 import CustomInput from '@component/input/CustomInput';
 import CustomSaveFormInput from '@component/form/CustomSaveFormInput';
 import CustomSaveFormRadio from '@component/form/CustomSaveFormRadio';

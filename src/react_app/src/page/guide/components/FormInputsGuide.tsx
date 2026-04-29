@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import locale from 'antd/locale/ko_KR';
+import locale from 'antd/es/date-picker/locale/ko_KR';
 import CustomInput from '@component/input/CustomInput';
 import CustomTextArea from '@component/input/CustomTextArea';
 import CustomInputNumber from '@component/input/CustomInputNumber';
@@ -647,7 +647,7 @@ const FormInputsGuide = () => {
             <CustomDatePicker locale={locale} placeholder="날짜 선택" />
           </GuideStatusItem>
           <GuideStatusItem label="disabled">
-            <CustomDatePicker locale={locale} disabled allowEmpty />
+            <CustomDatePicker locale={locale} disabled />
           </GuideStatusItem>
         </GuideStatusRow>
       </GuideDemoBox>
@@ -677,7 +677,7 @@ const FormInputsGuide = () => {
             <CustomTimePicker placeholder="시간 선택" />
           </GuideStatusItem>
           <GuideStatusItem label="disabled">
-            <CustomTimePicker disabled allowEmpty />
+            <CustomTimePicker disabled />
           </GuideStatusItem>
         </GuideStatusRow>
       </GuideDemoBox>
@@ -689,7 +689,7 @@ const FormInputsGuide = () => {
             <CustomDatePicker picker="month" locale={locale} placeholder="월 선택" />
           </GuideStatusItem>
           <GuideStatusItem label="disabled">
-            <CustomDatePicker picker="month" locale={locale} disabled allowEmpty />
+            <CustomDatePicker picker="month" locale={locale} disabled />
           </GuideStatusItem>
         </GuideStatusRow>
       </GuideDemoBox>

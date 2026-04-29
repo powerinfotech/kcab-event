@@ -34,13 +34,13 @@
 import React, {forwardRef, useState} from 'react';
 import {Input, Tooltip} from 'antd';
 import type {PasswordProps} from 'antd/es/input';
-import {Control, Controller, FieldValues} from 'react-hook-form';
+import {Controller} from 'react-hook-form';
 
 interface CustomFormPasswordProps extends PasswordProps {
     regExp?:{value:RegExp, message:string};
     name:string;
     defaultValue?:string;
-    control:Control<FieldValues>;
+    control:any;
     onChangeValue?:(v:string)=>void;
     [key: string]: any;
 }

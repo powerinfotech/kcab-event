@@ -29,15 +29,15 @@
  */
 import React, {useState} from 'react';
 import {DatePicker, DatePickerProps, Tooltip} from 'antd';
-import {Control, Controller, FieldValues} from 'react-hook-form';
+import {Controller} from 'react-hook-form';
 import dayjs, {Dayjs} from 'dayjs';
 
-interface CustomDatePickerProps extends DatePickerProps {
+interface CustomDatePickerProps extends DatePickerProps<Dayjs, false> {
     name:string;
     defaultValue?:Dayjs;
-    control:Control<FieldValues>;
+    control:any;
     onChange?: (event: any) => void;
-    onChangeValue?: (v:Dayjs) => void;
+    onChangeValue?: (v:Dayjs | null) => void;
     [key: string]: any;
 };
 
@@ -57,7 +57,7 @@ const CustomValidDatePicker = ({name, control, onChange, onChangeValue,...props}
                                     name={field.name}
                                     value={field.value ? dayjs(field.value) : undefined}
                                     onChange={(v) => {
-                                        field.onChange(v?v.format('YYYY-MM-DD'):undefined);
+                                        field.onChange(v ? v.format('YYYY-MM-DD') : undefined);
                                         onChangeValue&&onChangeValue(v);
                                     }}
                                     onMouseEnter={() => setFocus(true)}

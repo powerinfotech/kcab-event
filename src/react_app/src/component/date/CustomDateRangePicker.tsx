@@ -62,8 +62,8 @@ interface CustomDateRangePickerProps {
     endValue?: Dayjs | null;
     onChange?: (startDate: Dayjs | null, endDate: Dayjs | null) => void;
     disabled?: boolean;
-    startProps?: DatePickerProps;
-    endProps?: DatePickerProps;
+    startProps?: DatePickerProps<Dayjs, false>;
+    endProps?: DatePickerProps<Dayjs, false>;
 }
 
 const CustomDateRangePicker = ({
