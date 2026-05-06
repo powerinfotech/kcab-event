@@ -21,6 +21,7 @@ if [ ! -f "$JAR" ]; then
 fi
 
 echo "[2/2] kcab-event 서비스 재시작..."
+mkdir -p logs
 sudo systemctl restart kcab-event
 sudo systemctl is-active kcab-event
 echo "✅ 배포 완료"
