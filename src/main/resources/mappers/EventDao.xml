@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kcabEvent.dao.EventDao">
+
+    <select id="selectEventList" resultType="com.kcabEvent.dto.event.EventListDto">
+        SELECT
+             event_seq
+            ,title
+            ,summary
+            ,thumbnail_url
+            ,event_start_dt
+            ,event_end_dt
+            ,location
+            ,status
+            ,use_yn
+            ,rgst_date_time
+        FROM event.tb_event
+        <where>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY event_start_dt DESC, event_seq DESC
+    </select>
+
+    <select id="selectEventBySeq" resultType="com.kcabEvent.domain.Event">
+        SELECT * FROM event.tb_event WHERE event_seq = #{eventSeq}
+    </select>
+
+    <insert id="insertEvent" parameterType="com.kcabEvent.domain.Event" useGeneratedKeys="true" keyProperty="eventSeq">
+        INSERT INTO event.tb_event (
+            title, content, summary, thumbnail_url,
+            event_start_dt, event_end_dt, location, registration_url,
+            status, use_yn, file_seq, rgst_user_seq, upt_user_seq
+        ) VALUES (
+            #{title}, #{content}, #{summary}, #{thumbnailUrl},
+            #{eventStartDt}, #{eventEndDt}, #{location}, #{registrationUrl},
+            #{status}, #{useYn}, #{fileSeq}, #{rgstUserSeq}, #{uptUserSeq}
+        )
+    </insert>
+
+    <update id="updateEvent" parameterType="com.kcabEvent.domain.Event">
+        UPDATE event.tb_event
+        SET  title             = #{title}
+            ,content           = #{content}
+            ,summary           = #{summary}
+            ,thumbnail_url     = #{thumbnailUrl}
+            ,event_start_dt    = #{eventStartDt}
+            ,event_end_dt      = #{eventEndDt}
+            ,location          = #{location}
+            ,registration_url  = #{registrationUrl}
+            ,status            = #{status}
+            ,use_yn            = #{useYn}
+            ,file_seq          = #{fileSeq}
+            ,upt_user_seq      = #{uptUserSeq}
+            ,upt_date_time     = CURRENT_TIMESTAMP
+        WHERE event_seq = #{eventSeq}
+    </update>
+
+    <delete id="deleteEvent">
+        DELETE FROM event.tb_event WHERE event_seq = #{eventSeq}
+    </delete>
+
+    <update id="incrementViewCount">
+        UPDATE event.tb_event SET view_count = view_count + 1 WHERE event_seq = #{eventSeq}
+    </update>
+
+</mapper>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kcabEvent.dao.NoticeDao">
+
+    <select id="selectNoticeList" resultType="com.kcabEvent.dto.notice.NoticeListDto">
+        SELECT
+             n.notice_seq
+            ,n.title
+            ,n.view_count
+            ,n.top_yn
+            ,n.use_yn
+            ,u.user_name AS rgst_user_name
+            ,n.rgst_date_time
+        FROM event.tb_notice n
+        LEFT JOIN event.tb_user u ON u.user_seq = n.rgst_user_seq
+        <where>
+            <if test="searchText != null and searchText != ''">
+                AND n.title LIKE '%' || #{searchText} || '%'
+            </if>
+        </where>
+        ORDER BY n.top_yn DESC, n.rgst_date_time DESC
+    </select>
+
+    <select id="selectNoticeBySeq" resultType="com.kcabEvent.domain.Notice">
+        SELECT * FROM event.tb_notice WHERE notice_seq = #{noticeSeq}
+    </select>
+
+    <insert id="insertNotice" parameterType="com.kcabEvent.domain.Notice" useGeneratedKeys="true" keyProperty="noticeSeq">
+        INSERT INTO event.tb_notice (title, content, top_yn, use_yn, file_seq, rgst_user_seq, upt_user_seq)
+        VALUES (#{title}, #{content}, #{topYn}, #{useYn}, #{fileSeq}, #{rgstUserSeq}, #{uptUserSeq})
+    </insert>
+
+    <update id="updateNotice" parameterType="com.kcabEvent.domain.Notice">
+        UPDATE event.tb_notice
+        SET  title          = #{title}
+            ,content        = #{content}
+            ,top_yn         = #{topYn}
+            ,use_yn         = #{useYn}
+            ,file_seq       = #{fileSeq}
+            ,upt_user_seq   = #{uptUserSeq}
+            ,upt_date_time  = CURRENT_TIMESTAMP
+        WHERE notice_seq = #{noticeSeq}
+    </update>
+
+    <delete id="deleteNotice">
+        DELETE FROM event.tb_notice WHERE notice_seq = #{noticeSeq}
+    </delete>
+
+    <update id="incrementViewCount">
+        UPDATE event.tb_notice SET view_count = view_count + 1 WHERE notice_seq = #{noticeSeq}
+    </update>
+
+</mapper>

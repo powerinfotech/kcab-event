@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kcabEvent.dao.SafUserDao">
+
+    <select id="selectByUserId" resultType="com.kcabEvent.domain.saf.SafUser">
+        SELECT * FROM event.users WHERE user_id = #{userId} AND deleted_at IS NULL
+    </select>
+
+    <select id="selectByEmail" resultType="com.kcabEvent.domain.saf.SafUser">
+        SELECT * FROM event.users WHERE email = #{email} AND deleted_at IS NULL
+    </select>
+
+    <insert id="insertUser" parameterType="com.kcabEvent.domain.saf.SafUser" useGeneratedKeys="true" keyProperty="userSeq">
+        INSERT INTO event.users (
+             user_id
+            ,email
+            ,password_hash
+            ,name
+            ,name_en
+            ,phone
+            ,user_type
+            ,status
+            ,language
+        ) VALUES (
+             #{userId}
+            ,#{email}
+            ,#{passwordHash}
+            ,#{name}
+            ,#{nameEn}
+            ,#{phone}
+            ,#{userType}
+            ,#{status}
+            ,#{language}
+        )
+    </insert>
+
+</mapper>

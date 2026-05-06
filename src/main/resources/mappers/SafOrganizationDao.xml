@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kcabEvent.dao.SafOrganizationDao">
+
+    <select id="selectByBusinessNumber" resultType="com.kcabEvent.domain.saf.SafOrganization">
+        SELECT * FROM event.organizations WHERE business_number = #{businessNumber}
+    </select>
+
+    <insert id="insertOrganization" parameterType="com.kcabEvent.domain.saf.SafOrganization" useGeneratedKeys="true" keyProperty="organizationSeq">
+        INSERT INTO event.organizations (
+             name
+            ,name_en
+            ,org_type
+            ,business_number
+            ,representative_name
+            ,contact_email
+            ,contact_phone
+            ,address
+            ,website
+            ,status
+            ,created_by
+        ) VALUES (
+             #{name}
+            ,#{nameEn}
+            ,#{orgType}
+            ,#{businessNumber}
+            ,#{representativeName}
+            ,#{contactEmail}
+            ,#{contactPhone}
+            ,#{address}
+            ,#{website}
+            ,#{status}
+            ,#{createdBy}
+        )
+    </insert>
+
+    <insert id="insertOrganizationMember" parameterType="com.kcabEvent.domain.saf.SafOrganizationMember">
+        INSERT INTO event.organization_members (organization_seq, user_seq, role)
+        VALUES (#{organizationSeq}, #{userSeq}, #{role})
+    </insert>
+
+</mapper>

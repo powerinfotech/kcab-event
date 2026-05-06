@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kcabEvent.dao.FaqDao">
+
+    <select id="selectFaqList" resultType="com.kcabEvent.dto.faq.FaqListDto">
+        SELECT
+             faq_seq
+            ,category
+            ,question
+            ,answer
+            ,sort_seq
+            ,use_yn
+            ,rgst_date_time
+        FROM event.tb_faq
+        <where>
+            <if test="category != null and category != ''">
+                AND category = #{category}
+            </if>
+        </where>
+        ORDER BY sort_seq, faq_seq
+    </select>
+
+    <insert id="insertFaq" parameterType="com.kcabEvent.domain.Faq" useGeneratedKeys="true" keyProperty="faqSeq">
+        INSERT INTO event.tb_faq (category, question, answer, sort_seq, use_yn, rgst_user_seq, upt_user_seq)
+        VALUES (#{category}, #{question}, #{answer}, #{sortSeq}, #{useYn}, #{rgstUserSeq}, #{uptUserSeq})
+    </insert>
+
+    <update id="updateFaq" parameterType="com.kcabEvent.domain.Faq">
+        UPDATE event.tb_faq
+        SET  category       = #{category}
+            ,question       = #{question}
+            ,answer         = #{answer}
+            ,sort_seq       = #{sortSeq}
+            ,use_yn         = #{useYn}
+            ,upt_user_seq   = #{uptUserSeq}
+            ,upt_date_time  = CURRENT_TIMESTAMP
+        WHERE faq_seq = #{faqSeq}
+    </update>
+
+    <delete id="deleteFaq">
+        DELETE FROM event.tb_faq WHERE faq_seq = #{faqSeq}
+    </delete>
+
+</mapper>
