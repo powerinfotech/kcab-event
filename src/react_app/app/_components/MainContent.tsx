@@ -11,7 +11,6 @@ import { MenuBtnDetail, PageButtonHandlers } from '@interface/common';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { menuInfoAtom } from '@atom/menuInfoAtom';
 import { showErrorPageAtom } from '@atom/showErrorPageAtom';
-import { tabModeAtom } from '@atom/tabModeAtom';
 import { tabListAtom, activeTabKeyAtom, TabItem } from '@atom/tabListAtom';
 import { currentPathAtom } from '@atom/currentPathAtom';
 import { callGetMenuBtnList } from '@api/CommonApi';
@@ -39,6 +38,10 @@ const TabPage = React.memo(function TabPage({
 
   useEffect(() => {
     handlersRef.current = {};
+    if (tab.menuViewPath?.startsWith('admin/')) {
+      setMenuBtnList([]);
+      return;
+    }
     if (tab.menuSeq) {
       callGetMenuBtnList(tab.menuSeq)
         .then((res) => {
@@ -121,6 +124,10 @@ function SinglePageContent({
 
   useEffect(() => {
     handlersRef.current = {};
+    if (menu?.menuViewPath?.startsWith('admin/')) {
+      setMenuBtnList([]);
+      return;
+    }
     if (menu?.menuSeq) {
       callGetMenuBtnList(menu.menuSeq)
         .then((res) => {
@@ -173,6 +180,16 @@ function SinglePageContent({
   }
 
   if (menuItem) {
+    if (menuItem.menuViewPath?.startsWith('admin/')) {
+      return (
+        <div className="container_wrap saf-admin-container">
+          <Suspense fallback={<></>}>
+            <Comp onChange={onChange} menuInfo={menuItem} handlersRef={handlersRef} />
+          </Suspense>
+        </div>
+      );
+    }
+
     return (
       <div className="container_wrap">
         <div className="container_inner">
@@ -210,19 +227,10 @@ function SinglePageContent({
   }
 
   return (
-    <div className="container_wrap">
-      <div className="container_inner">
-        <Suspense fallback={<></>}>
-          {isDashboard && (
-            <section className="title-wrap">
-              <div className="box-flex">
-                <h2 className="title">대시보드</h2>
-              </div>
-            </section>
-          )}
-          <Comp onChange={onChange} />
-        </Suspense>
-      </div>
+    <div className={`container_wrap ${isDashboard ? 'saf-admin-container' : ''}`}>
+      <Suspense fallback={<></>}>
+        <Comp onChange={onChange} />
+      </Suspense>
     </div>
   );
 }
@@ -342,7 +350,6 @@ export default function MainContent() {
   const [currentPath, setCurrentPath] = useAtom(currentPathAtom);
   const menuInfo = useAtomValue(menuInfoAtom);
   const setShowErrorPage = useSetAtom(showErrorPageAtom);
-  const tabMode = useAtomValue(tabModeAtom);
   const hasRedirected = useRef(false);
 
   // 브라우저 뒤로/앞으로 버튼 시 currentPathAtom 동기화
@@ -372,10 +379,6 @@ export default function MainContent() {
     },
     [setShowErrorPage],
   );
-
-  if (tabMode) {
-    return <MultiTabContent menuInfo={menuInfo} onChange={onChange} />;
-  }
 
   return <SinglePageContent menuInfo={menuInfo} onChange={onChange} />;
 }

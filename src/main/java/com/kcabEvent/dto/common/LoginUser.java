@@ -1,6 +1,8 @@
 package com.kcabEvent.dto.common;
 
 import com.kcabEvent.domain.User;
+import com.kcabEvent.domain.saf.SafUser;
+import com.kcabEvent.enums.saf.SafUserType;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -64,6 +66,19 @@ public class LoginUser {
         loginUser.setEmail(user.getEmail());
         loginUser.setUseYn(user.getUseYn());
         loginUser.setAdmYn(user.getAdmYn());
+        return loginUser;
+    }
+
+    public static LoginUser convert(SafUser user) {
+        LoginUser loginUser = new LoginUser();
+        loginUser.setUserSeq(user.getUserSeq() != null ? user.getUserSeq().intValue() : null);
+        loginUser.setUserId(user.getUserId());
+        loginUser.setDprtCd(null);
+        loginUser.setUserName(user.getName());
+        loginUser.setNickName(user.getName());
+        loginUser.setEmail(user.getEmail());
+        loginUser.setUseYn("Y");
+        loginUser.setAdmYn(SafUserType.SUPER_ADMIN.getCode().equals(user.getUserType()) ? "Y" : "N");
         return loginUser;
     }
 }

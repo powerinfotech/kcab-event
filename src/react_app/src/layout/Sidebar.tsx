@@ -1,69 +1,36 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
-import { Tooltip } from 'antd';
-import { FileTextOutlined, AppstoreOutlined } from '@ant-design/icons';
-import { MenuInfo } from '@interface/auth/MenuManagement';
-import { useAtom, useAtomValue, useSetAtom } from 'jotai';
+import React, { useEffect } from 'react';
+import {
+  CalendarOutlined,
+  CheckSquareOutlined,
+  CreditCardOutlined,
+  DashboardOutlined,
+  MailOutlined,
+  SettingOutlined,
+  TeamOutlined,
+  UserOutlined,
+  ProfileOutlined,
+  FormOutlined,
+} from '@ant-design/icons';
+import { useAtomValue, useSetAtom } from 'jotai';
 import { menuInfoAtom } from '@atom/menuInfoAtom';
-import { tabModeAtom } from '@atom/tabModeAtom';
-import { tabListAtom, activeTabKeyAtom } from '@atom/tabListAtom';
+import { sessionInfoAtom } from '@atom/sessionInfoAtom';
 import { currentPathAtom, pushPath } from '@atom/currentPathAtom';
-import useTabManager from '@hook/useTabManager';
-import LogoImage from '@image/powerInfoTech_logo.png';
+import { getAdminRole } from '@util/fixedAdminMenus';
 
-function SidebarSubpanel({
-  menuInfo,
-  selectedParentId,
-  onMenuClick,
-  tabMode,
-  onTabOpen,
-  setCurrentPath,
-}: {
-  menuInfo: MenuInfo[];
-  selectedParentId: number | null;
-  onMenuClick?: () => void;
-  tabMode: boolean;
-  onTabOpen: (menu: MenuInfo) => void;
-  setCurrentPath: (path: string) => void;
-}) {
-  if (selectedParentId === null) return null;
-
-  const parent = menuInfo.find((m) => m.menuSeq === selectedParentId && m.menuTypeCd === 'D');
-  const children = parent
-    ? menuInfo.filter((m) => m.upMenuSeq === parent.menuSeq && m.useYn === 'Y')
-    : [];
-
-  const handleClick = (e: React.MouseEvent, child: MenuInfo) => {
-    e.preventDefault();
-    if (tabMode) {
-      onTabOpen(child);
-    } else {
-      pushPath('/admin' + child.menuUrl, setCurrentPath);
-    }
-    onMenuClick?.();
-  };
-
-  return (
-    <div className="sidebar_subpanel">
-      <div className="sidebar_subpanel_header">
-        <span className="sidebar_subpanel_title">{parent?.menuNm ?? ''}</span>
-      </div>
-      <nav className="sidebar_menu">
-        {children.map((child) => (
-          <a
-            key={child.menuSeq}
-            href={'/admin' + child.menuUrl}
-            className="sidebar_menu_child"
-            onClick={(e) => handleClick(e, child)}
-          >
-            {child.menuNm}
-          </a>
-        ))}
-      </nav>
-    </div>
-  );
-}
+const iconByUrl: Record<string, React.ReactNode> = {
+  '/': <DashboardOutlined />,
+  '/events': <CalendarOutlined />,
+  '/side-events/SE-0042': <CheckSquareOutlined />,
+  '/side-events': <FormOutlined />,
+  '/participants': <TeamOutlined />,
+  '/payments': <CreditCardOutlined />,
+  '/email-cms/registration-confirm': <MailOutlined />,
+  '/users': <UserOutlined />,
+  '/settings': <SettingOutlined />,
+  '/profile': <ProfileOutlined />,
+};
 
 export default function Sidebar({
   onSubpanelOpenChange,
@@ -71,91 +38,50 @@ export default function Sidebar({
   onSubpanelOpenChange?: (open: boolean) => void;
 }) {
   const menuInfo = useAtomValue(menuInfoAtom);
-  const [tabMode, setTabMode] = useAtom(tabModeAtom);
-  const setTabList = useSetAtom(tabListAtom);
-  const setActiveTabKey = useSetAtom(activeTabKeyAtom);
+  const sessionInfo = useAtomValue(sessionInfoAtom);
+  const currentPath = useAtomValue(currentPathAtom);
   const setCurrentPath = useSetAtom(currentPathAtom);
-  const { openTab } = useTabManager();
-  const [subpanelOpen, setSubpanelOpen] = useState(false);
-  const [selectedParentId, setSelectedParentId] = useState<number | null>(null);
-  const sidebarWrapRef = useRef<HTMLElement>(null);
+  const role = getAdminRole(sessionInfo.admYn);
+  const visibleMenus = menuInfo
+    .filter((item) => item.menuTypeCd === 'V' && item.useYn === 'Y' && item.level === 1)
+    .sort((a, b) => a.sortSeq - b.sortSeq);
 
-  const parentMenus = menuInfo.filter((item) => item.menuTypeCd === 'D' && item.useYn === 'Y');
+  useEffect(() => {
+    onSubpanelOpenChange?.(false);
+  }, [onSubpanelOpenChange]);
 
-  const handleParentHover = (menuId: number) => {
-    setSelectedParentId(menuId);
-    setSubpanelOpen(true);
-    onSubpanelOpenChange?.(true);
+  const move = (menuUrl: string) => {
+    pushPath(menuUrl === '/' ? '/admin' : `/admin${menuUrl}`, setCurrentPath);
   };
 
-  const handleSubpanelClose = () => {
-    setSubpanelOpen(false);
-    setSelectedParentId(null);
-    onSubpanelOpenChange?.(false);
+  const isActive = (menuUrl: string) => {
+    if (menuUrl === '/') return currentPath === '/admin' || currentPath === '/admin/';
+    return currentPath.startsWith(`/admin${menuUrl}`);
   };
 
   return (
-    <aside
-      ref={sidebarWrapRef}
-      className="sidebar_wrap"
-      onMouseLeave={handleSubpanelClose}
-    >
-      <div className="sidebar_narrow">
-        <div className="sidebar_logo" onClick={() => {
-          pushPath('/admin', setCurrentPath);
-          if (tabMode) {
-            setActiveTabKey(null);
-          }
-        }}>
-          <img src={typeof LogoImage === 'string' ? LogoImage : LogoImage.src} alt="Logo" />
-        </div>
-        <nav className="sidebar_narrow_menu">
-          {parentMenus.map((parent) => (
-            <button
-              key={parent.menuSeq}
-              type="button"
-              className={`sidebar_narrow_item ${selectedParentId === parent.menuSeq ? 'is-active' : ''}`}
-              onMouseEnter={() => handleParentHover(parent.menuSeq)}
-            >
-              <span className="sidebar_narrow_label">{parent.menuNm}</span>
-            </button>
-          ))}
-        </nav>
-        <div className="sidebar_mode_toggle">
-          <Tooltip title={tabMode ? '싱글 모드로 전환' : '멀티탭 모드로 전환'} placement="right">
-            <button
-              type="button"
-              className={`sidebar_mode_btn ${tabMode ? 'is-multi' : ''}`}
-              onClick={() => {
-                const nextMode = !tabMode;
-                if (!nextMode) {
-                  // 멀티탭 → 싱글: 탭 전부 제거
-                  setTabList([]);
-                  setActiveTabKey(null);
-                }
-                setTabMode(nextMode);
-              }}
-            >
-              <span className={`sidebar_mode_icon ${!tabMode ? 'is-selected' : ''}`}>
-                <FileTextOutlined />
-              </span>
-              <span className={`sidebar_mode_icon ${tabMode ? 'is-selected' : ''}`}>
-                <AppstoreOutlined />
-              </span>
-            </button>
-          </Tooltip>
-        </div>
-      </div>
-      {subpanelOpen && (
-        <SidebarSubpanel
-          menuInfo={menuInfo}
-          selectedParentId={selectedParentId}
-          onMenuClick={handleSubpanelClose}
-          tabMode={tabMode}
-          onTabOpen={openTab}
-          setCurrentPath={setCurrentPath}
-        />
-      )}
+    <aside className="saf-sidebar">
+      <button className="saf-sidebar-brand" type="button" onClick={() => move('/')}>
+        <span>{role === 'SUPER_ADMIN' ? 'KCAB 관리자' : 'ABC 로펌'}</span>
+        <strong>{role === 'SUPER_ADMIN' ? '관리자 콘솔' : '관리자 콘솔'}</strong>
+      </button>
+
+      <nav className="saf-sidebar-menu" aria-label="관리자 메뉴">
+        {visibleMenus.map((menu) => (
+          <button
+            key={menu.menuSeq}
+            type="button"
+            className={`saf-sidebar-item ${isActive(menu.menuUrl) ? 'is-active' : ''}`}
+            onClick={() => move(menu.menuUrl)}
+          >
+            <span className="saf-sidebar-icon">{iconByUrl[menu.menuUrl] ?? <DashboardOutlined />}</span>
+            <span>{menu.menuNm}</span>
+            {role === 'SUPER_ADMIN' && menu.menuUrl === '/side-events/SE-0042' && (
+              <em>3</em>
+            )}
+          </button>
+        ))}
+      </nav>
     </aside>
   );
 }

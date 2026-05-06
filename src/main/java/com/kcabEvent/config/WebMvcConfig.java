@@ -115,6 +115,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
                         "/api/common/login-info",
                         "/api/login",
                         "/api/logout",
+                        "/api/public/**",
                         "/css/**",
                         "/images/**",
                         "/js/**",

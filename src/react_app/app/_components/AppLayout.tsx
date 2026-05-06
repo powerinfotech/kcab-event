@@ -5,13 +5,19 @@ import Sidebar from '@layout/Sidebar';
 import TopBar from '@layout/TopBar';
 import Footer from '@layout/Footer';
 import Login from '@page/Login';
-import { getUserLoginInfo, getUserMenuInfo } from '@api/CommonApi';
+import PublicPage from '@page/public/PublicPage';
+import PublicNotice from '@page/public/PublicNotice';
+import PublicFaq from '@page/public/PublicFaq';
+import PublicEvents from '@page/public/PublicEvents';
+import SafSignup from '@page/saf/SafSignup';
+import { getUserLoginInfo } from '@api/CommonApi';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { sessionInfoAtom } from '@atom/sessionInfoAtom';
 import { menuInfoAtom } from '@atom/menuInfoAtom';
 import { showErrorPageAtom } from '@atom/showErrorPageAtom';
 import { currentPathAtom } from '@atom/currentPathAtom';
 import { HttpStatusCode } from 'axios';
+import { getFixedAdminMenuInfo } from '@util/fixedAdminMenus';
 
 const MemoizedSidebar = React.memo(Sidebar);
 const MemoizedTopBar = React.memo(TopBar);
@@ -26,7 +32,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarSubpanelOpen, setSidebarSubpanelOpen] = useState(false);
 
   const isAdminPath = currentPath.startsWith('/admin');
-  const isLoginPath = currentPath === '/login';
+  const isLoginPath = currentPath === '/login' || currentPath === '/admin/login';
+  const isAdminSignupPath = currentPath === '/admin/signup';
 
   const getLoginUserInfo = useCallback(async () => {
     try {
@@ -38,11 +45,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           userName: res.item.userName,
           admYn: res.item.admYn ?? 'N',
         });
-
-        const menuRes = await getUserMenuInfo();
-        if (menuRes?.code === HttpStatusCode.Ok && menuRes.item) {
-          setMenuInfo(menuRes.item);
-        }
+        setMenuInfo(getFixedAdminMenuInfo(res.item.admYn));
       } else {
         setIsLogin(false);
       }
@@ -52,10 +55,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }, [setSessionInfo, setMenuInfo]);
 
   useEffect(() => {
-    if (isAdminPath) {
+    if (isAdminPath && !isLoginPath && !isAdminSignupPath) {
       getLoginUserInfo();
     }
-  }, [isAdminPath]);
+  }, [isAdminPath, isLoginPath, isAdminSignupPath]);
 
   const onSubpanelOpenChange = useCallback((open: boolean) => {
     setSidebarSubpanelOpen(open);
@@ -65,8 +68,19 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     return <Login />;
   }
 
+  if (isAdminSignupPath) {
+    return <SafSignup />;
+  }
+
   if (!isAdminPath) {
-    return <>{children}</>;
+    if (currentPath === '/') {
+      return <>{children}</>;
+    }
+    if (currentPath === '/notice') return <PublicNotice />;
+    if (currentPath === '/faq') return <PublicFaq />;
+    if (currentPath === '/events') return <PublicEvents />;
+    if (currentPath === '/saf/signup') return <SafSignup />;
+    return <PublicPage pageUrl={currentPath} />;
   }
 
   if (isLogin === true || sessionInfo.userId) {
@@ -85,7 +99,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   if (isLogin === false) {
-    window.location.href = '/login';
+    window.location.href = '/admin/login';
     return <></>;
   }
 

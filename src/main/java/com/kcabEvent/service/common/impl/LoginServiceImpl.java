@@ -1,11 +1,14 @@
 package com.kcabEvent.service.common.impl;
 
 import com.kcabEvent.dao.LoginLogDao;
+import com.kcabEvent.dao.SafUserDao;
 import com.kcabEvent.dao.UserDao;
 import com.kcabEvent.domain.LoginLog;
 import com.kcabEvent.domain.User;
+import com.kcabEvent.domain.saf.SafUser;
 import com.kcabEvent.dto.common.LoginRequestDto;
 import com.kcabEvent.dto.common.LoginUser;
+import com.kcabEvent.enums.saf.SafUserStatus;
 import com.kcabEvent.exception.custom.BusinessException;
 import com.kcabEvent.service.common.LoginService;
 import com.kcabEvent.util.CryptoUtil;
@@ -18,6 +21,7 @@ import org.springframework.stereotype.Service;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.dao.DataAccessException;
 
 /**
  * LoginServiceImpl - {@link LoginService} 구현체
@@ -41,6 +45,9 @@ public class LoginServiceImpl extends EgovAbstractServiceImpl implements LoginSe
     @Resource(name="loginLogDao")
     private LoginLogDao loginLogDao;
 
+    @Resource(name="safUserDao")
+    private SafUserDao safUserDao;
+
     private final HttpSession httpSession;
 
     @Autowired
@@ -50,10 +57,16 @@ public class LoginServiceImpl extends EgovAbstractServiceImpl implements LoginSe
 
     @Override
     public void login(LoginRequestDto loginRequestDto, HttpServletRequest request) {
-        User user = userDao.selectUser(loginRequestDto.getUserId());
+        User user = null;
+        try {
+            user = userDao.selectUser(loginRequestDto.getUserId());
+        } catch (DataAccessException e) {
+            log.warn("기존 TB_USER 조회 실패, SAF 사용자 로그인으로 전환: {}", e.getMessage());
+        }
 
         if (user == null) {
-            throw new BusinessException("사용자정보가 존재하지 않습니다.");
+            loginSafUser(loginRequestDto);
+            return;
         }
 
         if (!"auto".equals(loginRequestDto.getMode())
@@ -80,6 +93,24 @@ public class LoginServiceImpl extends EgovAbstractServiceImpl implements LoginSe
         } catch (org.springframework.dao.DataAccessException e) {
             log.warn("로그인 로그 저장 실패(로그인은 정상 처리): {}", e.getMessage());
         }
+    }
+
+    private void loginSafUser(LoginRequestDto loginRequestDto) {
+        SafUser safUser = safUserDao.selectByUserId(loginRequestDto.getUserId());
+        if (safUser == null) {
+            throw new BusinessException("사용자정보가 존재하지 않습니다.");
+        }
+
+        if (!SafUserStatus.ACTIVE.getCode().equals(safUser.getStatus())) {
+            throw new BusinessException("슈퍼관리자 승인 후 로그인할 수 있습니다.");
+        }
+
+        if (!"auto".equals(loginRequestDto.getMode())
+                && !CryptoUtil.matchesPassword(loginRequestDto.getPassword(), safUser.getPasswordHash())) {
+            throw new BusinessException("비밀번호가 일치하지 않습니다.");
+        }
+
+        httpSession.setAttribute("user", LoginUser.convert(safUser));
     }
 
     @Override

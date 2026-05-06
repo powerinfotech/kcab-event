@@ -3,6 +3,8 @@
 @import 'Component.scss';
 @import 'Guide.scss';
 @import 'HomePage.scss';
+@import 'Public.scss';
+@import 'SafSignup.scss';
 
 @font-face { font-family: "Noto Sans Korean"; font-weight: 100; font-style: normal; src: url("/style/font/NotoSansKr/NotoSans-Thin.eot") format("eot"), url("/style/font/NotoSansKr/NotoSans-Thin.otf") format("opentype"), url("/style/font/NotoSansKr/NotoSans-Thin.woff") format("woff"), url("/style/font/NotoSansKr/NotoSans-Thin.woff2") format("woff2"); }
 @font-face { font-family: "Noto Sans Korean"; font-weight: 200; font-style: normal; src: url("/style/font/NotoSansKr/NotoSans-Light.eot") format("eot"), url("/style/font/NotoSansKr/NotoSans-Light.otf") format("opentype"), url("/style/font/NotoSansKr/NotoSans-Light.woff") format("woff"), url("/style/font/NotoSansKr/NotoSans-Light.woff2") format("woff2"); }
@@ -191,6 +193,7 @@ html{
 @import 'Header.scss';
 @import 'Footer.scss';
 @import 'TabBar.scss';
+@import 'AdminDesign.scss';
 
 .hide {
     display: none;

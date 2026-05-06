@@ -1,179 +1,155 @@
-import React, {useEffect, useState} from 'react';
-import {ApiResponse} from '@interface/common';
-import CustomButton from '@component/button/CustomButton';
-import axios, {HttpStatusCode} from 'axios';
-import {getUserLoginInfo, getUserMenuInfo} from '@api/CommonApi';
-import {useForm} from 'react-hook-form';
-import CustomValidFormInput from '@component/form/CustomValidFormInput';
-import {useCookies} from 'react-cookie';
-import CustomValidFormCheckbox from '@component/form/CustomValidFormCheckbox';
-import {message, Modal} from "antd";
-import FindIdPopup from "@page/auth/FindIdPopup";
-import FindPasswordPopup from "@page/auth/FindPasswordPopup";
-import { useRouter } from 'next/navigation';
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import axios, { HttpStatusCode } from 'axios';
+import { useCookies } from 'react-cookie';
+import { message } from 'antd';
 import { useSetAtom } from 'jotai';
+import { ApiResponse } from '@interface/common';
+import { getUserLoginInfo } from '@api/CommonApi';
 import { sessionInfoAtom } from '@atom/sessionInfoAtom';
 import { menuInfoAtom } from '@atom/menuInfoAtom';
+import { getFixedAdminMenuInfo } from '@util/fixedAdminMenus';
 
 const Login = () => {
-    const router = useRouter();
-    const setSessionInfo = useSetAtom(sessionInfoAtom);
-    const setMenuInfoRecoil = useSetAtom(menuInfoAtom);
-    const {register: saveFormRegister
-        , control: saveFormControl
-        , handleSubmit: saveFormHandleSubmit
-        , setValue: saveFormSetValue
-        , getValues:saveFormGetValues} = useForm({mode:'onChange'});
-    const [cookies, setCookie, removeCookie] = useCookies(['id'], {doNotParse: true});
+  const setSessionInfo = useSetAtom(sessionInfoAtom);
+  const setMenuInfo = useSetAtom(menuInfoAtom);
+  const [cookies, setCookie, removeCookie] = useCookies(['id'], { doNotParse: true });
+  const [userId, setUserId] = useState('');
+  const [password, setPassword] = useState('');
+  const [rememberId, setRememberId] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-    const handleLogin = async() => {
-        const param =   {userId:saveFormGetValues('userId'), password:saveFormGetValues('password')};
-        const {data} = await axios.post<ApiResponse<boolean>>('/api/login',param);
-        if(data.code === HttpStatusCode.Ok) {
-            // 이전 세션의 탭 정보 초기화
-            sessionStorage.removeItem('tabList');
-            sessionStorage.removeItem('activeTabKey');
+  const completeLogin = async () => {
+    const ret = await getUserLoginInfo();
+    if (ret.code !== HttpStatusCode.Ok || !ret.item) return;
 
-            const ret = await getUserLoginInfo();
-            if(ret.code === HttpStatusCode.Ok) {
-                saveFormGetValues('isRememberId')?setCookie('id', saveFormGetValues('userId')): removeCookie('id');
-                if (ret.item) {
-                    setSessionInfo({
-                        userId: ret.item.userId,
-                        userName: ret.item.userName,
-                        admYn: ret.item.admYn ?? 'N',
-                    });
-                }
+    if (rememberId) setCookie('id', userId);
+    else removeCookie('id');
 
-                const menuRes = await getUserMenuInfo();
-                if(menuRes.code === HttpStatusCode.Ok && menuRes.item) {
-                    setMenuInfoRecoil(menuRes.item);
-                    defaultMenu();
-                }
-            }
-        }
+    setSessionInfo({
+      userId: ret.item.userId,
+      userName: ret.item.userName,
+      admYn: ret.item.admYn ?? 'N',
+    });
+    setMenuInfo(getFixedAdminMenuInfo(ret.item.admYn));
+    sessionStorage.removeItem('tabList');
+    sessionStorage.removeItem('activeTabKey');
+    window.location.href = '/admin';
+  };
 
-        return data;
-    };
+  const handleLogin = async (mode?: 'auto') => {
+    if (!userId || (!password && mode !== 'auto')) {
+      message.warning('아이디와 비밀번호를 입력하세요.');
+      return;
+    }
 
-    const defaultMenu = () => {
-        router.replace('/admin');
-    };
+    setLoading(true);
+    try {
+      const { data } = await axios.post<ApiResponse<boolean>>('/api/login', {
+        userId,
+        password,
+        mode,
+      });
+      if (data.code === HttpStatusCode.Ok) {
+        await completeLogin();
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const AutoLogin = async() => {
-        const param =   {userId:saveFormGetValues('userId'), password:saveFormGetValues('password'), mode:"auto"};
-        const {data} = await axios.post<ApiResponse<boolean>>('/api/login',param);
-        if(data.code === HttpStatusCode.Ok) {
-            // 이전 세션의 탭 정보 초기화
-            sessionStorage.removeItem('tabList');
-            sessionStorage.removeItem('activeTabKey');
+  useEffect(() => {
+    if (cookies.id) {
+      setUserId(cookies.id);
+      setRememberId(true);
+    }
 
-            const ret = await getUserLoginInfo();
-            if(ret.code === HttpStatusCode.Ok) {
-                saveFormGetValues('isRememberId')?setCookie('id', saveFormGetValues('userId')): removeCookie('id');
-                if (ret.item) {
-                    setSessionInfo({
-                        userId: ret.item.userId,
-                        userName: ret.item.userName,
-                        admYn: ret.item.admYn ?? 'N',
-                    });
-                }
+    let sso = location.pathname.replace(/^\/admin\/?/, '').replaceAll('/', '');
+    const result = sso.split('987654321');
+    if (result.length === 2) {
+      setUserId(result[0]);
+      setPassword(result[1]);
+      axios.post<ApiResponse<boolean>>('/api/login', {
+        userId: result[0],
+        password: result[1],
+        mode: 'auto',
+      }).then(({ data }) => {
+        if (data.code === HttpStatusCode.Ok) completeLogin();
+      });
+    }
+  }, []);
 
-                const menuRes = await getUserMenuInfo();
-                if(menuRes.code === HttpStatusCode.Ok && menuRes.item) {
-                    setMenuInfoRecoil(menuRes.item);
-                    defaultMenu();
-                }
-            }
-        }
+  return (
+    <main className="saf-login-page">
+      <section className="saf-login-card" aria-label="관리자 로그인">
+        <div className="saf-login-brand">
+          <span>KCAB 국제중재</span>
+          <strong>관리자 콘솔</strong>
+          <p>승인된 관리자만 접근할 수 있습니다.</p>
+        </div>
 
-        return data;
-    };
+        <form
+          className="saf-login-form"
+          onSubmit={(event) => {
+            event.preventDefault();
+            handleLogin();
+          }}
+        >
+          <p className="saf-login-kicker">슈퍼관리자 / 로펌 관리자 통합 로그인</p>
+          <h1>로그인</h1>
+          <p className="saf-login-desc">아이디와 비밀번호를 입력하세요.</p>
 
-    const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement> | React.KeyboardEvent<HTMLElement>) => {
-        if (event.key === 'Enter') {
-            saveFormHandleSubmit(handleLogin)();
-        }
-    };
-    const ManageAlert = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
-        event.preventDefault(); // 기본 동작 방지 (링크 이동 방지)
-        message.warning('관리자에게 문의하세요.');
-    };
+          <label>
+            <span>아이디</span>
+            <input
+              value={userId}
+              onChange={(event) => setUserId(event.target.value)}
+              placeholder="kcab/admin"
+              autoComplete="username"
+            />
+          </label>
 
-    useEffect(() => {
-        let sso = location.pathname;
-        sso = sso.replace(/^\/admin\/?/, '');
-        sso = sso.replaceAll('/','');
-        const result = sso.split("987654321");
-        if(cookies.id) {
-            saveFormSetValue('userId',  cookies.id);
-            saveFormSetValue('isRememberId', true);
-        }
-        if(result.length === 2)
-        {
-            saveFormSetValue('userId',result[0]);
-            saveFormSetValue('password',result[1]);
-            AutoLogin();
-        }
-    }, []);
+          <label>
+            <span>비밀번호</span>
+            <input
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              placeholder="••••••••"
+              type="password"
+              autoComplete="current-password"
+            />
+          </label>
 
-    const [showFindIdModal,setShowFindIdModal] = useState(false);
-    const [showFindPasswordModal,setShowFindPasswordModal] = useState(false);
-    return (
-        <>
-            <div className='login-dim'></div>
-            <div className='login-wrap'>
-                <h2 className='logo'>KCAB INTERNATIONAL EVENT</h2>
+          <div className="saf-login-row">
+            <label className="saf-login-check">
+              <input
+                type="checkbox"
+                checked={rememberId}
+                onChange={(event) => setRememberId(event.target.checked)}
+              />
+              <span>로그인 상태 유지</span>
+            </label>
+            <button type="button" onClick={() => message.info('관리자에게 문의해 주세요.')}>
+              비밀번호 찾기
+            </button>
+          </div>
 
-                <form className={'ant-form'} onSubmit={saveFormHandleSubmit(handleLogin)}>
-                    <div className={'ant-form-item ant-form-item-control-input'}>
-                        <CustomValidFormInput
-                            placeholder="아이디"
-                            control={saveFormControl}
-                            {...saveFormRegister('userId', {required: '아이디를 입력해주세요.'})}
-                        />
-                        <CustomValidFormInput
-                            type={'password'}
-                            placeholder="비밀번호"
-                            required={true}
-                            control={saveFormControl}
-                            {...saveFormRegister('password', {required: '비밀번호를 입력해주세요.'})}
-                            onKeyDown={handleKeyPress}
-                        />
-                    </div>
+          <button className="saf-login-submit" type="submit" disabled={loading}>
+            {loading ? '로그인 중...' : '로그인'}
+          </button>
 
-                    <CustomButton className='btn' type="primary"
-                                  onClick={saveFormHandleSubmit(handleLogin)}>로그인</CustomButton>
-
-                    <div className='box'>
-                        <CustomValidFormCheckbox
-                            name={'isRememberId'}
-                            control={saveFormControl}
-                            onChange={(p) => {
-                                saveFormSetValue('isRememberId', p.target.checked);
-                            }}>아이디 저장</CustomValidFormCheckbox>
-
-                        <div className='find'>
-                            <a className='link' href="#" onClick={()=>setShowFindIdModal(true)}>아이디찾기</a>
-                            <a className='link' href="#" onClick={()=>setShowFindPasswordModal(true)}>비밀번호찾기</a>
-                        </div>
-                    </div>
-
-
-                    <div className='copy-right'>
-                        Copyright © KCAB INTERNATIONAL. All Rights Reserved.
-                    </div>
-                </form>
-                <Modal open={showFindIdModal} onCancel={()=> setShowFindIdModal(false)} footer={null} title={"아이디찾기"} destroyOnHidden>
-                    <FindIdPopup onClose={() => setShowFindIdModal(false)} />
-                </Modal>
-                <Modal open={showFindPasswordModal} onCancel={()=> setShowFindPasswordModal(false)} footer={null} title={"비밀번호찾기"} destroyOnHidden>
-                    <FindPasswordPopup onClose={()=> setShowFindPasswordModal(false)}/>
-                </Modal>
-            </div>
-        </>
-    );
-
+          <button
+            className="saf-login-signup"
+            type="button"
+            onClick={() => { window.location.href = '/admin/signup'; }}
+          >
+            기업 회원가입
+          </button>
+        </form>
+      </section>
+    </main>
+  );
 };
 
 export default Login;

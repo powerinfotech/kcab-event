@@ -2,16 +2,16 @@
 
 import { callLogout } from '@api/CommonApi';
 import { HttpStatusCode } from 'axios';
-import IconLogout from '@icon/IconLogout';
-import IconAdmin from '@icon/IconAdmin';
+import { LogoutOutlined, UserOutlined } from '@ant-design/icons';
 import { useAtomValue } from 'jotai';
 import { sessionInfoAtom } from '@atom/sessionInfoAtom';
 import { useMessage } from '@hook/useMessage';
-import TabBar from '../../app/_components/TabBar';
+import { getAdminRole } from '@util/fixedAdminMenus';
 
 export default function TopBar() {
   const sessionInfo = useAtomValue(sessionInfoAtom);
   const { confirm } = useMessage();
+  const role = getAdminRole(sessionInfo.admYn);
 
   const logout = async () => {
     if (!await confirm('로그아웃하시겠습니까?')) return;
@@ -19,26 +19,27 @@ export default function TopBar() {
     if (data.code === HttpStatusCode.Ok) {
       sessionStorage.removeItem('tabList');
       sessionStorage.removeItem('activeTabKey');
-      location.href = '/login';
+      location.href = '/admin/login';
     }
   };
 
   return (
     <div className="app_topbar">
       <div className="app_topbar_left">
-        <TabBar />
+        <strong>SAF 2026</strong>
+        <span>2026.09.10 ~ 09.14</span>
       </div>
       <div className="app_topbar_right">
         <div className="app_topbar_user">
           <div className="app_topbar_thumb">
-            <IconAdmin />
+            <UserOutlined />
           </div>
           <span className="app_topbar_name">
-            {(sessionInfo && sessionInfo.userName) ?? ''}님
+            {sessionInfo.userName || (role === 'SUPER_ADMIN' ? '슈퍼관리자' : '로펌 관리자')}
           </span>
         </div>
-        <button type="button" className="app_topbar_logout" onClick={logout}>
-          <IconLogout />
+        <button type="button" className="app_topbar_logout" onClick={logout} aria-label="로그아웃">
+          <LogoutOutlined />
         </button>
       </div>
     </div>
