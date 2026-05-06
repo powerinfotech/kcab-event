@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import CustomAddressInput from '@component/special/CustomAddressInput';
-import CustomCkEditor from '@component/special/CustomCkEditor';
+import CustomRichEditor from '@component/special/CustomRichEditor';
 import UserSearchInput from '@component/special/UserSearchInput';
 import MenuButtonBar from '@component/special/MenuButtonBar';
 import EditableFormCell from '@component/special/EditableFormCell';
@@ -52,14 +52,14 @@ const [addressDetail, setAddressDetail] = useState<string>('');
 // disabled       - 비활성화
 // react-daum-postcode 팝업 연동`;
 
-const CKEDITOR_CODE = `import CustomCkEditor from '@component/special/CustomCkEditor';
+const CKEDITOR_CODE = `import CustomRichEditor from '@component/special/CustomRichEditor';
 
 // ① 편집 모드
 const [content, setContent] = useState<string>('<p>초기 내용</p>');
-<CustomCkEditor value={content} isEditable={true} onChange={setContent} />
+<CustomRichEditor value={content} isEditable={true} onChange={setContent} />
 
 // ② 읽기 전용 (배경색 회색, 편집 불가)
-<CustomCkEditor value={content} isEditable={false} onChange={setContent} />
+<CustomRichEditor value={content} isEditable={false} onChange={setContent} />
 
 // ── Props 정리 ──
 // value      - HTML 문자열
@@ -204,7 +204,7 @@ const SpecialGuide = () => {
   const [address, setAddress] = useState('');
   const [addressDetail, setAddressDetail] = useState('');
 
-  /* CkEditor */
+  /* RichEditor */
   const [editorContent, setEditorContent] = useState('<p>초기 내용입니다. 수정 버튼을 눌러 편집 모드로 전환하세요.</p>');
   const [isEditable, setIsEditable] = useState(false);
 
@@ -318,8 +318,8 @@ const SpecialGuide = () => {
         </div>
       </GuideDemoBox>
 
-      {/* CkEditor */}
-      <GuideDemoBox title="CkEditor (리치 텍스트 에디터)" codeExample={CKEDITOR_CODE}>
+      {/* RichEditor */}
+      <GuideDemoBox title="RichEditor (리치 텍스트 에디터)" codeExample={CKEDITOR_CODE}>
         <div style={{ marginBottom: 8 }}>
           <CustomButton
             type={isEditable ? 'primary' : 'default'}
@@ -331,7 +331,7 @@ const SpecialGuide = () => {
             {isEditable ? '편집 중' : '읽기 전용'}
           </CustomTag>
         </div>
-        <CustomCkEditor
+        <CustomRichEditor
           value={editorContent}
           isEditable={isEditable}
           onChange={setEditorContent}

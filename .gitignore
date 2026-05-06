@@ -38,6 +38,7 @@ src/main/resources/static/
 ### Next.js ###
 .next/
 out/
+next-env.d.ts
 
 ### Node / npm / yarn ###
 npm-debug.log*
