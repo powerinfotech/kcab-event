@@ -5,7 +5,7 @@ JAR=build/libs/kcab-event-1.0.0.jar
 PROFILE=dev
 
 export JAVA_HOME=/app/jdk-21
-export PATH=$JAVA_HOME/bin:$PATH
+export PATH=$JAVA_HOME/bin:/home/kcab/.nvm/versions/node/v20.20.2/bin:$PATH
 
 echo "============================================"
 echo "🚀 kcab-event 배포 시작 ($(date '+%Y-%m-%d %H:%M:%S'))"
