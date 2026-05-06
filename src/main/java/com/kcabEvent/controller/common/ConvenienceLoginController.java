@@ -17,6 +17,6 @@ public class ConvenienceLoginController {
     @RequestMapping("/secure-login")
     public String convenienceLogin(@RequestParam("LX_USER") String id) {
         convenienceLoginService.login(id);
-        return "redirect:/";
+        return "redirect:/admin";
     }
 }

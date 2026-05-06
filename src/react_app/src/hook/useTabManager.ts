@@ -84,7 +84,7 @@ export default function useTabManager() {
       // 이미 열려있으면 활성화만
       if (tabList.find((t) => t.key === key)) {
         setActiveTabKey(key);
-        updateUrl(key);
+        updateUrl('/admin' + key);
         return;
       }
 
@@ -108,7 +108,7 @@ export default function useTabManager() {
           },
         ]);
         setActiveTabKey(key);
-        updateUrl(key);
+        updateUrl('/admin' + key);
         return;
       }
 
@@ -127,7 +127,7 @@ export default function useTabManager() {
         ];
       });
       setActiveTabKey(key);
-      updateUrl(key);
+      updateUrl('/admin' + key);
     },
     [tabList, setTabList, setActiveTabKey, confirm],
   );
@@ -149,12 +149,12 @@ export default function useTabManager() {
       if (activeTabKeyRef.current === key) {
         if (newList.length === 0) {
           setActiveTabKey(null);
-          pushPath('/', setCurrentPath);
+          pushPath('/admin', setCurrentPath);
         } else {
           const nextIdx = Math.min(idx, newList.length - 1);
           const nextKey = newList[nextIdx].key;
           setActiveTabKey(nextKey);
-          updateUrl(nextKey);
+          updateUrl('/admin' + nextKey);
         }
       }
     },
@@ -165,7 +165,7 @@ export default function useTabManager() {
   const activateTab = useCallback(
     (key: string) => {
       setActiveTabKey(key);
-      updateUrl(key);
+      updateUrl('/admin' + key);
     },
     [setActiveTabKey],
   );
@@ -175,7 +175,7 @@ export default function useTabManager() {
     (key: string) => {
       setTabList((prev) => prev.filter((t) => t.key === key));
       setActiveTabKey(key);
-      updateUrl(key);
+      updateUrl('/admin' + key);
     },
     [setTabList, setActiveTabKey],
   );
@@ -184,7 +184,7 @@ export default function useTabManager() {
   const closeAllTabs = useCallback(() => {
     setTabList([]);
     setActiveTabKey(null);
-    pushPath('/', setCurrentPath);
+    pushPath('/admin', setCurrentPath);
   }, [setTabList, setActiveTabKey, setCurrentPath]);
 
   return {

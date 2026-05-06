@@ -125,7 +125,7 @@ export function getPageComponent(viewPath: string): React.ComponentType<PageComp
  * getStaticRouteKey('/auth/menu') → null
  */
 export function getStaticRouteKey(pathname: string): string | null {
-  const p = pathname === '/' ? '/' : pathname.replace(/^\//, '');
-  if (p === '/') return 'DashBoard';
+  if (pathname === '/') return 'HomePage';
+  if (pathname === '/admin' || pathname === '/admin/') return 'DashBoard';
   return null;
 }

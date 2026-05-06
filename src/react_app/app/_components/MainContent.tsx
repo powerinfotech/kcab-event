@@ -95,6 +95,11 @@ const TabPage = React.memo(function TabPage({
   );
 });
 
+/** /admin prefix를 제거하여 메뉴 URL과 매칭할 수 있는 경로를 반환 */
+function stripAdminPrefix(path: string): string {
+  return path.replace(/^\/admin/, '') || '/';
+}
+
 /** 싱글 페이지 모드 컴포넌트 */
 function SinglePageContent({
   menuInfo,
@@ -107,8 +112,11 @@ function SinglePageContent({
   const handlersRef = useRef<PageButtonHandlers>({});
   const [menuBtnList, setMenuBtnList] = useState<MenuBtnDetail[]>([]);
 
+  const isAdminPath = pathname.startsWith('/admin');
+  const menuPath = isAdminPath ? stripAdminPrefix(pathname) : pathname;
+
   const menu = menuInfo.find(
-    (m) => m.menuTypeCd === 'V' && m.useYn === 'Y' && m.menuUrl === pathname,
+    (m) => m.menuTypeCd === 'V' && m.useYn === 'Y' && m.menuUrl === menuPath,
   );
 
   useEffect(() => {
@@ -137,9 +145,12 @@ function SinglePageContent({
   }> | null = null;
   let menuItem: MenuInfo | null = null;
 
-  const isDashboard = pathname === '/';
+  const isHomePage = pathname === '/';
+  const isDashboard = isAdminPath && menuPath === '/';
 
-  if (isDashboard) {
+  if (isHomePage) {
+    Comp = getPageComponent('HomePage');
+  } else if (isDashboard) {
     Comp = getPageComponent('DashBoard');
   } else if (menu?.menuViewPath) {
     menuItem = menu;
@@ -149,12 +160,16 @@ function SinglePageContent({
     Comp = getPageComponent(staticKey);
   }
 
-  if (menuInfo.length && !Comp && pathname !== '/') {
+  if (menuInfo.length && !Comp && isAdminPath && menuPath !== '/') {
     return <ErrorPage404 onChange={onChange} />;
   }
 
   if (!Comp) {
     return <div className="container_wrap" />;
+  }
+
+  if (isHomePage) {
+    return <Comp onChange={onChange} />;
   }
 
   if (menuItem) {
@@ -257,15 +272,17 @@ function MultiTabContent({
   // 최초 마운트 시 현재 URL에 해당하는 탭이 없으면 자동 오픈
   useEffect(() => {
     if (typeof window === 'undefined' || menuInfo.length === 0) return;
-    const currentPath = window.location.pathname;
-    ensureTabForPath(currentPath);
+    const currentBrowserPath = window.location.pathname;
+    const menuPath = stripAdminPrefix(currentBrowserPath);
+    ensureTabForPath(menuPath);
   }, [menuInfo, ensureTabForPath]);
 
   // currentPathAtom 변경 시 해당 탭 오픈 (pushPath 호출 시)
   const currentPath = useAtomValue(currentPathAtom);
   useEffect(() => {
-    if (currentPath && currentPath !== '/') {
-      ensureTabForPath(currentPath);
+    if (currentPath && currentPath !== '/' && currentPath !== '/admin') {
+      const menuPath = stripAdminPrefix(currentPath);
+      ensureTabForPath(menuPath);
     }
   }, [currentPath, ensureTabForPath]);
 
@@ -273,11 +290,12 @@ function MultiTabContent({
   useEffect(() => {
     const handlePopState = () => {
       const popPath = window.location.pathname;
-      if (popPath === '/') {
+      const menuPath = stripAdminPrefix(popPath);
+      if (menuPath === '/') {
         setActiveTabKey(null);
         return;
       }
-      ensureTabForPath(popPath);
+      ensureTabForPath(menuPath);
     };
 
     window.addEventListener('popstate', handlePopState);
@@ -342,8 +360,8 @@ export default function MainContent() {
     if (typeof window !== 'undefined' && window.location.href.includes('987654321')) {
       if (!hasRedirected.current) {
         hasRedirected.current = true;
-        window.history.replaceState(null, '', '/');
-        setCurrentPath('/');
+        window.history.replaceState(null, '', '/admin');
+        setCurrentPath('/admin');
       }
     }
   }, [currentPath, menuInfo, setCurrentPath]);

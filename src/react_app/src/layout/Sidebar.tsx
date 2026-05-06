@@ -39,7 +39,7 @@ function SidebarSubpanel({
     if (tabMode) {
       onTabOpen(child);
     } else {
-      pushPath(child.menuUrl, setCurrentPath);
+      pushPath('/admin' + child.menuUrl, setCurrentPath);
     }
     onMenuClick?.();
   };
@@ -53,7 +53,7 @@ function SidebarSubpanel({
         {children.map((child) => (
           <a
             key={child.menuSeq}
-            href={child.menuUrl}
+            href={'/admin' + child.menuUrl}
             className="sidebar_menu_child"
             onClick={(e) => handleClick(e, child)}
           >
@@ -102,7 +102,7 @@ export default function Sidebar({
     >
       <div className="sidebar_narrow">
         <div className="sidebar_logo" onClick={() => {
-          pushPath('/', setCurrentPath);
+          pushPath('/admin', setCurrentPath);
           if (tabMode) {
             setActiveTabKey(null);
           }

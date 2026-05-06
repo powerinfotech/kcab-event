@@ -10,6 +10,7 @@ import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { sessionInfoAtom } from '@atom/sessionInfoAtom';
 import { menuInfoAtom } from '@atom/menuInfoAtom';
 import { showErrorPageAtom } from '@atom/showErrorPageAtom';
+import { currentPathAtom } from '@atom/currentPathAtom';
 import { HttpStatusCode } from 'axios';
 
 const MemoizedSidebar = React.memo(Sidebar);
@@ -20,8 +21,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [sessionInfo, setSessionInfo] = useAtom(sessionInfoAtom);
   const setMenuInfo = useSetAtom(menuInfoAtom);
   const showErrorPage = useAtomValue(showErrorPageAtom);
+  const currentPath = useAtomValue(currentPathAtom);
   const [isLogin, setIsLogin] = useState<boolean | undefined>(undefined);
   const [sidebarSubpanelOpen, setSidebarSubpanelOpen] = useState(false);
+
+  const isAdminPath = currentPath.startsWith('/admin');
+  const isLoginPath = currentPath === '/login';
 
   const getLoginUserInfo = useCallback(async () => {
     try {
@@ -47,12 +52,22 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }, [setSessionInfo, setMenuInfo]);
 
   useEffect(() => {
-    getLoginUserInfo();
-  }, []);
+    if (isAdminPath) {
+      getLoginUserInfo();
+    }
+  }, [isAdminPath]);
 
   const onSubpanelOpenChange = useCallback((open: boolean) => {
     setSidebarSubpanelOpen(open);
   }, []);
+
+  if (isLoginPath) {
+    return <Login />;
+  }
+
+  if (!isAdminPath) {
+    return <>{children}</>;
+  }
 
   if (isLogin === true || sessionInfo.userId) {
     return (
@@ -70,7 +85,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   if (isLogin === false) {
-    return <Login />;
+    window.location.href = '/login';
+    return <></>;
   }
 
   return <></>;

@@ -1,0 +1,135 @@
+.homepage {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Noto Sans KR', 'Noto Sans Korean', sans-serif;
+  color: #333;
+}
+
+.homepage-header {
+  background: #fff;
+  border-bottom: 1px solid #e0e0e0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+
+  .homepage-header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .homepage-logo {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1a1a2e;
+    letter-spacing: 1px;
+    margin: 0;
+  }
+
+  .homepage-admin-link {
+    padding: 8px 20px;
+    border: 1px solid #1a1a2e;
+    border-radius: 4px;
+    color: #1a1a2e;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+
+    &:hover {
+      background: #1a1a2e;
+      color: #fff;
+    }
+  }
+}
+
+.homepage-hero {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  padding: 120px 24px;
+  text-align: center;
+
+  .homepage-hero-inner {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .homepage-hero-title {
+    font-size: 42px;
+    font-weight: 700;
+    color: #fff;
+    margin: 0 0 16px;
+    letter-spacing: 2px;
+  }
+
+  .homepage-hero-desc {
+    font-size: 18px;
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0;
+    line-height: 1.6;
+  }
+}
+
+.homepage-content {
+  flex: 1;
+  background: #f5f6fa;
+  padding: 60px 24px;
+
+  .homepage-content-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .homepage-card-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .homepage-card {
+    background: #fff;
+    border-radius: 8px;
+    padding: 32px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: transform 0.2s, box-shadow 0.2s;
+
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    }
+  }
+
+  .homepage-card-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1a1a2e;
+    margin: 0 0 12px;
+  }
+
+  .homepage-card-desc {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.6;
+    margin: 0;
+  }
+}
+
+.homepage-footer {
+  background: #1a1a2e;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+  padding: 24px;
+  font-size: 13px;
+
+  p {
+    margin: 0;
+  }
+}

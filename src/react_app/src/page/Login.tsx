@@ -57,7 +57,7 @@ const Login = () => {
     };
 
     const defaultMenu = () => {
-        router.replace('/');
+        router.replace('/admin');
     };
 
     const AutoLogin = async() => {
@@ -102,6 +102,7 @@ const Login = () => {
 
     useEffect(() => {
         let sso = location.pathname;
+        sso = sso.replace(/^\/admin\/?/, '');
         sso = sso.replaceAll('/','');
         const result = sso.split("987654321");
         if(cookies.id) {
@@ -122,7 +123,7 @@ const Login = () => {
         <>
             <div className='login-dim'></div>
             <div className='login-wrap'>
-                <h2 className='logo'>파워인포텍 리액트 공통</h2>
+                <h2 className='logo'>KCAB INTERNATIONAL EVENT</h2>
 
                 <form className={'ant-form'} onSubmit={saveFormHandleSubmit(handleLogin)}>
                     <div className={'ant-form-item ant-form-item-control-input'}>
@@ -160,7 +161,7 @@ const Login = () => {
 
 
                     <div className='copy-right'>
-                        Copyright © 파워인포텍 리액트 공통. All Rights Reserved.
+                        Copyright © KCAB INTERNATIONAL. All Rights Reserved.
                     </div>
                 </form>
                 <Modal open={showFindIdModal} onCancel={()=> setShowFindIdModal(false)} footer={null} title={"아이디찾기"} destroyOnHidden>

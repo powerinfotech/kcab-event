@@ -5,8 +5,8 @@ import ClientProviders from './_components/ClientProviders';
 import AppLayout from './_components/AppLayout';
 
 export const metadata: Metadata = {
-  title: '파워인포텍 리액트공통',
-  description: '파워인포텍 리액트공통',
+  title: 'KCAB INTERNATIONAL EVENT',
+  description: 'KCAB INTERNATIONAL EVENT',
 };
 
 export default function RootLayout({

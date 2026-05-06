@@ -19,7 +19,7 @@ function ParentMenu({parentMenu}:{parentMenu:MenuInfo}) {
 function ChildMenu({parentMenu, menuList}:{parentMenu:MenuInfo, menuList:MenuInfo[]}) {
     return (<div className='menu-sub-link'>
             {menuList.filter((menu) => menu.upMenuSeq === parentMenu.menuSeq && menu.useYn === 'Y').map((menu) => {
-               return <p key={menu.menuSeq} className="cursor-pointer"><a onClick={()=>window.location.replace(menu.menuUrl)}>{menu.menuNm}</a></p>;
+               return <p key={menu.menuSeq} className="cursor-pointer"><a onClick={()=>window.location.replace('/admin' + menu.menuUrl)}>{menu.menuNm}</a></p>;
             })}
         </div>
     );
@@ -62,7 +62,7 @@ const Header = ({menuInfo}: { menuInfo: MenuInfo[] }) => {
        if(data.code === HttpStatusCode.Ok) {
            sessionStorage.removeItem('tabList');
            sessionStorage.removeItem('activeTabKey');
-           location.href = location.pathname;
+           location.href = '/login';
        }
     };
 
@@ -74,7 +74,7 @@ const Header = ({menuInfo}: { menuInfo: MenuInfo[] }) => {
                 return currentMenu.menuSeq < minMenu.menuSeq ? currentMenu : minMenu;
             });
 
-            const defaultUrl = location.origin + minumSeqMenu.menuUrl;
+            const defaultUrl = location.origin + '/admin' + minumSeqMenu.menuUrl;
             location.href = defaultUrl;
 
         }

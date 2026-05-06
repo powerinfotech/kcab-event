@@ -19,7 +19,7 @@ export default function TopBar() {
     if (data.code === HttpStatusCode.Ok) {
       sessionStorage.removeItem('tabList');
       sessionStorage.removeItem('activeTabKey');
-      location.href = location.pathname;
+      location.href = '/login';
     }
   };
 
