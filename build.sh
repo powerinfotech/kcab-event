@@ -32,9 +32,8 @@ pkill -9 -f kcab-event-1.0.0.jar || true
 echo "[3/3] 새 프로세스 시작 (profile=$PROFILE)..."
 mkdir -p logs
 LOG=logs/app_$(date '+%Y%m%d_%H%M%S').log
-nohup java -jar \
+setsid -f java -jar \
   -Dfile.encoding=UTF-8 \
   -Dspring.profiles.active=$PROFILE \
-  "$JAR" > "$LOG" 2>&1 < /dev/null &
-disown
+  "$JAR" > "$LOG" 2>&1 < /dev/null
 echo "✅ 배포 완료. 로그: $(pwd)/$LOG"
