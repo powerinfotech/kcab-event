@@ -8,6 +8,6 @@ jobs:
   deploy:
     runs-on: self-hosted
     steps:
-      - name: Run deploy script
-        run: |
-          bash /home/ubuntu/next-admin-common.sh
+      - uses: actions/checkout@v4
+      - name: Run deploy
+        run: bash build.sh
