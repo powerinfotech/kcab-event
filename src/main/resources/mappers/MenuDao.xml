@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.power.dao.MenuDao">
-	<select id="selectMenuList" resultType="com.power.dto.auth.MenuListDto" >
+<mapper namespace="com.kcabEvent.dao.MenuDao">
+	<select id="selectMenuList" resultType="com.kcabEvent.dto.auth.MenuListDto" >
 		WITH RECURSIVE menu_record (
 									menu_seq, up_menu_seq, menu_nm, menu_type_cd,
 									menu_view_path, menu_url, use_yn, sort_seq, level,
@@ -85,7 +85,7 @@
 		  AND au.end_dt &gt;= TO_CHAR(NOW(), 'YYYYMMDD')
 	</select>
 
-	<insert id="insertMenu" parameterType="com.power.domain.Menu" useGeneratedKeys="true" keyProperty="menuSeq">
+	<insert id="insertMenu" parameterType="com.kcabEvent.domain.Menu" useGeneratedKeys="true" keyProperty="menuSeq">
 		INSERT INTO tb_menu
 		(
 			up_menu_seq
@@ -114,7 +114,7 @@
 			 ,now()
 		)
 	</insert>
-	<update id="updateMenu" parameterType="com.power.domain.Menu" >
+	<update id="updateMenu" parameterType="com.kcabEvent.domain.Menu" >
 		UPDATE tb_menu
 		SET
 			 up_menu_seq = #{upMenuSeq}

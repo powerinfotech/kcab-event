@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.power.dao.FileDao">
-	<select id="selectFile" parameterType="Integer" resultType="com.power.dto.common.FileDetailDto">
+<mapper namespace="com.kcabEvent.dao.FileDao">
+	<select id="selectFile" parameterType="Integer" resultType="com.kcabEvent.dto.common.FileDetailDto">
 		SELECT
 		    file_dtl_seq,
 		    file_seq,
@@ -27,7 +27,7 @@
 		where file_seq = #{fileSeq}
 	</select>
 
-	<insert id="insertFile" parameterType="com.power.dto.common.FileDetailDto" useGeneratedKeys="true" keyProperty="fileSeq">
+	<insert id="insertFile" parameterType="com.kcabEvent.dto.common.FileDetailDto" useGeneratedKeys="true" keyProperty="fileSeq">
 		INSERT INTO TB_FILE (
 		 	menu_seq,
 		    use_yn,
@@ -45,7 +45,7 @@
 	    )
 	</insert>
 
-	<insert id="insertFileDetail" parameterType="com.power.dto.common.FileDetailDto">
+	<insert id="insertFileDetail" parameterType="com.kcabEvent.dto.common.FileDetailDto">
 		INSERT INTO TB_FILE_DTL (
 			file_seq,
 			file_nm,
@@ -71,7 +71,7 @@
 		)
 	</insert>
 
-	<update id="updateFileDetail" parameterType="com.power.dto.common.FileDetailDto">
+	<update id="updateFileDetail" parameterType="com.kcabEvent.dto.common.FileDetailDto">
 		UPDATE TB_FILE_DTL
 		SET sort_seq = #{sortSeq},
 		upt_user_seq = #{uptUserSeq},
@@ -82,7 +82,7 @@
 		</if>
 	</update>
 
-	<update id="deleteFile" parameterType="com.power.dto.common.FileDetailDto">
+	<update id="deleteFile" parameterType="com.kcabEvent.dto.common.FileDetailDto">
 		UPDATE TB_FILE
 		SET use_yn = 'N',
 			upt_user_seq = #{uptUserSeq},
@@ -90,7 +90,7 @@
 		WHERE file_seq = #{fileSeq}
 	</update>
 
-	<update id="deleteFileDetail" parameterType="com.power.dto.common.FileDetailDto">
+	<update id="deleteFileDetail" parameterType="com.kcabEvent.dto.common.FileDetailDto">
 		UPDATE TB_FILE_DTL
 		SET del_yn = 'Y',
 		    upt_user_seq = #{uptUserSeq},

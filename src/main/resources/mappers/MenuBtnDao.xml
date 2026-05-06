@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.power.dao.MenuBtnDao">
-    <select id="selectByMenuSeq" resultType="com.power.domain.MenuBtn">
+<mapper namespace="com.kcabEvent.dao.MenuBtnDao">
+    <select id="selectByMenuSeq" resultType="com.kcabEvent.domain.MenuBtn">
         SELECT menu_btn_seq AS menuBtnSeq,
                menu_seq AS menuSeq,
                btn_seq AS btnSeq,
@@ -12,7 +12,7 @@
         ORDER BY btn_seq
     </select>
 
-    <select id="selectActiveByMenuSeq" resultType="com.power.dto.common.MenuBtnDetailDto">
+    <select id="selectActiveByMenuSeq" resultType="com.kcabEvent.dto.common.MenuBtnDetailDto">
         SELECT mb.btn_seq AS btnSeq,
                COALESCE(NULLIF(mb.btn_nm, ''), b.btn_nm) AS btnNm,
                b.btn_func_cd AS btnFuncCd,
@@ -23,7 +23,7 @@
         ORDER BY b.sort_seq
     </select>
 
-    <select id="selectUserPermittedMenuBtnList" resultType="com.power.dto.common.MenuBtnDetailDto">
+    <select id="selectUserPermittedMenuBtnList" resultType="com.kcabEvent.dto.common.MenuBtnDetailDto">
         SELECT DISTINCT mb.btn_seq AS btnSeq,
                COALESCE(NULLIF(mb.btn_nm, ''), b.btn_nm) AS btnNm,
                b.btn_func_cd AS btnFuncCd,
@@ -48,7 +48,7 @@
         WHERE menu_seq = #{menuSeq}
     </delete>
 
-    <insert id="insert" parameterType="com.power.domain.MenuBtn">
+    <insert id="insert" parameterType="com.kcabEvent.domain.MenuBtn">
         INSERT INTO tb_menu_btn
         (menu_seq, btn_seq, btn_nm, use_yn, rgst_user_seq, rgst_date_time, upt_user_seq, upt_date_time)
         VALUES

@@ -56,7 +56,7 @@ server:
 
 logging.level:
   org.springframework: DEBUG
-  com.power: DEBUG
+  com.kcabEvent: DEBUG
   sql: TRACE
 
 

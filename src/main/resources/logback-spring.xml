@@ -48,7 +48,7 @@
 
     <!-- 프로젝트 패키지: 프로파일별로 레벨 분리 -->
     <springProfile name="local">
-        <logger name="com.power" level="DEBUG" additivity="false">
+        <logger name="com.kcabEvent" level="DEBUG" additivity="false">
             <appender-ref ref="CONSOLE"/>
             <appender-ref ref="FILE"/>
             <appender-ref ref="ERROR_FILE"/>
@@ -56,7 +56,7 @@
     </springProfile>
 
     <springProfile name="dev">
-        <logger name="com.power" level="DEBUG" additivity="false">
+        <logger name="com.kcabEvent" level="DEBUG" additivity="false">
             <appender-ref ref="CONSOLE"/>
             <appender-ref ref="FILE"/>
             <appender-ref ref="ERROR_FILE"/>
@@ -64,7 +64,7 @@
     </springProfile>
 
     <springProfile name="prod">
-        <logger name="com.power" level="INFO" additivity="false">
+        <logger name="com.kcabEvent" level="INFO" additivity="false">
             <appender-ref ref="FILE"/>
             <appender-ref ref="ERROR_FILE"/>
         </logger>
