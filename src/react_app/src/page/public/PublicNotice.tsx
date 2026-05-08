@@ -42,13 +42,13 @@ const PublicNotice: React.FC = () => {
                   background: 'none', border: 'none', cursor: 'pointer',
                   fontSize: 14, color: '#294DC7', padding: 0,
                 }}>
-                  &larr; 목록으로
+                  &larr; Back to list
                 </button>
               </div>
               <h3 className="text-title" style={{ paddingLeft: 0 }}>{selected.title}</h3>
               <div style={{ fontSize: 13, color: '#999', marginBottom: 24, display: 'flex', gap: 16 }}>
                 <span>{selected.rgstDateTime?.substring(0, 10)}</span>
-                <span>조회 {selected.viewCount}</span>
+                <span>Views {selected.viewCount}</span>
               </div>
               <div className="text-content" dangerouslySetInnerHTML={{ __html: selected.content ?? '' }} />
             </div>
@@ -67,7 +67,7 @@ const PublicNotice: React.FC = () => {
           background: 'linear-gradient(135deg, #0f1b3d 0%, #294DC7 100%)',
         }}>
           <div className="hero-content">
-            <h2 className="hero-title">공지사항</h2>
+            <h2 className="hero-title">Notices</h2>
           </div>
         </section>
 
@@ -79,10 +79,10 @@ const PublicNotice: React.FC = () => {
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                placeholder="검색어를 입력하세요"
+                placeholder="Enter a search term"
                 className="pub-search-input"
               />
-              <button onClick={handleSearch} className="pub-search-btn">검색</button>
+              <button onClick={handleSearch} className="pub-search-btn">Search</button>
             </div>
 
             <div className="pub-notice-list">
@@ -92,15 +92,15 @@ const PublicNotice: React.FC = () => {
                   className={`pub-notice-item ${notice.topYn === 'Y' ? 'is-top' : ''}`}
                   onClick={() => handleSelect(notice.noticeSeq)}
                 >
-                  {notice.topYn === 'Y' && <span className="pub-notice-badge">공지</span>}
+                  {notice.topYn === 'Y' && <span className="pub-notice-badge">Notice</span>}
                   <span className="pub-notice-title">{notice.title}</span>
                   <span className="pub-notice-date">{notice.rgstDateTime?.substring(0, 10)}</span>
-                  <span className="pub-notice-views">조회 {notice.viewCount}</span>
+                  <span className="pub-notice-views">Views {notice.viewCount}</span>
                 </div>
               ))}
               {noticeList.filter((n) => n.useYn === 'Y').length === 0 && (
                 <div style={{ padding: '40px 0', textAlign: 'center', color: '#999' }}>
-                  등록된 공지사항이 없습니다.
+                  No notices found.
                 </div>
               )}
             </div>

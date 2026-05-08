@@ -47,7 +47,7 @@ export interface EventSaveRequest {
 export type EventStatus = 'UPCOMING' | 'ONGOING' | 'ENDED';
 
 export const EVENT_STATUS_LABELS: Record<EventStatus, string> = {
-  UPCOMING: '예정',
-  ONGOING: '진행 중',
-  ENDED: '종료',
+  UPCOMING: 'Upcoming',
+  ONGOING: 'Ongoing',
+  ENDED: 'Ended',
 };

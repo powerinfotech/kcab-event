@@ -6,10 +6,10 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum SafOrgType {
-    LAW_FIRM("law_firm", "로펌"),
-    PARTNER("partner", "파트너기관"),
-    ACADEMIC("academic", "학술기관"),
-    OTHER("other", "기타");
+    LAW_FIRM("law_firm", "Law Firm"),
+    PARTNER("partner", "Partner Organization"),
+    ACADEMIC("academic", "Academic Institution"),
+    OTHER("other", "Other");
 
     private final String code;
     private final String label;

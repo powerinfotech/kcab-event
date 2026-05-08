@@ -251,7 +251,7 @@ function EventInfoSection({ data }: { data: EventInfoData }) {
           {data.description && <p className="event-description">{data.description}</p>}
           {data.registrationUrl && (
             <a className="event-register-btn" href={data.registrationUrl} target="_blank" rel="noopener noreferrer">
-              참가 신청
+              Register
             </a>
           )}
         </div>

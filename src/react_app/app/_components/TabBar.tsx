@@ -17,16 +17,16 @@ export default function TabBar() {
 
   const getContextMenuItems = useCallback(
     (key: string): MenuProps['items'] => [
-      { key: 'close', label: '닫기', onClick: () => closeTab(key) },
-      { key: 'closeOthers', label: '다른 탭 닫기', onClick: () => closeOtherTabs(key) },
-      { key: 'closeAll', label: '모두 닫기', onClick: () => closeAllTabs() },
+      { key: 'close', label: 'Close', onClick: () => closeTab(key) },
+      { key: 'closeOthers', label: 'Close Others', onClick: () => closeOtherTabs(key) },
+      { key: 'closeAll', label: 'Close All', onClick: () => closeAllTabs() },
     ],
     [closeTab, closeOtherTabs, closeAllTabs],
   );
 
   const handleCloseAll = useCallback(async () => {
     const confirmed = await confirm(
-      '모든 화면을 종료합니다.\n전체 화면을 닫으시겠습니까?',
+      'This will close all open screens.\nDo you want to continue?',
     );
     if (confirmed) {
       closeAllTabs();
@@ -61,7 +61,7 @@ export default function TabBar() {
           </div>
         </Dropdown>
       ))}
-      <Tooltip title="전체 화면 닫기">
+      <Tooltip title="Close all screens">
         <button
           type="button"
           className="tab_close_all"

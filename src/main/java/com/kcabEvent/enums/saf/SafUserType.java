@@ -6,8 +6,8 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum SafUserType {
-    ADMIN("admin", "관리자"),
-    ORGANIZATION("organization", "기관");
+    ADMIN("admin", "Admin"),
+    ORGANIZATION("organization", "Organization");
 
     private final String code;
     private final String label;

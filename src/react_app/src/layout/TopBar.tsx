@@ -14,12 +14,12 @@ export default function TopBar() {
   const role = getAdminRole(sessionInfo.admYn);
 
   const logout = async () => {
-    if (!await confirm('로그아웃하시겠습니까?')) return;
+    if (!await confirm('Do you want to sign out?')) return;
     const data = await callLogout();
     if (data.code === HttpStatusCode.Ok) {
       sessionStorage.removeItem('tabList');
       sessionStorage.removeItem('activeTabKey');
-      location.href = '/admin/login';
+      location.href = '/login';
     }
   };
 
@@ -32,10 +32,10 @@ export default function TopBar() {
             <UserOutlined />
           </div>
           <span className="app_topbar_name">
-            {sessionInfo.userName || (role === 'ADMIN' ? '관리자' : '기관')}
+            {sessionInfo.userName || (role === 'ADMIN' ? 'Admin' : 'Organization')}
           </span>
         </div>
-        <button type="button" className="app_topbar_logout" onClick={logout} aria-label="로그아웃">
+        <button type="button" className="app_topbar_logout" onClick={logout} aria-label="Sign out">
           <LogoutOutlined />
         </button>
       </div>

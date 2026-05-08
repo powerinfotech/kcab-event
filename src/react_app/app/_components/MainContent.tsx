@@ -321,7 +321,7 @@ function MultiTabContent({
           <Suspense fallback={<></>}>
             <section className="title-wrap">
               <div className="box-flex">
-                <h2 className="title">대시보드</h2>
+                <h2 className="title">Dashboard</h2>
               </div>
             </section>
             {DashBoard && <DashBoard onChange={onChange} />}

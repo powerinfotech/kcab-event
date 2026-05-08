@@ -5,7 +5,12 @@ import com.kcabEvent.dto.saf.SignupRequestDto;
 import com.kcabEvent.service.saf.SafSignupService;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
@@ -20,7 +25,7 @@ public class SafSignupController {
     public ApiResponse<Void> signup(@Valid @RequestBody SignupRequestDto requestDto) {
         try {
             safSignupService.signup(requestDto);
-            return ApiResponse.ok(null, 200, "회원가입이 완료되었습니다. 관리자 승인 후 이용 가능합니다.");
+            return ApiResponse.ok(null, 200, "Sign-up has been completed. You can use the service after administrator approval.");
         } catch (IllegalArgumentException e) {
             return ApiResponse.ok(null, 400, e.getMessage());
         }

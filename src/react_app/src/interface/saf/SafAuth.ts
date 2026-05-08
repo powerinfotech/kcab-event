@@ -18,8 +18,8 @@ export interface SignupRequest {
 }
 
 export const ORG_TYPE_OPTIONS = [
-  { value: 'law_firm', label: 'Law Firm (로펌)' },
-  { value: 'partner', label: 'Partner Organization (파트너기관)' },
-  { value: 'academic', label: 'Academic Institution (학술기관)' },
-  { value: 'other', label: 'Other (기타)' },
+  { value: 'law_firm', label: 'Law Firm' },
+  { value: 'partner', label: 'Partner Organization' },
+  { value: 'academic', label: 'Academic Institution' },
+  { value: 'other', label: 'Other' },
 ];

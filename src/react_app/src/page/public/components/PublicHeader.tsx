@@ -47,13 +47,13 @@ const PublicHeader: React.FC<Props> = ({ pages, currentUrl, onNavigate }) => {
           </nav>
 
           <div className="pub-header-actions">
-            <a className="pub-btn-admin" href="/login">관리자</a>
+            <a className="pub-btn-admin" href="/login">Admin</a>
           </div>
 
           <button
             className="pub-menu-toggle"
             onClick={() => setMobileOpen((v) => !v)}
-            aria-label="메뉴"
+            aria-label="Menu"
           >
             <span /><span /><span />
           </button>
@@ -75,7 +75,7 @@ const PublicHeader: React.FC<Props> = ({ pages, currentUrl, onNavigate }) => {
             {page.pageNm}
           </a>
         ))}
-        <a href="/login">관리자</a>
+        <a href="/login">Admin</a>
       </div>
     </>
   );

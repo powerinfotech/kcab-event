@@ -44,7 +44,7 @@ const Login = () => {
 
   const handleLogin = async (mode?: 'auto') => {
     if (!userId || (!password && mode !== 'auto')) {
-      message.warning('아이디와 비밀번호를 입력하세요.');
+      message.warning('Please enter your user ID and password.');
       return;
     }
 
@@ -89,11 +89,11 @@ const Login = () => {
 
   return (
     <main className="saf-login-page">
-      <section className="saf-login-card" aria-label="관리자 로그인">
+      <section className="saf-login-card" aria-label="Admin login">
         <div className="saf-login-brand">
-          <span>KCAB 국제중재</span>
-          <strong>관리자 콘솔</strong>
-          <p>승인된 관리자만 접근할 수 있습니다.</p>
+          <span>KCAB International Arbitration</span>
+          <strong>Admin Console</strong>
+          <p>Access is limited to approved admins and organizations.</p>
         </div>
 
         <form
@@ -103,12 +103,12 @@ const Login = () => {
             handleLogin();
           }}
         >
-          <p className="saf-login-kicker">관리자 / 기관 통합 로그인</p>
-          <h1>로그인</h1>
-          <p className="saf-login-desc">아이디와 비밀번호를 입력하세요.</p>
+          <p className="saf-login-kicker">Admin / Organization Login</p>
+          <h1>Sign in</h1>
+          <p className="saf-login-desc">Enter your user ID and password.</p>
 
           <label>
-            <span>아이디</span>
+            <span>User ID</span>
             <input
               value={userId}
               onChange={(event) => setUserId(event.target.value)}
@@ -118,11 +118,11 @@ const Login = () => {
           </label>
 
           <label>
-            <span>비밀번호</span>
+            <span>Password</span>
             <input
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              placeholder="••••••••"
+              placeholder="Password"
               type="password"
               autoComplete="current-password"
             />
@@ -135,15 +135,15 @@ const Login = () => {
                 checked={rememberId}
                 onChange={(event) => setRememberId(event.target.checked)}
               />
-              <span>로그인 상태 유지</span>
+              <span>Remember me</span>
             </label>
-            <button type="button" onClick={() => message.info('관리자에게 문의해 주세요.')}>
-              비밀번호 찾기
+            <button type="button" onClick={() => message.info('Please contact the administrator.')}>
+              Forgot password?
             </button>
           </div>
 
           <button className="saf-login-submit" type="submit" disabled={loading}>
-            {loading ? '로그인 중...' : '로그인'}
+            {loading ? 'Signing in...' : 'Sign in'}
           </button>
 
           <button
@@ -151,7 +151,7 @@ const Login = () => {
             type="button"
             onClick={() => { window.location.href = '/admin/signup'; }}
           >
-            기업 회원가입
+            Organization Sign-up
           </button>
         </form>
       </section>

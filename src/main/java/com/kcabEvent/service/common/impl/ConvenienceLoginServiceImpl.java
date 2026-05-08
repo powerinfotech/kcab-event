@@ -1,26 +1,19 @@
 package com.kcabEvent.service.common.impl;
 
 import com.kcabEvent.dao.UserDao;
+import com.kcabEvent.domain.User;
 import com.kcabEvent.dto.common.LoginUser;
 import com.kcabEvent.exception.custom.BusinessException;
 import com.kcabEvent.service.common.ConvenienceLoginService;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpSession;
 import org.egovframe.rte.fdl.cmmn.EgovAbstractServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import jakarta.annotation.Resource;
-import jakarta.servlet.http.HttpSession;
-
-
-/**
- * ConvenienceLoginServiceImpl - {@link ConvenienceLoginService} 구현체
- *
- * <p>개발/로컬 환경에서만 활성화. 아이디로 사용자를 조회하고 세션에 저장한다.
- * 사용자가 존재하지 않으면 {@link com.kcabEvent.exception.custom.BusinessException}을 발생시킨다.</p>
- */
 @Service("convenienceLoginService")
 public class ConvenienceLoginServiceImpl extends EgovAbstractServiceImpl implements ConvenienceLoginService {
-    @Resource(name="userDao")
+    @Resource(name = "userDao")
     private UserDao userDao;
 
     private final HttpSession httpSession;
@@ -30,13 +23,12 @@ public class ConvenienceLoginServiceImpl extends EgovAbstractServiceImpl impleme
         this.httpSession = httpSession;
     }
 
-
     @Override
     public void login(String userId) {
-        LoginUser loginUser = LoginUser.convert(userDao.selectUser(userId));
-        if(loginUser == null) {
-            throw new BusinessException("사용자정보가 존재하지 않습니다.");
+        User user = userDao.selectUser(userId);
+        if (user == null) {
+            throw new BusinessException("User information does not exist.");
         }
-        httpSession.setAttribute("user", loginUser);
+        httpSession.setAttribute("user", LoginUser.convert(user));
     }
 }

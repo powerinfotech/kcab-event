@@ -11,13 +11,12 @@ import com.kcabEvent.enums.saf.SafOrgStatus;
 import com.kcabEvent.enums.saf.SafUserStatus;
 import com.kcabEvent.enums.saf.SafUserType;
 import com.kcabEvent.service.saf.SafSignupService;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.egovframe.rte.fdl.cmmn.EgovAbstractServiceImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import jakarta.annotation.Resource;
 
 @Slf4j
 @Service("safSignupService")
@@ -35,14 +34,14 @@ public class SafSignupServiceImpl extends EgovAbstractServiceImpl implements Saf
     @Transactional("transactionManager")
     public void signup(SignupRequestDto req) {
         if (existsByUserId(req.getUserId())) {
-            throw new IllegalArgumentException("이미 사용 중인 아이디입니다.");
+            throw new IllegalArgumentException("This user ID is already in use.");
         }
         if (existsByEmail(req.getEmail())) {
-            throw new IllegalArgumentException("이미 등록된 이메일입니다.");
+            throw new IllegalArgumentException("This email is already registered.");
         }
         if (req.getBusinessNumber() != null && !req.getBusinessNumber().isBlank()) {
             if (safOrganizationDao.selectByBusinessNumber(req.getBusinessNumber()) != null) {
-                throw new IllegalArgumentException("이미 등록된 사업자등록번호입니다.");
+                throw new IllegalArgumentException("This business registration number is already registered.");
             }
         }
 
@@ -55,7 +54,7 @@ public class SafSignupServiceImpl extends EgovAbstractServiceImpl implements Saf
         user.setPhone(req.getPhone());
         user.setUserType(SafUserType.ORGANIZATION.getCode());
         user.setStatus(SafUserStatus.PENDING.getCode());
-        user.setLanguage(req.getLanguage() != null ? req.getLanguage() : "ko");
+        user.setLanguage(req.getLanguage() != null ? req.getLanguage() : "en");
         safUserDao.insertUser(user);
 
         SafOrganization org = new SafOrganization();

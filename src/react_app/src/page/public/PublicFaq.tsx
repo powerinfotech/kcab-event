@@ -31,7 +31,7 @@ const PublicFaq: React.FC = () => {
         }}>
           <div className="hero-content">
             <h2 className="hero-title">FAQ</h2>
-            <p className="hero-subtitle">자주 묻는 질문</p>
+            <p className="hero-subtitle">Frequently Asked Questions</p>
           </div>
         </section>
 
@@ -43,7 +43,7 @@ const PublicFaq: React.FC = () => {
                   className={`pub-faq-cat-btn ${!activeCategory ? 'active' : ''}`}
                   onClick={() => setActiveCategory('')}
                 >
-                  전체
+                  All
                 </button>
                 {categories.map((cat) => (
                   <button
@@ -63,7 +63,7 @@ const PublicFaq: React.FC = () => {
                   <div className="pub-faq-question" onClick={() => setOpenIdx(openIdx === idx ? null : idx)}>
                     <span className="pub-faq-q-mark">Q</span>
                     <span className="pub-faq-q-text">{faq.question}</span>
-                    <span className="pub-faq-arrow">{openIdx === idx ? '−' : '+'}</span>
+                    <span className="pub-faq-arrow">{openIdx === idx ? '-' : '+'}</span>
                   </div>
                   {openIdx === idx && (
                     <div className="pub-faq-answer">
@@ -75,7 +75,7 @@ const PublicFaq: React.FC = () => {
               ))}
               {filtered.length === 0 && (
                 <div style={{ padding: '40px 0', textAlign: 'center', color: '#999' }}>
-                  등록된 FAQ가 없습니다.
+                  No FAQs found.
                 </div>
               )}
             </div>

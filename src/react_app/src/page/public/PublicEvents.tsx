@@ -45,7 +45,7 @@ const PublicEvents: React.FC = () => {
                   background: 'none', border: 'none', cursor: 'pointer',
                   fontSize: 14, color: '#294DC7', padding: 0,
                 }}>
-                  &larr; 목록으로
+                  &larr; Back to list
                 </button>
               </div>
               <h3 className="text-title" style={{ paddingLeft: 0 }}>{selected.title}</h3>
@@ -61,7 +61,7 @@ const PublicEvents: React.FC = () => {
               {selected.registrationUrl && (
                 <a href={selected.registrationUrl} target="_blank" rel="noopener noreferrer"
                   className="pub-event-register-link">
-                  참가 신청 &rarr;
+                  Register &rarr;
                 </a>
               )}
               <div className="text-content" style={{ marginTop: 32 }}
@@ -85,7 +85,7 @@ const PublicEvents: React.FC = () => {
         }}>
           <div className="hero-content">
             <h2 className="hero-title">Events</h2>
-            <p className="hero-subtitle">행사 안내</p>
+            <p className="hero-subtitle">Event Guide</p>
           </div>
         </section>
 
@@ -98,7 +98,7 @@ const PublicEvents: React.FC = () => {
                   className={`pub-event-filter-btn ${statusFilter === s ? 'active' : ''}`}
                   onClick={() => handleFilter(s)}
                 >
-                  {s ? EVENT_STATUS_LABELS[s as EventStatus] : '전체'}
+                  {s ? EVENT_STATUS_LABELS[s as EventStatus] : 'All'}
                 </button>
               ))}
             </div>
@@ -129,7 +129,7 @@ const PublicEvents: React.FC = () => {
               })}
               {filtered.length === 0 && (
                 <div style={{ padding: '60px 0', textAlign: 'center', color: '#999', gridColumn: '1 / -1' }}>
-                  등록된 행사가 없습니다.
+                  No events found.
                 </div>
               )}
             </div>

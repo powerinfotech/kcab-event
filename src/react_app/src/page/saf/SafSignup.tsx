@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { message } from 'antd';
 import { callSignup } from '@api/saf/SafAuthApi';
-import { SignupRequest } from '@interface/saf/SafAuth';
+import { ORG_TYPE_OPTIONS, SignupRequest } from '@interface/saf/SafAuth';
 
 const initialForm: SignupRequest & {
   passwordConfirm: string;
@@ -20,7 +20,6 @@ const initialForm: SignupRequest & {
   email: '',
   password: '',
   passwordConfirm: '',
-  language: 'ko',
   phone: '',
   representativeName: '',
   contactPhone: '',
@@ -50,15 +49,15 @@ const SafSignup: React.FC = () => {
 
   const handleSubmit = async () => {
     if (!form.orgName || !form.businessNumber || !form.contactEmail || !form.name || !form.userId || !form.email || !form.password) {
-      message.warning('필수 항목을 입력해 주세요.');
+      message.warning('Please fill in all required fields.');
       return;
     }
     if (form.password !== form.passwordConfirm) {
-      message.warning('비밀번호 확인이 일치하지 않습니다.');
+      message.warning('Password confirmation does not match.');
       return;
     }
     if (!form.agreeTerms || !form.agreePrivacy) {
-      message.warning('필수 약관에 동의해 주세요.');
+      message.warning('Please agree to the required terms.');
       return;
     }
 
@@ -67,10 +66,10 @@ const SafSignup: React.FC = () => {
       const { passwordConfirm, agreeTerms, agreePrivacy, agreeMarketing, ...payload } = form;
       const res = await callSignup(payload);
       if (res?.code === 200) {
-        message.success('가입 신청이 완료되었습니다. 관리자 승인 후 로그인할 수 있습니다.');
-        window.location.href = '/admin/login';
+        message.success('Your sign-up request has been submitted. You can sign in after administrator approval.');
+        window.location.href = '/login';
       } else {
-        message.error(res?.message || '가입 신청에 실패했습니다.');
+        message.error(res?.message || 'Sign-up request failed.');
       }
     } finally {
       setLoading(false);
@@ -82,85 +81,79 @@ const SafSignup: React.FC = () => {
       <section className="saf-signup-shell">
         <header className="saf-signup-top">
           <div>
-            <p>관리자</p>
-            <h1>기업 회원가입</h1>
-            <span>부대행사 등록을 위한 기관과 담당자 정보를 등록해 주세요.</span>
+            <p>Account Request</p>
+            <h1>Organization Sign-up</h1>
+            <span>Register your organization and primary contact to create event programs.</span>
           </div>
-          <button type="button" onClick={() => { window.location.href = '/admin/login'; }}>
-            이미 계정이 있으신가요? 로그인 →
+          <button type="button" onClick={() => { window.location.href = '/login'; }}>
+            Already have an account? Sign in
           </button>
         </header>
 
         <div className="saf-signup-grid">
           <section className="saf-signup-panel">
-            <StepLabel step="STEP 1" title="기관 정보" meta="organizations" />
-            <Field label="기관명 *">
-              <input value={form.orgName} onChange={(e) => set('orgName', e.target.value)} placeholder="예) 한국 ABC 법무법인" />
+            <StepLabel step="STEP 1" title="Organization Information" meta="organizations" />
+            <Field label="Organization Name *">
+              <input value={form.orgName} onChange={(e) => set('orgName', e.target.value)} placeholder="e.g. ABC Law LLC" />
             </Field>
-            <Field label="사업자등록번호 *">
+            <Field label="Business Registration Number *">
               <input value={form.businessNumber} onChange={(e) => set('businessNumber', e.target.value)} placeholder="123-45-67890" />
             </Field>
-            <Field label="기관 유형 *">
+            <Field label="Organization Type *">
               <select value={form.orgType} onChange={(e) => set('orgType', e.target.value)}>
-                <option value="law_firm">로펌</option>
-                <option value="corporation">기업</option>
-                <option value="association">협회</option>
-                <option value="other">기타</option>
+                {ORG_TYPE_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
               </select>
             </Field>
-            <Field label="대표 이메일 *">
+            <Field label="Primary Email *">
               <input value={form.contactEmail} onChange={(e) => set('contactEmail', e.target.value)} placeholder="contact@abc.law" type="email" />
             </Field>
           </section>
 
           <section className="saf-signup-panel">
-            <StepLabel step="STEP 2" title="가입자 (대표자) 정보" meta="users + organization_members" />
-            <Field label="이름 *">
-              <input value={form.name} onChange={(e) => set('name', e.target.value)} placeholder="예) 김민수" />
+            <StepLabel step="STEP 2" title="Applicant Information" meta="users + organization_members" />
+            <Field label="Name *">
+              <input value={form.name} onChange={(e) => set('name', e.target.value)} placeholder="e.g. Minsoo Kim" />
             </Field>
-            <Field label="아이디 *">
-              <input value={form.userId} onChange={(e) => set('userId', e.target.value)} placeholder="영문+숫자, 4~20자" />
+            <Field label="User ID *">
+              <input value={form.userId} onChange={(e) => set('userId', e.target.value)} placeholder="Letters and numbers, 4-20 characters" />
             </Field>
-            <Field label="이메일 *">
+            <Field label="Email *">
               <input value={form.email} onChange={(e) => set('email', e.target.value)} placeholder="kim@abc.law" type="email" />
             </Field>
-            <Field label="비밀번호 *">
-              <input value={form.password} onChange={(e) => set('password', e.target.value)} placeholder="8자 이상, 영문+숫자+특수문자" type="password" />
+            <Field label="Password *">
+              <input value={form.password} onChange={(e) => set('password', e.target.value)} placeholder="At least 8 characters" type="password" />
             </Field>
-            <Field label="비밀번호 확인 *">
-              <input value={form.passwordConfirm} onChange={(e) => set('passwordConfirm', e.target.value)} placeholder="동일하게 입력" type="password" />
+            <Field label="Confirm Password *">
+              <input value={form.passwordConfirm} onChange={(e) => set('passwordConfirm', e.target.value)} placeholder="Enter the same password" type="password" />
             </Field>
-            <div className="saf-lang-toggle">
-              <span>사용 언어 *</span>
-              <button type="button" className={form.language === 'ko' ? 'is-active' : ''} onClick={() => set('language', 'ko')}>한국어</button>
-              <button type="button" className={form.language === 'en' ? 'is-active' : ''} onClick={() => set('language', 'en')}>English</button>
-            </div>
           </section>
 
           <aside className="saf-signup-side">
             <section className="saf-signup-panel">
-              <StepLabel step="STEP 3" title="약관 동의" />
+              <StepLabel step="STEP 3" title="Agreements" />
               <Agreement
-                label="전체 동의"
+                label="Agree to all"
                 checked={form.agreeTerms && form.agreePrivacy && form.agreeMarketing}
                 onChange={toggleAll}
                 strong
               />
-              <Agreement label="이용약관 동의 (필수)" checked={form.agreeTerms} onChange={(v) => set('agreeTerms', v)} />
-              <Agreement label="개인정보 수집·이용 (필수)" checked={form.agreePrivacy} onChange={(v) => set('agreePrivacy', v)} />
-              <Agreement label="마케팅 정보 수신 (선택)" checked={form.agreeMarketing} onChange={(v) => set('agreeMarketing', v)} />
+              <Agreement label="Terms of Service (Required)" checked={form.agreeTerms} onChange={(v) => set('agreeTerms', v)} />
+              <Agreement label="Collection and Use of Personal Information (Required)" checked={form.agreePrivacy} onChange={(v) => set('agreePrivacy', v)} />
+              <Agreement label="Marketing Updates (Optional)" checked={form.agreeMarketing} onChange={(v) => set('agreeMarketing', v)} />
               <button className="saf-signup-submit" type="button" disabled={loading} onClick={handleSubmit}>
-                {loading ? '신청 중...' : '가입 신청하기'}
+                {loading ? 'Submitting...' : 'Submit Request'}
               </button>
             </section>
 
             <section className="saf-signup-process">
-              <h2>가입 절차</h2>
+              <h2>Sign-up Process</h2>
               <ol>
-                <li>정보 입력 후 신청</li>
-                <li>관리자 승인 (1~2일)</li>
-                <li>승인 메일 수신</li>
-                <li>로그인 → 부대행사 등록</li>
+                <li>Enter information and submit</li>
+                <li>Administrator review (1-2 days)</li>
+                <li>Receive approval email</li>
+                <li>Sign in and create event programs</li>
               </ol>
             </section>
           </aside>
@@ -199,7 +192,7 @@ const Agreement = ({
   <label className={`saf-agreement ${strong ? 'is-strong' : ''}`}>
     <input type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} />
     <span>{label}</span>
-    {!strong && <button type="button">전문 ›</button>}
+    {!strong && <button type="button">View</button>}
   </label>
 );
 

@@ -64,11 +64,11 @@ export default function Sidebar({
   return (
     <aside className="saf-sidebar">
       <button className="saf-sidebar-brand" type="button" onClick={() => move('/')}>
-        <span>{role === 'ADMIN' ? 'KCAB 관리자' : '기관'}</span>
-        <strong>{role === 'ADMIN' ? '관리자 콘솔' : '기관 콘솔'}</strong>
+        <span>{role === 'ADMIN' ? 'KCAB Admin' : 'Organization'}</span>
+        <strong>{role === 'ADMIN' ? 'Admin Console' : 'Organization Console'}</strong>
       </button>
 
-      <nav className="saf-sidebar-menu" aria-label="관리자 메뉴">
+      <nav className="saf-sidebar-menu" aria-label="Admin menu">
         {visibleMenus.map((menu) => (
           <button
             key={menu.menuSeq}

@@ -7,8 +7,8 @@ const PublicFooter: React.FC = () => {
         <div>
           <div className="pub-footer-logo">KCAB INTERNATIONAL</div>
           <div className="pub-footer-info">
-            대한상사중재원<br />
-            서울특별시 강남구 테헤란로 606
+            Korean Commercial Arbitration Board<br />
+            606 Teheran-ro, Gangnam-gu, Seoul, Korea
           </div>
           <div className="pub-footer-copyright">
             &copy; {new Date().getFullYear()} KCAB INTERNATIONAL. All Rights Reserved.

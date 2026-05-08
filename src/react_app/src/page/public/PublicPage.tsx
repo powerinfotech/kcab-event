@@ -61,13 +61,13 @@ const PublicPage: React.FC<PublicPageProps> = ({ pageUrl }) => {
       <main className="pub-page-content">
         {loading && (
           <div style={{ padding: '120px 0', textAlign: 'center', color: '#999' }}>
-            로딩 중...
+            Loading...
           </div>
         )}
 
         {!loading && !pageDetail && (
           <div style={{ padding: '120px 0', textAlign: 'center', color: '#999' }}>
-            페이지를 찾을 수 없습니다.
+            Page not found.
           </div>
         )}
 
