@@ -53,7 +53,7 @@ public class SafSignupServiceImpl extends EgovAbstractServiceImpl implements Saf
         user.setName(req.getName());
         user.setNameEn(req.getNameEn());
         user.setPhone(req.getPhone());
-        user.setUserType(SafUserType.ORG_ADMIN.getCode());
+        user.setUserType(SafUserType.ORGANIZATION.getCode());
         user.setStatus(SafUserStatus.PENDING.getCode());
         user.setLanguage(req.getLanguage() != null ? req.getLanguage() : "ko");
         safUserDao.insertUser(user);

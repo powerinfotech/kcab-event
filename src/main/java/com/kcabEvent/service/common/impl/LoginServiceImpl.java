@@ -102,7 +102,7 @@ public class LoginServiceImpl extends EgovAbstractServiceImpl implements LoginSe
         }
 
         if (!SafUserStatus.ACTIVE.getCode().equals(safUser.getStatus())) {
-            throw new BusinessException("슈퍼관리자 승인 후 로그인할 수 있습니다.");
+            throw new BusinessException("관리자 승인 후 로그인할 수 있습니다.");
         }
 
         if (!"auto".equals(loginRequestDto.getMode())

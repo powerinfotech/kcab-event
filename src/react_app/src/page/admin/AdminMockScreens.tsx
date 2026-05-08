@@ -38,7 +38,6 @@ const superMetrics: Metric[] = [
   { label: '승인 대기', value: '3건', help: '부대행사 처리 필요', tone: 'yellow' },
   { label: '등록된 행사', value: '8개', help: '오피셜 3 · 부대 5', tone: 'blue' },
   { label: '전체 참가자', value: '1,247명', help: '최근 7일 +213명', tone: 'green' },
-  { label: 'SAF 시작까지', value: 'D-133', help: '2026.09.10 (목)', tone: 'red' },
 ];
 
 const orgMetrics: Metric[] = [
@@ -192,8 +191,7 @@ export function SuperDashboard() {
   return (
     <div className="saf-screen">
       <ScreenHeader
-        title="환영합니다, 슈퍼관리자님"
-        subtitle="SAF 2026 · 2026.09.10 ~ 09.14 · 현재 D-133"
+        title="환영합니다, 관리자님"
       />
       <MetricGrid metrics={superMetrics} />
       <div className="saf-dashboard-grid">
@@ -255,7 +253,7 @@ export function OrgDashboard() {
 }
 
 export function DashboardByRole() {
-  return useRole() === 'SUPER_ADMIN' ? <SuperDashboard /> : <OrgDashboard />;
+  return useRole() === 'ADMIN' ? <SuperDashboard /> : <OrgDashboard />;
 }
 
 export function SuperEventList() {
@@ -363,7 +361,7 @@ export function SideEventReview() {
 
 export function Participants() {
   const role = useRole();
-  const orgOnly = role !== 'SUPER_ADMIN';
+  const orgOnly = role !== 'ADMIN';
   return (
     <div className="saf-screen">
       <ScreenHeader
@@ -473,7 +471,7 @@ export function OrgSideEvents() {
 export function OrgSideEventForm() {
   return (
     <div className="saf-screen">
-      <ScreenHeader title="새 부대행사 신청" subtitle="작성 후 슈퍼관리자가 검토 → 승인되면 공개 사이트에 노출됩니다." />
+      <ScreenHeader title="새 부대행사 신청" subtitle="작성 후 관리자가 검토 → 승인되면 공개 사이트에 노출됩니다." />
       <section className="saf-panel saf-form-panel">
         <FormGrid>
           <Field label="행사명 (한국어/영문) *"><input placeholder="예) Cross-Border 국제중재 세미나" /></Field>

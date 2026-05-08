@@ -1,9 +1,9 @@
 import { MenuInfo, MenuType } from '@interface/auth/MenuManagement';
 
-export type AdminRole = 'SUPER_ADMIN' | 'ORG_ADMIN';
+export type AdminRole = 'ADMIN' | 'ORGANIZATION';
 
 export function getAdminRole(admYn?: string): AdminRole {
-  return admYn === 'Y' ? 'SUPER_ADMIN' : 'ORG_ADMIN';
+  return admYn === 'Y' ? 'ADMIN' : 'ORGANIZATION';
 }
 
 function menu(
@@ -34,7 +34,7 @@ function menu(
 }
 
 export function getFixedAdminMenuInfo(admYn?: string): MenuInfo[] {
-  if (getAdminRole(admYn) === 'SUPER_ADMIN') {
+  if (getAdminRole(admYn) === 'ADMIN') {
     return [
       menu(100, '대시보드', '/', 'DashBoard', 1),
       menu(110, '행사 관리', '/events', 'admin/SuperEventList', 2),
@@ -43,8 +43,9 @@ export function getFixedAdminMenuInfo(admYn?: string): MenuInfo[] {
       menu(130, '참가자 관리', '/participants', 'admin/Participants', 5),
       menu(140, '결제 관리', '/payments', 'admin/Payments', 6),
       menu(150, '이메일 CMS', '/email-cms/registration-confirm', 'admin/EmailCms', 7),
-      menu(160, '사용자 관리', '/users', 'admin/UserManagementMock', 8),
-      menu(170, '환경 설정', '/settings', 'admin/SettingsMock', 9),
+      menu(155, '로펌/기관 관리', '/organizations', 'admin/OrganizationManagementMock', 8),
+      menu(160, '사용자 관리', '/users', 'admin/UserManagementMock', 9),
+      menu(170, '환경 설정', '/settings', 'admin/SettingsMock', 10),
     ];
   }
 
@@ -53,6 +54,6 @@ export function getFixedAdminMenuInfo(admYn?: string): MenuInfo[] {
     menu(210, '내 부대행사', '/side-events', 'admin/OrgSideEvents', 2),
     menu(211, '부대행사 신청', '/side-events/new', 'admin/OrgSideEventForm', 3, 2),
     menu(220, '참가자', '/participants', 'admin/Participants', 4),
-    menu(230, '프로필', '/profile', 'admin/OrgProfile', 5),
+    menu(230, '기관 프로필', '/profile', 'admin/OrgProfile', 5),
   ];
 }

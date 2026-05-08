@@ -9,10 +9,10 @@
             ,n.view_count
             ,n.top_yn
             ,n.use_yn
-            ,u.user_name AS rgst_user_name
+            ,u.name AS rgst_user_name
             ,n.rgst_date_time
-        FROM event.tb_notice n
-        LEFT JOIN event.tb_user u ON u.user_seq = n.rgst_user_seq
+        FROM event.notice n
+        LEFT JOIN event.users u ON u.user_seq = n.rgst_user_seq
         <where>
             <if test="searchText != null and searchText != ''">
                 AND n.title LIKE '%' || #{searchText} || '%'
@@ -22,16 +22,16 @@
     </select>
 
     <select id="selectNoticeBySeq" resultType="com.kcabEvent.domain.Notice">
-        SELECT * FROM event.tb_notice WHERE notice_seq = #{noticeSeq}
+        SELECT * FROM event.notice WHERE notice_seq = #{noticeSeq}
     </select>
 
     <insert id="insertNotice" parameterType="com.kcabEvent.domain.Notice" useGeneratedKeys="true" keyProperty="noticeSeq">
-        INSERT INTO event.tb_notice (title, content, top_yn, use_yn, file_seq, rgst_user_seq, upt_user_seq)
+        INSERT INTO event.notice (title, content, top_yn, use_yn, file_seq, rgst_user_seq, upt_user_seq)
         VALUES (#{title}, #{content}, #{topYn}, #{useYn}, #{fileSeq}, #{rgstUserSeq}, #{uptUserSeq})
     </insert>
 
     <update id="updateNotice" parameterType="com.kcabEvent.domain.Notice">
-        UPDATE event.tb_notice
+        UPDATE event.notice
         SET  title          = #{title}
             ,content        = #{content}
             ,top_yn         = #{topYn}
@@ -43,11 +43,11 @@
     </update>
 
     <delete id="deleteNotice">
-        DELETE FROM event.tb_notice WHERE notice_seq = #{noticeSeq}
+        DELETE FROM event.notice WHERE notice_seq = #{noticeSeq}
     </delete>
 
     <update id="incrementViewCount">
-        UPDATE event.tb_notice SET view_count = view_count + 1 WHERE notice_seq = #{noticeSeq}
+        UPDATE event.notice SET view_count = view_count + 1 WHERE notice_seq = #{noticeSeq}
     </update>
 
 </mapper>

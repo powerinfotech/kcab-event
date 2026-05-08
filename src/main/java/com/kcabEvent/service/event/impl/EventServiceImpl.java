@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.annotation.Resource;
+import java.time.LocalDate;
 import java.util.List;
 
 @Slf4j
@@ -41,11 +42,12 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
         event.setContent(saveDto.getContent());
         event.setSummary(saveDto.getSummary());
         event.setThumbnailUrl(saveDto.getThumbnailUrl());
-        event.setEventStartDt(saveDto.getEventStartDt());
-        event.setEventEndDt(saveDto.getEventEndDt());
+        LocalDate startDate = saveDto.getEventStartDt() != null ? saveDto.getEventStartDt() : LocalDate.now();
+        event.setEventStartDt(startDate);
+        event.setEventEndDt(saveDto.getEventEndDt() != null ? saveDto.getEventEndDt() : startDate);
         event.setLocation(saveDto.getLocation());
         event.setRegistrationUrl(saveDto.getRegistrationUrl());
-        event.setStatus(saveDto.getStatus() != null ? saveDto.getStatus() : "UPCOMING");
+        event.setStatus(saveDto.getStatus() != null ? saveDto.getStatus() : "draft");
         event.setUseYn(saveDto.getUseYn() != null ? saveDto.getUseYn() : "Y");
         event.setFileSeq(saveDto.getFileSeq());
 

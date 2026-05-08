@@ -20,6 +20,10 @@ const Login = () => {
   const [rememberId, setRememberId] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const ensureCsrfToken = async () => {
+    await axios.get('/api/common/login-info', { headers: { showLoading: false } });
+  };
+
   const completeLogin = async () => {
     const ret = await getUserLoginInfo();
     if (ret.code !== HttpStatusCode.Ok || !ret.item) return;
@@ -46,6 +50,7 @@ const Login = () => {
 
     setLoading(true);
     try {
+      await ensureCsrfToken();
       const { data } = await axios.post<ApiResponse<boolean>>('/api/login', {
         userId,
         password,
@@ -70,13 +75,15 @@ const Login = () => {
     if (result.length === 2) {
       setUserId(result[0]);
       setPassword(result[1]);
-      axios.post<ApiResponse<boolean>>('/api/login', {
-        userId: result[0],
-        password: result[1],
-        mode: 'auto',
-      }).then(({ data }) => {
-        if (data.code === HttpStatusCode.Ok) completeLogin();
-      });
+      ensureCsrfToken()
+        .then(() => axios.post<ApiResponse<boolean>>('/api/login', {
+          userId: result[0],
+          password: result[1],
+          mode: 'auto',
+        }))
+        .then(({ data }) => {
+          if (data.code === HttpStatusCode.Ok) completeLogin();
+        });
     }
   }, []);
 
@@ -96,7 +103,7 @@ const Login = () => {
             handleLogin();
           }}
         >
-          <p className="saf-login-kicker">슈퍼관리자 / 로펌 관리자 통합 로그인</p>
+          <p className="saf-login-kicker">관리자 / 기관 통합 로그인</p>
           <h1>로그인</h1>
           <p className="saf-login-desc">아이디와 비밀번호를 입력하세요.</p>
 
@@ -105,7 +112,7 @@ const Login = () => {
             <input
               value={userId}
               onChange={(event) => setUserId(event.target.value)}
-              placeholder="kcab/admin"
+              placeholder="admin"
               autoComplete="username"
             />
           </label>

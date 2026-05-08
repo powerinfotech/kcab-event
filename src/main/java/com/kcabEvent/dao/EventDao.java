@@ -20,5 +20,4 @@ public interface EventDao {
 
     void deleteEvent(@Param("eventSeq") Long eventSeq);
 
-    void incrementViewCount(@Param("eventSeq") Long eventSeq);
 }

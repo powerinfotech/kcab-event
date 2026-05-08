@@ -25,17 +25,14 @@ export default function TopBar() {
 
   return (
     <div className="app_topbar">
-      <div className="app_topbar_left">
-        <strong>SAF 2026</strong>
-        <span>2026.09.10 ~ 09.14</span>
-      </div>
+      <div className="app_topbar_left" />
       <div className="app_topbar_right">
         <div className="app_topbar_user">
           <div className="app_topbar_thumb">
             <UserOutlined />
           </div>
           <span className="app_topbar_name">
-            {sessionInfo.userName || (role === 'SUPER_ADMIN' ? '슈퍼관리자' : '로펌 관리자')}
+            {sessionInfo.userName || (role === 'ADMIN' ? '관리자' : '기관')}
           </span>
         </div>
         <button type="button" className="app_topbar_logout" onClick={logout} aria-label="로그아웃">

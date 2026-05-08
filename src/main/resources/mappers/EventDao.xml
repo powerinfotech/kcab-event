@@ -6,63 +6,81 @@
         SELECT
              event_seq
             ,title
-            ,summary
+            ,description AS summary
             ,thumbnail_url
-            ,event_start_dt
-            ,event_end_dt
-            ,location
+            ,start_at::date AS event_start_dt
+            ,end_at::date AS event_end_dt
+            ,COALESCE(venue_name, venue_address) AS location
             ,status
-            ,use_yn
-            ,rgst_date_time
-        FROM event.tb_event
+            ,CASE WHEN deleted_at IS NULL THEN 'Y' ELSE 'N' END AS use_yn
+            ,created_at::timestamp AS rgst_date_time
+        FROM event.events
         <where>
+            deleted_at IS NULL
             <if test="status != null and status != ''">
                 AND status = #{status}
             </if>
         </where>
-        ORDER BY event_start_dt DESC, event_seq DESC
+        ORDER BY start_at DESC, event_seq DESC
     </select>
 
     <select id="selectEventBySeq" resultType="com.kcabEvent.domain.Event">
-        SELECT * FROM event.tb_event WHERE event_seq = #{eventSeq}
+        SELECT
+             event_seq
+            ,title
+            ,description AS content
+            ,description AS summary
+            ,thumbnail_url
+            ,start_at::date AS event_start_dt
+            ,end_at::date AS event_end_dt
+            ,COALESCE(venue_name, venue_address) AS location
+            ,NULL::varchar AS registration_url
+            ,status
+            ,CASE WHEN deleted_at IS NULL THEN 'Y' ELSE 'N' END AS use_yn
+            ,NULL::bigint AS file_seq
+            ,created_by AS rgst_user_seq
+            ,created_at::timestamp AS rgst_date_time
+            ,updated_by AS upt_user_seq
+            ,updated_at::timestamp AS upt_date_time
+        FROM event.events
+        WHERE event_seq = #{eventSeq}
+          AND deleted_at IS NULL
     </select>
 
     <insert id="insertEvent" parameterType="com.kcabEvent.domain.Event" useGeneratedKeys="true" keyProperty="eventSeq">
-        INSERT INTO event.tb_event (
-            title, content, summary, thumbnail_url,
-            event_start_dt, event_end_dt, location, registration_url,
-            status, use_yn, file_seq, rgst_user_seq, upt_user_seq
+        INSERT INTO event.events (
+            slug, title, description, event_type, is_paid,
+            start_at, end_at, venue_name, thumbnail_url,
+            status, created_by, updated_by
         ) VALUES (
-            #{title}, #{content}, #{summary}, #{thumbnailUrl},
-            #{eventStartDt}, #{eventEndDt}, #{location}, #{registrationUrl},
-            #{status}, #{useYn}, #{fileSeq}, #{rgstUserSeq}, #{uptUserSeq}
+            'event-' || substr(md5(random()::text || clock_timestamp()::text), 1, 12),
+            #{title}, #{content}, 'main', false,
+            #{eventStartDt}::date::timestamptz, #{eventEndDt}::date::timestamptz,
+            #{location}, #{thumbnailUrl},
+            COALESCE(NULLIF(#{status}, ''), 'draft'), #{rgstUserSeq}, #{uptUserSeq}
         )
     </insert>
 
     <update id="updateEvent" parameterType="com.kcabEvent.domain.Event">
-        UPDATE event.tb_event
+        UPDATE event.events
         SET  title             = #{title}
-            ,content           = #{content}
-            ,summary           = #{summary}
+            ,description       = #{content}
             ,thumbnail_url     = #{thumbnailUrl}
-            ,event_start_dt    = #{eventStartDt}
-            ,event_end_dt      = #{eventEndDt}
-            ,location          = #{location}
-            ,registration_url  = #{registrationUrl}
+            ,start_at          = #{eventStartDt}::date::timestamptz
+            ,end_at            = #{eventEndDt}::date::timestamptz
+            ,venue_name        = #{location}
             ,status            = #{status}
-            ,use_yn            = #{useYn}
-            ,file_seq          = #{fileSeq}
-            ,upt_user_seq      = #{uptUserSeq}
-            ,upt_date_time     = CURRENT_TIMESTAMP
+            ,updated_by        = #{uptUserSeq}
+            ,updated_at        = CURRENT_TIMESTAMP
         WHERE event_seq = #{eventSeq}
+          AND deleted_at IS NULL
     </update>
 
     <delete id="deleteEvent">
-        DELETE FROM event.tb_event WHERE event_seq = #{eventSeq}
+        UPDATE event.events
+        SET  deleted_at = CURRENT_TIMESTAMP
+            ,updated_at = CURRENT_TIMESTAMP
+        WHERE event_seq = #{eventSeq}
     </delete>
-
-    <update id="incrementViewCount">
-        UPDATE event.tb_event SET view_count = view_count + 1 WHERE event_seq = #{eventSeq}
-    </update>
 
 </mapper>

@@ -51,10 +51,10 @@ public class CommonController {
     }
 
     private List<MenuListDto> resolveFixedMenuInfo(LoginUser loginUser) {
-        boolean superAdmin = "Y".equals(loginUser.getAdmYn());
+        boolean admin = "Y".equals(loginUser.getAdmYn());
         List<MenuListDto> menus = new ArrayList<>();
 
-        if (superAdmin) {
+        if (admin) {
             menus.add(fixedMenu(100, "대시보드", "/", "DashBoard", 1, 1));
             menus.add(fixedMenu(110, "행사 관리", "/events", "admin/SuperEventList", 2, 1));
             menus.add(fixedMenu(111, "행사 등록", "/events/new", "admin/EventEditor", 3, 2));
@@ -62,8 +62,9 @@ public class CommonController {
             menus.add(fixedMenu(130, "참가자 관리", "/participants", "admin/Participants", 5, 1));
             menus.add(fixedMenu(140, "결제 관리", "/payments", "admin/Payments", 6, 1));
             menus.add(fixedMenu(150, "이메일 CMS", "/email-cms/registration-confirm", "admin/EmailCms", 7, 1));
-            menus.add(fixedMenu(160, "사용자 관리", "/users", "admin/UserManagementMock", 8, 1));
-            menus.add(fixedMenu(170, "환경 설정", "/settings", "admin/SettingsMock", 9, 1));
+            menus.add(fixedMenu(155, "로펌/기관 관리", "/organizations", "admin/OrganizationManagementMock", 8, 1));
+            menus.add(fixedMenu(160, "사용자 관리", "/users", "admin/UserManagementMock", 9, 1));
+            menus.add(fixedMenu(170, "환경 설정", "/settings", "admin/SettingsMock", 10, 1));
             return menus;
         }
 
@@ -71,7 +72,7 @@ public class CommonController {
         menus.add(fixedMenu(210, "내 부대행사", "/side-events", "admin/OrgSideEvents", 2, 1));
         menus.add(fixedMenu(211, "부대행사 신청", "/side-events/new", "admin/OrgSideEventForm", 3, 2));
         menus.add(fixedMenu(220, "참가자", "/participants", "admin/Participants", 4, 1));
-        menus.add(fixedMenu(230, "프로필", "/profile", "admin/OrgProfile", 5, 1));
+        menus.add(fixedMenu(230, "기관 프로필", "/profile", "admin/OrgProfile", 5, 1));
         return menus;
     }
 

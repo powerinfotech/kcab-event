@@ -78,7 +78,7 @@ public class LoginUser {
         loginUser.setNickName(user.getName());
         loginUser.setEmail(user.getEmail());
         loginUser.setUseYn("Y");
-        loginUser.setAdmYn(SafUserType.SUPER_ADMIN.getCode().equals(user.getUserType()) ? "Y" : "N");
+        loginUser.setAdmYn(SafUserType.ADMIN.getCode().equals(user.getUserType()) ? "Y" : "N");
         return loginUser;
     }
 }

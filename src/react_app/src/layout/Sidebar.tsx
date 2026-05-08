@@ -10,6 +10,7 @@ import {
   SettingOutlined,
   TeamOutlined,
   UserOutlined,
+  BankOutlined,
   ProfileOutlined,
   FormOutlined,
 } from '@ant-design/icons';
@@ -27,6 +28,7 @@ const iconByUrl: Record<string, React.ReactNode> = {
   '/participants': <TeamOutlined />,
   '/payments': <CreditCardOutlined />,
   '/email-cms/registration-confirm': <MailOutlined />,
+  '/organizations': <BankOutlined />,
   '/users': <UserOutlined />,
   '/settings': <SettingOutlined />,
   '/profile': <ProfileOutlined />,
@@ -62,8 +64,8 @@ export default function Sidebar({
   return (
     <aside className="saf-sidebar">
       <button className="saf-sidebar-brand" type="button" onClick={() => move('/')}>
-        <span>{role === 'SUPER_ADMIN' ? 'KCAB 관리자' : 'ABC 로펌'}</span>
-        <strong>{role === 'SUPER_ADMIN' ? '관리자 콘솔' : '관리자 콘솔'}</strong>
+        <span>{role === 'ADMIN' ? 'KCAB 관리자' : '기관'}</span>
+        <strong>{role === 'ADMIN' ? '관리자 콘솔' : '기관 콘솔'}</strong>
       </button>
 
       <nav className="saf-sidebar-menu" aria-label="관리자 메뉴">
@@ -76,7 +78,7 @@ export default function Sidebar({
           >
             <span className="saf-sidebar-icon">{iconByUrl[menu.menuUrl] ?? <DashboardOutlined />}</span>
             <span>{menu.menuNm}</span>
-            {role === 'SUPER_ADMIN' && menu.menuUrl === '/side-events/SE-0042' && (
+            {role === 'ADMIN' && menu.menuUrl === '/side-events/SE-0042' && (
               <em>3</em>
             )}
           </button>

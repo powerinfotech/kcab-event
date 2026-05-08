@@ -11,7 +11,7 @@
             ,sort_seq
             ,use_yn
             ,rgst_date_time
-        FROM event.tb_faq
+        FROM event.faq
         <where>
             <if test="category != null and category != ''">
                 AND category = #{category}
@@ -21,12 +21,12 @@
     </select>
 
     <insert id="insertFaq" parameterType="com.kcabEvent.domain.Faq" useGeneratedKeys="true" keyProperty="faqSeq">
-        INSERT INTO event.tb_faq (category, question, answer, sort_seq, use_yn, rgst_user_seq, upt_user_seq)
+        INSERT INTO event.faq (category, question, answer, sort_seq, use_yn, rgst_user_seq, upt_user_seq)
         VALUES (#{category}, #{question}, #{answer}, #{sortSeq}, #{useYn}, #{rgstUserSeq}, #{uptUserSeq})
     </insert>
 
     <update id="updateFaq" parameterType="com.kcabEvent.domain.Faq">
-        UPDATE event.tb_faq
+        UPDATE event.faq
         SET  category       = #{category}
             ,question       = #{question}
             ,answer         = #{answer}
@@ -38,7 +38,7 @@
     </update>
 
     <delete id="deleteFaq">
-        DELETE FROM event.tb_faq WHERE faq_seq = #{faqSeq}
+        DELETE FROM event.faq WHERE faq_seq = #{faqSeq}
     </delete>
 
 </mapper>

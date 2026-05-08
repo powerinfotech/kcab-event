@@ -67,7 +67,7 @@ const SafSignup: React.FC = () => {
       const { passwordConfirm, agreeTerms, agreePrivacy, agreeMarketing, ...payload } = form;
       const res = await callSignup(payload);
       if (res?.code === 200) {
-        message.success('가입 신청이 완료되었습니다. 슈퍼관리자 승인 후 로그인할 수 있습니다.');
+        message.success('가입 신청이 완료되었습니다. 관리자 승인 후 로그인할 수 있습니다.');
         window.location.href = '/admin/login';
       } else {
         message.error(res?.message || '가입 신청에 실패했습니다.');
@@ -158,7 +158,7 @@ const SafSignup: React.FC = () => {
               <h2>가입 절차</h2>
               <ol>
                 <li>정보 입력 후 신청</li>
-                <li>슈퍼관리자 승인 (1~2일)</li>
+                <li>관리자 승인 (1~2일)</li>
                 <li>승인 메일 수신</li>
                 <li>로그인 → 부대행사 등록</li>
               </ol>
