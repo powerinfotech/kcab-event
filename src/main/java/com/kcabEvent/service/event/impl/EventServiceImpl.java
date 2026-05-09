@@ -15,6 +15,9 @@ import jakarta.annotation.Resource;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * 이벤트 저장과 기본값 처리를 구현한다.
+ */
 @Slf4j
 @Service("eventService")
 public class EventServiceImpl extends EgovAbstractServiceImpl implements EventService {

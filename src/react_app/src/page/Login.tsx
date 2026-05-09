@@ -3,13 +3,15 @@
 import React, { useEffect, useState } from 'react';
 import axios, { HttpStatusCode } from 'axios';
 import { useCookies } from 'react-cookie';
-import { message } from 'antd';
+import { Modal, message } from 'antd';
 import { useSetAtom } from 'jotai';
 import { ApiResponse } from '@interface/common';
 import { getUserLoginInfo } from '@api/CommonApi';
 import { sessionInfoAtom } from '@atom/sessionInfoAtom';
 import { menuInfoAtom } from '@atom/menuInfoAtom';
 import { getFixedAdminMenuInfo } from '@util/fixedAdminMenus';
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const Login = () => {
   const setSessionInfo = useSetAtom(sessionInfoAtom);
@@ -19,6 +21,49 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [rememberId, setRememberId] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const [forgotOpen, setForgotOpen] = useState(false);
+  const [forgotName, setForgotName] = useState('');
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotSubmitting, setForgotSubmitting] = useState(false);
+
+  const openForgotPassword = () => {
+    setForgotName('');
+    setForgotEmail('');
+    setForgotOpen(true);
+  };
+
+  const closeForgotPassword = () => {
+    if (forgotSubmitting) return;
+    setForgotOpen(false);
+  };
+
+  const handleForgotSubmit = async () => {
+    const name = forgotName.trim();
+    const email = forgotEmail.trim();
+
+    if (!name) {
+      message.warning('Please enter your name.');
+      return;
+    }
+    if (!email) {
+      message.warning('Please enter your email.');
+      return;
+    }
+    if (!EMAIL_REGEX.test(email)) {
+      message.warning('Please enter a valid email address.');
+      return;
+    }
+
+    setForgotSubmitting(true);
+    try {
+      // TODO: 이메일 인증 발송 API 연동 예정
+      message.success('Verification email will be sent once the email service is ready.');
+      setForgotOpen(false);
+    } finally {
+      setForgotSubmitting(false);
+    }
+  };
 
   const ensureCsrfToken = async () => {
     await axios.get('/api/common/login-info', { headers: { showLoading: false } });
@@ -137,7 +182,7 @@ const Login = () => {
               />
               <span>Remember me</span>
             </label>
-            <button type="button" onClick={() => message.info('Please contact the administrator.')}>
+            <button type="button" onClick={openForgotPassword}>
               Forgot password?
             </button>
           </div>
@@ -155,6 +200,70 @@ const Login = () => {
           </button>
         </form>
       </section>
+
+      <Modal
+        title="Forgot password"
+        open={forgotOpen}
+        onOk={handleForgotSubmit}
+        onCancel={closeForgotPassword}
+        okText="Send verification email"
+        cancelText="Cancel"
+        confirmLoading={forgotSubmitting}
+        mask={{ closable: !forgotSubmitting }}
+        destroyOnHidden
+      >
+        <p style={{ marginBottom: 16, color: '#64748b' }}>
+          Enter your name and email. We will send a verification email to reset your password.
+        </p>
+        <form
+          className="saf-forgot-form"
+          onSubmit={(event) => {
+            event.preventDefault();
+            handleForgotSubmit();
+          }}
+        >
+          <label style={{ display: 'block', marginBottom: 12 }}>
+            <span style={{ display: 'block', marginBottom: 6, color: '#334155', fontWeight: 700, fontSize: 13 }}>
+              Name
+            </span>
+            <input
+              value={forgotName}
+              onChange={(event) => setForgotName(event.target.value)}
+              placeholder="Your name"
+              autoComplete="name"
+              style={{
+                width: '100%',
+                height: 40,
+                border: '1px solid #d7dee8',
+                borderRadius: 6,
+                padding: '0 12px',
+                fontSize: 14,
+              }}
+            />
+          </label>
+          <label style={{ display: 'block' }}>
+            <span style={{ display: 'block', marginBottom: 6, color: '#334155', fontWeight: 700, fontSize: 13 }}>
+              Email
+            </span>
+            <input
+              value={forgotEmail}
+              onChange={(event) => setForgotEmail(event.target.value)}
+              placeholder="name@example.com"
+              type="email"
+              autoComplete="email"
+              style={{
+                width: '100%',
+                height: 40,
+                border: '1px solid #d7dee8',
+                borderRadius: 6,
+                padding: '0 12px',
+                fontSize: 14,
+              }}
+            />
+          </label>
+          <button type="submit" style={{ display: 'none' }} aria-hidden="true" />
+        </form>
+      </Modal>
     </main>
   );
 };

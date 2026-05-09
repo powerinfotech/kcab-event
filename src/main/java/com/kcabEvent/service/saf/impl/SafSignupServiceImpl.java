@@ -18,6 +18,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * 승인 대기 사용자, 조직, 소유자 멤버십을 생성해 SAF 조직 가입을 구현한다.
+ */
 @Slf4j
 @Service("safSignupService")
 public class SafSignupServiceImpl extends EgovAbstractServiceImpl implements SafSignupService {
@@ -39,11 +42,6 @@ public class SafSignupServiceImpl extends EgovAbstractServiceImpl implements Saf
         if (existsByEmail(req.getEmail())) {
             throw new IllegalArgumentException("This email is already registered.");
         }
-        if (req.getBusinessNumber() != null && !req.getBusinessNumber().isBlank()) {
-            if (safOrganizationDao.selectByBusinessNumber(req.getBusinessNumber()) != null) {
-                throw new IllegalArgumentException("This business registration number is already registered.");
-            }
-        }
 
         SafUser user = new SafUser();
         user.setUserId(req.getUserId());
@@ -51,17 +49,16 @@ public class SafSignupServiceImpl extends EgovAbstractServiceImpl implements Saf
         user.setPasswordHash(passwordEncoder.encode(req.getPassword()));
         user.setName(req.getName());
         user.setNameEn(req.getNameEn());
+        user.setPosition(req.getPosition());
         user.setPhone(req.getPhone());
         user.setUserType(SafUserType.ORGANIZATION.getCode());
         user.setStatus(SafUserStatus.PENDING.getCode());
-        user.setLanguage(req.getLanguage() != null ? req.getLanguage() : "en");
         safUserDao.insertUser(user);
 
         SafOrganization org = new SafOrganization();
         org.setName(req.getOrgName());
         org.setNameEn(req.getOrgNameEn());
         org.setOrgType(req.getOrgType());
-        org.setBusinessNumber(req.getBusinessNumber());
         org.setRepresentativeName(req.getRepresentativeName());
         org.setContactEmail(req.getContactEmail());
         org.setContactPhone(req.getContactPhone());

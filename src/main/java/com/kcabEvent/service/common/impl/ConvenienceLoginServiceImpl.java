@@ -11,6 +11,9 @@ import org.egovframe.rte.fdl.cmmn.EgovAbstractServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+/**
+ * local/dev 편의 로그인을 위해 기존 사용자 정보를 세션에 저장한다.
+ */
 @Service("convenienceLoginService")
 public class ConvenienceLoginServiceImpl extends EgovAbstractServiceImpl implements ConvenienceLoginService {
     @Resource(name = "userDao")

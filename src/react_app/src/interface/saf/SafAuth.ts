@@ -4,12 +4,11 @@ export interface SignupRequest {
   email: string;
   name: string;
   nameEn?: string;
+  position?: string;
   phone?: string;
-  language?: string;
   orgName: string;
   orgNameEn?: string;
   orgType: string;
-  businessNumber?: string;
   representativeName?: string;
   contactEmail: string;
   contactPhone?: string;

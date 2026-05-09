@@ -22,6 +22,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
+/**
+ * 기존 사용자 로그인/로그아웃을 구현하고 기존 사용자 조회가 불가할 때 SAF 사용자로 대체 조회한다.
+ */
 @Slf4j
 @Service("loginService")
 public class LoginServiceImpl extends EgovAbstractServiceImpl implements LoginService {

@@ -18,6 +18,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 그리드 화면에서 사용하는 엑셀 가져오기/내보내기 API를 제공한다.
+ */
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/excel")
@@ -26,6 +29,9 @@ public class ExcelController {
     private final ExcelService excelService;
     private final ObjectMapper objectMapper;
 
+    /**
+     * 클라이언트가 전달한 컬럼과 행 데이터로 엑셀 파일을 생성해 다운로드한다.
+     */
     @PostMapping("/download")
     public ResponseEntity<byte[]> downloadExcel(@RequestBody ExcelDownloadRequest request) {
         byte[] excelData = excelService.generateExcel(request.getColumns(), request.getDataList());
@@ -39,6 +45,9 @@ public class ExcelController {
                 .body(excelData);
     }
 
+    /**
+     * 클라이언트가 전달한 컬럼 메타데이터에 따라 업로드된 엑셀 파일을 파싱한다.
+     */
     @PostMapping("/upload")
     public ApiResponse<List<Map<String, Object>>> uploadExcel(
             @RequestPart("file") MultipartFile file,

@@ -12,6 +12,9 @@ import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import java.util.List;
 
+/**
+ * FAQ 목록 조회와 일괄 저장을 위한 관리자 API를 제공한다.
+ */
 @RestController
 @RequestMapping("/api/faq")
 public class FaqController {
@@ -19,6 +22,9 @@ public class FaqController {
     @Resource(name = "faqService")
     private FaqService faqService;
 
+    /**
+     * 카테고리 조건에 따라 FAQ 목록을 조회한다.
+     */
     @GetMapping("/list")
     public ApiResponse<List<FaqListDto>> selectFaqList(
             @KcabEventSession LoginUser loginUser,
@@ -26,6 +32,9 @@ public class FaqController {
         return ApiResponse.ok(faqService.selectFaqList(category));
     }
 
+    /**
+     * 생성, 수정, 삭제된 FAQ 행을 저장한다.
+     */
     @PostMapping("/save")
     public ApiResponse<Void> saveFaq(
             @KcabEventSession LoginUser loginUser,

@@ -21,6 +21,9 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 애플리케이션 셸에서 사용하는 세션 사용자와 내비게이션 공통 API를 제공한다.
+ */
 @Slf4j
 @RequestMapping("/api/common")
 @RestController
@@ -28,6 +31,9 @@ public class CommonController {
     @Resource(name = "userManagementService")
     private UserManagementService userManagementService;
 
+    /**
+     * 현재 세션 사용자를 조회하고 가능하면 최신 사용자 정보로 보강한다.
+     */
     @GetMapping("/login-info")
     public ApiResponse<LoginUser> loginInfo(@KcabEventSession LoginUser loginUser) {
         if (loginUser == null) {
@@ -46,6 +52,9 @@ public class CommonController {
         }
     }
 
+    /**
+     * 현재 세션 사용자에 대한 고정 내비게이션 메뉴를 조회한다.
+     */
     @GetMapping("/menu-info")
     public ApiResponse<List<MenuListDto>> menuInfo(@KcabEventSession LoginUser loginUser) {
         if (loginUser == null) {
@@ -96,6 +105,9 @@ public class CommonController {
         return menu;
     }
 
+    /**
+     * 공통 선택창과 관리 화면에서 사용할 사용자 목록을 조회한다.
+     */
     @GetMapping("/user-list")
     public ApiResponse<List<UserListDto>> userList(@KcabEventSession LoginUser loginUser, UserListSearchDto userListSearchDto) {
         if (loginUser == null) {
@@ -104,6 +116,9 @@ public class CommonController {
         return ApiResponse.ok(userManagementService.selectUserList(userListSearchDto));
     }
 
+    /**
+     * 메뉴에 대해 허용된 버튼 메타데이터를 조회한다.
+     */
     @GetMapping("/menu-btn-list")
     public ApiResponse<List<MenuBtnDetailDto>> menuBtnList(@KcabEventSession LoginUser loginUser, @RequestParam("menuSeq") Long menuSeq) {
         if (loginUser == null) {

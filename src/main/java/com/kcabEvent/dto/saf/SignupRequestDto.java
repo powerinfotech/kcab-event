@@ -18,15 +18,14 @@ public class SignupRequestDto {
     @NotBlank
     private String name;
     private String nameEn;
+    private String position;
     private String phone;
-    private String language;
 
     @NotBlank
     private String orgName;
     private String orgNameEn;
     @NotBlank
     private String orgType;
-    private String businessNumber;
     private String representativeName;
     @NotBlank
     @Email

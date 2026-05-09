@@ -12,7 +12,6 @@ public class SafOrganization {
     private String name;
     private String nameEn;
     private String orgType;
-    private String businessNumber;
     private String representativeName;
     private String contactEmail;
     private String contactPhone;

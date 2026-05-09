@@ -13,6 +13,9 @@ import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import java.util.List;
 
+/**
+ * 권한 그룹에 메뉴와 버튼 권한을 배정하는 API를 제공한다.
+ */
 @RestController
 @RequestMapping("/api/auth-menu-mgt")
 public class AuthMenuManagementController {
@@ -20,6 +23,9 @@ public class AuthMenuManagementController {
     @Resource(name = "authMenuManagementService")
     private AuthMenuManagementService authMenuManagementService;
 
+    /**
+     * 메뉴 권한 설정에 사용할 권한 그룹 포함 권한 목록을 조회한다.
+     */
     @GetMapping("/auth-list")
     public ApiResponse<List<AuthMenuMgtAuthListDto>> selectAuthList(
             @KcabEventSession LoginUser loginUser,
@@ -27,6 +33,9 @@ public class AuthMenuManagementController {
         return ApiResponse.ok(authMenuManagementService.selectAuthListWithGroup(authNm));
     }
 
+    /**
+     * 선택한 권한의 메뉴 및 버튼 권한 목록을 조회한다.
+     */
     @GetMapping("/auth-menu-btn-list")
     public ApiResponse<List<AuthMenuBtnListDto>> selectAuthMenuBtnList(
             @KcabEventSession LoginUser loginUser,
@@ -35,6 +44,9 @@ public class AuthMenuManagementController {
         return ApiResponse.ok(authMenuManagementService.selectAuthMenuBtnList(authGrpSeq, authSeq));
     }
 
+    /**
+     * 권한별 메뉴 및 버튼 권한 변경사항을 저장한다.
+     */
     @PostMapping("/save")
     public ApiResponse<Void> save(
             @KcabEventSession LoginUser loginUser,

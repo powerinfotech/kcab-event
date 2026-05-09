@@ -1,23 +1,22 @@
 'use client';
 
 import React, { useState } from 'react';
-import { message } from 'antd';
+import { EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
+import { Modal, message } from 'antd';
 import { callSignup } from '@api/saf/SafAuthApi';
 import { ORG_TYPE_OPTIONS, SignupRequest } from '@interface/saf/SafAuth';
 
 const initialForm: SignupRequest & {
   passwordConfirm: string;
-  agreeTerms: boolean;
   agreePrivacy: boolean;
-  agreeMarketing: boolean;
 } = {
   orgName: '',
-  businessNumber: '',
   orgType: 'law_firm',
   contactEmail: '',
   name: '',
   userId: '',
   email: '',
+  position: '',
   password: '',
   passwordConfirm: '',
   phone: '',
@@ -25,51 +24,58 @@ const initialForm: SignupRequest & {
   contactPhone: '',
   address: '',
   website: '',
-  agreeTerms: true,
   agreePrivacy: true,
-  agreeMarketing: false,
 };
 
 const SafSignup: React.FC = () => {
+  const [messageApi, contextHolder] = message.useMessage();
   const [form, setForm] = useState(initialForm);
   const [loading, setLoading] = useState(false);
+  const [privacyOpen, setPrivacyOpen] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
+  const [submitAttempted, setSubmitAttempted] = useState(false);
 
   const set = (field: keyof typeof form, value: string | boolean) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  const toggleAll = (checked: boolean) => {
-    setForm((prev) => ({
-      ...prev,
-      agreeTerms: checked,
-      agreePrivacy: checked,
-      agreeMarketing: checked,
-    }));
-  };
+  const isRequiredEmpty = (value?: string) => submitAttempted && !value?.trim();
 
   const handleSubmit = async () => {
-    if (!form.orgName || !form.businessNumber || !form.contactEmail || !form.name || !form.userId || !form.email || !form.password) {
-      message.warning('Please fill in all required fields.');
+    setSubmitAttempted(true);
+
+    if (
+      !form.orgName?.trim()
+      || !form.orgType?.trim()
+      || !form.contactEmail?.trim()
+      || !form.name?.trim()
+      || !form.userId?.trim()
+      || !form.email?.trim()
+      || !form.password?.trim()
+      || !form.passwordConfirm?.trim()
+    ) {
+      messageApi.warning('Please fill in all required fields.');
       return;
     }
     if (form.password !== form.passwordConfirm) {
-      message.warning('Password confirmation does not match.');
+      messageApi.error('Password and Confirm Password do not match.');
       return;
     }
-    if (!form.agreeTerms || !form.agreePrivacy) {
-      message.warning('Please agree to the required terms.');
+    if (!form.agreePrivacy) {
+      messageApi.warning('Please agree to the privacy policy.');
       return;
     }
 
     setLoading(true);
     try {
-      const { passwordConfirm, agreeTerms, agreePrivacy, agreeMarketing, ...payload } = form;
+      const { passwordConfirm, agreePrivacy, ...payload } = form;
       const res = await callSignup(payload);
       if (res?.code === 200) {
-        message.success('Your sign-up request has been submitted. You can sign in after administrator approval.');
+        messageApi.success('Your sign-up request has been submitted. You can sign in after administrator approval.');
         window.location.href = '/login';
       } else {
-        message.error(res?.message || 'Sign-up request failed.');
+        messageApi.error(res?.message || 'Sign-up request failed.');
       }
     } finally {
       setLoading(false);
@@ -78,6 +84,7 @@ const SafSignup: React.FC = () => {
 
   return (
     <main className="saf-signup-page">
+      {contextHolder}
       <section className="saf-signup-shell">
         <header className="saf-signup-top">
           <div>
@@ -93,40 +100,54 @@ const SafSignup: React.FC = () => {
         <div className="saf-signup-grid">
           <section className="saf-signup-panel">
             <StepLabel step="STEP 1" title="Organization Information" meta="organizations" />
-            <Field label="Organization Name *">
+            <Field label="Organization Name *" invalid={isRequiredEmpty(form.orgName)}>
               <input value={form.orgName} onChange={(e) => set('orgName', e.target.value)} placeholder="e.g. ABC Law LLC" />
             </Field>
-            <Field label="Business Registration Number *">
-              <input value={form.businessNumber} onChange={(e) => set('businessNumber', e.target.value)} placeholder="123-45-67890" />
-            </Field>
-            <Field label="Organization Type *">
+            <Field label="Organization Type *" invalid={isRequiredEmpty(form.orgType)}>
               <select value={form.orgType} onChange={(e) => set('orgType', e.target.value)}>
                 {ORG_TYPE_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>{option.label}</option>
                 ))}
               </select>
             </Field>
-            <Field label="Primary Email *">
+            <Field label="Primary Email *" invalid={isRequiredEmpty(form.contactEmail)}>
               <input value={form.contactEmail} onChange={(e) => set('contactEmail', e.target.value)} placeholder="contact@abc.law" type="email" />
             </Field>
           </section>
 
           <section className="saf-signup-panel">
             <StepLabel step="STEP 2" title="Applicant Information" meta="users + organization_members" />
-            <Field label="Name *">
+            <Field label="Name *" invalid={isRequiredEmpty(form.name)}>
               <input value={form.name} onChange={(e) => set('name', e.target.value)} placeholder="e.g. Minsoo Kim" />
             </Field>
-            <Field label="User ID *">
+            <Field label="Position">
+              <input value={form.position} onChange={(e) => set('position', e.target.value)} placeholder="e.g. Partner" />
+            </Field>
+            <Field label="User ID *" invalid={isRequiredEmpty(form.userId)}>
               <input value={form.userId} onChange={(e) => set('userId', e.target.value)} placeholder="Letters and numbers, 4-20 characters" />
             </Field>
-            <Field label="Email *">
+            <Field label="Email *" invalid={isRequiredEmpty(form.email)}>
               <input value={form.email} onChange={(e) => set('email', e.target.value)} placeholder="kim@abc.law" type="email" />
             </Field>
-            <Field label="Password *">
-              <input value={form.password} onChange={(e) => set('password', e.target.value)} placeholder="At least 8 characters" type="password" />
+            <Field label="Password *" invalid={isRequiredEmpty(form.password)}>
+              <PasswordInput
+                value={form.password}
+                onChange={(value) => set('password', value)}
+                placeholder="At least 8 characters"
+                visible={showPassword}
+                onToggle={() => setShowPassword((prev) => !prev)}
+                label="password"
+              />
             </Field>
-            <Field label="Confirm Password *">
-              <input value={form.passwordConfirm} onChange={(e) => set('passwordConfirm', e.target.value)} placeholder="Enter the same password" type="password" />
+            <Field label="Confirm Password *" invalid={isRequiredEmpty(form.passwordConfirm)}>
+              <PasswordInput
+                value={form.passwordConfirm}
+                onChange={(value) => set('passwordConfirm', value)}
+                placeholder="Enter the same password"
+                visible={showPasswordConfirm}
+                onToggle={() => setShowPasswordConfirm((prev) => !prev)}
+                label="confirm password"
+              />
             </Field>
           </section>
 
@@ -134,14 +155,11 @@ const SafSignup: React.FC = () => {
             <section className="saf-signup-panel">
               <StepLabel step="STEP 3" title="Agreements" />
               <Agreement
-                label="Agree to all"
-                checked={form.agreeTerms && form.agreePrivacy && form.agreeMarketing}
-                onChange={toggleAll}
-                strong
+                label="Privacy Consent (Required)"
+                checked={form.agreePrivacy}
+                onChange={(v) => set('agreePrivacy', v)}
+                onView={() => setPrivacyOpen(true)}
               />
-              <Agreement label="Terms of Service (Required)" checked={form.agreeTerms} onChange={(v) => set('agreeTerms', v)} />
-              <Agreement label="Collection and Use of Personal Information (Required)" checked={form.agreePrivacy} onChange={(v) => set('agreePrivacy', v)} />
-              <Agreement label="Marketing Updates (Optional)" checked={form.agreeMarketing} onChange={(v) => set('agreeMarketing', v)} />
               <button className="saf-signup-submit" type="button" disabled={loading} onClick={handleSubmit}>
                 {loading ? 'Submitting...' : 'Submit Request'}
               </button>
@@ -159,6 +177,25 @@ const SafSignup: React.FC = () => {
           </aside>
         </div>
       </section>
+
+      <Modal
+        title="Consent to collect, use, and provide personal information"
+        open={privacyOpen}
+        onCancel={() => setPrivacyOpen(false)}
+        footer={null}
+        width={760}
+        className="saf-privacy-modal"
+        destroyOnHidden
+      >
+        <div className="saf-privacy-consent">
+          <p className="saf-privacy-consent__body">
+            By completing this application form, you agree to KCAB using any of your personal information that you may
+            have provided in this application for the purpose of assessment of panel listing, background and reference
+            checks, future appointments in any arbitrations handled by KCAB, and listing your curriculum vitae on KCAB's
+            website, in accordance with Korean Data Protection Act.
+          </p>
+        </div>
+      </Modal>
     </main>
   );
 };
@@ -171,11 +208,59 @@ const StepLabel = ({ step, title, meta }: { step: string; title: string; meta?: 
   </div>
 );
 
-const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
-  <label className="saf-signup-field">
-    <span>{label}</span>
-    {children}
-  </label>
+const Field = ({
+  label,
+  children,
+  invalid,
+}: {
+  label: string;
+  children: React.ReactNode;
+  invalid?: boolean;
+}) => {
+  const required = label.endsWith(' *');
+  const labelText = required ? label.slice(0, -2) : label;
+
+  return (
+    <label className={`saf-signup-field ${invalid ? 'is-invalid' : ''}`}>
+      <span>
+        {labelText}
+        {required && <em className="saf-required-mark">*</em>}
+      </span>
+      {children}
+    </label>
+  );
+};
+
+const PasswordInput = ({
+  value,
+  onChange,
+  placeholder,
+  visible,
+  onToggle,
+  label,
+}: {
+  value: string | undefined;
+  onChange: (value: string) => void;
+  placeholder: string;
+  visible: boolean;
+  onToggle: () => void;
+  label: string;
+}) => (
+  <div className="saf-password-input">
+    <input
+      value={value ?? ''}
+      onChange={(event) => onChange(event.target.value)}
+      placeholder={placeholder}
+      type={visible ? 'text' : 'password'}
+    />
+    <button
+      type="button"
+      aria-label={visible ? `Hide ${label}` : `Show ${label}`}
+      onClick={onToggle}
+    >
+      {visible ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+    </button>
+  </div>
 );
 
 const Agreement = ({
@@ -183,16 +268,31 @@ const Agreement = ({
   checked,
   onChange,
   strong,
+  showView = true,
+  onView,
 }: {
   label: string;
   checked: boolean;
   onChange: (checked: boolean) => void;
   strong?: boolean;
+  showView?: boolean;
+  onView?: () => void;
 }) => (
   <label className={`saf-agreement ${strong ? 'is-strong' : ''}`}>
     <input type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} />
     <span>{label}</span>
-    {!strong && <button type="button">View</button>}
+    {!strong && showView && (
+      <button
+        type="button"
+        onClick={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          onView?.();
+        }}
+      >
+        View
+      </button>
+    )}
   </label>
 );
 

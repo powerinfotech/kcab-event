@@ -17,6 +17,9 @@ import org.springframework.transaction.annotation.Transactional;
 import jakarta.annotation.Resource;
 import java.util.List;
 
+/**
+ * 페이지 저장, 섹션 저장, 공개 페이지 상세 조립을 구현한다.
+ */
 @Slf4j
 @Service("pageService")
 public class PageServiceImpl extends EgovAbstractServiceImpl implements PageService {

@@ -14,6 +14,9 @@ import org.springframework.transaction.annotation.Transactional;
 import jakarta.annotation.Resource;
 import java.util.List;
 
+/**
+ * FAQ 목록 조회와 행 단위 생성/수정/삭제 처리를 구현한다.
+ */
 @Slf4j
 @Service("faqService")
 public class FaqServiceImpl extends EgovAbstractServiceImpl implements FaqService {

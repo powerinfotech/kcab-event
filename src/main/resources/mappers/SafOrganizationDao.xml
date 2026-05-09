@@ -2,16 +2,11 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.kcabEvent.dao.SafOrganizationDao">
 
-    <select id="selectByBusinessNumber" resultType="com.kcabEvent.domain.saf.SafOrganization">
-        SELECT * FROM event.organizations WHERE business_number = #{businessNumber}
-    </select>
-
     <insert id="insertOrganization" parameterType="com.kcabEvent.domain.saf.SafOrganization" useGeneratedKeys="true" keyProperty="organizationSeq">
         INSERT INTO event.organizations (
              name
             ,name_en
             ,org_type
-            ,business_number
             ,representative_name
             ,contact_email
             ,contact_phone
@@ -23,7 +18,6 @@
              #{name}
             ,#{nameEn}
             ,#{orgType}
-            ,#{businessNumber}
             ,#{representativeName}
             ,#{contactEmail}
             ,#{contactPhone}
@@ -38,5 +32,37 @@
         INSERT INTO event.organization_members (organization_seq, user_seq, role)
         VALUES (#{organizationSeq}, #{userSeq}, #{role})
     </insert>
+
+    <update id="updateAdminOrganization" parameterType="com.kcabEvent.dto.saf.SafAdminUserSaveDto">
+        UPDATE event.organizations
+        SET
+             name = #{organizationName}
+            ,name_en = #{organizationNameEn}
+            ,org_type = #{orgType}
+            ,representative_name = #{representativeName}
+            ,contact_email = #{contactEmail}
+            ,contact_phone = #{contactPhone}
+            ,address = #{address}
+            ,website = #{website}
+            ,status = #{organizationStatus}
+            ,updated_by = #{updatedBy}
+            ,updated_at = NOW()
+        WHERE organization_seq = #{organizationSeq}
+    </update>
+
+    <update id="approveOrganizationByUserSeq">
+        UPDATE event.organizations
+        SET
+             status = 'approved'
+            ,approved_by = #{approvedBy}
+            ,approved_at = NOW()
+            ,updated_by = #{approvedBy}
+            ,updated_at = NOW()
+        WHERE organization_seq IN (
+            SELECT organization_seq
+            FROM event.organization_members
+            WHERE user_seq = #{userSeq}
+        )
+    </update>
 
 </mapper>

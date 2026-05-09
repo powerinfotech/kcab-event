@@ -14,6 +14,9 @@ import org.springframework.transaction.annotation.Transactional;
 import jakarta.annotation.Resource;
 import java.util.List;
 
+/**
+ * 공지사항 저장, 삭제, 공개 조회수 증가를 구현한다.
+ */
 @Slf4j
 @Service("noticeService")
 public class NoticeServiceImpl extends EgovAbstractServiceImpl implements NoticeService {
