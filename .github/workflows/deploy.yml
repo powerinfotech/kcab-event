@@ -10,4 +10,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run deploy
+        env:
+          BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
         run: bash build.sh

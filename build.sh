@@ -11,6 +11,16 @@ echo "🚀 kcab-event 배포 시작 ($(date '+%Y-%m-%d %H:%M:%S'))"
 echo "============================================"
 java -version
 
+if [ -n "${BREVO_API_KEY:-}" ]; then
+  cat > src/main/resources/application-local.yaml <<EOF
+brevo:
+  api:
+    key: ${BREVO_API_KEY}
+EOF
+else
+  echo "BREVO_API_KEY is not set. Password reset email will not be available."
+fi
+
 echo "[1/2] bootJar 빌드..."
 chmod +x ./gradlew
 ./gradlew bootJar --no-daemon
