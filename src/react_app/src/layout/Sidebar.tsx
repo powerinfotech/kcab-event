@@ -10,7 +10,7 @@ import {
   SettingOutlined,
   TeamOutlined,
   UserOutlined,
-  BankOutlined,
+
   ProfileOutlined,
   FormOutlined,
 } from '@ant-design/icons';
@@ -28,7 +28,6 @@ const iconByUrl: Record<string, React.ReactNode> = {
   '/participants': <TeamOutlined />,
   '/payments': <CreditCardOutlined />,
   '/email-cms/registration-confirm': <MailOutlined />,
-  '/organizations': <BankOutlined />,
   '/users': <UserOutlined />,
   '/settings': <SettingOutlined />,
   '/profile': <ProfileOutlined />,

@@ -26,4 +26,6 @@ public interface SafUserDao {
     int updateAdminUser(SafAdminUserSaveDto saveDto);
 
     int approveAdminUser(@Param("userSeq") Long userSeq, @Param("updatedBy") Long updatedBy);
+
+    int updateUserStatus(@Param("userSeq") Long userSeq, @Param("status") String status, @Param("updatedBy") Long updatedBy);
 }

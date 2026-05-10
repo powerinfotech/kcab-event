@@ -5,25 +5,21 @@
     <insert id="insertOrganization" parameterType="com.kcabEvent.domain.saf.SafOrganization" useGeneratedKeys="true" keyProperty="organizationSeq">
         INSERT INTO event.organizations (
              name
-            ,name_en
             ,org_type
             ,representative_name
             ,contact_email
             ,contact_phone
             ,address
             ,website
-            ,status
             ,created_by
         ) VALUES (
              #{name}
-            ,#{nameEn}
             ,#{orgType}
             ,#{representativeName}
             ,#{contactEmail}
             ,#{contactPhone}
             ,#{address}
             ,#{website}
-            ,#{status}
             ,#{createdBy}
         )
     </insert>
@@ -37,14 +33,12 @@
         UPDATE event.organizations
         SET
              name = #{organizationName}
-            ,name_en = #{organizationNameEn}
             ,org_type = #{orgType}
             ,representative_name = #{representativeName}
             ,contact_email = #{contactEmail}
             ,contact_phone = #{contactPhone}
             ,address = #{address}
             ,website = #{website}
-            ,status = #{organizationStatus}
             ,updated_by = #{updatedBy}
             ,updated_at = NOW()
         WHERE organization_seq = #{organizationSeq}
@@ -53,10 +47,7 @@
     <update id="approveOrganizationByUserSeq">
         UPDATE event.organizations
         SET
-             status = 'approved'
-            ,approved_by = #{approvedBy}
-            ,approved_at = NOW()
-            ,updated_by = #{approvedBy}
+             updated_by = #{approvedBy}
             ,updated_at = NOW()
         WHERE organization_seq IN (
             SELECT organization_seq

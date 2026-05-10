@@ -17,9 +17,7 @@ public class SafAdminUserDetailDto {
     private String userId;
     private String email;
     private String name;
-    private String nameEn;
     private String position;
-    private String phone;
     private String userType;
     private String status;
     private OffsetDateTime createdAt;
@@ -27,13 +25,10 @@ public class SafAdminUserDetailDto {
 
     private Long organizationSeq;
     private String organizationName;
-    private String organizationNameEn;
     private String orgType;
     private String representativeName;
     private String contactEmail;
     private String contactPhone;
     private String address;
     private String website;
-    private String organizationStatus;
-    private OffsetDateTime approvedAt;
 }

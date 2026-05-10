@@ -17,13 +17,10 @@ public class SignupRequestDto {
     private String email;
     @NotBlank
     private String name;
-    private String nameEn;
     private String position;
-    private String phone;
 
     @NotBlank
     private String orgName;
-    private String orgNameEn;
     @NotBlank
     private String orgType;
     private String representativeName;

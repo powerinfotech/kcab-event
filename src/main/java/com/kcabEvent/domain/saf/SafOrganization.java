@@ -10,7 +10,6 @@ import java.time.OffsetDateTime;
 public class SafOrganization {
     private Long organizationSeq;
     private String name;
-    private String nameEn;
     private String orgType;
     private String representativeName;
     private String contactEmail;
@@ -19,10 +18,6 @@ public class SafOrganization {
     private String website;
     private String logoUrl;
     private String description;
-    private String status;
-    private String rejectionReason;
-    private Long approvedBy;
-    private OffsetDateTime approvedAt;
     private Long createdBy;
     private OffsetDateTime createdAt;
     private Long updatedBy;

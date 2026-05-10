@@ -13,9 +13,7 @@ public class SafUser {
     private String email;
     private String passwordHash;
     private String name;
-    private String nameEn;
     private String position;
-    private String phone;
     private String userType;
     private String status;
     private OffsetDateTime emailVerifiedAt;

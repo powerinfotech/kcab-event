@@ -19,6 +19,11 @@ export const callGetAdminUserDetail = async (userSeq: number) => {
   return data;
 };
 
+export const callCreateAdminUser = async (param: AdminUserSaveParam) => {
+  const { data } = await axios.post<ApiResponse<void>>(BASE, param);
+  return data;
+};
+
 export const callUpdateAdminUser = async (userSeq: number, param: AdminUserSaveParam) => {
   const { data } = await axios.put<ApiResponse<void>>(`${BASE}/${userSeq}`, param);
   return data;
@@ -26,5 +31,20 @@ export const callUpdateAdminUser = async (userSeq: number, param: AdminUserSaveP
 
 export const callApproveAdminUser = async (userSeq: number) => {
   const { data } = await axios.post<ApiResponse<void>>(`${BASE}/${userSeq}/approve`);
+  return data;
+};
+
+export const callSuspendAdminUser = async (userSeq: number) => {
+  const { data } = await axios.post<ApiResponse<void>>(`${BASE}/${userSeq}/suspend`);
+  return data;
+};
+
+export const callReactivateAdminUser = async (userSeq: number) => {
+  const { data } = await axios.post<ApiResponse<void>>(`${BASE}/${userSeq}/reactivate`);
+  return data;
+};
+
+export const callWithdrawAdminUser = async (userSeq: number) => {
+  const { data } = await axios.post<ApiResponse<void>>(`${BASE}/${userSeq}/withdraw`);
   return data;
 };

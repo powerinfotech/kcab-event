@@ -17,16 +17,12 @@ public class SafAdminUserListDto {
     private String userId;
     private String email;
     private String name;
-    private String nameEn;
     private String position;
-    private String phone;
     private String userType;
     private String status;
     private Long organizationSeq;
     private String organizationName;
-    private String organizationNameEn;
     private String orgType;
-    private String organizationStatus;
     private Boolean approvalPending;
     private OffsetDateTime createdAt;
     private OffsetDateTime updatedAt;

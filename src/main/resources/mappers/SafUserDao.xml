@@ -16,9 +16,7 @@
             ,email
             ,password_hash
             ,name
-            ,name_en
             ,position
-            ,phone
             ,user_type
             ,status
         ) VALUES (
@@ -26,9 +24,7 @@
             ,#{email}
             ,#{passwordHash}
             ,#{name}
-            ,#{nameEn}
             ,#{position}
-            ,#{phone}
             ,#{userType}
             ,#{status}
         )
@@ -40,20 +36,18 @@
             ,u.user_id
             ,u.email
             ,u.name
-            ,u.name_en
             ,u.position
-            ,u.phone
             ,u.user_type
             ,u.status
             ,u.created_at
             ,u.updated_at
             ,o.organization_seq
             ,o.name AS organization_name
-            ,o.name_en AS organization_name_en
+
             ,o.org_type
-            ,o.status AS organization_status
+
             ,CASE
-                WHEN u.status = 'pending' OR o.status = 'pending' THEN TRUE
+                WHEN u.status = 'pending' THEN TRUE
                 ELSE FALSE
              END AS approval_pending
         FROM event.users u
@@ -62,6 +56,7 @@
         LEFT JOIN event.organizations o
             ON o.organization_seq = om.organization_seq
         WHERE u.deleted_at IS NULL
+          AND u.status != 'withdrawn'
         <if test="keyword != null and keyword != ''">
             AND (
                 LOWER(u.user_id) LIKE CONCAT('%', LOWER(#{keyword}), '%')
@@ -74,10 +69,10 @@
             AND u.user_type = #{userType}
         </if>
         <if test="status != null and status != ''">
-            AND (u.status = #{status} OR o.status = #{status})
+            AND u.status = #{status}
         </if>
         ORDER BY
-             CASE WHEN u.status = 'pending' OR o.status = 'pending' THEN 0 ELSE 1 END
+             CASE WHEN u.status = 'pending' THEN 0 ELSE 1 END
             ,CASE u.user_type WHEN 'admin' THEN 0 WHEN 'organization' THEN 1 ELSE 2 END
             ,u.created_at DESC NULLS LAST
             ,u.user_seq DESC
@@ -89,24 +84,22 @@
             ,u.user_id
             ,u.email
             ,u.name
-            ,u.name_en
             ,u.position
-            ,u.phone
             ,u.user_type
             ,u.status
             ,u.created_at
             ,u.updated_at
             ,o.organization_seq
             ,o.name AS organization_name
-            ,o.name_en AS organization_name_en
+
             ,o.org_type
             ,o.representative_name
             ,o.contact_email
             ,o.contact_phone
             ,o.address
             ,o.website
-            ,o.status AS organization_status
-            ,o.approved_at
+
+
         FROM event.users u
         LEFT JOIN event.organization_members om
             ON om.user_seq = u.user_seq
@@ -120,10 +113,11 @@
         UPDATE event.users
         SET
              email = #{email}
+            <if test="passwordHash != null and passwordHash != ''">
+            ,password_hash = #{passwordHash}
+            </if>
             ,name = #{name}
-            ,name_en = #{nameEn}
             ,position = #{position}
-            ,phone = #{phone}
             ,user_type = #{userType}
             ,status = #{status}
             ,updated_by = #{updatedBy}
@@ -136,6 +130,16 @@
         UPDATE event.users
         SET
              status = 'active'
+            ,updated_by = #{updatedBy}
+            ,updated_at = NOW()
+        WHERE user_seq = #{userSeq}
+          AND deleted_at IS NULL
+    </update>
+
+    <update id="updateUserStatus">
+        UPDATE event.users
+        SET
+             status = #{status}
             ,updated_by = #{updatedBy}
             ,updated_at = NOW()
         WHERE user_seq = #{userSeq}

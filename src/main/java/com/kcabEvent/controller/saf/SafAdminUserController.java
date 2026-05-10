@@ -47,6 +47,15 @@ public class SafAdminUserController {
         return ApiResponse.ok(safAdminUserService.selectUserDetail(userSeq));
     }
 
+    @PostMapping
+    public ApiResponse<Void> createUser(
+            @KcabEventSession LoginUser loginUser,
+            @RequestBody SafAdminUserSaveDto saveDto
+    ) {
+        safAdminUserService.createUser(saveDto, loginUser);
+        return ApiResponse.ok();
+    }
+
     /**
      * 사용자와 연결 기관 정보를 수정한다.
      */
@@ -69,6 +78,33 @@ public class SafAdminUserController {
             @PathVariable Long userSeq
     ) {
         safAdminUserService.approveUser(userSeq, loginUser);
+        return ApiResponse.ok();
+    }
+
+    @PostMapping("/{userSeq}/suspend")
+    public ApiResponse<Void> suspendUser(
+            @KcabEventSession LoginUser loginUser,
+            @PathVariable Long userSeq
+    ) {
+        safAdminUserService.suspendUser(userSeq, loginUser);
+        return ApiResponse.ok();
+    }
+
+    @PostMapping("/{userSeq}/reactivate")
+    public ApiResponse<Void> reactivateUser(
+            @KcabEventSession LoginUser loginUser,
+            @PathVariable Long userSeq
+    ) {
+        safAdminUserService.reactivateUser(userSeq, loginUser);
+        return ApiResponse.ok();
+    }
+
+    @PostMapping("/{userSeq}/withdraw")
+    public ApiResponse<Void> withdrawUser(
+            @KcabEventSession LoginUser loginUser,
+            @PathVariable Long userSeq
+    ) {
+        safAdminUserService.withdrawUser(userSeq, loginUser);
         return ApiResponse.ok();
     }
 }

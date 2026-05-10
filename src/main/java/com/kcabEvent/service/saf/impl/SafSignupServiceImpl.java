@@ -7,7 +7,7 @@ import com.kcabEvent.domain.saf.SafOrganizationMember;
 import com.kcabEvent.domain.saf.SafUser;
 import com.kcabEvent.dto.saf.SignupRequestDto;
 import com.kcabEvent.enums.saf.SafOrgMemberRole;
-import com.kcabEvent.enums.saf.SafOrgStatus;
+
 import com.kcabEvent.enums.saf.SafUserStatus;
 import com.kcabEvent.enums.saf.SafUserType;
 import com.kcabEvent.service.saf.SafSignupService;
@@ -48,23 +48,19 @@ public class SafSignupServiceImpl extends EgovAbstractServiceImpl implements Saf
         user.setEmail(req.getEmail());
         user.setPasswordHash(passwordEncoder.encode(req.getPassword()));
         user.setName(req.getName());
-        user.setNameEn(req.getNameEn());
         user.setPosition(req.getPosition());
-        user.setPhone(req.getPhone());
         user.setUserType(SafUserType.ORGANIZATION.getCode());
         user.setStatus(SafUserStatus.PENDING.getCode());
         safUserDao.insertUser(user);
 
         SafOrganization org = new SafOrganization();
         org.setName(req.getOrgName());
-        org.setNameEn(req.getOrgNameEn());
         org.setOrgType(req.getOrgType());
         org.setRepresentativeName(req.getRepresentativeName());
         org.setContactEmail(req.getContactEmail());
         org.setContactPhone(req.getContactPhone());
         org.setAddress(req.getAddress());
         org.setWebsite(req.getWebsite());
-        org.setStatus(SafOrgStatus.PENDING.getCode());
         org.setCreatedBy(user.getUserSeq());
         safOrganizationDao.insertOrganization(org);
 

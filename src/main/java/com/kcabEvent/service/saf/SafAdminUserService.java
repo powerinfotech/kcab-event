@@ -20,6 +20,8 @@ public interface SafAdminUserService {
      * @param searchDto 검색어, 유형, 상태 조건
      * @return 신청 상태 우선, 관리자 우선 정렬이 적용된 목록
      */
+    void createUser(SafAdminUserSaveDto saveDto, LoginUser loginUser);
+
     List<SafAdminUserListDto> selectUserList(SafAdminUserSearchDto searchDto);
 
     /**
@@ -46,4 +48,10 @@ public interface SafAdminUserService {
      * @param loginUser 현재 로그인 사용자
      */
     void approveUser(Long userSeq, LoginUser loginUser);
+
+    void suspendUser(Long userSeq, LoginUser loginUser);
+
+    void reactivateUser(Long userSeq, LoginUser loginUser);
+
+    void withdrawUser(Long userSeq, LoginUser loginUser);
 }

@@ -13,16 +13,16 @@ export interface AdminUserListItem {
   userId: string;
   email: string;
   name: string;
-  nameEn?: string;
+
   position?: string;
-  phone?: string;
+
   userType: AdminUserType;
   status: AdminUserStatus;
   organizationSeq?: number;
   organizationName?: string;
-  organizationNameEn?: string;
+
   orgType?: string;
-  organizationStatus?: AdminOrganizationStatus;
+
   approvalPending?: boolean;
   createdAt?: string;
   updatedAt?: string;
@@ -38,21 +38,23 @@ export interface AdminUserDetail extends AdminUserListItem {
 }
 
 export interface AdminUserSaveParam {
+  userId?: string;
   email: string;
+  password?: string;
   name: string;
-  nameEn?: string;
+
   position?: string;
-  phone?: string;
+
   userType: AdminUserType;
   status: AdminUserStatus;
   organizationSeq?: number;
   organizationName?: string;
-  organizationNameEn?: string;
+
   orgType?: string;
   representativeName?: string;
   contactEmail?: string;
   contactPhone?: string;
   address?: string;
   website?: string;
-  organizationStatus?: AdminOrganizationStatus;
+
 }

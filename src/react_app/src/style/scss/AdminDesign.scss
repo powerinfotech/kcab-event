@@ -262,6 +262,13 @@
     padding: 10px 12px;
     color: #111827;
     background: #fff;
+
+    &:disabled {
+      background: #f1f5f9;
+      color: #94a3b8;
+      border-color: #e2e8f0;
+      cursor: not-allowed;
+    }
   }
 
   textarea {
@@ -643,6 +650,16 @@
     color: #fff;
   }
 
+  &.is-warning {
+    background: #f59e0b;
+    color: #fff;
+  }
+
+  &.is-danger {
+    background: #dc2626;
+    color: #fff;
+  }
+
   &:disabled {
     opacity: .58;
     cursor: not-allowed;
@@ -888,8 +905,8 @@
 
   td {
     span {
-      display: block;
-      margin-top: 3px;
+      display: inline;
+      margin-left: 6px;
       color: #64748b;
       font-size: 12px;
       font-weight: 700;
