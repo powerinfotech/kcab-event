@@ -27,7 +27,6 @@ public class SafAdminUserSaveDto {
     private String representativeName;
     private String contactEmail;
     private String contactPhone;
-    private String address;
     private String website;
     private Long updatedBy;
 }

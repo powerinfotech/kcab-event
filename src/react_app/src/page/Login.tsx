@@ -3,17 +3,42 @@
 import React, { useEffect, useState } from 'react';
 import axios, { HttpStatusCode } from 'axios';
 import { useCookies } from 'react-cookie';
-import { Modal, message } from 'antd';
+import { App, Modal } from 'antd';
 import { useSetAtom } from 'jotai';
 import { ApiResponse } from '@interface/common';
 import { getUserLoginInfo } from '@api/CommonApi';
+import {
+  callChangeForgotPassword,
+  callSendPasswordResetCode,
+  callVerifyPasswordResetCode,
+} from '@api/auth/PasswordResetApi';
 import { sessionInfoAtom } from '@atom/sessionInfoAtom';
 import { menuInfoAtom } from '@atom/menuInfoAtom';
 import { getFixedAdminMenuInfo } from '@util/fixedAdminMenus';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const AUTH_MESSAGE_STORAGE_KEY = 'kcab-auth-message';
+type ForgotStep = 'request' | 'verify' | 'reset';
+
+const forgotLabelStyle = {
+  display: 'block',
+  marginBottom: 6,
+  color: '#334155',
+  fontWeight: 700,
+  fontSize: 13,
+};
+
+const forgotInputStyle = {
+  width: '100%',
+  height: 40,
+  border: '1px solid #d7dee8',
+  borderRadius: 6,
+  padding: '0 12px',
+  fontSize: 14,
+};
 
 const Login = () => {
+  const { message } = App.useApp();
   const setSessionInfo = useSetAtom(sessionInfoAtom);
   const setMenuInfo = useSetAtom(menuInfoAtom);
   const [cookies, setCookie, removeCookie] = useCookies(['id'], { doNotParse: true });
@@ -23,13 +48,21 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
 
   const [forgotOpen, setForgotOpen] = useState(false);
-  const [forgotName, setForgotName] = useState('');
+  const [forgotStep, setForgotStep] = useState<ForgotStep>('request');
+  const [forgotUserId, setForgotUserId] = useState('');
   const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotCode, setForgotCode] = useState('');
+  const [resetPassword, setResetPassword] = useState('');
+  const [resetPasswordConfirm, setResetPasswordConfirm] = useState('');
   const [forgotSubmitting, setForgotSubmitting] = useState(false);
 
   const openForgotPassword = () => {
-    setForgotName('');
+    setForgotStep('request');
+    setForgotUserId('');
     setForgotEmail('');
+    setForgotCode('');
+    setResetPassword('');
+    setResetPasswordConfirm('');
     setForgotOpen(true);
   };
 
@@ -39,11 +72,11 @@ const Login = () => {
   };
 
   const handleForgotSubmit = async () => {
-    const name = forgotName.trim();
+    const resetUserId = forgotUserId.trim();
     const email = forgotEmail.trim();
 
-    if (!name) {
-      message.warning('Please enter your name.');
+    if (!resetUserId) {
+      message.warning('Please enter your user ID.');
       return;
     }
     if (!email) {
@@ -57,8 +90,39 @@ const Login = () => {
 
     setForgotSubmitting(true);
     try {
-      // TODO: 이메일 인증 발송 API 연동 예정
-      message.success('Verification email will be sent once the email service is ready.');
+      if (forgotStep === 'request') {
+        await ensureCsrfToken();
+        await callSendPasswordResetCode({userId: resetUserId, email});
+        message.success('Verification code has been sent to your email.');
+        setForgotStep('verify');
+        return;
+      }
+
+      if (forgotStep === 'verify') {
+        if (!/^\d{6}$/.test(forgotCode)) {
+          message.warning('Please enter the 6-digit verification code.');
+          return;
+        }
+
+        await ensureCsrfToken();
+        await callVerifyPasswordResetCode({code: forgotCode});
+        message.success('Verification code confirmed.');
+        setForgotStep('reset');
+        return;
+      }
+
+      if (!resetPassword) {
+        message.warning('Please enter a new password.');
+        return;
+      }
+      if (resetPassword !== resetPasswordConfirm) {
+        message.warning('Password and Confirm Password do not match.');
+        return;
+      }
+
+      await ensureCsrfToken();
+      await callChangeForgotPassword({password: resetPassword, passwordConfirm: resetPasswordConfirm});
+      message.success('Password has been changed. Please sign in with your new password.');
       setForgotOpen(false);
     } finally {
       setForgotSubmitting(false);
@@ -110,6 +174,12 @@ const Login = () => {
   };
 
   useEffect(() => {
+    const authMessage = sessionStorage.getItem(AUTH_MESSAGE_STORAGE_KEY);
+    if (authMessage) {
+      sessionStorage.removeItem(AUTH_MESSAGE_STORAGE_KEY);
+      message.warning(authMessage);
+    }
+
     if (cookies.id) {
       setUserId(cookies.id);
       setRememberId(true);
@@ -131,6 +201,12 @@ const Login = () => {
         });
     }
   }, []);
+
+  const forgotOkText = forgotStep === 'request'
+    ? 'Send verification code'
+    : forgotStep === 'verify'
+      ? 'Verify code'
+      : 'Reset password';
 
   return (
     <main className="saf-login-page">
@@ -206,14 +282,18 @@ const Login = () => {
         open={forgotOpen}
         onOk={handleForgotSubmit}
         onCancel={closeForgotPassword}
-        okText="Send verification email"
+        okText={forgotOkText}
         cancelText="Cancel"
         confirmLoading={forgotSubmitting}
         mask={{ closable: !forgotSubmitting }}
         destroyOnHidden
       >
         <p style={{ marginBottom: 16, color: '#64748b' }}>
-          Enter your name and email. We will send a verification email to reset your password.
+          {forgotStep === 'request'
+            ? 'Enter your user ID and email. We will send a verification code to your email.'
+            : forgotStep === 'verify'
+              ? 'Enter the 6-digit verification code from your email.'
+              : 'Enter your new password.'}
         </p>
         <form
           className="saf-forgot-form"
@@ -222,45 +302,76 @@ const Login = () => {
             handleForgotSubmit();
           }}
         >
-          <label style={{ display: 'block', marginBottom: 12 }}>
-            <span style={{ display: 'block', marginBottom: 6, color: '#334155', fontWeight: 700, fontSize: 13 }}>
-              Name
-            </span>
-            <input
-              value={forgotName}
-              onChange={(event) => setForgotName(event.target.value)}
-              placeholder="Your name"
-              autoComplete="name"
-              style={{
-                width: '100%',
-                height: 40,
-                border: '1px solid #d7dee8',
-                borderRadius: 6,
-                padding: '0 12px',
-                fontSize: 14,
-              }}
-            />
-          </label>
-          <label style={{ display: 'block' }}>
-            <span style={{ display: 'block', marginBottom: 6, color: '#334155', fontWeight: 700, fontSize: 13 }}>
-              Email
-            </span>
-            <input
-              value={forgotEmail}
-              onChange={(event) => setForgotEmail(event.target.value)}
-              placeholder="name@example.com"
-              type="email"
-              autoComplete="email"
-              style={{
-                width: '100%',
-                height: 40,
-                border: '1px solid #d7dee8',
-                borderRadius: 6,
-                padding: '0 12px',
-                fontSize: 14,
-              }}
-            />
-          </label>
+          {forgotStep === 'request' && (
+            <>
+              <label style={{ display: 'block', marginBottom: 12 }}>
+                <span style={forgotLabelStyle}>User ID</span>
+                <input
+                  value={forgotUserId}
+                  onChange={(event) => setForgotUserId(event.target.value)}
+                  placeholder="User ID"
+                  autoComplete="username"
+                  style={forgotInputStyle}
+                />
+              </label>
+              <label style={{ display: 'block' }}>
+                <span style={forgotLabelStyle}>Email</span>
+                <input
+                  value={forgotEmail}
+                  onChange={(event) => setForgotEmail(event.target.value)}
+                  placeholder="name@example.com"
+                  type="email"
+                  autoComplete="email"
+                  style={forgotInputStyle}
+                />
+              </label>
+            </>
+          )}
+          {forgotStep === 'verify' && (
+            <label style={{ display: 'block' }}>
+              <span style={forgotLabelStyle}>Verification code</span>
+              <input
+                value={forgotCode}
+                onChange={(event) => setForgotCode(event.target.value.replace(/\D/g, '').slice(0, 6))}
+                placeholder="000000"
+                autoComplete="one-time-code"
+                inputMode="numeric"
+                maxLength={6}
+                style={{
+                  ...forgotInputStyle,
+                  letterSpacing: 4,
+                  textAlign: 'center',
+                  fontWeight: 700,
+                }}
+              />
+            </label>
+          )}
+          {forgotStep === 'reset' && (
+            <>
+              <label style={{ display: 'block', marginBottom: 12 }}>
+                <span style={forgotLabelStyle}>New password</span>
+                <input
+                  value={resetPassword}
+                  onChange={(event) => setResetPassword(event.target.value)}
+                  placeholder="New password"
+                  type="password"
+                  autoComplete="new-password"
+                  style={forgotInputStyle}
+                />
+              </label>
+              <label style={{ display: 'block' }}>
+                <span style={forgotLabelStyle}>Confirm password</span>
+                <input
+                  value={resetPasswordConfirm}
+                  onChange={(event) => setResetPasswordConfirm(event.target.value)}
+                  placeholder="Confirm password"
+                  type="password"
+                  autoComplete="new-password"
+                  style={forgotInputStyle}
+                />
+              </label>
+            </>
+          )}
           <button type="submit" style={{ display: 'none' }} aria-hidden="true" />
         </form>
       </Modal>

@@ -5,6 +5,10 @@ import { EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
 import { Modal, message } from 'antd';
 import { callSignup } from '@api/saf/SafAuthApi';
 import { ORG_TYPE_OPTIONS, SignupRequest } from '@interface/saf/SafAuth';
+import { EMAIL_REGEXP } from '@util/validationPatterns';
+
+const USER_ID_MAX_LENGTH = 20;
+const USER_ID_START_REGEXP = /^[A-Za-z]/;
 
 const initialForm: SignupRequest & {
   passwordConfirm: string;
@@ -22,7 +26,6 @@ const initialForm: SignupRequest & {
   phone: '',
   representativeName: '',
   contactPhone: '',
-  address: '',
   website: '',
   agreePrivacy: true,
 };
@@ -41,6 +44,18 @@ const SafSignup: React.FC = () => {
   };
 
   const isRequiredEmpty = (value?: string) => submitAttempted && !value?.trim();
+  const userIdValue = form.userId.trim();
+  const contactEmailValue = form.contactEmail.trim();
+  const emailValue = form.email.trim();
+  const isUserIdRuleInvalid = submitAttempted
+    && !!userIdValue
+    && (!USER_ID_START_REGEXP.test(userIdValue) || userIdValue.length > USER_ID_MAX_LENGTH);
+  const isContactEmailRuleInvalid = submitAttempted
+    && !!contactEmailValue
+    && !EMAIL_REGEXP.value.test(contactEmailValue);
+  const isEmailRuleInvalid = submitAttempted
+    && !!emailValue
+    && !EMAIL_REGEXP.value.test(emailValue);
 
   const handleSubmit = async () => {
     setSubmitAttempted(true);
@@ -58,6 +73,22 @@ const SafSignup: React.FC = () => {
       messageApi.warning('Please fill in all required fields.');
       return;
     }
+    if (!USER_ID_START_REGEXP.test(userIdValue)) {
+      messageApi.warning('User ID must start with an English letter.');
+      return;
+    }
+    if (userIdValue.length > USER_ID_MAX_LENGTH) {
+      messageApi.warning(`User ID can be up to ${USER_ID_MAX_LENGTH} characters.`);
+      return;
+    }
+    if (!EMAIL_REGEXP.value.test(contactEmailValue)) {
+      messageApi.warning('Please enter a valid contact email address.');
+      return;
+    }
+    if (!EMAIL_REGEXP.value.test(emailValue)) {
+      messageApi.warning('Please enter a valid email address.');
+      return;
+    }
     if (form.password !== form.passwordConfirm) {
       messageApi.error('Password and Confirm Password do not match.');
       return;
@@ -69,7 +100,18 @@ const SafSignup: React.FC = () => {
 
     setLoading(true);
     try {
-      const { passwordConfirm, agreePrivacy, ...payload } = form;
+      const { passwordConfirm, agreePrivacy, ...payload } = {
+        ...form,
+        orgName: form.orgName.trim(),
+        userId: userIdValue,
+        name: form.name.trim(),
+        representativeName: form.representativeName?.trim(),
+        contactEmail: contactEmailValue,
+        contactPhone: form.contactPhone?.trim(),
+        email: emailValue,
+        position: form.position?.trim(),
+        website: form.website?.trim(),
+      };
       const res = await callSignup(payload);
       if (res?.code === 200) {
         messageApi.success('Your sign-up request has been submitted. You can sign in after administrator approval.');
@@ -110,8 +152,17 @@ const SafSignup: React.FC = () => {
                 ))}
               </select>
             </Field>
-            <Field label="Primary Email *" invalid={isRequiredEmpty(form.contactEmail)}>
+            <Field label="Representative">
+              <input value={form.representativeName} onChange={(e) => set('representativeName', e.target.value)} placeholder="e.g. Minsoo Kim" />
+            </Field>
+            <Field label="Contact Email *" invalid={isRequiredEmpty(form.contactEmail) || isContactEmailRuleInvalid}>
               <input value={form.contactEmail} onChange={(e) => set('contactEmail', e.target.value)} placeholder="contact@abc.law" type="email" />
+            </Field>
+            <Field label="Contact Phone">
+              <input value={form.contactPhone} onChange={(e) => set('contactPhone', e.target.value)} placeholder="e.g. 02-1234-5678" />
+            </Field>
+            <Field label="Website">
+              <input value={form.website} onChange={(e) => set('website', e.target.value)} placeholder="https://example.com" />
             </Field>
           </section>
 
@@ -123,10 +174,15 @@ const SafSignup: React.FC = () => {
             <Field label="Position">
               <input value={form.position} onChange={(e) => set('position', e.target.value)} placeholder="e.g. Partner" />
             </Field>
-            <Field label="User ID *" invalid={isRequiredEmpty(form.userId)}>
-              <input value={form.userId} onChange={(e) => set('userId', e.target.value)} placeholder="Letters and numbers, 4-20 characters" />
+            <Field label="User ID *" invalid={isRequiredEmpty(form.userId) || isUserIdRuleInvalid}>
+              <input
+                value={form.userId}
+                maxLength={USER_ID_MAX_LENGTH}
+                onChange={(e) => set('userId', e.target.value.slice(0, USER_ID_MAX_LENGTH))}
+                placeholder="Starts with a letter, max 20 characters"
+              />
             </Field>
-            <Field label="Email *" invalid={isRequiredEmpty(form.email)}>
+            <Field label="Email *" invalid={isRequiredEmpty(form.email) || isEmailRuleInvalid}>
               <input value={form.email} onChange={(e) => set('email', e.target.value)} placeholder="kim@abc.law" type="email" />
             </Field>
             <Field label="Password *" invalid={isRequiredEmpty(form.password)}>

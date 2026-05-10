@@ -24,13 +24,15 @@ public class EventController {
     private EventService eventService;
 
     /**
-     * 상태 조건에 따라 이벤트 목록을 조회한다.
+     * 상태/유형/검색어 조건에 따라 이벤트 목록을 조회한다.
      */
     @GetMapping("/list")
     public ApiResponse<List<EventListDto>> selectEventList(
             @KcabEventSession LoginUser loginUser,
-            @RequestParam(required = false) String status) {
-        return ApiResponse.ok(eventService.selectEventList(status));
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String eventType,
+            @RequestParam(required = false) String keyword) {
+        return ApiResponse.ok(eventService.selectEventList(status, eventType, keyword));
     }
 
     /**

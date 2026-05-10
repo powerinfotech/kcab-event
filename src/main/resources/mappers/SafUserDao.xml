@@ -96,7 +96,6 @@
             ,o.representative_name
             ,o.contact_email
             ,o.contact_phone
-            ,o.address
             ,o.website
 
 
@@ -140,6 +139,16 @@
         UPDATE event.users
         SET
              status = #{status}
+            ,updated_by = #{updatedBy}
+            ,updated_at = NOW()
+        WHERE user_seq = #{userSeq}
+          AND deleted_at IS NULL
+    </update>
+
+    <update id="updatePasswordHash">
+        UPDATE event.users
+        SET
+             password_hash = #{passwordHash}
             ,updated_by = #{updatedBy}
             ,updated_at = NOW()
         WHERE user_seq = #{userSeq}

@@ -10,7 +10,9 @@ import java.util.List;
 @EgovMapper("eventDao")
 public interface EventDao {
 
-    List<EventListDto> selectEventList(@Param("status") String status);
+    List<EventListDto> selectEventList(@Param("status") String status,
+                                       @Param("eventType") String eventType,
+                                       @Param("keyword") String keyword);
 
     Event selectEventBySeq(@Param("eventSeq") Long eventSeq);
 

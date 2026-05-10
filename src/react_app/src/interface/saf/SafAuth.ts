@@ -12,7 +12,6 @@ export interface SignupRequest {
   representativeName?: string;
   contactEmail: string;
   contactPhone?: string;
-  address?: string;
   website?: string;
 }
 

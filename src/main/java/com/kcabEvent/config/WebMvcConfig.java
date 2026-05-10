@@ -119,7 +119,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
                         "/css/**",
                         "/images/**",
                         "/js/**",
-                        "/api/find-user/**"
+                        "/api/find-user/**",
+                        "/api/password-reset/**"
                 );
 
         registry.addInterceptor(new LogInterceptor())

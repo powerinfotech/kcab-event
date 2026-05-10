@@ -352,15 +352,6 @@ export default function MainContent() {
   const setShowErrorPage = useSetAtom(showErrorPageAtom);
   const hasRedirected = useRef(false);
 
-  // 브라우저 뒤로/앞으로 버튼 시 currentPathAtom 동기화
-  useEffect(() => {
-    const handlePopState = () => {
-      setCurrentPath(window.location.pathname);
-    };
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, [setCurrentPath]);
-
   // 리다이렉트 처리
   useEffect(() => {
     if (menuInfo.length === 0) return;

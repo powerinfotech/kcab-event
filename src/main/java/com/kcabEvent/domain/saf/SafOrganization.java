@@ -14,7 +14,6 @@ public class SafOrganization {
     private String representativeName;
     private String contactEmail;
     private String contactPhone;
-    private String address;
     private String website;
     private String logoUrl;
     private String description;

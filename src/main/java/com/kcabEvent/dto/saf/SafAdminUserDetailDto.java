@@ -29,6 +29,5 @@ public class SafAdminUserDetailDto {
     private String representativeName;
     private String contactEmail;
     private String contactPhone;
-    private String address;
     private String website;
 }

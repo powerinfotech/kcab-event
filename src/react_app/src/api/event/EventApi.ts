@@ -1,10 +1,10 @@
 import axios from 'axios';
 import { ApiResponse } from '@interface/common';
-import { EventListItem, EventDetail, EventSaveRequest } from '@interface/event/EventManagement';
+import { EventListItem, EventDetail, EventListSearchParam, EventSaveRequest } from '@interface/event/EventManagement';
 
-export const callGetEventList = async (status?: string) => {
+export const callGetEventList = async (param: EventListSearchParam = {}) => {
   const { data } = await axios.get<ApiResponse<EventListItem[]>>('/api/event/list', {
-    params: { status },
+    params: param,
   });
   return data;
 };

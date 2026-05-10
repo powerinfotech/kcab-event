@@ -24,8 +24,10 @@ public class PublicEventController {
      */
     @GetMapping("/list")
     public ApiResponse<List<EventListDto>> selectEventList(
-            @RequestParam(required = false) String status) {
-        return ApiResponse.ok(eventService.selectEventList(status));
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String eventType,
+            @RequestParam(required = false) String keyword) {
+        return ApiResponse.ok(eventService.selectEventList(status, eventType, keyword));
     }
 
     /**

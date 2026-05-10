@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.annotation.Resource;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -26,8 +26,8 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
     private EventDao eventDao;
 
     @Override
-    public List<EventListDto> selectEventList(String status) {
-        return eventDao.selectEventList(status);
+    public List<EventListDto> selectEventList(String status, String eventType, String keyword) {
+        return eventDao.selectEventList(status, eventType, keyword);
     }
 
     @Override
@@ -45,14 +45,25 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
         event.setContent(saveDto.getContent());
         event.setSummary(saveDto.getSummary());
         event.setThumbnailUrl(saveDto.getThumbnailUrl());
-        LocalDate startDate = saveDto.getEventStartDt() != null ? saveDto.getEventStartDt() : LocalDate.now();
-        event.setEventStartDt(startDate);
-        event.setEventEndDt(saveDto.getEventEndDt() != null ? saveDto.getEventEndDt() : startDate);
+        LocalDateTime startDt = saveDto.getEventStartDt() != null ? saveDto.getEventStartDt() : LocalDateTime.now();
+        event.setEventStartDt(startDt);
+        event.setEventEndDt(saveDto.getEventEndDt() != null ? saveDto.getEventEndDt() : startDt);
+        event.setRegistrationStartDt(saveDto.getRegistrationStartDt());
+        event.setRegistrationEndDt(saveDto.getRegistrationEndDt());
         event.setLocation(saveDto.getLocation());
+        event.setPostalCode(saveDto.getPostalCode());
+        event.setVenueAddress(saveDto.getVenueAddress());
+        event.setAddressDetail(saveDto.getAddressDetail());
         event.setRegistrationUrl(saveDto.getRegistrationUrl());
-        event.setStatus(saveDto.getStatus() != null ? saveDto.getStatus() : "draft");
+        // 사용자 요구: 등록·수정 모두 status는 'published'로 강제 (사용자가 변경 불가)
+        event.setStatus("published");
         event.setUseYn(saveDto.getUseYn() != null ? saveDto.getUseYn() : "Y");
         event.setFileSeq(saveDto.getFileSeq());
+        event.setAttachmentFileSeq(saveDto.getAttachmentFileSeq());
+        event.setEventType(saveDto.getEventType() != null ? saveDto.getEventType() : "main");
+        event.setOrganizationSeq(saveDto.getOrganizationSeq());
+        event.setMaxParticipants(saveDto.getMaxParticipants());
+        event.setIsPaid(saveDto.getIsPaid() != null ? saveDto.getIsPaid() : Boolean.FALSE);
 
         if (saveDto.getEventSeq() == null) {
             event.setRgstUserSeq(userSeq);

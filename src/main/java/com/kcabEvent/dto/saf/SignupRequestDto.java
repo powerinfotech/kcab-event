@@ -28,6 +28,5 @@ public class SignupRequestDto {
     @Email
     private String contactEmail;
     private String contactPhone;
-    private String address;
     private String website;
 }

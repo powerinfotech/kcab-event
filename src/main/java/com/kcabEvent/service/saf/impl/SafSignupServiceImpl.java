@@ -59,7 +59,6 @@ public class SafSignupServiceImpl extends EgovAbstractServiceImpl implements Saf
         org.setRepresentativeName(req.getRepresentativeName());
         org.setContactEmail(req.getContactEmail());
         org.setContactPhone(req.getContactPhone());
-        org.setAddress(req.getAddress());
         org.setWebsite(req.getWebsite());
         org.setCreatedBy(user.getUserSeq());
         safOrganizationDao.insertOrganization(org);

@@ -28,4 +28,10 @@ public interface SafUserDao {
     int approveAdminUser(@Param("userSeq") Long userSeq, @Param("updatedBy") Long updatedBy);
 
     int updateUserStatus(@Param("userSeq") Long userSeq, @Param("status") String status, @Param("updatedBy") Long updatedBy);
+
+    int updatePasswordHash(
+            @Param("userSeq") Long userSeq,
+            @Param("passwordHash") String passwordHash,
+            @Param("updatedBy") Long updatedBy
+    );
 }

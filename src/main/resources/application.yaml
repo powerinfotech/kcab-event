@@ -56,6 +56,7 @@ server:
 
 logging.level:
   org.springframework: DEBUG
+  org.springframework.web.client.DefaultRestClient: INFO
   com.kcabEvent: DEBUG
   sql: TRACE
 
@@ -75,6 +76,14 @@ springdoc:
   #    - /example/**
   paths-to-exclude:
     - /error/**
+
+brevo:
+  api:
+    key: ${BREVO_API_KEY:}
+    url: ${BREVO_API_URL:https://api.brevo.com/v3/smtp/email}
+  sender:
+    name: ${BREVO_SENDER_NAME:KCAB International}
+    email: ${BREVO_SENDER_EMAIL:international@kcab.or.kr}
 
 
 ---

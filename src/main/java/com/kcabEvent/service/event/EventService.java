@@ -12,9 +12,9 @@ import java.util.List;
  */
 public interface EventService {
     /**
-     * 상태 조건에 따라 이벤트 목록을 조회한다.
+     * 상태/유형/검색어 조건에 따라 이벤트 목록을 조회한다.
      */
-    List<EventListDto> selectEventList(String status);
+    List<EventListDto> selectEventList(String status, String eventType, String keyword);
 
     /**
      * 이벤트 순번으로 이벤트를 조회한다.

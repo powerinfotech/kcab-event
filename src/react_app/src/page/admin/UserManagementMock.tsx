@@ -5,6 +5,8 @@ import { App } from 'antd';
 import {
   ArrowLeftOutlined,
   CheckOutlined,
+  EyeInvisibleOutlined,
+  EyeOutlined,
   PauseCircleOutlined,
   PlayCircleOutlined,
   PlusOutlined,
@@ -32,6 +34,7 @@ import {
   AdminUserType,
 } from '@interface/admin/AdminUserManagement';
 import { ORG_TYPE_OPTIONS } from '@interface/saf/SafAuth';
+import { EMAIL_REGEXP } from '@util/validationPatterns';
 
 const USER_TYPE_LABEL: Record<AdminUserType, string> = {
   admin: 'Admin',
@@ -54,6 +57,9 @@ const STATUS_TONE: Record<string, 'green' | 'yellow' | 'red' | 'gray'> = {
   rejected: 'red',
 };
 
+const USER_ID_MAX_LENGTH = 20;
+const USER_ID_START_REGEXP = /^[A-Za-z]/;
+
 const emptyDetail: AdminUserDetail = {
   userSeq: 0,
   userId: '',
@@ -67,7 +73,6 @@ const emptyDetail: AdminUserDetail = {
   representativeName: '',
   contactEmail: '',
   contactPhone: '',
-  address: '',
   website: '',
 };
 
@@ -83,6 +88,7 @@ export default function UserManagementMock() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [submitAttempted, setSubmitAttempted] = useState(false);
 
   const isRequiredEmpty = (value?: string) => submitAttempted && !value?.trim();
@@ -95,6 +101,17 @@ export default function UserManagementMock() {
   const isNew = selectedSeq === null;
   const approvalPending = !isNew && form.status === 'pending';
   const isOrganization = form.userType === 'organization';
+  const userIdValue = form.userId?.trim() ?? '';
+  const emailValue = form.email.trim();
+  const contactEmailValue = form.contactEmail?.trim() ?? '';
+  const isUserIdRuleInvalid = submitAttempted
+    && !!userIdValue
+    && (!USER_ID_START_REGEXP.test(userIdValue) || userIdValue.length > USER_ID_MAX_LENGTH);
+  const isEmailRuleInvalid = submitAttempted && !!emailValue && !EMAIL_REGEXP.value.test(emailValue);
+  const isContactEmailRuleInvalid = submitAttempted
+    && isOrganization
+    && !!contactEmailValue
+    && !EMAIL_REGEXP.value.test(contactEmailValue);
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -118,6 +135,7 @@ export default function UserManagementMock() {
       const res = await callGetAdminUserDetail(userSeq);
       setForm({ ...emptyDetail, ...res.item });
       setPassword('');
+      setShowPassword(false);
       setSubmitAttempted(false);
       setSelectedSeq(userSeq);
       setMode('detail');
@@ -137,8 +155,8 @@ export default function UserManagementMock() {
   };
 
   const buildSaveParam = (): AdminUserSaveParam => ({
-    userId: form.userId,
-    email: form.email,
+    userId: userIdValue,
+    email: emailValue,
     password: password || undefined,
     name: form.name,
     position: form.position,
@@ -148,34 +166,51 @@ export default function UserManagementMock() {
     organizationName: form.organizationName,
     orgType: form.orgType,
     representativeName: form.representativeName,
-    contactEmail: form.contactEmail,
+    contactEmail: contactEmailValue,
     contactPhone: form.contactPhone,
-    address: form.address,
     website: form.website,
   });
 
   const validateForm = () => {
-    if (!form.name.trim() || !form.email.trim() || !form.userType || !form.status) {
+    if (!form.name.trim() || !emailValue || !form.userType || !form.status) {
       message.warning('Please fill in all required user fields.');
       return false;
     }
 
-    if (isOrganization && (!form.organizationName?.trim() || !form.contactEmail?.trim() || !form.orgType)) {
+    if (isNew && (!password.trim() || !userIdValue)) {
+      message.warning('Please fill in all required fields.');
+      return false;
+    }
+
+    if (isOrganization && (!form.organizationName?.trim() || !contactEmailValue || !form.orgType)) {
       message.warning('Please fill in all required organization fields.');
+      return false;
+    }
+
+    if (!EMAIL_REGEXP.value.test(emailValue)) {
+      message.warning('Please enter a valid email address.');
+      return false;
+    }
+
+    if (isOrganization && !EMAIL_REGEXP.value.test(contactEmailValue)) {
+      message.warning('Please enter a valid contact email address.');
+      return false;
+    }
+
+    if (userIdValue && !USER_ID_START_REGEXP.test(userIdValue)) {
+      message.warning('User ID must start with an English letter.');
+      return false;
+    }
+
+    if (userIdValue.length > USER_ID_MAX_LENGTH) {
+      message.warning(`User ID can be up to ${USER_ID_MAX_LENGTH} characters.`);
       return false;
     }
 
     return true;
   };
 
-  const handleSave = async () => {
-    setSubmitAttempted(true);
-    if (!validateForm()) return;
-    if (isNew && (!password.trim() || !form.userId?.trim())) {
-      message.warning('Please fill in all required fields.');
-      return;
-    }
-
+  const saveUser = async () => {
     setSaving(true);
     try {
       if (isNew) {
@@ -194,6 +229,20 @@ export default function UserManagementMock() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleSave = () => {
+    setSubmitAttempted(true);
+    if (!validateForm()) return;
+
+    modal.confirm({
+      title: isNew ? 'Register User' : 'Save User Information',
+      content: isNew ? 'Do you want to register this user?' : 'Do you want to save this user information?',
+      okText: 'OK',
+      cancelText: 'Cancel',
+      centered: true,
+      onOk: saveUser,
+    });
   };
 
   const confirmAction = (title: string, content: string, action: () => Promise<void>, danger = false) => {
@@ -302,7 +351,7 @@ export default function UserManagementMock() {
           <section className="saf-panel">
             <PanelTitle title="Account Information" subtitle="Based on the users table." />
             <div className="saf-form-grid">
-              <Field label="User ID *" invalid={isNew && isRequiredEmpty(form.userId)}><input value={form.userId} disabled={!isNew} onChange={(e) => updateForm('userId', e.target.value)} placeholder={isNew ? 'Enter user ID' : ''} /></Field>
+              <Field label="User ID *" invalid={(isNew && isRequiredEmpty(form.userId)) || isUserIdRuleInvalid}><input value={form.userId} disabled={!isNew} maxLength={USER_ID_MAX_LENGTH} onChange={(e) => updateForm('userId', e.target.value.slice(0, USER_ID_MAX_LENGTH))} placeholder={isNew ? 'Starts with a letter, max 20 characters' : ''} /></Field>
               <Field label="User Type">
                 {isNew ? (
                   <select value={form.userType} onChange={(e) => updateForm('userType', e.target.value as AdminUserType)}>
@@ -313,10 +362,19 @@ export default function UserManagementMock() {
                   <input value={USER_TYPE_LABEL[form.userType] ?? form.userType} disabled />
                 )}
               </Field>
-              <Field label={isNew ? 'Password *' : 'Password'} invalid={isNew && isRequiredEmpty(password)}><input type="password" value={password} disabled={approvalPending} placeholder={isNew ? 'Enter password' : 'Enter new password to change'} onChange={(e) => setPassword(e.target.value)} /></Field>
+              <Field label={isNew ? 'Password *' : 'Password'} invalid={isNew && isRequiredEmpty(password)}>
+                <PasswordInput
+                  value={password}
+                  disabled={approvalPending}
+                  placeholder={isNew ? 'Enter password' : 'Enter new password to change'}
+                  visible={showPassword}
+                  onChange={setPassword}
+                  onToggle={() => setShowPassword((prev) => !prev)}
+                />
+              </Field>
               <Field label="Name *" invalid={isRequiredEmpty(form.name)}><input value={form.name} disabled={approvalPending} onChange={(e) => updateForm('name', e.target.value)} /></Field>
               <Field label="Position"><input value={form.position ?? ''} disabled={approvalPending} onChange={(e) => updateForm('position', e.target.value)} /></Field>
-              <Field label="Email *" invalid={isRequiredEmpty(form.email)}><input value={form.email} disabled={approvalPending} onChange={(e) => updateForm('email', e.target.value)} /></Field>
+              <Field label="Email *" invalid={isRequiredEmpty(form.email) || isEmailRuleInvalid}><input value={form.email} disabled={approvalPending} type="email" onChange={(e) => updateForm('email', e.target.value)} /></Field>
               {!isNew && <Field label="Status"><input value={USER_STATUS_LABEL[form.status] ?? form.status} disabled /></Field>}
             </div>
           </section>
@@ -334,10 +392,9 @@ export default function UserManagementMock() {
                   </select>
                 </Field>
                 <Field label="Representative"><input value={form.representativeName ?? ''} disabled={approvalPending} onChange={(e) => updateForm('representativeName', e.target.value)} /></Field>
-                <Field label="Contact Email *" invalid={isOrganization && isRequiredEmpty(form.contactEmail)}><input value={form.contactEmail ?? ''} disabled={approvalPending} onChange={(e) => updateForm('contactEmail', e.target.value)} /></Field>
+                <Field label="Contact Email *" invalid={(isOrganization && isRequiredEmpty(form.contactEmail)) || isContactEmailRuleInvalid}><input value={form.contactEmail ?? ''} disabled={approvalPending} type="email" onChange={(e) => updateForm('contactEmail', e.target.value)} /></Field>
                 <Field label="Contact Phone"><input value={form.contactPhone ?? ''} disabled={approvalPending} onChange={(e) => updateForm('contactPhone', e.target.value)} /></Field>
                 <Field label="Website"><input value={form.website ?? ''} disabled={approvalPending} onChange={(e) => updateForm('website', e.target.value)} /></Field>
-                <Field label="Address" wide><input value={form.address ?? ''} disabled={approvalPending} onChange={(e) => updateForm('address', e.target.value)} /></Field>
               </div>
             </section>
           )}
@@ -358,7 +415,7 @@ export default function UserManagementMock() {
             <ReloadOutlined />
             <span>Refresh</span>
           </button>
-          <button type="button" className="saf-action-btn is-primary" onClick={() => { setForm(emptyDetail); setPassword(''); setSubmitAttempted(false); setSelectedSeq(null); setMode('detail'); }}>
+          <button type="button" className="saf-action-btn is-primary" onClick={() => { setForm(emptyDetail); setPassword(''); setShowPassword(false); setSubmitAttempted(false); setSelectedSeq(null); setMode('detail'); }}>
             <PlusOutlined />
             <span>Register</span>
           </button>
@@ -455,6 +512,42 @@ function Field({ label, children, wide, invalid }: { label: string; children: Re
       </span>
       {children}
     </label>
+  );
+}
+
+function PasswordInput({
+  value,
+  disabled,
+  placeholder,
+  visible,
+  onChange,
+  onToggle,
+}: {
+  value: string;
+  disabled?: boolean;
+  placeholder?: string;
+  visible: boolean;
+  onChange: (value: string) => void;
+  onToggle: () => void;
+}) {
+  return (
+    <div className="saf-password-input">
+      <input
+        type={visible ? 'text' : 'password'}
+        value={value}
+        disabled={disabled}
+        placeholder={placeholder}
+        onChange={(event) => onChange(event.target.value)}
+      />
+      <button
+        type="button"
+        aria-label={visible ? 'Hide password' : 'Show password'}
+        disabled={disabled}
+        onClick={onToggle}
+      >
+        {visible ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+      </button>
+    </div>
   );
 }
 

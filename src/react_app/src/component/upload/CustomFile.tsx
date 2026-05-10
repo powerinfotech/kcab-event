@@ -113,6 +113,31 @@ interface CustomFilePropsType {
     fileList: FileDetailType[]
     onFileListChange: (newList: FileDetailType[]) => void;
     isEditable:boolean;
+    /** 최대 첨부 가능 파일 수 (기본 5) */
+    maxCount?: number;
+    /**
+     * 허용 파일 타입 (HTML input accept 형식).
+     * 예) 'image/*', '.pdf,.docx', 'application/pdf'
+     */
+    accept?: string;
+}
+
+/** 파일이 accept 패턴에 부합하는지 검사. accept가 비어있으면 true. */
+function isFileAccepted(file: RcFile, accept?: string): boolean {
+    if (!accept) return true;
+    const tokens = accept.split(',').map((t) => t.trim().toLowerCase());
+    const fileName = (file.name ?? '').toLowerCase();
+    const fileType = (file.type ?? '').toLowerCase();
+    return tokens.some((token) => {
+        if (!token) return false;
+        if (token.endsWith('/*')) {
+            return fileType.startsWith(token.slice(0, -1));
+        }
+        if (token.startsWith('.')) {
+            return fileName.endsWith(token);
+        }
+        return fileType === token;
+    });
 }
 
 const CustomFile = (props:CustomFilePropsType) => {
@@ -175,7 +200,7 @@ const CustomFile = (props:CustomFilePropsType) => {
         }
     };
 
-    const MAX_FILE_COUNT = 5;
+    const MAX_FILE_COUNT = props.maxCount ?? 5;
 
     const onChange: UploadProps['onChange'] = ({file:newFile}) => {
         const targetFileIdx = fileList.findIndex(f => f.uid === newFile.uid);
@@ -222,8 +247,13 @@ const CustomFile = (props:CustomFilePropsType) => {
                 return { ...fileData, sortSeq: sortSeq};
             });
         } else {
+            const rcFile = newFile as RcFile;
+            if (!isFileAccepted(rcFile, props.accept)) {
+                message.error('허용되지 않은 파일 형식입니다.');
+                return;
+            }
             const maxSize =  10 * 1024 * 1024;
-            if ((newFile as RcFile).size > maxSize) {
+            if (rcFile.size > maxSize) {
                 message.error('10MB 이하 파일만 업로드 가능합니다.');
                 return;
             }
@@ -304,6 +334,7 @@ const CustomFile = (props:CustomFilePropsType) => {
                     onChange={onChange}
                     onPreview={handlePreview}
                     disabled={!props.isEditable}
+                    accept={props.accept}
                     itemRender={(originNode, file) => {
                         return <CustomFileItem originNode={originNode} file={file} />;
                     }}

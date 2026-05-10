@@ -43,7 +43,7 @@ const EventManagement = () => {
   }>();
 
   const fetchList = useCallback(async () => {
-    const res = await callGetEventList();
+    const res = await callGetEventList({});
     if (res?.code === HttpStatusCode.Ok) setEventList(res.item ?? []);
   }, []);
 
@@ -77,12 +77,13 @@ const EventManagement = () => {
       content,
       summary: formData.summary ?? '',
       thumbnailUrl: formData.thumbnailUrl ?? '',
-      eventStartDt: formData.eventStartDt?.format('YYYY-MM-DD') ?? '',
-      eventEndDt: formData.eventEndDt?.format('YYYY-MM-DD') ?? '',
+      eventStartDt: formData.eventStartDt?.format('YYYY-MM-DDTHH:mm:ss') ?? '',
+      eventEndDt: formData.eventEndDt?.format('YYYY-MM-DDTHH:mm:ss') ?? '',
       location: formData.location ?? '',
       registrationUrl: formData.registrationUrl ?? '',
       status: formData.status ?? 'UPCOMING',
       useYn: formData.useYn ?? 'Y',
+      eventType: 'main',
     };
     const res = await callSaveEvent(saveData);
     if (res?.code === HttpStatusCode.Ok) {

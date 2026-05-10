@@ -4,59 +4,96 @@
 
     <select id="selectEventList" resultType="com.kcabEvent.dto.event.EventListDto">
         SELECT
-             event_seq
-            ,title
-            ,description AS summary
-            ,thumbnail_url
-            ,start_at::date AS event_start_dt
-            ,end_at::date AS event_end_dt
-            ,COALESCE(venue_name, venue_address) AS location
-            ,status
-            ,CASE WHEN deleted_at IS NULL THEN 'Y' ELSE 'N' END AS use_yn
-            ,created_at::timestamp AS rgst_date_time
-        FROM event.events
+             e.event_seq
+            ,e.title
+            ,e.description AS summary
+            ,e.thumbnail_url
+            ,e.start_at AS event_start_dt
+            ,e.end_at AS event_end_dt
+            ,COALESCE(e.venue_name, e.venue_address) AS location
+            ,e.status
+            ,CASE WHEN e.deleted_at IS NULL THEN 'Y' ELSE 'N' END AS use_yn
+            ,e.created_at AS rgst_date_time
+            ,e.event_type
+            ,o.name AS organization_name
+            ,e.max_participants
+            ,COALESCE(rc.registration_count, 0) AS registration_count
+        FROM event.events e
+        LEFT JOIN event.organizations o ON o.organization_seq = e.organization_seq
+        LEFT JOIN (
+            SELECT event_seq, COUNT(*) AS registration_count
+              FROM event.registrations
+             WHERE status NOT IN ('cancelled', 'refunded')
+             GROUP BY event_seq
+        ) rc ON rc.event_seq = e.event_seq
         <where>
-            deleted_at IS NULL
+            e.deleted_at IS NULL
             <if test="status != null and status != ''">
-                AND status = #{status}
+                AND e.status = #{status}
+            </if>
+            <if test="eventType != null and eventType != ''">
+                AND e.event_type = #{eventType}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (
+                    e.title ILIKE '%' || #{keyword} || '%'
+                    OR o.name ILIKE '%' || #{keyword} || '%'
+                )
             </if>
         </where>
-        ORDER BY start_at DESC, event_seq DESC
+        ORDER BY e.start_at DESC, e.event_seq DESC
     </select>
 
     <select id="selectEventBySeq" resultType="com.kcabEvent.domain.Event">
         SELECT
-             event_seq
-            ,title
-            ,description AS content
-            ,description AS summary
-            ,thumbnail_url
-            ,start_at::date AS event_start_dt
-            ,end_at::date AS event_end_dt
-            ,COALESCE(venue_name, venue_address) AS location
+             e.event_seq
+            ,e.title
+            ,e.description AS content
+            ,e.description AS summary
+            ,e.thumbnail_url
+            ,e.start_at AS event_start_dt
+            ,e.end_at AS event_end_dt
+            ,e.registration_start_at AS registration_start_dt
+            ,e.registration_end_at AS registration_end_dt
+            ,e.venue_name AS location
+            ,e.postal_code
+            ,e.venue_address
+            ,e.address_detail
             ,NULL::varchar AS registration_url
-            ,status
-            ,CASE WHEN deleted_at IS NULL THEN 'Y' ELSE 'N' END AS use_yn
-            ,NULL::bigint AS file_seq
-            ,created_by AS rgst_user_seq
-            ,created_at::timestamp AS rgst_date_time
-            ,updated_by AS upt_user_seq
-            ,updated_at::timestamp AS upt_date_time
-        FROM event.events
-        WHERE event_seq = #{eventSeq}
-          AND deleted_at IS NULL
+            ,e.status
+            ,CASE WHEN e.deleted_at IS NULL THEN 'Y' ELSE 'N' END AS use_yn
+            ,e.file_seq
+            ,e.attachment_file_seq
+            ,e.event_type
+            ,e.organization_seq
+            ,o.name AS organization_name
+            ,e.max_participants
+            ,e.is_paid
+            ,e.created_by AS rgst_user_seq
+            ,e.created_at AS rgst_date_time
+            ,e.updated_by AS upt_user_seq
+            ,e.updated_at AS upt_date_time
+        FROM event.events e
+        LEFT JOIN event.organizations o ON o.organization_seq = e.organization_seq
+        WHERE e.event_seq = #{eventSeq}
+          AND e.deleted_at IS NULL
     </select>
 
     <insert id="insertEvent" parameterType="com.kcabEvent.domain.Event" useGeneratedKeys="true" keyProperty="eventSeq">
         INSERT INTO event.events (
             slug, title, description, event_type, is_paid,
-            start_at, end_at, venue_name, thumbnail_url,
+            start_at, end_at, registration_start_at, registration_end_at,
+            venue_name, postal_code, venue_address, address_detail,
+            max_participants, organization_seq, thumbnail_url, file_seq, attachment_file_seq,
             status, created_by, updated_by
         ) VALUES (
             'event-' || substr(md5(random()::text || clock_timestamp()::text), 1, 12),
-            #{title}, #{content}, 'main', false,
-            #{eventStartDt}::date::timestamptz, #{eventEndDt}::date::timestamptz,
-            #{location}, #{thumbnailUrl},
+            #{title}, #{content},
+            COALESCE(NULLIF(#{eventType}, ''), 'main'),
+            COALESCE(#{isPaid}, false),
+            #{eventStartDt}, #{eventEndDt}, #{registrationStartDt}, #{registrationEndDt},
+            #{location}, #{postalCode}, #{venueAddress}, #{addressDetail},
+            #{maxParticipants}, #{organizationSeq}, #{thumbnailUrl}, #{fileSeq}, #{attachmentFileSeq},
             COALESCE(NULLIF(#{status}, ''), 'draft'), #{rgstUserSeq}, #{uptUserSeq}
         )
     </insert>
@@ -65,10 +102,21 @@
         UPDATE event.events
         SET  title             = #{title}
             ,description       = #{content}
+            ,event_type        = COALESCE(NULLIF(#{eventType}, ''), event_type)
+            ,is_paid           = COALESCE(#{isPaid}, is_paid)
             ,thumbnail_url     = #{thumbnailUrl}
-            ,start_at          = #{eventStartDt}::date::timestamptz
-            ,end_at            = #{eventEndDt}::date::timestamptz
+            ,file_seq          = #{fileSeq}
+            ,attachment_file_seq = #{attachmentFileSeq}
+            ,start_at          = #{eventStartDt}
+            ,end_at            = #{eventEndDt}
+            ,registration_start_at = #{registrationStartDt}
+            ,registration_end_at   = #{registrationEndDt}
             ,venue_name        = #{location}
+            ,postal_code       = #{postalCode}
+            ,venue_address     = #{venueAddress}
+            ,address_detail    = #{addressDetail}
+            ,max_participants  = #{maxParticipants}
+            ,organization_seq  = #{organizationSeq}
             ,status            = #{status}
             ,updated_by        = #{uptUserSeq}
             ,updated_at        = CURRENT_TIMESTAMP

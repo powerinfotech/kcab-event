@@ -80,7 +80,6 @@ public class SafAdminUserServiceImpl extends EgovAbstractServiceImpl implements 
             org.setRepresentativeName(saveDto.getRepresentativeName());
             org.setContactEmail(saveDto.getContactEmail());
             org.setContactPhone(saveDto.getContactPhone());
-            org.setAddress(saveDto.getAddress());
             org.setWebsite(saveDto.getWebsite());
             org.setCreatedBy(user.getUserSeq());
             safOrganizationDao.insertOrganization(org);

@@ -32,7 +32,6 @@ export interface AdminUserDetail extends AdminUserListItem {
   representativeName?: string;
   contactEmail?: string;
   contactPhone?: string;
-  address?: string;
   website?: string;
   approvedAt?: string;
 }
@@ -54,7 +53,6 @@ export interface AdminUserSaveParam {
   representativeName?: string;
   contactEmail?: string;
   contactPhone?: string;
-  address?: string;
   website?: string;
 
 }
