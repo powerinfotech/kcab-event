@@ -23,7 +23,9 @@ fi
 
 echo "[1/2] bootJar 빌드..."
 chmod +x ./gradlew
-./gradlew bootJar --no-daemon
+echo "Cleaning previous build outputs..."
+rm -rf build src/react_app/out src/main/resources/static
+./gradlew clean bootJar --no-daemon
 
 if [ ! -f "$JAR" ]; then
   echo "❌ JAR 빌드 실패: $JAR"
