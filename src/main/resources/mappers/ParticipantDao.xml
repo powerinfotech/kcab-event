@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kcabEvent.dao.ParticipantDao">
+
+    <select id="selectParticipantEventRows" parameterType="com.kcabEvent.dto.participant.ParticipantSearchDto" resultType="com.kcabEvent.dto.participant.ParticipantEventRowDto">
+        SELECT
+             p.participant_seq
+            ,p.email
+            ,TRIM(CONCAT_WS(' ', p.first_name, NULLIF(p.middle_name, ''), p.last_name)) AS full_name
+            ,p.organization_name
+            ,p.position
+            ,p.country
+            ,COALESCE(pc.total_event_count, 0) AS total_event_count
+            ,ep.event_participant_seq
+            ,ep.event_seq
+            ,e.title AS event_title
+            ,e.event_type
+            ,ep.status AS participation_status
+            ,ep.registered_at
+            ,ep.cancelled_at
+            ,ep.cancel_reason
+            ,MAX(ep.registered_at) OVER (PARTITION BY p.participant_seq) AS participant_latest_registered_at
+        FROM event.participants p
+        INNER JOIN event.event_participants ep
+            ON ep.participant_seq = p.participant_seq
+        INNER JOIN event.events e
+            ON e.event_seq = ep.event_seq
+           AND e.deleted_at IS NULL
+        LEFT JOIN (
+            SELECT
+                 ep2.participant_seq
+                ,COUNT(*) AS total_event_count
+            FROM event.event_participants ep2
+            INNER JOIN event.events e2
+                ON e2.event_seq = ep2.event_seq
+               AND e2.deleted_at IS NULL
+            WHERE 1 = 1
+            <if test="organizationSeq != null">
+                AND e2.organization_seq = #{organizationSeq}
+            </if>
+            GROUP BY ep2.participant_seq
+        ) pc
+            ON pc.participant_seq = p.participant_seq
+        <where>
+            <if test="organizationSeq != null">
+                AND e.organization_seq = #{organizationSeq}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (
+                    LOWER(TRIM(CONCAT_WS(' ', p.first_name, NULLIF(p.middle_name, ''), p.last_name))) LIKE '%' || LOWER(#{keyword}) || '%'
+                    OR LOWER(p.email) LIKE '%' || LOWER(#{keyword}) || '%'
+                )
+            </if>
+            <if test="eventSeqs != null and eventSeqs.size() > 0">
+                AND e.event_seq IN
+                <foreach collection="eventSeqs" item="eventSeq" open="(" separator="," close=")">
+                    #{eventSeq}
+                </foreach>
+            </if>
+            <if test="statuses != null and statuses.size() > 0">
+                AND ep.status IN
+                <foreach collection="statuses" item="status" open="(" separator="," close=")">
+                    #{status}
+                </foreach>
+            </if>
+        </where>
+        ORDER BY
+             participant_latest_registered_at DESC NULLS LAST
+            ,p.participant_seq DESC
+            ,ep.registered_at DESC NULLS LAST
+            ,ep.event_participant_seq DESC
+    </select>
+
+    <select id="selectParticipantEventOptions" resultType="com.kcabEvent.dto.participant.ParticipantEventOptionDto">
+        SELECT
+             e.event_seq
+            ,e.title
+            ,e.event_type
+            ,e.start_at
+        FROM event.events e
+        WHERE e.deleted_at IS NULL
+        <if test="organizationSeq != null">
+          AND e.organization_seq = #{organizationSeq}
+        </if>
+        ORDER BY e.start_at DESC NULLS LAST, e.event_seq DESC
+    </select>
+
+</mapper>

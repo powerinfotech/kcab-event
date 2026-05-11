@@ -6,18 +6,18 @@
         INSERT INTO event.organizations (
              name
             ,org_type
-            ,representative_name
             ,contact_email
             ,contact_phone
             ,website
+            ,grade
             ,created_by
         ) VALUES (
              #{name}
             ,#{orgType}
-            ,#{representativeName}
             ,#{contactEmail}
             ,#{contactPhone}
             ,#{website}
+            ,COALESCE(NULLIF(#{grade,jdbcType=VARCHAR}, ''), 'C')
             ,#{createdBy}
         )
     </insert>
@@ -32,10 +32,10 @@
         SET
              name = #{organizationName}
             ,org_type = #{orgType}
-            ,representative_name = #{representativeName}
             ,contact_email = #{contactEmail}
             ,contact_phone = #{contactPhone}
             ,website = #{website}
+            ,grade = COALESCE(NULLIF(#{grade,jdbcType=VARCHAR}, ''), grade)
             ,updated_by = #{updatedBy}
             ,updated_at = NOW()
         WHERE organization_seq = #{organizationSeq}
@@ -52,5 +52,13 @@
             WHERE user_seq = #{userSeq}
         )
     </update>
+
+    <select id="selectOrganizationSeqByUserSeq" resultType="java.lang.Long">
+        SELECT organization_seq
+        FROM event.organization_members
+        WHERE user_seq = #{userSeq}
+        ORDER BY CASE WHEN role = 'owner' THEN 0 ELSE 1 END, created_at ASC NULLS LAST
+        LIMIT 1
+    </select>
 
 </mapper>

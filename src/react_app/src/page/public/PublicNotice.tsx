@@ -2,18 +2,14 @@ import React, { useEffect, useState } from 'react';
 import PublicHeader from './components/PublicHeader';
 import PublicFooter from './components/PublicFooter';
 import { callGetPublicNoticeList, callGetPublicNoticeDetail } from '@api/notice/NoticeApi';
-import { callGetPublicPageList } from '@api/page/PageApi';
 import { NoticeListItem, NoticeDetail } from '@interface/notice/NoticeManagement';
-import { PageListItem } from '@interface/page/PageManagement';
 
 const PublicNotice: React.FC = () => {
-  const [pages, setPages] = useState<PageListItem[]>([]);
   const [noticeList, setNoticeList] = useState<NoticeListItem[]>([]);
   const [selected, setSelected] = useState<NoticeDetail | null>(null);
   const [searchText, setSearchText] = useState('');
 
   useEffect(() => {
-    callGetPublicPageList().then((r) => { if (r?.item) setPages(r.item); });
     callGetPublicNoticeList().then((r) => { if (r?.item) setNoticeList(r.item); });
   }, []);
 
@@ -33,7 +29,7 @@ const PublicNotice: React.FC = () => {
   if (selected) {
     return (
       <div className="pub-layout">
-        <PublicHeader pages={pages} currentUrl="/notice" onNavigate={handleNavigate} />
+        <PublicHeader currentUrl="/notice" onNavigate={handleNavigate} />
         <main className="pub-page-content">
           <section className="pub-section section-text size-medium">
             <div className="pub-section-inner">
@@ -61,7 +57,7 @@ const PublicNotice: React.FC = () => {
 
   return (
     <div className="pub-layout">
-      <PublicHeader pages={pages} currentUrl="/notice" onNavigate={handleNavigate} />
+      <PublicHeader currentUrl="/notice" onNavigate={handleNavigate} />
       <main className="pub-page-content">
         <section className="pub-section section-hero size-small" style={{
           background: 'linear-gradient(135deg, #0f1b3d 0%, #294DC7 100%)',

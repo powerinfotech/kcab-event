@@ -5,6 +5,7 @@ import com.kcabEvent.domain.Event;
 import com.kcabEvent.dto.common.ApiResponse;
 import com.kcabEvent.dto.common.LoginUser;
 import com.kcabEvent.dto.event.EventListDto;
+import com.kcabEvent.dto.event.EventReviewRequestDto;
 import com.kcabEvent.dto.event.EventSaveDto;
 import com.kcabEvent.service.event.EventService;
 import org.springframework.web.bind.annotation.*;
@@ -32,7 +33,7 @@ public class EventController {
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String eventType,
             @RequestParam(required = false) String keyword) {
-        return ApiResponse.ok(eventService.selectEventList(status, eventType, keyword));
+        return ApiResponse.ok(eventService.selectEventList(status, eventType, keyword, loginUser));
     }
 
     /**
@@ -42,17 +43,61 @@ public class EventController {
     public ApiResponse<Event> selectEventDetail(
             @KcabEventSession LoginUser loginUser,
             @RequestParam Long eventSeq) {
-        return ApiResponse.ok(eventService.selectEventBySeq(eventSeq));
+        return ApiResponse.ok(eventService.selectEventBySeq(eventSeq, loginUser));
     }
 
     /**
      * 이벤트를 생성하거나 수정한다.
      */
     @PostMapping("/save")
-    public ApiResponse<Void> saveEvent(
+    public ApiResponse<Long> saveEvent(
             @KcabEventSession LoginUser loginUser,
             @RequestBody @Valid EventSaveDto saveDto) {
-        eventService.saveEvent(saveDto, loginUser);
+        return ApiResponse.ok(eventService.saveEvent(saveDto, loginUser));
+    }
+
+    /**
+     * 기관 사용자가 임시저장한 이벤트의 승인 신청을 요청한다.
+     */
+    @PostMapping("/request-approval")
+    public ApiResponse<Void> requestApproval(
+            @KcabEventSession LoginUser loginUser,
+            @RequestParam Long eventSeq) {
+        eventService.requestApproval(eventSeq, loginUser);
+        return ApiResponse.ok();
+    }
+
+    /**
+     * 기관 사용자가 승인 대기 이벤트의 승인 신청을 취소한다.
+     */
+    @PostMapping("/cancel-approval")
+    public ApiResponse<Void> cancelApproval(
+            @KcabEventSession LoginUser loginUser,
+            @RequestParam Long eventSeq) {
+        eventService.cancelApproval(eventSeq, loginUser);
+        return ApiResponse.ok();
+    }
+
+    /**
+     * 관리자가 승인 대기 이벤트를 승인한다.
+     */
+    @PostMapping("/approve")
+    public ApiResponse<Void> approveEvent(
+            @KcabEventSession LoginUser loginUser,
+            @RequestParam Long eventSeq) {
+        eventService.approveEvent(eventSeq, loginUser);
+        return ApiResponse.ok();
+    }
+
+    /**
+     * 관리자가 승인 대기 이벤트를 반려한다.
+     */
+    @PostMapping("/reject")
+    public ApiResponse<Void> rejectEvent(
+            @KcabEventSession LoginUser loginUser,
+            @RequestParam Long eventSeq,
+            @RequestBody @Valid EventReviewRequestDto reviewDto) {
+        eventService.rejectEvent(eventSeq, reviewDto.getRejectionReason(), loginUser);
         return ApiResponse.ok();
     }
 
@@ -63,7 +108,7 @@ public class EventController {
     public ApiResponse<Void> deleteEvent(
             @KcabEventSession LoginUser loginUser,
             @RequestParam Long eventSeq) {
-        eventService.deleteEvent(eventSeq);
+        eventService.deleteEvent(eventSeq, loginUser);
         return ApiResponse.ok();
     }
 }

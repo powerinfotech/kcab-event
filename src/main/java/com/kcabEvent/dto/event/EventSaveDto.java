@@ -14,6 +14,8 @@ public class EventSaveDto {
     @NotBlank(message = "행사명을 입력해주세요.")
     private String title;
 
+    /** events.description 컬럼. 기존 content 필드와 호환해서 같이 사용한다. */
+    private String description;
     private String content;
     private String summary;
     private LocalDateTime eventStartDt;
@@ -21,7 +23,6 @@ public class EventSaveDto {
     private LocalDateTime registrationStartDt;
     private LocalDateTime registrationEndDt;
     private String location;
-    private String venueAddress;
     /** 참가신청 방식: direct=자체 신청 화면, external=외부 URL로 이동, none=등록 불필요 */
     private String registrationType;
     /** 참가신청 외부 URL (registrationType=external 일 때만 사용) */

@@ -279,15 +279,17 @@
   &.is-invalid {
     input,
     select,
-    textarea {
-      border-color: #dc2626;
+    textarea,
+    .ant-picker {
+      border-color: #dc2626 !important;
     }
 
     input:focus,
     select:focus,
-    textarea:focus {
-      border-color: #dc2626;
-      box-shadow: 0 0 0 2px rgba(220, 38, 38, .12);
+    textarea:focus,
+    .ant-picker-focused {
+      border-color: #dc2626 !important;
+      box-shadow: 0 0 0 2px rgba(220, 38, 38, .12) !important;
       outline: none;
     }
   }
@@ -925,6 +927,31 @@
   }
 }
 
+.saf-date-list li {
+  transition: border-color 0.12s ease, background 0.12s ease;
+
+  &.is-selected {
+    border-color: #1f5b95;
+    background: #f2f7fc;
+  }
+
+  button {
+    width: 100%;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+  }
+
+  svg {
+    flex: 0 0 auto;
+    margin-top: 2px;
+  }
+}
+
 .saf-activity-list li {
   justify-content: space-between;
 
@@ -981,6 +1008,123 @@
   background: #fff;
   color: #334155;
   font-weight: 800;
+}
+
+// Ant Design Select(멀티 셀렉트 등)에 .saf-filter-select가 적용된 경우:
+// antd v6의 cssinjs는 ".ant-select-outlined:not(...):not(...) .ant-select-selector" 같은
+// 고-specificity 선택자(약 0,5,0)를 사용한다. 이를 확실히 덮어쓰기 위해 동일/그 이상의
+// specificity 패턴 + !important 를 모두 적용한다.
+.saf-filter-row .ant-select.saf-filter-select,
+.ant-select.saf-filter-select {
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  min-height: 38px !important;
+  height: 38px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+// antd 기본 selector를 native select와 동일하게 강제 (선택자 specificity ≥ antd 기본)
+.saf-filter-row .ant-select.saf-filter-select .ant-select-selector,
+.ant-select.saf-filter-select:not(.ant-select-disabled):not(.ant-select-customize-input) .ant-select-selector,
+.ant-select.saf-filter-select:hover:not(.ant-select-disabled) .ant-select-selector,
+.ant-select.saf-filter-select.ant-select-focused:not(.ant-select-disabled) .ant-select-selector {
+  width: 100% !important;
+  height: 38px !important;
+  min-height: 38px !important;
+  border: 1px solid #d7dee8 !important;
+  border-radius: 6px !important;
+  background-color: #fff !important;
+  padding: 0 34px 0 12px !important;
+  box-shadow: none !important;
+  outline: none !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+// focus 시 살짝 진한 회색 테두리 (native select 시각과 일치)
+.ant-select.saf-filter-select.ant-select-focused:not(.ant-select-disabled) .ant-select-selector {
+  border-color: #94a3b8 !important;
+}
+
+.ant-select.saf-filter-select .ant-select-selection-placeholder {
+  color: #94a3b8 !important;
+  font-weight: 700 !important;
+  line-height: 36px !important;
+}
+
+.ant-select.saf-filter-select .ant-select-selection-wrap,
+.ant-select.saf-filter-select .ant-select-selection-overflow {
+  min-height: 36px !important;
+  align-items: center !important;
+}
+
+.ant-select.saf-filter-select .ant-select-selection-search,
+.ant-select.saf-filter-select .ant-select-selection-placeholder,
+.ant-select.saf-filter-select .ant-select-selection-item {
+  height: 24px !important;
+  line-height: 24px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+.ant-select.saf-filter-select .ant-select-arrow {
+  inset-inline-end: 12px !important;
+}
+
+// antd v6 신규 Select DOM(.ant-select-content / .ant-select-suffix) 대응
+.saf-filter-row .ant-select.saf-filter-select:has(> .ant-select-content),
+.ant-select.saf-filter-select:has(> .ant-select-content) {
+  position: relative !important;
+  border: 1px solid #d7dee8 !important;
+  border-radius: 6px !important;
+  background: #fff !important;
+  padding: 0 34px 0 12px !important;
+  box-shadow: none !important;
+}
+
+.ant-select.saf-filter-select.ant-select-focused:has(> .ant-select-content) {
+  border-color: #94a3b8 !important;
+}
+
+.ant-select.saf-filter-select:has(> .ant-select-content) .ant-select-content {
+  min-height: 36px !important;
+  display: flex !important;
+  align-items: center !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  gap: 4px !important;
+  overflow: hidden !important;
+}
+
+.ant-select.saf-filter-select:has(> .ant-select-content) .ant-select-content-item {
+  height: 36px !important;
+  line-height: 36px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  margin: 0 !important;
+}
+
+.ant-select.saf-filter-select:has(> .ant-select-content) .ant-select-placeholder {
+  color: #94a3b8 !important;
+  font-weight: 700 !important;
+  line-height: 24px !important;
+}
+
+.ant-select.saf-filter-select:has(> .ant-select-content) .ant-select-input {
+  height: 24px !important;
+  line-height: 24px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+.ant-select.saf-filter-select:has(> .ant-select-content) .ant-select-suffix {
+  inset-inline-end: 12px !important;
+  display: flex !important;
+  align-items: center !important;
 }
 
 .saf-filter-date {
@@ -1128,6 +1272,144 @@
   align-items: start;
 }
 
+.saf-participant-filter-row {
+  .saf-participant-event-select {
+    min-width: 280px;
+  }
+}
+
+.saf-participant-table {
+  table-layout: fixed;
+
+  tr {
+    transition: background .15s ease;
+  }
+
+  tbody tr:not(:has(.saf-participant-empty)) {
+    cursor: pointer;
+
+    &:hover {
+      background: #f8fafc;
+    }
+  }
+
+  th:nth-child(1) { width: 17%; }
+  th:nth-child(2) { width: 19%; }
+  th:nth-child(3) { width: 15%; }
+  th:nth-child(4) { width: 27%; }
+  th:nth-child(5) { width: 9%; }
+  th:nth-child(6) { width: 13%; }
+
+  td {
+    min-width: 0;
+
+    > span {
+      display: block;
+      margin-top: 4px;
+      color: #64748b;
+      font-size: 12px;
+      font-weight: 700;
+    }
+  }
+}
+
+.saf-participant-event-list {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.saf-participant-event-chip {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.saf-participant-event-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #334155 !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+}
+
+.saf-participant-event-more,
+.saf-muted-text {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.saf-participant-empty {
+  height: 170px !important;
+  text-align: center !important;
+  color: #64748b !important;
+
+  svg {
+    display: block;
+    margin: 0 auto 8px;
+    color: #94a3b8;
+    font-size: 28px;
+  }
+
+  span {
+    display: block;
+    color: #64748b;
+    font-size: 14px;
+  }
+}
+
+.saf-participant-detail-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) minmax(0, 2fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.saf-participant-meta {
+  display: grid;
+  gap: 12px;
+
+  div {
+    display: grid;
+    gap: 4px;
+  }
+
+  dt {
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 900;
+  }
+
+  dd {
+    color: #111827;
+    font-weight: 800;
+  }
+}
+
+.saf-participant-events-panel {
+  overflow: hidden;
+}
+
+.saf-participant-detail-table {
+  table-layout: fixed;
+
+  th:nth-child(1) { width: 38%; }
+  th:nth-child(2) { width: 15%; }
+  th:nth-child(3) { width: 15%; }
+  th:nth-child(4) { width: 16%; }
+  th:nth-child(5) { width: 16%; }
+
+  td:first-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
 .saf-table-footer,
 .saf-footnote,
 .saf-summary-line {
@@ -1135,6 +1417,45 @@
   color: #64748b;
   font-size: 13px;
   font-weight: 700;
+}
+
+.saf-grid-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+
+  .ant-pagination {
+    margin-left: auto;
+  }
+}
+
+.saf-grid-pagination-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+
+  label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 900;
+  }
+
+  select {
+    height: 32px;
+    min-width: 72px;
+    border: 1px solid #d7dee8;
+    border-radius: 6px;
+    padding: 0 28px 0 10px;
+    background: #fff;
+    color: #334155;
+    font-weight: 800;
+  }
 }
 
 .saf-status {
@@ -1743,6 +2064,15 @@
 
 .saf-event-admin-screen {
   .saf-event-table {
+    th:nth-child(3),
+    td:nth-child(3),
+    th:nth-child(5),
+    td:nth-child(5),
+    th:nth-child(6),
+    td:nth-child(6) {
+      text-align: center;
+    }
+
     tbody tr {
       cursor: pointer;
       transition: background 0.12s ease;

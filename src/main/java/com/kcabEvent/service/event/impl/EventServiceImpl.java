@@ -1,19 +1,32 @@
 package com.kcabEvent.service.event.impl;
 
 import com.kcabEvent.dao.EventDao;
+import com.kcabEvent.dao.SafOrganizationDao;
 import com.kcabEvent.domain.Event;
 import com.kcabEvent.dto.common.LoginUser;
+import com.kcabEvent.dto.email.EmailTemplateDetailDto;
 import com.kcabEvent.dto.event.EventListDto;
+import com.kcabEvent.dto.event.EventNotificationRecipientDto;
 import com.kcabEvent.dto.event.EventSaveDto;
+import com.kcabEvent.exception.custom.BusinessException;
+import com.kcabEvent.service.email.EmailLogService;
+import com.kcabEvent.service.email.EmailTemplateService;
 import com.kcabEvent.service.event.EventService;
 import lombok.extern.slf4j.Slf4j;
 import org.egovframe.rte.fdl.cmmn.EgovAbstractServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+import org.springframework.web.util.HtmlUtils;
 
 import jakarta.annotation.Resource;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * 이벤트 저장과 기본값 처리를 구현한다.
@@ -22,12 +35,38 @@ import java.util.List;
 @Service("eventService")
 public class EventServiceImpl extends EgovAbstractServiceImpl implements EventService {
 
+    private static final String STATUS_DRAFT = "draft";
+    private static final String STATUS_PENDING_APPROVAL = "pending_approval";
+    private static final String STATUS_PUBLISHED = "published";
+    private static final String STATUS_REJECTED = "rejected";
+    private static final String EVENT_TYPE_SIDE = "side";
+    private static final String SIDE_EVENT_APPROVED_TEMPLATE_CODE = "side_event_approved";
+    private static final String SIDE_EVENT_REJECTED_TEMPLATE_CODE = "side_event_rejected";
+    private static final String DEFAULT_APPROVAL_COMMENT = "Your event page is ready to be published.";
+    private static final DateTimeFormatter EVENT_DATE_FORMATTER = DateTimeFormatter.ofPattern("MMMM d, yyyy", Locale.ENGLISH);
+    private static final DateTimeFormatter EVENT_TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
+
     @Resource(name = "eventDao")
     private EventDao eventDao;
 
+    @Resource(name = "safOrganizationDao")
+    private SafOrganizationDao safOrganizationDao;
+
+    @Resource(name = "emailTemplateService")
+    private EmailTemplateService emailTemplateService;
+
+    @Autowired
+    private EmailLogService emailLogService;
+
     @Override
     public List<EventListDto> selectEventList(String status, String eventType, String keyword) {
-        return eventDao.selectEventList(status, eventType, keyword);
+        return eventDao.selectEventList(status, eventType, keyword, null);
+    }
+
+    @Override
+    public List<EventListDto> selectEventList(String status, String eventType, String keyword, LoginUser loginUser) {
+        Long organizationSeq = resolveScopedOrganizationSeq(loginUser);
+        return eventDao.selectEventList(status, eventType, keyword, organizationSeq);
     }
 
     @Override
@@ -36,19 +75,35 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
     }
 
     @Override
+    public Event selectEventBySeq(Long eventSeq, LoginUser loginUser) {
+        Event event = eventDao.selectEventBySeq(eventSeq);
+        assertEventAccessible(event, loginUser);
+        return event;
+    }
+
+    @Override
     @Transactional("transactionManager")
-    public void saveEvent(EventSaveDto saveDto, LoginUser loginUser) {
-        Long userSeq = Long.valueOf(loginUser.getUserSeq());
+    public Long saveEvent(EventSaveDto saveDto, LoginUser loginUser) {
+        Long userSeq = getLoginUserSeq(loginUser);
+        boolean admin = isAdmin(loginUser);
+        Long organizationSeq = resolveScopedOrganizationSeq(loginUser);
+        Event savedEvent = null;
+        if (saveDto.getEventSeq() != null) {
+            savedEvent = eventDao.selectEventBySeq(saveDto.getEventSeq());
+            assertEventAccessible(savedEvent, loginUser);
+            assertEventEditable(savedEvent, loginUser);
+        }
 
         Event event = new Event();
         event.setTitle(saveDto.getTitle());
-        event.setContent(saveDto.getContent());
+        String description = saveDto.getDescription() != null ? saveDto.getDescription() : saveDto.getContent();
+        event.setDescription(description);
+        event.setContent(description);
         event.setSummary(saveDto.getSummary());
         LocalDateTime startDt = saveDto.getEventStartDt() != null ? saveDto.getEventStartDt() : LocalDateTime.now();
         event.setEventStartDt(startDt);
         event.setEventEndDt(saveDto.getEventEndDt() != null ? saveDto.getEventEndDt() : startDt);
         event.setLocation(saveDto.getLocation());
-        event.setVenueAddress(saveDto.getVenueAddress());
         // 참가신청 방식 분기:
         //   none     → 등록 자체가 없는 행사. URL과 등록 시작/종료 모두 null.
         //   external → 외부 URL로 이동. URL 필수, 등록 시작/종료 필수.
@@ -80,13 +135,12 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
             event.setRegistrationStartDt(saveDto.getRegistrationStartDt());
             event.setRegistrationEndDt(saveDto.getRegistrationEndDt());
         }
-        // 사용자 요구: 등록·수정 모두 status는 'published'로 강제 (사용자가 변경 불가)
-        event.setStatus("published");
+        event.setStatus(resolveSaveStatus(admin, savedEvent));
         event.setUseYn(saveDto.getUseYn() != null ? saveDto.getUseYn() : "Y");
         event.setFileSeq(saveDto.getFileSeq());
         event.setAttachmentFileSeq(saveDto.getAttachmentFileSeq());
-        event.setEventType(saveDto.getEventType() != null ? saveDto.getEventType() : "main");
-        event.setOrganizationSeq(saveDto.getOrganizationSeq());
+        event.setEventType(admin ? (saveDto.getEventType() != null ? saveDto.getEventType() : "main") : EVENT_TYPE_SIDE);
+        event.setOrganizationSeq(organizationSeq != null ? organizationSeq : saveDto.getOrganizationSeq());
         event.setMaxParticipants(saveDto.getMaxParticipants());
         event.setIsPaid(saveDto.getIsPaid() != null ? saveDto.getIsPaid() : Boolean.FALSE);
 
@@ -99,11 +153,217 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
             event.setUptUserSeq(userSeq);
             eventDao.updateEvent(event);
         }
+        return event.getEventSeq();
+    }
+
+    @Override
+    @Transactional("transactionManager")
+    public void requestApproval(Long eventSeq, LoginUser loginUser) {
+        if (isAdmin(loginUser)) {
+            throw new BusinessException("Only organization accounts can request event approval.");
+        }
+        Event event = eventDao.selectEventBySeq(eventSeq);
+        assertEventAccessible(event, loginUser);
+        if (!STATUS_DRAFT.equals(event.getStatus())) {
+            throw new BusinessException("Only draft events can be submitted for approval.");
+        }
+        eventDao.updateEventStatus(eventSeq, STATUS_PENDING_APPROVAL, getLoginUserSeq(loginUser), null);
+    }
+
+    @Override
+    @Transactional("transactionManager")
+    public void cancelApproval(Long eventSeq, LoginUser loginUser) {
+        if (isAdmin(loginUser)) {
+            throw new BusinessException("Only organization accounts can cancel approval requests.");
+        }
+        Event event = eventDao.selectEventBySeq(eventSeq);
+        assertEventAccessible(event, loginUser);
+        if (!STATUS_PENDING_APPROVAL.equals(event.getStatus())) {
+            throw new BusinessException("Only pending approval events can be cancelled.");
+        }
+        eventDao.updateEventStatus(eventSeq, STATUS_DRAFT, getLoginUserSeq(loginUser), null);
+    }
+
+    @Override
+    @Transactional("transactionManager")
+    public void approveEvent(Long eventSeq, LoginUser loginUser) {
+        Event event = reviewPendingEvent(eventSeq, loginUser, STATUS_PUBLISHED, null);
+        try {
+            sendEventReviewEmail(event, SIDE_EVENT_APPROVED_TEMPLATE_CODE, null);
+        } catch (RuntimeException e) {
+            log.warn("Failed to send side event approval email. eventSeq={}", eventSeq, e);
+        }
+    }
+
+    @Override
+    @Transactional("transactionManager")
+    public void rejectEvent(Long eventSeq, String rejectionReason, LoginUser loginUser) {
+        if (rejectionReason == null || rejectionReason.trim().isEmpty()) {
+            throw new BusinessException("Please enter a rejection reason.");
+        }
+        String trimmedReason = rejectionReason.trim();
+        Event event = reviewPendingEvent(eventSeq, loginUser, STATUS_REJECTED, trimmedReason);
+        try {
+            sendEventReviewEmail(event, SIDE_EVENT_REJECTED_TEMPLATE_CODE, trimmedReason);
+        } catch (RuntimeException e) {
+            log.warn("Failed to send side event rejection email. eventSeq={}", eventSeq, e);
+        }
     }
 
     @Override
     @Transactional("transactionManager")
     public void deleteEvent(Long eventSeq) {
         eventDao.deleteEvent(eventSeq);
+    }
+
+    @Override
+    @Transactional("transactionManager")
+    public void deleteEvent(Long eventSeq, LoginUser loginUser) {
+        Event event = eventDao.selectEventBySeq(eventSeq);
+        assertEventAccessible(event, loginUser);
+        assertEventEditable(event, loginUser);
+        eventDao.deleteEvent(eventSeq);
+    }
+
+    private Long resolveScopedOrganizationSeq(LoginUser loginUser) {
+        if (isAdmin(loginUser)) {
+            return null;
+        }
+        Long userSeq = getLoginUserSeq(loginUser);
+        Long organizationSeq = safOrganizationDao.selectOrganizationSeqByUserSeq(userSeq);
+        if (organizationSeq == null) {
+            throw new BusinessException("No organization is linked to this account.");
+        }
+        return organizationSeq;
+    }
+
+    private void assertEventAccessible(Event event, LoginUser loginUser) {
+        if (event == null) {
+            throw new BusinessException("Event was not found.");
+        }
+        Long organizationSeq = resolveScopedOrganizationSeq(loginUser);
+        if (organizationSeq != null && !organizationSeq.equals(event.getOrganizationSeq())) {
+            throw new BusinessException("You can only access events owned by your organization.");
+        }
+    }
+
+    private void assertEventEditable(Event event, LoginUser loginUser) {
+        if (isAdmin(loginUser)) {
+            if (STATUS_PENDING_APPROVAL.equals(event.getStatus()) || STATUS_REJECTED.equals(event.getStatus())) {
+                throw new BusinessException("This event can no longer be edited.");
+            }
+            return;
+        }
+        if (!STATUS_DRAFT.equals(event.getStatus()) && !STATUS_PUBLISHED.equals(event.getStatus())) {
+            throw new BusinessException("This event can no longer be edited.");
+        }
+    }
+
+    private String resolveSaveStatus(boolean admin, Event savedEvent) {
+        if (admin) {
+            return STATUS_PUBLISHED;
+        }
+        if (savedEvent == null) {
+            return STATUS_DRAFT;
+        }
+        return savedEvent.getStatus();
+    }
+
+    private Event reviewPendingEvent(Long eventSeq, LoginUser loginUser, String nextStatus, String rejectionReason) {
+        if (!isAdmin(loginUser)) {
+            throw new BusinessException("Only administrators can review event approval requests.");
+        }
+        Event event = eventDao.selectEventBySeq(eventSeq);
+        if (event == null) {
+            throw new BusinessException("Event was not found.");
+        }
+        if (!STATUS_PENDING_APPROVAL.equals(event.getStatus())) {
+            throw new BusinessException("Only pending approval events can be reviewed.");
+        }
+        eventDao.updateEventStatus(eventSeq, nextStatus, getLoginUserSeq(loginUser), rejectionReason);
+        event.setStatus(nextStatus);
+        event.setRejectionReason(rejectionReason);
+        return event;
+    }
+
+    private void sendEventReviewEmail(Event event, String templateCode, String rejectionReason) {
+        EventNotificationRecipientDto recipient = eventDao.selectEventNotificationRecipient(event.getEventSeq());
+        if (recipient == null || !StringUtils.hasText(recipient.getRecipientEmail())) {
+            log.warn("Skipped event review email because recipient email is empty. eventSeq={}", event.getEventSeq());
+            return;
+        }
+
+        EmailTemplateDetailDto template = emailTemplateService.selectTemplateDetail(templateCode);
+        if (!Boolean.TRUE.equals(template.getIsActive())) {
+            log.info("Skipped event review email because template is inactive. templateCode={}", templateCode);
+            return;
+        }
+
+        Map<String, String> variables = Map.of(
+                "user_name", defaultText(recipient.getRecipientName(), recipient.getOrganizationName()),
+                "organization_name", defaultText(recipient.getOrganizationName(), ""),
+                "event_name", defaultText(event.getTitle(), ""),
+                "event_date", formatEventDate(event),
+                "event_time", formatEventTime(event),
+                "venue", defaultText(event.getLocation(), ""),
+                "approval_comment", DEFAULT_APPROVAL_COMMENT,
+                "rejection_reason", defaultText(rejectionReason, event.getRejectionReason())
+        );
+
+        String subject = renderTemplate(template.getSubject(), variables, false);
+        String bodyHtml = renderTemplate(template.getBodyHtml(), variables, true);
+
+        emailLogService.sendHtmlAndLog(
+                template.getTemplateSeq(),
+                recipient.getRecipientEmail(),
+                recipient.getRecipientName(),
+                subject,
+                bodyHtml,
+                bodyHtml
+        );
+    }
+
+    private String renderTemplate(String template, Map<String, String> variables, boolean escapeHtml) {
+        String rendered = template == null ? "" : template;
+        for (Map.Entry<String, String> entry : variables.entrySet()) {
+            String value = entry.getValue() == null ? "" : entry.getValue();
+            if (escapeHtml) {
+                value = HtmlUtils.htmlEscape(value, StandardCharsets.UTF_8.name());
+            }
+            rendered = rendered.replace("{{" + entry.getKey() + "}}", value);
+        }
+        return rendered;
+    }
+
+    private String formatEventDate(Event event) {
+        if (event.getEventStartDt() == null) return "";
+        return event.getEventStartDt().format(EVENT_DATE_FORMATTER);
+    }
+
+    private String formatEventTime(Event event) {
+        LocalDateTime start = event.getEventStartDt();
+        LocalDateTime end = event.getEventEndDt();
+        if (start == null && end == null) return "";
+        if (start == null) return end.format(EVENT_TIME_FORMATTER);
+        if (end == null) return start.format(EVENT_TIME_FORMATTER);
+        return start.format(EVENT_TIME_FORMATTER) + " - " + end.format(EVENT_TIME_FORMATTER);
+    }
+
+    private String defaultText(String value, String defaultValue) {
+        if (StringUtils.hasText(value)) {
+            return value.trim();
+        }
+        return StringUtils.hasText(defaultValue) ? defaultValue.trim() : "";
+    }
+
+    private boolean isAdmin(LoginUser loginUser) {
+        return loginUser != null && "Y".equals(loginUser.getAdmYn());
+    }
+
+    private Long getLoginUserSeq(LoginUser loginUser) {
+        if (loginUser == null || loginUser.getUserSeq() == null) {
+            throw new BusinessException("Login session is invalid.");
+        }
+        return loginUser.getUserSeq().longValue();
     }
 }

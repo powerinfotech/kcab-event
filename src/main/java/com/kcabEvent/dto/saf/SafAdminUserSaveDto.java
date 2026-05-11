@@ -24,9 +24,10 @@ public class SafAdminUserSaveDto {
     private Long organizationSeq;
     private String organizationName;
     private String orgType;
-    private String representativeName;
     private String contactEmail;
     private String contactPhone;
     private String website;
+    /** 조직 등급: S/A/B/C */
+    private String grade;
     private Long updatedBy;
 }

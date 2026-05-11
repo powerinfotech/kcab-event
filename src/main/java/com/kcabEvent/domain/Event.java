@@ -10,6 +10,8 @@ import java.time.LocalDateTime;
 public class Event {
     private Long eventSeq;
     private String title;
+    /** events.description 컬럼 */
+    private String description;
     private String content;
     private String summary;
     /** 행사 시작 일시 (날짜+시간) */
@@ -22,13 +24,12 @@ public class Event {
     private LocalDateTime registrationEndDt;
     /** 장소명 */
     private String location;
-    /** 주소 (도로명/지번) */
-    private String venueAddress;
     /** 참가신청 방식: direct=자체 신청 화면, external=외부 URL로 이동, none=등록 불필요 */
     private String registrationType;
     /** 참가신청 외부 URL (registrationType=external 일 때만 사용) */
     private String registrationUrl;
     private String status;
+    private String rejectionReason;
     private String useYn;
     /** 썸네일 파일 그룹 (tb_file.file_seq) */
     private Long fileSeq;

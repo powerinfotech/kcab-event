@@ -56,10 +56,11 @@ public class SafSignupServiceImpl extends EgovAbstractServiceImpl implements Saf
         SafOrganization org = new SafOrganization();
         org.setName(req.getOrgName());
         org.setOrgType(req.getOrgType());
-        org.setRepresentativeName(req.getRepresentativeName());
         org.setContactEmail(req.getContactEmail());
         org.setContactPhone(req.getContactPhone());
         org.setWebsite(req.getWebsite());
+        // 신규 가입 시 등급은 기본값 'C'로 강제 (관리자가 추후 변경)
+        org.setGrade("C");
         org.setCreatedBy(user.getUserSeq());
         safOrganizationDao.insertOrganization(org);
 

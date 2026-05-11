@@ -66,6 +66,7 @@ const CustomRichEditor = ({
 }: Props) => {
   const editor = useEditor({
     immediatelyRender: false,
+    content: value ?? '',
     extensions: [
       StarterKit,
       Underline,
@@ -74,7 +75,7 @@ const CustomRichEditor = ({
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
       Placeholder.configure({ placeholder }),
     ],
-    content: value,
+    // value는 useEffect로 controlled 갱신. 초기 content는 비워두고 mount 후에 setContent로 채움.
     editable: isEditable,
     onUpdate: ({ editor: e }) => {
       onChange(e.getHTML());
@@ -88,10 +89,14 @@ const CustomRichEditor = ({
   }, [isEditable, editor]);
 
   useEffect(() => {
-    if (editor && value !== editor.getHTML()) {
-      editor.commands.setContent(value, false);
-    }
-  }, [value]);
+    if (!editor || editor.isDestroyed) return;
+    const next = value ?? '';
+    if (next === editor.getHTML()) return;
+    editor.commands.setContent(next, {
+      emitUpdate: false,
+      parseOptions: { preserveWhitespace: false },
+    });
+  }, [value, editor]);
 
   if (!editor) return null;
 

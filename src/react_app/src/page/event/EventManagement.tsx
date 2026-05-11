@@ -73,6 +73,7 @@ const EventManagement = () => {
     const saveData: EventSaveRequest = {
       eventSeq: selectedEvent?.eventSeq,
       title: formData.title,
+      description: content,
       content,
       summary: formData.summary ?? '',
       eventStartDt: formData.eventStartDt?.format('YYYY-MM-DDTHH:mm:ss') ?? '',
@@ -119,7 +120,7 @@ const EventManagement = () => {
     if (res?.code === HttpStatusCode.Ok && res.item) {
       const e = res.item;
       setSelectedEvent(e);
-      setContent(e.content ?? '');
+      setContent(e.description ?? e.content ?? e.summary ?? '');
       reset({
         title: e.title,
         summary: e.summary ?? '',

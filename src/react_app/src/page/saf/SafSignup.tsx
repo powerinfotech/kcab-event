@@ -36,7 +36,6 @@ const initialForm: SignupRequest & {
   password: '',
   passwordConfirm: '',
   phone: '',
-  representativeName: '',
   contactPhone: '',
   website: '',
   agreePrivacy: true,
@@ -253,7 +252,6 @@ const SafSignup: React.FC = () => {
         orgName: form.orgName.trim(),
         userId: userIdValue,
         name: form.name.trim(),
-        representativeName: form.representativeName?.trim(),
         contactEmail: contactEmailValue,
         contactPhone: form.contactPhone?.trim(),
         email: emailValue,
@@ -300,9 +298,6 @@ const SafSignup: React.FC = () => {
                 ))}
               </select>
             </Field>
-            <Field label="Representative">
-              <input value={form.representativeName} onChange={(e) => set('representativeName', e.target.value)} placeholder="e.g. Minsoo Kim" />
-            </Field>
             <Field label="Contact Email *" invalid={isRequiredEmpty(form.contactEmail) || isContactEmailRuleInvalid}>
               <input value={form.contactEmail} onChange={(e) => set('contactEmail', e.target.value)} placeholder="contact@abc.law" type="email" />
             </Field>
@@ -329,7 +324,7 @@ const SafSignup: React.FC = () => {
                   maxLength={USER_ID_MAX_LENGTH}
                   onChange={(e) => handleUserIdChange(e.target.value)}
                   placeholder="Starts with a letter, max 20 characters"
-                  readOnly={userIdChecked}
+                  disabled={userIdChecked}
                 />
                 <button
                   type="button"
@@ -348,7 +343,7 @@ const SafSignup: React.FC = () => {
                   onChange={(e) => handleEmailChange(e.target.value)}
                   placeholder="kim@abc.law"
                   type="email"
-                  readOnly={emailChecked || emailVerifyOpen}
+                  disabled={emailChecked || emailVerifyOpen}
                 />
                 <button
                   type="button"

@@ -6,6 +6,7 @@ import com.kcabEvent.domain.saf.SafOrganization;
 import com.kcabEvent.domain.saf.SafOrganizationMember;
 import com.kcabEvent.domain.saf.SafUser;
 import com.kcabEvent.dto.common.LoginUser;
+import com.kcabEvent.dto.email.EmailTemplateDetailDto;
 import com.kcabEvent.dto.saf.SafAdminUserDetailDto;
 import com.kcabEvent.dto.saf.SafAdminUserListDto;
 import com.kcabEvent.dto.saf.SafAdminUserSaveDto;
@@ -13,14 +14,22 @@ import com.kcabEvent.dto.saf.SafAdminUserSearchDto;
 import com.kcabEvent.enums.saf.SafUserStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import com.kcabEvent.exception.custom.BusinessException;
+import com.kcabEvent.service.email.EmailLogService;
+import com.kcabEvent.service.email.EmailTemplateService;
 import com.kcabEvent.service.saf.SafAdminUserService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.egovframe.rte.fdl.cmmn.EgovAbstractServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+import org.springframework.web.util.HtmlUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 
 /**
  * SAF 사용자/기관 관리자 서비스 구현체.
@@ -31,11 +40,23 @@ import java.util.List;
 @Service("safAdminUserService")
 public class SafAdminUserServiceImpl extends EgovAbstractServiceImpl implements SafAdminUserService {
 
+    private static final String SIGNUP_APPROVAL_TEMPLATE_CODE = "signup_approval";
+    private static final String DEFAULT_ORGANIZATION_NAME = "KCAB International";
+
     @Resource(name = "safUserDao")
     private SafUserDao safUserDao;
 
     @Resource(name = "safOrganizationDao")
     private SafOrganizationDao safOrganizationDao;
+
+    @Resource(name = "emailTemplateService")
+    private EmailTemplateService emailTemplateService;
+
+    @Autowired
+    private EmailLogService emailLogService;
+
+    @Value("${saf.admin.login-url:https://saf.kcabinternational.or.kr/login}")
+    private String adminLoginUrl;
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
@@ -77,10 +98,11 @@ public class SafAdminUserServiceImpl extends EgovAbstractServiceImpl implements 
             SafOrganization org = new SafOrganization();
             org.setName(saveDto.getOrganizationName());
             org.setOrgType(saveDto.getOrgType());
-            org.setRepresentativeName(saveDto.getRepresentativeName());
             org.setContactEmail(saveDto.getContactEmail());
             org.setContactPhone(saveDto.getContactPhone());
             org.setWebsite(saveDto.getWebsite());
+            // 관리자가 새 조직 등록 시: 폼에 등급 입력값이 있으면 사용, 없으면 'C'
+            org.setGrade(saveDto.getGrade() != null && !saveDto.getGrade().isBlank() ? saveDto.getGrade() : "C");
             org.setCreatedBy(user.getUserSeq());
             safOrganizationDao.insertOrganization(org);
 
@@ -143,6 +165,11 @@ public class SafAdminUserServiceImpl extends EgovAbstractServiceImpl implements 
         if (detail.getOrganizationSeq() != null) {
             safOrganizationDao.approveOrganizationByUserSeq(userSeq, approverSeq);
         }
+        try {
+            sendSignupApprovalEmail(detail);
+        } catch (RuntimeException e) {
+            log.warn("Failed to send sign-up approval email. userSeq={}, email={}", userSeq, detail.getEmail(), e);
+        }
     }
 
     @Override
@@ -182,5 +209,55 @@ public class SafAdminUserServiceImpl extends EgovAbstractServiceImpl implements 
         return loginUser != null && loginUser.getUserSeq() != null
                 ? loginUser.getUserSeq().longValue()
                 : null;
+    }
+
+    private void sendSignupApprovalEmail(SafAdminUserDetailDto detail) {
+        if (!StringUtils.hasText(detail.getEmail())) {
+            log.warn("Skipped sign-up approval email because recipient email is empty. userSeq={}", detail.getUserSeq());
+            return;
+        }
+
+        EmailTemplateDetailDto template = emailTemplateService.selectTemplateDetail(SIGNUP_APPROVAL_TEMPLATE_CODE);
+        if (!Boolean.TRUE.equals(template.getIsActive())) {
+            log.info("Skipped sign-up approval email because template is inactive. templateCode={}", SIGNUP_APPROVAL_TEMPLATE_CODE);
+            return;
+        }
+
+        Map<String, String> variables = Map.of(
+                "user_name", defaultText(detail.getName(), detail.getUserId()),
+                "organization_name", defaultText(detail.getOrganizationName(), DEFAULT_ORGANIZATION_NAME),
+                "login_url", adminLoginUrl
+        );
+
+        String subject = renderTemplate(template.getSubject(), variables, false);
+        String bodyHtml = renderTemplate(template.getBodyHtml(), variables, true);
+
+        emailLogService.sendHtmlAndLog(
+                template.getTemplateSeq(),
+                detail.getEmail(),
+                detail.getName(),
+                subject,
+                bodyHtml,
+                bodyHtml
+        );
+    }
+
+    private String renderTemplate(String template, Map<String, String> variables, boolean escapeHtml) {
+        String rendered = template == null ? "" : template;
+        for (Map.Entry<String, String> entry : variables.entrySet()) {
+            String value = entry.getValue() == null ? "" : entry.getValue();
+            if (escapeHtml) {
+                value = HtmlUtils.htmlEscape(value, StandardCharsets.UTF_8.name());
+            }
+            rendered = rendered.replace("{{" + entry.getKey() + "}}", value);
+        }
+        return rendered;
+    }
+
+    private String defaultText(String value, String defaultValue) {
+        if (StringUtils.hasText(value)) {
+            return value.trim();
+        }
+        return StringUtils.hasText(defaultValue) ? defaultValue.trim() : "";
     }
 }

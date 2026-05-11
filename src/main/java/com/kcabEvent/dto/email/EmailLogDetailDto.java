@@ -10,7 +10,6 @@ import java.time.OffsetDateTime;
 public class EmailLogDetailDto {
     private Long emailLogSeq;
     private Long templateSeq;
-    private Long registrationSeq;
     private String recipientEmail;
     private String recipientName;
     private String subject;

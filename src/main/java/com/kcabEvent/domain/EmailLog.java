@@ -11,7 +11,6 @@ import lombok.Setter;
 public class EmailLog {
     private Long emailLogSeq;
     private Long templateSeq;
-    private Long registrationSeq;
     private String recipientEmail;
     private String recipientName;
     private String subject;
@@ -25,7 +24,6 @@ public class EmailLog {
     @Builder
     public EmailLog(
             Long templateSeq,
-            Long registrationSeq,
             String recipientEmail,
             String recipientName,
             String subject,
@@ -34,7 +32,6 @@ public class EmailLog {
             String status
     ) {
         this.templateSeq = templateSeq;
-        this.registrationSeq = registrationSeq;
         this.recipientEmail = recipientEmail;
         this.recipientName = recipientName;
         this.subject = subject;

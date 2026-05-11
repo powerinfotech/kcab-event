@@ -1,19 +1,9 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { callGetPublicPageList } from '@api/page/PageApi';
-import { PageListItem } from '@interface/page/PageManagement';
+import React from 'react';
 import LogoImage from '../assets/images/logo.png';
 
 export default function HomePage() {
-  const [pages, setPages] = useState<PageListItem[]>([]);
-
-  useEffect(() => {
-    callGetPublicPageList().then((res) => {
-      if (res?.item) setPages(res.item.filter((p) => p.useYn === 'Y'));
-    }).catch(() => {});
-  }, []);
-
   const logoSrc = typeof LogoImage === 'string' ? LogoImage : (LogoImage as { src?: string })?.src ?? '';
 
   const handleNavigate = (url: string) => {
@@ -25,33 +15,14 @@ export default function HomePage() {
     <div className="pub-layout">
       <header className="pub-header">
         <div className="pub-header-inner">
-          <a className="pub-logo" href="/">
+          <a className="pub-logo" href="/" onClick={(e) => { e.preventDefault(); handleNavigate('/'); }}>
             {logoSrc && <img src={logoSrc} alt="KCAB" />}
             <span>KCAB INTERNATIONAL</span>
           </a>
 
-          <nav className="pub-nav">
-            {pages.map((page) => (
-              <a
-                key={page.pageSeq}
-                href={page.pageUrl}
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleNavigate(page.pageUrl);
-                }}
-              >
-                {page.pageNm}
-              </a>
-            ))}
-          </nav>
-
           <div className="pub-header-actions">
             <a className="pub-btn-admin" href="/login">Admin</a>
           </div>
-
-          <button className="pub-menu-toggle" aria-label="Menu">
-            <span /><span /><span />
-          </button>
         </div>
       </header>
 
@@ -64,58 +35,30 @@ export default function HomePage() {
         </div>
       </section>
 
-      {pages.length > 0 && (
-        <section className="pub-section section-card-list">
-          <div className="pub-section-inner">
-            <h3 className="card-list-title">Pages</h3>
-            <div className={`card-grid cols-${Math.min(pages.length, 3)}`}>
-              {pages.map((page) => (
-                <div key={page.pageSeq} className="card-item">
-                  <a
-                    href={page.pageUrl}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleNavigate(page.pageUrl);
-                    }}
-                  >
-                    <div className="card-body">
-                      <h4 className="card-title">{page.pageNm}</h4>
-                      <p className="card-desc">{page.pageTitle || ''}</p>
-                    </div>
-                  </a>
-                </div>
-              ))}
+      <section className="pub-section section-card-list">
+        <div className="pub-section-inner">
+          <div className="card-grid cols-3">
+            <div className="card-item">
+              <div className="card-body">
+                <h4 className="card-title">Event Guide</h4>
+                <p className="card-desc">Check schedules and details for upcoming international arbitration events.</p>
+              </div>
             </div>
-          </div>
-        </section>
-      )}
-
-      {pages.length === 0 && (
-        <section className="pub-section section-card-list">
-          <div className="pub-section-inner">
-            <div className="card-grid cols-3">
-              <div className="card-item">
-                <div className="card-body">
-                  <h4 className="card-title">Event Guide</h4>
-                  <p className="card-desc">Check schedules and details for upcoming international arbitration events.</p>
-                </div>
+            <div className="card-item">
+              <div className="card-body">
+                <h4 className="card-title">Registration</h4>
+                <p className="card-desc">Apply online to join event programs.</p>
               </div>
-              <div className="card-item">
-                <div className="card-body">
-                  <h4 className="card-title">Registration</h4>
-                  <p className="card-desc">Apply online to join event programs.</p>
-                </div>
-              </div>
-              <div className="card-item">
-                <div className="card-body">
-                  <h4 className="card-title">Notices</h4>
-                  <p className="card-desc">View the latest notices and event updates.</p>
-                </div>
+            </div>
+            <div className="card-item">
+              <div className="card-body">
+                <h4 className="card-title">Notices</h4>
+                <p className="card-desc">View the latest notices and event updates.</p>
               </div>
             </div>
           </div>
-        </section>
-      )}
+        </div>
+      </section>
 
       <footer className="pub-footer">
         <div className="pub-footer-inner">

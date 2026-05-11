@@ -2,18 +2,14 @@ import React, { useEffect, useState } from 'react';
 import PublicHeader from './components/PublicHeader';
 import PublicFooter from './components/PublicFooter';
 import { callGetPublicEventList, callGetPublicEventDetail } from '@api/event/EventApi';
-import { callGetPublicPageList } from '@api/page/PageApi';
 import { EventListItem, EventDetail, EVENT_STATUS_LABELS, EventStatus } from '@interface/event/EventManagement';
-import { PageListItem } from '@interface/page/PageManagement';
 
 const PublicEvents: React.FC = () => {
-  const [pages, setPages] = useState<PageListItem[]>([]);
   const [eventList, setEventList] = useState<EventListItem[]>([]);
   const [selected, setSelected] = useState<EventDetail | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('');
 
   useEffect(() => {
-    callGetPublicPageList().then((r) => { if (r?.item) setPages(r.item); });
     callGetPublicEventList().then((r) => { if (r?.item) setEventList(r.item); });
   }, []);
 
@@ -36,7 +32,7 @@ const PublicEvents: React.FC = () => {
     const statusLabel = EVENT_STATUS_LABELS[selected.status as EventStatus] ?? selected.status;
     return (
       <div className="pub-layout">
-        <PublicHeader pages={pages} currentUrl="/events" onNavigate={handleNavigate} />
+        <PublicHeader currentUrl="/events" onNavigate={handleNavigate} />
         <main className="pub-page-content">
           <section className="pub-section section-text size-medium">
             <div className="pub-section-inner">
@@ -78,7 +74,7 @@ const PublicEvents: React.FC = () => {
 
   return (
     <div className="pub-layout">
-      <PublicHeader pages={pages} currentUrl="/events" onNavigate={handleNavigate} />
+      <PublicHeader currentUrl="/events" onNavigate={handleNavigate} />
       <main className="pub-page-content">
         <section className="pub-section section-hero size-small" style={{
           background: 'linear-gradient(135deg, #0f1b3d 0%, #294DC7 100%)',

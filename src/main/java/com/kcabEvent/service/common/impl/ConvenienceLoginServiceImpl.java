@@ -2,6 +2,8 @@ package com.kcabEvent.service.common.impl;
 
 import com.kcabEvent.dao.UserDao;
 import com.kcabEvent.domain.User;
+import com.kcabEvent.dao.SafUserDao;
+import com.kcabEvent.domain.saf.SafUser;
 import com.kcabEvent.dto.common.LoginUser;
 import com.kcabEvent.exception.custom.BusinessException;
 import com.kcabEvent.service.common.ConvenienceLoginService;
@@ -19,6 +21,9 @@ public class ConvenienceLoginServiceImpl extends EgovAbstractServiceImpl impleme
     @Resource(name = "userDao")
     private UserDao userDao;
 
+    @Resource(name = "safUserDao")
+    private SafUserDao safUserDao;
+
     private final HttpSession httpSession;
 
     @Autowired
@@ -28,10 +33,22 @@ public class ConvenienceLoginServiceImpl extends EgovAbstractServiceImpl impleme
 
     @Override
     public void login(String userId) {
-        User user = userDao.selectUser(userId);
-        if (user == null) {
+        User user = null;
+        try {
+            user = userDao.selectUser(userId);
+        } catch (Exception ignored) {
+            // local/dev convenience login falls back to SAF users when legacy tables are absent.
+        }
+
+        if (user != null) {
+            httpSession.setAttribute("user", LoginUser.convert(user));
+            return;
+        }
+
+        SafUser safUser = safUserDao.selectByUserId(userId);
+        if (safUser == null) {
             throw new BusinessException("User information does not exist.");
         }
-        httpSession.setAttribute("user", LoginUser.convert(user));
+        httpSession.setAttribute("user", LoginUser.convert(safUser));
     }
 }

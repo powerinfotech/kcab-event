@@ -93,10 +93,10 @@
             ,o.name AS organization_name
 
             ,o.org_type
-            ,o.representative_name
             ,o.contact_email
             ,o.contact_phone
             ,o.website
+            ,o.grade
 
 
         FROM event.users u

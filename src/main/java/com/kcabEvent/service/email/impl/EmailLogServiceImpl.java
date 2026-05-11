@@ -30,7 +30,20 @@ public class EmailLogServiceImpl implements EmailLogService {
             String htmlContent,
             String logHtmlContent
     ) {
+        return sendHtmlAndLog(null, recipientEmail, recipientName, subject, htmlContent, logHtmlContent);
+    }
+
+    @Override
+    public String sendHtmlAndLog(
+            Long templateSeq,
+            String recipientEmail,
+            String recipientName,
+            String subject,
+            String htmlContent,
+            String logHtmlContent
+    ) {
         EmailLog emailLog = EmailLog.builder()
+                .templateSeq(templateSeq)
                 .recipientEmail(recipientEmail)
                 .recipientName(recipientName)
                 .subject(subject)

@@ -50,7 +50,6 @@
         SELECT
              email_log_seq
             ,template_seq
-            ,registration_seq
             ,recipient_email
             ,recipient_name
             ,subject
@@ -71,7 +70,6 @@
         INSERT INTO event.email_logs
         (
              template_seq
-            ,registration_seq
             ,recipient_email
             ,recipient_name
             ,subject
@@ -82,7 +80,6 @@
         VALUES
         (
              #{templateSeq,jdbcType=BIGINT}
-            ,#{registrationSeq,jdbcType=BIGINT}
             ,#{recipientEmail}
             ,#{recipientName,jdbcType=VARCHAR}
             ,#{subject}

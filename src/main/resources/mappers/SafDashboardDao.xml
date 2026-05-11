@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kcabEvent.dao.SafDashboardDao">
+
+    <select id="selectDashboardMetrics" resultType="com.kcabEvent.dto.saf.SafDashboardMetricsDto">
+        SELECT
+             COUNT(*) FILTER (
+                 WHERE e.deleted_at IS NULL
+                   AND e.event_type = 'side'
+                   AND e.status = 'pending_approval'
+             ) AS pending_event_approval_count
+            ,COUNT(*) FILTER (
+                 WHERE e.deleted_at IS NULL
+             ) AS registered_event_count
+            ,COUNT(*) FILTER (
+                 WHERE e.deleted_at IS NULL
+                   AND e.event_type = 'main'
+             ) AS official_event_count
+            ,COUNT(*) FILTER (
+                 WHERE e.deleted_at IS NULL
+                   AND e.event_type = 'side'
+             ) AS side_event_count
+            ,(
+                SELECT COUNT(*)
+                  FROM event.event_participants ep
+                 WHERE ep.status = 'registered'
+             ) AS total_participant_count
+            ,(
+                SELECT COUNT(*)
+                  FROM event.event_participants ep
+                 WHERE ep.status = 'registered'
+                   AND ep.registered_at >= NOW() - INTERVAL '7 days'
+             ) AS recent_participant_count
+            ,(
+                SELECT COUNT(*)
+                  FROM event.users u
+                 WHERE u.deleted_at IS NULL
+                   AND u.user_type = 'organization'
+                   AND u.status = 'pending'
+             ) AS pending_organization_approval_count
+        FROM event.events e
+    </select>
+
+    <select id="selectUpcomingEvents" resultType="com.kcabEvent.dto.saf.SafDashboardUpcomingEventDto">
+        SELECT
+             e.event_seq
+            ,e.title
+            ,e.event_type
+            ,e.status
+            ,e.start_at AS start_at
+            ,GREATEST(0, (e.start_at::date - CURRENT_DATE))::int AS days_until_event
+        FROM event.events e
+        WHERE e.deleted_at IS NULL
+          AND e.start_at IS NOT NULL
+          AND e.start_at::date >= CURRENT_DATE
+          AND e.status IN ('published', 'pending_approval')
+        ORDER BY e.start_at ASC, e.event_seq ASC
+        LIMIT 5
+    </select>
+
+    <!-- 로그인 user의 소속 organization 조회 (organization_members 테이블) -->
+    <select id="selectOrganizationSeqByUserSeq" resultType="java.lang.Long">
+        SELECT organization_seq
+          FROM event.organization_members
+         WHERE user_seq = #{userSeq}
+         LIMIT 1
+    </select>
+
+    <!-- 조직 대시보드 통계 (해당 조직의 행사만 집계) -->
+    <select id="selectOrgDashboardMetrics" resultType="com.kcabEvent.dto.saf.SafOrgDashboardMetricsDto">
+        SELECT
+             COUNT(*) FILTER (
+                 WHERE e.deleted_at IS NULL
+             ) AS my_event_count
+            ,COUNT(*) FILTER (
+                 WHERE e.deleted_at IS NULL
+                   AND e.status = 'pending_approval'
+             ) AS pending_approval_count
+            ,(
+                SELECT COUNT(*)
+                  FROM event.event_participants ep
+                  JOIN event.events ev ON ev.event_seq = ep.event_seq
+                 WHERE ev.organization_seq = #{organizationSeq}
+                   AND ev.deleted_at IS NULL
+                   AND ep.status = 'registered'
+             ) AS total_applicant_count
+        FROM event.events e
+        WHERE e.organization_seq = #{organizationSeq}
+    </select>
+
+    <!-- 조직 대시보드 행사 카드 (최근 등록 순, 최대 10건) -->
+    <select id="selectOrgEvents" resultType="com.kcabEvent.dto.saf.SafOrgDashboardEventDto">
+        SELECT
+             e.event_seq
+            ,e.title
+            ,e.event_type
+            ,e.status
+            ,e.start_at AS start_at
+            ,e.venue_name
+            ,e.max_participants
+            ,COALESCE(rc.registration_count, 0) AS registration_count
+        FROM event.events e
+        LEFT JOIN (
+            SELECT event_seq, COUNT(*) AS registration_count
+              FROM event.event_participants
+             WHERE status = 'registered'
+             GROUP BY event_seq
+        ) rc ON rc.event_seq = e.event_seq
+        WHERE e.organization_seq = #{organizationSeq}
+          AND e.deleted_at IS NULL
+        ORDER BY e.start_at DESC NULLS LAST, e.event_seq DESC
+        LIMIT 10
+    </select>
+
+</mapper>

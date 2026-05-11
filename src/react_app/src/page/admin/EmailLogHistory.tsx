@@ -10,6 +10,7 @@ import {
 } from '@ant-design/icons';
 import { callGetEmailLogDetail, callGetEmailLogs } from '@api/admin/EmailLogApi';
 import { EmailLogDetail, EmailLogListItem } from '@interface/admin/EmailLog';
+import AdminGridPagination, { useClientGridPagination } from './AdminGridPagination';
 
 const STATUS_LABEL: Record<string, string> = {
   queued: 'Queued',
@@ -23,7 +24,7 @@ const STATUS_TONE: Record<string, 'green' | 'yellow' | 'red' | 'gray'> = {
   failed: 'red',
 };
 
-const DEFAULT_LIMIT = 100;
+const DEFAULT_LIMIT = 500;
 
 export default function EmailLogHistory() {
   const { message } = App.useApp();
@@ -33,10 +34,10 @@ export default function EmailLogHistory() {
   const [provider, setProvider] = useState('');
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
-  const [limit, setLimit] = useState(DEFAULT_LIMIT);
   const [loading, setLoading] = useState(false);
   const [detail, setDetail] = useState<EmailLogDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
+  const logPagination = useClientGridPagination(logs);
 
   const fetchLogs = async () => {
     setLoading(true);
@@ -47,7 +48,7 @@ export default function EmailLogHistory() {
         provider: provider.trim() || undefined,
         fromDate: fromDate || undefined,
         toDate: toDate || undefined,
-        limit,
+        limit: DEFAULT_LIMIT,
       });
       setLogs(res.item ?? []);
     } catch (error) {
@@ -125,12 +126,6 @@ export default function EmailLogHistory() {
           aria-label="To date"
           onChange={(event) => setToDate(event.target.value)}
         />
-        <select className="saf-filter-select" value={limit} onChange={(event) => setLimit(Number(event.target.value))}>
-          <option value={50}>50</option>
-          <option value={100}>100</option>
-          <option value={200}>200</option>
-          <option value={500}>500</option>
-        </select>
         <button type="button" onClick={fetchLogs}>Search</button>
       </section>
 
@@ -148,7 +143,7 @@ export default function EmailLogHistory() {
             </tr>
           </thead>
           <tbody>
-            {logs.map((log) => (
+            {logPagination.pagedItems.map((log) => (
               <tr key={log.emailLogSeq} onClick={() => openDetail(log.emailLogSeq)}>
                 <td><StatusBadge status={log.status} /></td>
                 <td>
@@ -187,7 +182,7 @@ export default function EmailLogHistory() {
             )}
           </tbody>
         </table>
-        <div className="saf-table-footer">{logs.length} record(s)</div>
+        <AdminGridPagination {...logPagination} />
       </section>
 
       <Modal

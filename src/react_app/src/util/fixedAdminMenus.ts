@@ -50,8 +50,7 @@ export function getFixedAdminMenuInfo(admYn?: string): MenuInfo[] {
 
   return [
     menu(200, 'Dashboard', '/', 'DashBoard', 1),
-    menu(210, 'My Side Events', '/side-events', 'admin/OrgSideEvents', 2),
-    menu(211, 'Apply for Side Event', '/side-events/new', 'admin/OrgSideEventForm', 3, 2),
+    menu(210, 'Event Management', '/events', 'admin/SuperEventList', 2),
     menu(220, 'Participants', '/participants', 'admin/Participants', 4),
     menu(230, 'Organization Profile', '/profile', 'admin/OrgProfile', 5),
   ];

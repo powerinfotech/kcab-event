@@ -17,6 +17,7 @@ export interface EventListItem {
 export interface EventDetail {
   eventSeq: number;
   title: string;
+  description?: string;
   content: string;
   summary: string;
   eventStartDt: string;
@@ -24,12 +25,12 @@ export interface EventDetail {
   registrationStartDt: string | null;
   registrationEndDt: string | null;
   location: string;
-  venueAddress: string | null;
   /** 참가신청 방식: direct=자체 신청 화면, external=외부 URL로 이동 */
   registrationType: RegistrationType;
   /** 참가신청 외부 URL (registrationType=external 일 때만 사용) */
   registrationUrl: string;
   status: string;
+  rejectionReason?: string | null;
   useYn: string;
   fileSeq: number | null;
   attachmentFileSeq: number | null;
@@ -46,6 +47,7 @@ export interface EventDetail {
 export interface EventSaveRequest {
   eventSeq?: number;
   title: string;
+  description?: string;
   content: string;
   summary: string;
   eventStartDt: string;
@@ -53,7 +55,6 @@ export interface EventSaveRequest {
   registrationStartDt?: string | null;
   registrationEndDt?: string | null;
   location: string;
-  venueAddress?: string | null;
   /** 참가신청 방식: direct=자체 신청 화면, external=외부 URL로 이동 */
   registrationType: RegistrationType;
   /** 참가신청 외부 URL (registrationType=external 일 때만 사용) */
@@ -74,12 +75,13 @@ export interface EventListSearchParam {
   keyword?: string;
 }
 
-export type EventStatus = 'draft' | 'pending_approval' | 'published' | 'closed' | 'cancelled';
+export type EventStatus = 'draft' | 'pending_approval' | 'published' | 'rejected' | 'closed' | 'cancelled';
 
 export const EVENT_STATUS_LABELS: Record<string, string> = {
   draft: 'Draft',
   pending_approval: 'Pending Approval',
   published: 'Published',
+  rejected: 'Rejected',
   closed: 'Closed',
   cancelled: 'Cancelled',
   UPCOMING: 'Upcoming',
@@ -91,6 +93,7 @@ export const EVENT_STATUS_TONE: Record<string, 'green' | 'yellow' | 'gray' | 'bl
   draft: 'gray',
   pending_approval: 'yellow',
   published: 'green',
+  rejected: 'red',
   closed: 'gray',
   cancelled: 'red',
 };

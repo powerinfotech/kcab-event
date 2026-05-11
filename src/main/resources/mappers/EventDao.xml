@@ -9,7 +9,7 @@
             ,e.description AS summary
             ,e.start_at   AS event_start_dt
             ,e.end_at     AS event_end_dt
-            ,COALESCE(e.venue_name, e.venue_address) AS location
+            ,e.venue_name AS location
             ,e.status
             ,CASE WHEN e.deleted_at IS NULL THEN 'Y' ELSE 'N' END AS use_yn
             ,e.created_at AS rgst_date_time
@@ -21,17 +21,21 @@
         LEFT JOIN event.organizations o ON o.organization_seq = e.organization_seq
         LEFT JOIN (
             SELECT event_seq, COUNT(*) AS registration_count
-              FROM event.registrations
-             WHERE status NOT IN ('cancelled', 'refunded')
+              FROM event.event_participants
+             WHERE status = 'registered'
              GROUP BY event_seq
         ) rc ON rc.event_seq = e.event_seq
         <where>
             e.deleted_at IS NULL
             <if test="status != null and status != ''">
-                AND e.status = #{status}
+                <!-- 프론트엔드에서 콤마 조인된 멀티 셀렉트 값 → string_to_array로 IN 처리 -->
+                AND e.status = ANY(string_to_array(#{status}, ','))
             </if>
             <if test="eventType != null and eventType != ''">
                 AND e.event_type = #{eventType}
+            </if>
+            <if test="organizationSeq != null">
+                AND e.organization_seq = #{organizationSeq}
             </if>
             <if test="keyword != null and keyword != ''">
                 AND (
@@ -47,6 +51,7 @@
         SELECT
              e.event_seq
             ,e.title
+            ,e.description
             ,e.description AS content
             ,e.description AS summary
             ,e.start_at              AS event_start_dt
@@ -54,10 +59,10 @@
             ,e.registration_start_at AS registration_start_dt
             ,e.registration_end_at   AS registration_end_dt
             ,e.venue_name AS location
-            ,e.venue_address
             ,e.registration_type
             ,e.registration_url
             ,e.status
+            ,e.rejection_reason
             ,CASE WHEN e.deleted_at IS NULL THEN 'Y' ELSE 'N' END AS use_yn
             ,e.file_seq
             ,e.attachment_file_seq
@@ -76,21 +81,48 @@
           AND e.deleted_at IS NULL
     </select>
 
+    <select id="selectEventNotificationRecipient" resultType="com.kcabEvent.dto.event.EventNotificationRecipientDto">
+        SELECT
+             COALESCE(NULLIF(owner_user.email, ''), NULLIF(o.contact_email, '')) AS recipient_email
+            ,COALESCE(NULLIF(owner_user.name, ''), o.name) AS recipient_name
+            ,o.name AS organization_name
+        FROM event.events e
+        LEFT JOIN event.organizations o
+            ON o.organization_seq = e.organization_seq
+        LEFT JOIN LATERAL (
+            SELECT
+                 u.email
+                ,u.name
+            FROM event.organization_members om
+            INNER JOIN event.users u
+                ON u.user_seq = om.user_seq
+               AND u.deleted_at IS NULL
+            WHERE om.organization_seq = e.organization_seq
+            ORDER BY
+                 CASE WHEN om.role = 'owner' THEN 0 ELSE 1 END
+                ,CASE WHEN u.status = 'active' THEN 0 ELSE 1 END
+                ,om.created_at ASC NULLS LAST
+            LIMIT 1
+        ) owner_user ON TRUE
+        WHERE e.event_seq = #{eventSeq}
+          AND e.deleted_at IS NULL
+    </select>
+
     <insert id="insertEvent" parameterType="com.kcabEvent.domain.Event" useGeneratedKeys="true" keyProperty="eventSeq">
         INSERT INTO event.events (
             slug, title, description, event_type, is_paid,
             start_at, end_at, registration_start_at, registration_end_at,
-            venue_name, venue_address,
+            venue_name,
             max_participants, organization_seq, file_seq, attachment_file_seq,
             registration_type, registration_url,
             status, created_by, updated_by
         ) VALUES (
             'event-' || substr(md5(random()::text || clock_timestamp()::text), 1, 12),
-            #{title}, #{content},
+            #{title}, COALESCE(#{description}, #{content}),
             COALESCE(NULLIF(#{eventType}, ''), 'main'),
             COALESCE(#{isPaid}, false),
             #{eventStartDt}, #{eventEndDt}, #{registrationStartDt}, #{registrationEndDt},
-            #{location}, #{venueAddress},
+            #{location},
             #{maxParticipants}, #{organizationSeq}, #{fileSeq}, #{attachmentFileSeq},
             COALESCE(NULLIF(#{registrationType,jdbcType=VARCHAR}, ''), 'direct'),
             #{registrationUrl,jdbcType=VARCHAR},
@@ -101,7 +133,7 @@
     <update id="updateEvent" parameterType="com.kcabEvent.domain.Event">
         UPDATE event.events
         SET  title             = #{title}
-            ,description       = #{content}
+            ,description       = COALESCE(#{description}, #{content})
             ,event_type        = COALESCE(NULLIF(#{eventType}, ''), event_type)
             ,is_paid           = COALESCE(#{isPaid}, is_paid)
             ,file_seq          = #{fileSeq}
@@ -111,7 +143,6 @@
             ,registration_start_at = #{registrationStartDt}
             ,registration_end_at   = #{registrationEndDt}
             ,venue_name        = #{location}
-            ,venue_address     = #{venueAddress}
             ,max_participants  = #{maxParticipants}
             ,organization_seq  = #{organizationSeq}
             ,registration_type = COALESCE(NULLIF(#{registrationType,jdbcType=VARCHAR}, ''), registration_type)
@@ -119,6 +150,16 @@
             ,status            = #{status}
             ,updated_by        = #{uptUserSeq}
             ,updated_at        = CURRENT_TIMESTAMP
+        WHERE event_seq = #{eventSeq}
+          AND deleted_at IS NULL
+    </update>
+
+    <update id="updateEventStatus">
+        UPDATE event.events
+        SET  status     = #{status}
+            ,rejection_reason = #{rejectionReason,jdbcType=VARCHAR}
+            ,updated_by = #{updatedBy}
+            ,updated_at = CURRENT_TIMESTAMP
         WHERE event_seq = #{eventSeq}
           AND deleted_at IS NULL
     </update>

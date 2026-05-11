@@ -4,7 +4,6 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Sidebar from '@layout/Sidebar';
 import TopBar from '@layout/TopBar';
 import Footer from '@layout/Footer';
-import PublicPage from '@page/public/PublicPage';
 import PublicNotice from '@page/public/PublicNotice';
 import PublicFaq from '@page/public/PublicFaq';
 import PublicEvents from '@page/public/PublicEvents';
@@ -145,7 +144,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     if (currentPath === '/faq') return <PublicFaq />;
     if (currentPath === '/events') return <PublicEvents />;
     if (currentPath === '/saf/signup') return <SafSignup />;
-    return <PublicPage pageUrl={currentPath} />;
+    // 알 수 없는 공개 경로는 홈으로 fallback
+    return <>{children}</>;
   }
 
   if (shouldDenyAccess) {

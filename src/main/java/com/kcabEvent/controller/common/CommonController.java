@@ -82,8 +82,7 @@ public class CommonController {
         }
 
         menus.add(fixedMenu(200, "Dashboard", "/", "DashBoard", 1, 1));
-        menus.add(fixedMenu(210, "My Side Events", "/side-events", "admin/OrgSideEvents", 2, 1));
-        menus.add(fixedMenu(211, "Apply for Side Event", "/side-events/new", "admin/OrgSideEventForm", 3, 2));
+        menus.add(fixedMenu(210, "Event Management", "/events", "admin/SuperEventList", 2, 1));
         menus.add(fixedMenu(220, "Participants", "/participants", "admin/Participants", 4, 1));
         menus.add(fixedMenu(230, "Organization Profile", "/profile", "admin/OrgProfile", 5, 1));
         return menus;

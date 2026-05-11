@@ -125,7 +125,7 @@ system:
 
 file:
   path:
-    dir: /Users/junkwon/downloadtest
+    dir: C:/Upload
 
 ---
 
@@ -154,7 +154,7 @@ system:
 
 file:
   path:
-    dir: /home/ubuntu/upload_files
+    dir: /data/upload/kcab-event
 
 ---
 

@@ -23,7 +23,6 @@ public class SignupRequestDto {
     private String orgName;
     @NotBlank
     private String orgType;
-    private String representativeName;
     @NotBlank
     @Email
     private String contactEmail;

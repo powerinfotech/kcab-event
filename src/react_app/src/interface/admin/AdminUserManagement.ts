@@ -29,12 +29,22 @@ export interface AdminUserListItem {
 }
 
 export interface AdminUserDetail extends AdminUserListItem {
-  representativeName?: string;
   contactEmail?: string;
   contactPhone?: string;
   website?: string;
+  /** 조직 등급: S/A/B/C */
+  grade?: OrganizationGrade;
   approvedAt?: string;
 }
+
+export type OrganizationGrade = 'S' | 'A' | 'B' | 'C';
+
+export const ORGANIZATION_GRADE_OPTIONS: Array<{ value: OrganizationGrade; label: string }> = [
+  { value: 'S', label: 'S' },
+  { value: 'A', label: 'A' },
+  { value: 'B', label: 'B' },
+  { value: 'C', label: 'C' },
+];
 
 export interface AdminUserSaveParam {
   userId?: string;
@@ -50,9 +60,9 @@ export interface AdminUserSaveParam {
   organizationName?: string;
 
   orgType?: string;
-  representativeName?: string;
   contactEmail?: string;
   contactPhone?: string;
   website?: string;
-
+  /** 조직 등급: S/A/B/C (생략 시 백엔드가 'C' 강제) */
+  grade?: OrganizationGrade;
 }

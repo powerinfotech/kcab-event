@@ -1,28 +1,37 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { App, DatePicker } from 'antd';
+import { App, DatePicker, Select } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
+import { useAtomValue } from 'jotai';
 import {
   ArrowLeftOutlined,
   CalendarOutlined,
-  DeleteOutlined,
-  EditOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
   PlusOutlined,
   ReloadOutlined,
+  RollbackOutlined,
   SaveOutlined,
   SearchOutlined,
+  SendOutlined,
   StopOutlined,
 } from '@ant-design/icons';
 import CustomRichEditor from '@component/special/CustomRichEditor';
 import CustomFile, { FileDetailType } from '@component/upload/CustomFile';
 import { callGetFileList, callSaveFiles } from '@api/CommonApi';
 import {
+  callApproveEvent,
+  callCancelEventApproval,
   callDeleteEvent,
   callGetEventDetail,
   callGetEventList,
+  callRejectEvent,
+  callRequestEventApproval,
   callSaveEvent,
 } from '@api/event/EventApi';
+import { sessionInfoAtom } from '@atom/sessionInfoAtom';
+import { getAdminRole } from '@util/fixedAdminMenus';
 import {
   EVENT_STATUS_LABELS,
   EVENT_STATUS_TONE,
@@ -34,12 +43,14 @@ import {
   REGISTRATION_TYPE_LABELS,
   RegistrationType,
 } from '@interface/event/EventManagement';
+import AdminGridPagination, { useClientGridPagination } from './AdminGridPagination';
 
+/** Status 멀티 셀렉트 옵션 (빈 항목 없이 실제 상태값만) */
 const STATUS_FILTERS: Array<{ value: string; label: string }> = [
-  { value: '', label: 'All Status' },
   { value: 'draft', label: 'Draft' },
   { value: 'pending_approval', label: 'Pending Approval' },
   { value: 'published', label: 'Published' },
+  { value: 'rejected', label: 'Rejected' },
   { value: 'closed', label: 'Closed' },
   { value: 'cancelled', label: 'Cancelled' },
 ];
@@ -62,10 +73,12 @@ const REGISTRATION_TYPE_OPTIONS: Array<{ value: RegistrationType; label: string 
 ];
 
 const URL_REGEXP = /^(https?:\/\/)[^\s]+$/i;
+const DASHBOARD_EVENT_DETAIL_KEY = 'saf.admin.dashboardEventSeq';
 
 const emptyDetail: EventDetail = {
   eventSeq: 0,
   title: '',
+  description: '',
   content: '',
   summary: '',
   eventStartDt: '',
@@ -73,10 +86,10 @@ const emptyDetail: EventDetail = {
   registrationStartDt: '',
   registrationEndDt: '',
   location: '',
-  venueAddress: '',
   registrationType: 'direct',
   registrationUrl: '',
   status: 'published',
+  rejectionReason: '',
   useYn: 'Y',
   fileSeq: null,
   attachmentFileSeq: null,
@@ -108,21 +121,22 @@ function fromDayjs(d: Dayjs | null): string {
   return d ? d.format('YYYY-MM-DDTHH:mm:ss') : '';
 }
 
-/** 목록 테이블의 일자 표시 (MM.DD) — datetime/date 모두 처리 */
-function formatMonthDay(value?: string | null) {
-  if (!value) return '-';
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return value;
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
-  const dd = String(d.getDate()).padStart(2, '0');
-  return `${mm}.${dd}`;
+/** 목록 테이블의 일시 범위 표시: "2026-05-20 13:00 ~ 2026-05-20 18:00" */
+function formatDateRange(start?: string | null, end?: string | null): string {
+  const s = toDayjs(start);
+  const e = toDayjs(end);
+  if (!s && !e) return '-';
+  const fmt = 'YYYY-MM-DD HH:mm';
+  return `${s ? s.format(fmt) : '-'} ~ ${e ? e.format(fmt) : '-'}`;
 }
 
 export default function SuperEventList() {
   const { message, modal } = App.useApp();
+  const sessionInfo = useAtomValue(sessionInfoAtom);
+  const isOrganizationRole = getAdminRole(sessionInfo.admYn) === 'ORGANIZATION';
   const [events, setEvents] = useState<EventListItem[]>([]);
   const [keyword, setKeyword] = useState('');
-  const [status, setStatus] = useState('');
+  const [status, setStatus] = useState<string[]>([]);
   const [eventType, setEventType] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -141,7 +155,6 @@ export default function SuperEventList() {
   const regStartValue = form.registrationStartDt?.trim() ?? '';
   const regEndValue = form.registrationEndDt?.trim() ?? '';
   const registrationUrlValue = form.registrationUrl?.trim() ?? '';
-  const venueAddressValue = form.venueAddress?.trim() ?? '';
   const locationValue = form.location?.trim() ?? '';
   const hasContent = hasRichContent(form.content);
   const isRequiredEmpty = (value?: string | null) => submitAttempted && !value?.toString().trim();
@@ -157,18 +170,34 @@ export default function SuperEventList() {
   const isUrlInvalid = isUrlRequiredEmpty || isUrlFormatInvalid;
   const isRegStartRequiredEmpty = submitAttempted && showRegistrationDates && !regStartValue;
   const isRegEndRequiredEmpty = submitAttempted && showRegistrationDates && !regEndValue;
+  const canReviewApproval = !isOrganizationRole && !isNew && form.status === 'pending_approval';
+  const canCancelApproval = isOrganizationRole && !isNew && form.status === 'pending_approval';
+  const canOrganizationEdit = form.status === 'draft' || form.status === 'published';
+  const isLockedByApproval = !isNew && (
+    (isOrganizationRole && !canOrganizationEdit)
+    || (!isOrganizationRole && (form.status === 'pending_approval' || form.status === 'rejected'))
+  );
+  const canRequestApproval = isOrganizationRole && !isNew && form.status === 'draft';
+  const canEdit = !isLockedByApproval;
+  const canDelete = !isNew && (
+    !isOrganizationRole
+      ? form.status !== 'pending_approval' && form.status !== 'rejected'
+      : form.status === 'draft'
+  );
 
   const selectedSummary = useMemo(
     () => events.find((event) => event.eventSeq === selectedSeq),
     [selectedSeq, events],
   );
+  const eventPagination = useClientGridPagination(events);
 
   const fetchEvents = async () => {
     setLoading(true);
     try {
       const res = await callGetEventList({
         keyword: keyword.trim() || undefined,
-        status: status || undefined,
+        // 멀티 셀렉트 → 콤마 조인 ("draft,published"); 빈 배열이면 전송 안 함
+        status: status.length ? status.join(',') : undefined,
         eventType: eventType || undefined,
       });
       setEvents(res?.item ?? []);
@@ -185,7 +214,13 @@ export default function SuperEventList() {
       const res = await callGetEventDetail(eventSeq);
       const detail = res?.item ?? null;
       // 백엔드가 registrationType을 누락한 레거시 데이터 호환: URL 유무로 추론
-      const merged: EventDetail = { ...emptyDetail, ...(detail ?? {}) };
+      const description = detail?.description ?? detail?.content ?? detail?.summary ?? '';
+      const merged: EventDetail = {
+        ...emptyDetail,
+        ...(detail ?? {}),
+        description,
+        content: detail?.content ?? description,
+      };
       if (!merged.registrationType) {
         merged.registrationType = (merged.registrationUrl ?? '').trim() ? 'external' : 'direct';
       }
@@ -227,7 +262,12 @@ export default function SuperEventList() {
   };
 
   useEffect(() => {
-    fetchEvents();
+    const pendingEventSeq = readPendingDashboardEventSeq();
+    fetchEvents().then(() => {
+      if (pendingEventSeq !== null) {
+        fetchDetail(pendingEventSeq);
+      }
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -245,11 +285,7 @@ export default function SuperEventList() {
       return false;
     }
     if (!locationValue) {
-      message.warning('Please enter the venue name.');
-      return false;
-    }
-    if (!venueAddressValue) {
-      message.warning('Please enter the address.');
+      message.warning('Please enter the venue.');
       return false;
     }
     if (!hasContent) {
@@ -299,18 +335,17 @@ export default function SuperEventList() {
   const buildSaveParam = (fileSeq: number | null, attachmentFileSeq: number | null): EventSaveRequest => ({
     eventSeq: isNew ? undefined : selectedSeq!,
     title: titleValue,
-    content: form.content ?? '',
+    description: form.description ?? form.content ?? '',
+    content: form.description ?? form.content ?? '',
     summary: form.summary ?? '',
     eventStartDt: startValue,
     eventEndDt: endValue,
     registrationStartDt: isNoRegistration ? null : (regStartValue || null),
     registrationEndDt: isNoRegistration ? null : (regEndValue || null),
     location: form.location?.trim() ?? '',
-    venueAddress: venueAddressValue || null,
-    registrationType: isExternalRegistration ? 'external' : 'direct',
+    registrationType: form.registrationType,
     registrationUrl: isExternalRegistration ? registrationUrlValue : '',
-    // 사용자 요구: 등록·수정 모두 status는 'published'로 강제 (백엔드도 동일하게 강제하지만 명시)
-    status: 'published',
+    status: isOrganizationRole ? (form.status || 'draft') : 'published',
     useYn: form.useYn || 'Y',
     fileSeq,
     attachmentFileSeq,
@@ -346,17 +381,25 @@ export default function SuperEventList() {
       }
 
       // 3) 행사 저장
-      await callSaveEvent(buildSaveParam(resolvedFileSeq, resolvedAttSeq));
+      const eventRes = await callSaveEvent(buildSaveParam(resolvedFileSeq, resolvedAttSeq));
       message.success(isNew ? 'Event has been registered.' : 'Event information has been saved.');
       await fetchEvents();
       if (isNew) {
-        setMode('list');
+        const savedEventSeq = Number(eventRes?.item);
+        if (savedEventSeq) {
+          await fetchDetail(savedEventSeq);
+        } else {
+          setMode('list');
+        }
       } else {
         // 재조회하여 최신 상태 반영
         if (selectedSeq !== null) await fetchDetail(selectedSeq);
       }
-    } catch (err) {
-      message.error(isNew ? 'Failed to register event.' : 'Failed to save event information.');
+    } catch (err: any) {
+      // 백엔드가 메시지를 보냈으면 그대로 노출 (IllegalArgumentException 등 원인 파악용)
+      const backendMsg = err?.response?.data?.message;
+      const fallback = isNew ? 'Failed to register event.' : 'Failed to save event information.';
+      message.error(backendMsg ? `${fallback} (${backendMsg})` : fallback);
     } finally {
       setSaving(false);
     }
@@ -372,6 +415,115 @@ export default function SuperEventList() {
       cancelText: 'Cancel',
       centered: true,
       onOk: persist,
+    });
+  };
+
+  const handleRequestApproval = () => {
+    if (selectedSeq === null) return;
+    modal.confirm({
+      title: 'Request Approval',
+      content: 'Do you want to submit this event for approval? You cannot edit it after submitting.',
+      okText: 'Request',
+      cancelText: 'Cancel',
+      centered: true,
+      onOk: async () => {
+        setSaving(true);
+        try {
+          await callRequestEventApproval(selectedSeq);
+          message.success('Approval has been requested.');
+          await fetchEvents();
+          await fetchDetail(selectedSeq);
+        } catch (err: any) {
+          message.error(err?.response?.data?.message ?? 'Failed to request approval.');
+        } finally {
+          setSaving(false);
+        }
+      },
+    });
+  };
+
+  const handleCancelApproval = () => {
+    if (selectedSeq === null) return;
+    modal.confirm({
+      title: 'Move to Draft',
+      content: 'Do you want to move this event back to Draft?',
+      okText: 'Move to Draft',
+      cancelText: 'Close',
+      centered: true,
+      onOk: async () => {
+        setSaving(true);
+        try {
+          await callCancelEventApproval(selectedSeq);
+          message.success('Event has been moved to Draft.');
+          await fetchEvents();
+          await fetchDetail(selectedSeq);
+        } catch (err: any) {
+          message.error(err?.response?.data?.message ?? 'Failed to move event to Draft.');
+        } finally {
+          setSaving(false);
+        }
+      },
+    });
+  };
+
+  const handleReviewApproval = (approved: boolean) => {
+    if (selectedSeq === null) return;
+    const actionLabel = approved ? 'Approve' : 'Reject';
+    let rejectionReason = '';
+    modal.confirm({
+      title: `${actionLabel} Event`,
+      content: approved
+        ? `Do you want to approve "${form.title}"? The event will be published.`
+        : (
+          <div className="saf-modal-form">
+            <p>Do you want to reject "{form.title}"? The organization will no longer be able to edit it.</p>
+            <textarea
+              autoFocus
+              rows={5}
+              placeholder="Enter the rejection reason."
+              onChange={(e) => {
+                rejectionReason = e.currentTarget.value;
+              }}
+              style={{
+                width: '100%',
+                marginTop: 12,
+                border: '1px solid #d7dee8',
+                borderRadius: 6,
+                padding: '10px 12px',
+                resize: 'vertical',
+              }}
+            />
+          </div>
+        ),
+      okText: actionLabel,
+      cancelText: 'Cancel',
+      okButtonProps: approved ? undefined : { danger: true },
+      centered: true,
+      onOk: async () => {
+        const reason = rejectionReason.trim();
+        if (!approved && !reason) {
+          message.warning('Please enter the rejection reason.');
+          return Promise.reject(new Error('Rejection reason is required.'));
+        }
+        setSaving(true);
+        try {
+          if (approved) {
+            await callApproveEvent(selectedSeq);
+            message.success('Event has been approved.');
+          } else {
+            await callRejectEvent(selectedSeq, reason);
+            message.success('Event has been rejected.');
+          }
+          await fetchEvents();
+          await fetchDetail(selectedSeq);
+        } catch (err: any) {
+          message.error(err?.response?.data?.message ?? `Failed to ${actionLabel.toLowerCase()} event.`);
+          return Promise.reject(err);
+        } finally {
+          setSaving(false);
+        }
+        return undefined;
+      },
     });
   };
 
@@ -397,28 +549,12 @@ export default function SuperEventList() {
     });
   };
 
-  const handleDeleteFromList = (event: EventListItem) => {
-    modal.confirm({
-      title: 'Delete Event',
-      content: `Do you want to delete "${event.title}"?`,
-      okText: 'Delete',
-      cancelText: 'Cancel',
-      okButtonProps: { danger: true },
-      centered: true,
-      onOk: async () => {
-        try {
-          await callDeleteEvent(event.eventSeq);
-          message.success('Event has been deleted.');
-          fetchEvents();
-        } catch (err) {
-          message.error('Failed to delete event.');
-        }
-      },
-    });
-  };
-
   const handleNew = () => {
-    setForm({ ...emptyDetail });
+    setForm({
+      ...emptyDetail,
+      status: isOrganizationRole ? 'draft' : 'published',
+      eventType: isOrganizationRole ? 'side' : 'main',
+    });
     setThumbnailFiles([]);
     setAttachmentFiles([]);
     setSelectedSeq(null);
@@ -447,16 +583,42 @@ export default function SuperEventList() {
               <ArrowLeftOutlined />
               <span>List</span>
             </button>
-            {!isNew && (
+            {canDelete && (
               <button type="button" className="saf-action-btn is-danger" onClick={handleDeleteSelected} disabled={saving}>
                 <StopOutlined />
                 <span>Delete</span>
               </button>
             )}
-            <button type="button" className="saf-action-btn is-primary" onClick={handleSave} disabled={saving}>
-              <SaveOutlined />
-              <span>{isNew ? 'Register' : 'Save'}</span>
-            </button>
+            {canRequestApproval && (
+              <button type="button" className="saf-action-btn is-approve" onClick={handleRequestApproval} disabled={saving}>
+                <SendOutlined />
+                <span>Request Approval</span>
+              </button>
+            )}
+            {canCancelApproval && (
+              <button type="button" className="saf-action-btn is-secondary" onClick={handleCancelApproval} disabled={saving}>
+                <RollbackOutlined />
+                <span>Move to Draft</span>
+              </button>
+            )}
+            {canReviewApproval && (
+              <>
+                <button type="button" className="saf-action-btn is-approve" onClick={() => handleReviewApproval(true)} disabled={saving}>
+                  <CheckCircleOutlined />
+                  <span>Approve</span>
+                </button>
+                <button type="button" className="saf-action-btn is-danger" onClick={() => handleReviewApproval(false)} disabled={saving}>
+                  <CloseCircleOutlined />
+                  <span>Reject</span>
+                </button>
+              </>
+            )}
+            {canEdit && (
+              <button type="button" className="saf-action-btn is-primary" onClick={handleSave} disabled={saving}>
+                <SaveOutlined />
+                <span>{isNew ? 'Register' : 'Save'}</span>
+              </button>
+            )}
           </div>
         </header>
 
@@ -467,6 +629,7 @@ export default function SuperEventList() {
               <Field label="Event Name *" invalid={isRequiredEmpty(form.title)} wide>
                 <input
                   value={form.title}
+                  disabled={!canEdit}
                   onChange={(e) => updateForm('title', e.target.value)}
                   placeholder="e.g., Seoul International Arbitration Conference 2026"
                 />
@@ -474,6 +637,7 @@ export default function SuperEventList() {
               <Field label="Event Type *" invalid={isRequiredEmpty(form.eventType)}>
                 <select
                   value={form.eventType}
+                  disabled={!canEdit || isOrganizationRole}
                   onChange={(e) => updateForm('eventType', e.target.value)}
                 >
                   {TYPE_OPTIONS.map((opt) => (
@@ -486,6 +650,11 @@ export default function SuperEventList() {
                   <span className={`saf-status is-${detailStatusTone}`}>{detailStatusLabel}</span>
                 </div>
               </Field>
+              {form.status === 'rejected' && (
+                <Field label="Rejection Reason" wide>
+                  <textarea value={form.rejectionReason ?? ''} disabled />
+                </Field>
+              )}
               <Field label="Start Date *" invalid={isRequiredEmpty(form.eventStartDt) || isDateRangeInvalid}>
                 <DatePicker
                   showTime={{ format: 'HH:mm' }}
@@ -495,6 +664,7 @@ export default function SuperEventList() {
                   style={{ width: '100%' }}
                   placeholder="Select start date & time"
                   value={toDayjs(form.eventStartDt)}
+                  disabled={!canEdit}
                   onChange={(d) => updateForm('eventStartDt', fromDayjs(d))}
                 />
               </Field>
@@ -507,12 +677,14 @@ export default function SuperEventList() {
                   style={{ width: '100%' }}
                   placeholder="Select end date & time"
                   value={toDayjs(form.eventEndDt)}
+                  disabled={!canEdit}
                   onChange={(d) => updateForm('eventEndDt', fromDayjs(d))}
                 />
               </Field>
               <Field label="Registration Type *" wide>
                 <select
                   value={form.registrationType}
+                  disabled={!canEdit}
                   onChange={(e) => {
                     const next = e.target.value as RegistrationType;
                     setForm((prev) => ({
@@ -534,6 +706,7 @@ export default function SuperEventList() {
                 <Field label="Registration URL *" invalid={isUrlInvalid} wide>
                   <input
                     value={form.registrationUrl ?? ''}
+                    disabled={!canEdit}
                     onChange={(e) => updateForm('registrationUrl', e.target.value)}
                     placeholder="https://..."
                   />
@@ -549,6 +722,7 @@ export default function SuperEventList() {
                     style={{ width: '100%' }}
                     placeholder="Select registration open date & time"
                     value={toDayjs(form.registrationStartDt)}
+                    disabled={!canEdit}
                     onChange={(d) => updateForm('registrationStartDt', fromDayjs(d))}
                   />
                 </Field>
@@ -563,6 +737,7 @@ export default function SuperEventList() {
                     style={{ width: '100%' }}
                     placeholder="Select registration close date & time"
                     value={toDayjs(form.registrationEndDt)}
+                    disabled={!canEdit}
                     onChange={(d) => updateForm('registrationEndDt', fromDayjs(d))}
                   />
                 </Field>
@@ -572,6 +747,7 @@ export default function SuperEventList() {
                   type="number"
                   min={0}
                   value={form.maxParticipants ?? ''}
+                  disabled={!canEdit}
                   onChange={(e) => updateForm('maxParticipants', e.target.value === '' ? null : Number(e.target.value))}
                   placeholder="e.g., 300"
                 />
@@ -579,31 +755,19 @@ export default function SuperEventList() {
               <Field label="Pricing">
                 <select
                   value={form.isPaid ? 'Y' : 'N'}
+                  disabled={!canEdit}
                   onChange={(e) => updateForm('isPaid', e.target.value === 'Y')}
                 >
                   <option value="N">Free</option>
                   <option value="Y">Paid</option>
                 </select>
               </Field>
-              <Field label="Venue Name *" invalid={isRequiredEmpty(form.location)} wide>
+              <Field label="Venue *" invalid={isRequiredEmpty(form.location)} wide>
                 <input
                   value={form.location ?? ''}
+                  disabled={!canEdit}
                   onChange={(e) => updateForm('location', e.target.value)}
-                  placeholder="e.g., Conrad Seoul"
-                />
-              </Field>
-              <Field label="Address *" invalid={isRequiredEmpty(form.venueAddress)} wide>
-                <input
-                  value={form.venueAddress ?? ''}
-                  onChange={(e) => updateForm('venueAddress', e.target.value)}
-                  placeholder="e.g., 511 Yeongdong-daero, Gangnam-gu, Seoul"
-                />
-              </Field>
-              <Field label="Summary" wide>
-                <input
-                  value={form.summary ?? ''}
-                  onChange={(e) => updateForm('summary', e.target.value)}
-                  placeholder="One-line description shown on list cards and link previews"
+                  placeholder="e.g., Conrad Seoul · 511 Yeongdong-daero, Gangnam-gu, Seoul"
                 />
               </Field>
               <Field label="Thumbnail" wide>
@@ -611,7 +775,7 @@ export default function SuperEventList() {
                   <CustomFile
                     fileList={thumbnailFiles}
                     onFileListChange={setThumbnailFiles}
-                    isEditable
+                    isEditable={canEdit}
                     maxCount={1}
                     accept="image/*"
                   />
@@ -623,7 +787,7 @@ export default function SuperEventList() {
                   <CustomFile
                     fileList={attachmentFiles}
                     onFileListChange={setAttachmentFiles}
-                    isEditable
+                    isEditable={canEdit}
                   />
                   <p className="saf-hint-inline">Up to 5 files (PDF, DOCX, etc.) · max 10MB each · drag to reorder.</p>
                 </div>
@@ -635,9 +799,10 @@ export default function SuperEventList() {
             <PanelTitle title="Description *" subtitle="Detailed event content displayed on the public page." />
             <div className={`saf-event-description-editor${isContentRequiredEmpty ? ' is-invalid' : ''}`}>
               <CustomRichEditor
-                value={form.content ?? ''}
-                isEditable
-                onChange={(html) => updateForm('content', html)}
+                key={selectedSeq ?? 'new'}
+                value={form.description ?? form.content ?? ''}
+                isEditable={canEdit}
+                onChange={(html) => setForm((prev) => ({ ...prev, description: html, content: html }))}
                 placeholder="Event overview, topics, target audience, agenda, speakers, etc."
                 height={480}
               />
@@ -680,11 +845,17 @@ export default function SuperEventList() {
             }}
           />
         </div>
-        <select className="saf-filter-select" value={status} onChange={(e) => setStatus(e.target.value)}>
-          {STATUS_FILTERS.map((opt) => (
-            <option key={opt.value} value={opt.value}>{opt.label}</option>
-          ))}
-        </select>
+        <Select
+          className="saf-filter-select"
+          mode="multiple"
+          value={status}
+          onChange={(values: string[]) => setStatus(values)}
+          options={STATUS_FILTERS}
+          placeholder="All Status"
+          maxTagCount="responsive"
+          allowClear
+          style={{ minWidth: 220 }}
+        />
         <select className="saf-filter-select" value={eventType} onChange={(e) => setEventType(e.target.value)}>
           {TYPE_FILTERS.map((opt) => (
             <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -703,11 +874,10 @@ export default function SuperEventList() {
               <th>Organization</th>
               <th>Registrations</th>
               <th>Status</th>
-              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {events.map((event) => {
+            {eventPagination.pagedItems.map((event) => {
               const typeLabel = EVENT_TYPE_LABELS[event.eventType] ?? event.eventType ?? '-';
               const typeTone = EVENT_TYPE_TONE[event.eventType] ?? 'gray';
               const statusLabel = EVENT_STATUS_LABELS[event.status] ?? event.status ?? '-';
@@ -717,34 +887,17 @@ export default function SuperEventList() {
               return (
                 <tr key={event.eventSeq} onClick={() => fetchDetail(event.eventSeq)}>
                   <td><strong>{event.title}</strong></td>
-                  <td>{formatMonthDay(event.eventStartDt)}</td>
+                  <td>{formatDateRange(event.eventStartDt, event.eventEndDt)}</td>
                   <td><span className={`saf-status is-${typeTone}`}>{typeLabel}</span></td>
                   <td>{event.organizationName || 'KCAB'}</td>
                   <td>{cap > 0 ? `${reg}/${cap}` : `${reg}`}</td>
                   <td><span className={`saf-status is-${statusTone}`}>{statusLabel}</span></td>
-                  <td onClick={(e) => e.stopPropagation()}>
-                    <button
-                      type="button"
-                      className="saf-row-action"
-                      onClick={() => fetchDetail(event.eventSeq)}
-                    >
-                      <EditOutlined /> Edit
-                    </button>
-                    <span className="saf-row-action-sep">·</span>
-                    <button
-                      type="button"
-                      className="saf-row-action is-danger"
-                      onClick={() => handleDeleteFromList(event)}
-                    >
-                      <DeleteOutlined /> Delete
-                    </button>
-                  </td>
                 </tr>
               );
             })}
             {!events.length && (
               <tr>
-                <td colSpan={7} className="saf-event-empty">
+                <td colSpan={6} className="saf-event-empty">
                   <CalendarOutlined />
                   <span>{loading ? 'Loading...' : 'No events found.'}</span>
                 </td>
@@ -752,16 +905,30 @@ export default function SuperEventList() {
             )}
           </tbody>
         </table>
-        <div className="saf-table-footer">{events.length} record(s)</div>
+        <AdminGridPagination {...eventPagination} />
       </section>
     </div>
   );
 }
 
+function readPendingDashboardEventSeq(): number | null {
+  if (typeof window === 'undefined') return null;
+  const value = window.sessionStorage.getItem(DASHBOARD_EVENT_DETAIL_KEY);
+  window.sessionStorage.removeItem(DASHBOARD_EVENT_DETAIL_KEY);
+  if (!value) return null;
+  const eventSeq = Number(value);
+  return Number.isFinite(eventSeq) && eventSeq > 0 ? eventSeq : null;
+}
+
 function PanelTitle({ title, subtitle }: { title: string; subtitle?: string }) {
+  const required = title.endsWith(' *');
+  const titleText = required ? title.slice(0, -2) : title;
   return (
     <div className="saf-panel-title">
-      <h2>{title}</h2>
+      <h2>
+        {titleText}
+        {required && <em className="saf-required-mark">*</em>}
+      </h2>
       {subtitle && <p>{subtitle}</p>}
     </div>
   );

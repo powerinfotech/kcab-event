@@ -32,9 +32,12 @@ import {
   AdminUserSaveParam,
   AdminUserStatus,
   AdminUserType,
+  ORGANIZATION_GRADE_OPTIONS,
+  OrganizationGrade,
 } from '@interface/admin/AdminUserManagement';
 import { ORG_TYPE_OPTIONS } from '@interface/saf/SafAuth';
 import { EMAIL_REGEXP } from '@util/validationPatterns';
+import AdminGridPagination, { useClientGridPagination } from './AdminGridPagination';
 
 const USER_TYPE_LABEL: Record<AdminUserType, string> = {
   admin: 'Admin',
@@ -70,10 +73,10 @@ const emptyDetail: AdminUserDetail = {
   status: 'pending',
   organizationName: '',
   orgType: 'law_firm',
-  representativeName: '',
   contactEmail: '',
   contactPhone: '',
   website: '',
+  grade: 'C',
 };
 
 export default function UserManagementMock() {
@@ -112,6 +115,7 @@ export default function UserManagementMock() {
     && isOrganization
     && !!contactEmailValue
     && !EMAIL_REGEXP.value.test(contactEmailValue);
+  const userPagination = useClientGridPagination(users);
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -165,10 +169,10 @@ export default function UserManagementMock() {
     organizationSeq: form.organizationSeq,
     organizationName: form.organizationName,
     orgType: form.orgType,
-    representativeName: form.representativeName,
     contactEmail: contactEmailValue,
     contactPhone: form.contactPhone,
     website: form.website,
+    grade: form.grade ?? 'C',
   });
 
   const validateForm = () => {
@@ -391,10 +395,20 @@ export default function UserManagementMock() {
                     ))}
                   </select>
                 </Field>
-                <Field label="Representative"><input value={form.representativeName ?? ''} disabled={approvalPending} onChange={(e) => updateForm('representativeName', e.target.value)} /></Field>
+                <Field label="Website"><input value={form.website ?? ''} disabled={approvalPending} onChange={(e) => updateForm('website', e.target.value)} /></Field>
                 <Field label="Contact Email *" invalid={(isOrganization && isRequiredEmpty(form.contactEmail)) || isContactEmailRuleInvalid}><input value={form.contactEmail ?? ''} disabled={approvalPending} type="email" onChange={(e) => updateForm('contactEmail', e.target.value)} /></Field>
                 <Field label="Contact Phone"><input value={form.contactPhone ?? ''} disabled={approvalPending} onChange={(e) => updateForm('contactPhone', e.target.value)} /></Field>
-                <Field label="Website"><input value={form.website ?? ''} disabled={approvalPending} onChange={(e) => updateForm('website', e.target.value)} /></Field>
+                <Field label="Grade *">
+                  <select
+                    value={form.grade ?? 'C'}
+                    disabled={approvalPending}
+                    onChange={(e) => updateForm('grade', e.target.value as OrganizationGrade)}
+                  >
+                    {ORGANIZATION_GRADE_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
+                </Field>
               </div>
             </section>
           )}
@@ -462,7 +476,7 @@ export default function UserManagementMock() {
             </tr>
           </thead>
           <tbody>
-            {users.map((user) => (
+            {userPagination.pagedItems.map((user) => (
               <tr key={user.userSeq} onClick={() => fetchDetail(user.userSeq)}>
                 <td><StatusBadge status={user.status} /></td>
                 <td>{USER_TYPE_LABEL[user.userType]}</td>
@@ -486,7 +500,7 @@ export default function UserManagementMock() {
             )}
           </tbody>
         </table>
-        <div className="saf-table-footer">{users.length} record(s)</div>
+        <AdminGridPagination {...userPagination} />
       </section>
     </div>
   );

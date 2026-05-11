@@ -44,7 +44,6 @@ const emptyDetail: AdminUserDetail = {
   status: 'pending',
   organizationName: '',
   orgType: 'law_firm',
-  representativeName: '',
   contactEmail: '',
   contactPhone: '',
   website: '',
@@ -109,7 +108,6 @@ export default function OrgProfile() {
     organizationSeq: form.organizationSeq,
     organizationName: form.organizationName,
     orgType: form.orgType,
-    representativeName: form.representativeName,
     contactEmail: contactEmailValue,
     contactPhone: form.contactPhone,
     website: form.website,
@@ -238,12 +236,6 @@ export default function OrgProfile() {
                     <option key={option.value} value={option.value}>{option.label}</option>
                   ))}
                 </select>
-              </Field>
-              <Field label="Representative">
-                <input
-                  value={form.representativeName ?? ''}
-                  onChange={(event) => updateForm('representativeName', event.target.value)}
-                />
               </Field>
               <Field label="Contact Email *" invalid={isRequiredEmpty(form.contactEmail) || isContactEmailRuleInvalid}>
                 <input

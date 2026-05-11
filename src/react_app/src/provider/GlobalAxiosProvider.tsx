@@ -77,7 +77,7 @@ const GlobalAxiosProvider = (props: GlobalAxiosInterceptorProps) => {
 
         if (res.data.code === ErrorCode.INVALID_SESSION_ERROR) {
             try {
-                sessionStorage.setItem(AUTH_MESSAGE_STORAGE_KEY, '권한이 없습니다.');
+                sessionStorage.setItem(AUTH_MESSAGE_STORAGE_KEY, 'You do not have permission.');
                 sessionStorage.removeItem('tabList');
                 sessionStorage.removeItem('activeTabKey');
             } catch (e) {

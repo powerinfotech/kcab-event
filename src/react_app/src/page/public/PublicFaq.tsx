@@ -2,18 +2,14 @@ import React, { useEffect, useState } from 'react';
 import PublicHeader from './components/PublicHeader';
 import PublicFooter from './components/PublicFooter';
 import { callGetPublicFaqList } from '@api/faq/FaqApi';
-import { callGetPublicPageList } from '@api/page/PageApi';
 import { FaqItem } from '@interface/faq/FaqManagement';
-import { PageListItem } from '@interface/page/PageManagement';
 
 const PublicFaq: React.FC = () => {
-  const [pages, setPages] = useState<PageListItem[]>([]);
   const [faqList, setFaqList] = useState<FaqItem[]>([]);
   const [openIdx, setOpenIdx] = useState<number | null>(null);
   const [activeCategory, setActiveCategory] = useState<string>('');
 
   useEffect(() => {
-    callGetPublicPageList().then((r) => { if (r?.item) setPages(r.item); });
     callGetPublicFaqList().then((r) => { if (r?.item) setFaqList(r.item); });
   }, []);
 
@@ -24,7 +20,7 @@ const PublicFaq: React.FC = () => {
 
   return (
     <div className="pub-layout">
-      <PublicHeader pages={pages} currentUrl="/faq" onNavigate={handleNavigate} />
+      <PublicHeader currentUrl="/faq" onNavigate={handleNavigate} />
       <main className="pub-page-content">
         <section className="pub-section section-hero size-small" style={{
           background: 'linear-gradient(135deg, #0f1b3d 0%, #294DC7 100%)',

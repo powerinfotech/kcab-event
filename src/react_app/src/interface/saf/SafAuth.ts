@@ -9,7 +9,6 @@ export interface SignupRequest {
   orgName: string;
   orgNameEn?: string;
   orgType: string;
-  representativeName?: string;
   contactEmail: string;
   contactPhone?: string;
   website?: string;

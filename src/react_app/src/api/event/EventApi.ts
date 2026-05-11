@@ -17,7 +17,35 @@ export const callGetEventDetail = async (eventSeq: number) => {
 };
 
 export const callSaveEvent = async (saveDto: EventSaveRequest) => {
-  const { data } = await axios.post<ApiResponse<void>>('/api/event/save', saveDto);
+  const { data } = await axios.post<ApiResponse<number>>('/api/event/save', saveDto);
+  return data;
+};
+
+export const callRequestEventApproval = async (eventSeq: number) => {
+  const { data } = await axios.post<ApiResponse<void>>('/api/event/request-approval', null, {
+    params: { eventSeq },
+  });
+  return data;
+};
+
+export const callCancelEventApproval = async (eventSeq: number) => {
+  const { data } = await axios.post<ApiResponse<void>>('/api/event/cancel-approval', null, {
+    params: { eventSeq },
+  });
+  return data;
+};
+
+export const callApproveEvent = async (eventSeq: number) => {
+  const { data } = await axios.post<ApiResponse<void>>('/api/event/approve', null, {
+    params: { eventSeq },
+  });
+  return data;
+};
+
+export const callRejectEvent = async (eventSeq: number, rejectionReason: string) => {
+  const { data } = await axios.post<ApiResponse<void>>('/api/event/reject', { rejectionReason }, {
+    params: { eventSeq },
+  });
   return data;
 };
 
