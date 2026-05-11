@@ -51,7 +51,7 @@ public class SafEmailVerificationServiceImpl implements SafEmailVerificationServ
         session.setAttribute(SESSION_EXPIRES_AT, OffsetDateTime.now().plusMinutes(CODE_EXPIRE_MINUTES));
         session.setAttribute(SESSION_VERIFIED, false);
 
-        String subject = "[KCAB International] Sign-up email verification code";
+        String subject = "[KCAB International] Email verification code";
         String emailBody = buildEmail(code);
         String logBody = buildEmail("******");
 
@@ -129,7 +129,7 @@ public class SafEmailVerificationServiceImpl implements SafEmailVerificationServ
                       </div>
                       <div style="font-size:15px;color:#444;line-height:1.6;padding:24px 0 18px;">
                         Hello,<br>
-                        Please use the verification code below to complete your sign-up email verification.
+                        Please use the verification code below to complete your email verification.
                       </div>
                       <div style="display:inline-block;background:#f8f9fa;border:1px solid #eeeeee;border-radius:6px;padding:15px 30px;font-size:28px;font-weight:700;color:#007BFF;letter-spacing:3px;">
                         %s

@@ -17,7 +17,9 @@ import com.kcabEvent.exception.custom.BusinessException;
 import com.kcabEvent.service.email.EmailLogService;
 import com.kcabEvent.service.email.EmailTemplateService;
 import com.kcabEvent.service.saf.SafAdminUserService;
+import com.kcabEvent.service.saf.SafEmailVerificationService;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.egovframe.rte.fdl.cmmn.EgovAbstractServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +31,7 @@ import org.springframework.web.util.HtmlUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -51,6 +54,9 @@ public class SafAdminUserServiceImpl extends EgovAbstractServiceImpl implements 
 
     @Resource(name = "emailTemplateService")
     private EmailTemplateService emailTemplateService;
+
+    @Resource(name = "safEmailVerificationService")
+    private SafEmailVerificationService safEmailVerificationService;
 
     @Autowired
     private EmailLogService emailLogService;
@@ -130,10 +136,29 @@ public class SafAdminUserServiceImpl extends EgovAbstractServiceImpl implements 
 
     @Override
     @Transactional("transactionManager")
-    public void updateUser(Long userSeq, SafAdminUserSaveDto saveDto, LoginUser loginUser) {
+    public void updateUser(Long userSeq, SafAdminUserSaveDto saveDto, LoginUser loginUser, HttpSession session) {
         SafAdminUserDetailDto detail = selectUserDetail(userSeq);
+        String requestedEmail = normalizeEmail(saveDto.getEmail());
+        String currentEmail = normalizeEmail(detail.getEmail());
+        boolean emailChanged = !requestedEmail.equals(currentEmail);
+
+        if (!StringUtils.hasText(requestedEmail)) {
+            throw new BusinessException("Email is required.");
+        }
+
+        if (emailChanged) {
+            SafUser existingUser = safUserDao.selectByEmail(requestedEmail);
+            if (existingUser != null && !userSeq.equals(existingUser.getUserSeq())) {
+                throw new BusinessException("This email is already registered.");
+            }
+            if (isSelfProfileUpdate(userSeq, loginUser)
+                    && !safEmailVerificationService.isVerifiedForEmail(requestedEmail, session)) {
+                throw new BusinessException("Please verify the new account email before saving.");
+            }
+        }
 
         saveDto.setUserSeq(userSeq);
+        saveDto.setEmail(requestedEmail);
         saveDto.setOrganizationSeq(detail.getOrganizationSeq());
         saveDto.setUpdatedBy(getLoginUserSeq(loginUser));
 
@@ -148,6 +173,10 @@ public class SafAdminUserServiceImpl extends EgovAbstractServiceImpl implements 
 
         if (detail.getOrganizationSeq() != null) {
             safOrganizationDao.updateAdminOrganization(saveDto);
+        }
+
+        if (emailChanged && isSelfProfileUpdate(userSeq, loginUser)) {
+            safEmailVerificationService.clear(session);
         }
     }
 
@@ -209,6 +238,15 @@ public class SafAdminUserServiceImpl extends EgovAbstractServiceImpl implements 
         return loginUser != null && loginUser.getUserSeq() != null
                 ? loginUser.getUserSeq().longValue()
                 : null;
+    }
+
+    private boolean isSelfProfileUpdate(Long userSeq, LoginUser loginUser) {
+        Long loginUserSeq = getLoginUserSeq(loginUser);
+        return userSeq != null && userSeq.equals(loginUserSeq);
+    }
+
+    private String normalizeEmail(String email) {
+        return email == null ? "" : email.trim().toLowerCase(Locale.ROOT);
     }
 
     private void sendSignupApprovalEmail(SafAdminUserDetailDto detail) {

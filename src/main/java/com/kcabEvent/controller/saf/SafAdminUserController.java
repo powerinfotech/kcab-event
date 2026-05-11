@@ -9,6 +9,7 @@ import com.kcabEvent.dto.saf.SafAdminUserSaveDto;
 import com.kcabEvent.dto.saf.SafAdminUserSearchDto;
 import com.kcabEvent.service.saf.SafAdminUserService;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -63,9 +64,10 @@ public class SafAdminUserController {
     public ApiResponse<Void> updateUser(
             @KcabEventSession LoginUser loginUser,
             @PathVariable Long userSeq,
-            @RequestBody SafAdminUserSaveDto saveDto
+            @RequestBody SafAdminUserSaveDto saveDto,
+            HttpSession session
     ) {
-        safAdminUserService.updateUser(userSeq, saveDto, loginUser);
+        safAdminUserService.updateUser(userSeq, saveDto, loginUser, session);
         return ApiResponse.ok();
     }
 

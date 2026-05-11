@@ -7,6 +7,16 @@ export interface AdminDashboardUpcomingEvent {
   daysUntilEvent: number;
 }
 
+export interface AdminDashboardPendingEvent {
+  eventSeq: number;
+  title: string;
+  organizationName: string | null;
+  startAt: string | null;
+  venueName: string | null;
+  maxParticipants: number | null;
+  submittedAt: string | null;
+}
+
 export interface AdminDashboardMetrics {
   pendingEventApprovalCount: number;
   registeredEventCount: number;
@@ -16,4 +26,5 @@ export interface AdminDashboardMetrics {
   recentParticipantCount: number;
   pendingOrganizationApprovalCount: number;
   upcomingEvents: AdminDashboardUpcomingEvent[];
+  pendingSideEvents: AdminDashboardPendingEvent[];
 }

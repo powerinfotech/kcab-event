@@ -7,7 +7,7 @@
     </select>
 
     <select id="selectByEmail" resultType="com.kcabEvent.domain.saf.SafUser">
-        SELECT * FROM event.users WHERE email = #{email} AND deleted_at IS NULL
+        SELECT * FROM event.users WHERE LOWER(email) = LOWER(#{email}) AND deleted_at IS NULL
     </select>
 
     <insert id="insertUser" parameterType="com.kcabEvent.domain.saf.SafUser" useGeneratedKeys="true" keyProperty="userSeq">

@@ -5,6 +5,7 @@ import com.kcabEvent.dto.saf.SafAdminUserDetailDto;
 import com.kcabEvent.dto.saf.SafAdminUserListDto;
 import com.kcabEvent.dto.saf.SafAdminUserSaveDto;
 import com.kcabEvent.dto.saf.SafAdminUserSearchDto;
+import jakarta.servlet.http.HttpSession;
 
 import java.util.List;
 
@@ -39,7 +40,7 @@ public interface SafAdminUserService {
      * @param saveDto 수정 요청 정보
      * @param loginUser 현재 로그인 사용자
      */
-    void updateUser(Long userSeq, SafAdminUserSaveDto saveDto, LoginUser loginUser);
+    void updateUser(Long userSeq, SafAdminUserSaveDto saveDto, LoginUser loginUser, HttpSession session);
 
     /**
      * 가입 신청 사용자를 승인 상태로 변경한다.

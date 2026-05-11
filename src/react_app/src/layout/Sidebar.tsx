@@ -3,7 +3,6 @@
 import React, { useEffect } from 'react';
 import {
   CalendarOutlined,
-  CheckSquareOutlined,
   CreditCardOutlined,
   DashboardOutlined,
   MailOutlined,
@@ -23,7 +22,6 @@ import { getAdminRole } from '@util/fixedAdminMenus';
 const iconByUrl: Record<string, React.ReactNode> = {
   '/': <DashboardOutlined />,
   '/events': <CalendarOutlined />,
-  '/side-events/SE-0042': <CheckSquareOutlined />,
   '/side-events': <FormOutlined />,
   '/participants': <TeamOutlined />,
   '/payments': <CreditCardOutlined />,
@@ -78,9 +76,6 @@ export default function Sidebar({
           >
             <span className="saf-sidebar-icon">{iconByUrl[menu.menuUrl] ?? <DashboardOutlined />}</span>
             <span>{menu.menuNm}</span>
-            {role === 'ADMIN' && menu.menuUrl === '/side-events/SE-0042' && (
-              <em>3</em>
-            )}
           </button>
         ))}
       </nav>

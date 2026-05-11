@@ -379,6 +379,10 @@
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
+
+  &.is-wide {
+    grid-column: 1 / -1;
+  }
 }
 
 .saf-verify-row {
@@ -865,52 +869,6 @@
   }
 }
 
-.saf-review-card {
-  position: relative;
-  display: grid;
-  gap: 6px;
-  padding: 16px 120px 16px 16px;
-  border: 1px solid #e3e8ef;
-  border-radius: 8px;
-
-  + .saf-review-card {
-    margin-top: 10px;
-  }
-
-  div {
-    display: flex;
-    gap: 10px;
-    color: #64748b;
-    font-size: 12px;
-    font-weight: 800;
-  }
-
-  strong {
-    color: #111827;
-    font-size: 16px;
-    font-weight: 900;
-  }
-
-  p,
-  small {
-    color: #64748b;
-    font-size: 13px;
-  }
-
-  button {
-    position: absolute;
-    top: 50%;
-    right: 16px;
-    transform: translateY(-50%);
-    height: 36px;
-    padding: 0 14px;
-    border-radius: 6px;
-    background: #102033;
-    color: #fff;
-    font-weight: 900;
-  }
-}
-
 .saf-date-list,
 .saf-activity-list {
   display: grid;
@@ -959,6 +917,73 @@
     color: #64748b;
     font-size: 12px;
   }
+}
+
+.saf-review-list {
+  display: grid;
+  gap: 10px;
+}
+
+.saf-review-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  padding: 16px;
+  border: 1px solid #e3e8ef;
+  border-radius: 8px;
+  background: #fff;
+
+  h3 {
+    margin-top: 8px;
+    color: #111827;
+    font-size: 17px;
+    line-height: 1.35;
+    font-weight: 900;
+  }
+
+  p {
+    margin-top: 8px;
+    color: #52657c;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  > button {
+    min-height: 36px;
+    padding: 0 14px;
+    border-radius: 6px;
+    background: #102033;
+    color: #fff;
+    font-weight: 900;
+    white-space: nowrap;
+  }
+}
+
+.saf-review-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: #52657c;
+  font-size: 12px;
+  font-weight: 900;
+
+  strong {
+    color: #1f5b95;
+  }
+}
+
+.saf-review-status {
+  display: inline-flex;
+  width: max-content;
+  max-width: 100%;
+  margin-top: 10px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #fff7ed;
+  color: #c2410c;
+  font-size: 12px;
+  font-weight: 900;
 }
 
 .saf-filter-row {
@@ -2297,18 +2322,6 @@
     min-width: 0;
   }
 
-  .saf-review-card {
-    padding: 14px;
-
-    button {
-      position: static;
-      width: max-content;
-      max-width: 100%;
-      margin-top: 8px;
-      transform: none;
-    }
-  }
-
   .saf-user-detail-grid,
   .saf-form-grid,
   .saf-metric-grid {
@@ -2317,6 +2330,15 @@
 
   .saf-org-event-card {
     grid-template-columns: 1fr;
+  }
+
+  .saf-review-card {
+    grid-template-columns: 1fr;
+
+    > button {
+      width: max-content;
+      max-width: 100%;
+    }
   }
 
   .saf-detail-list {

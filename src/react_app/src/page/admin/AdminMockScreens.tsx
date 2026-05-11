@@ -199,7 +199,7 @@ export function SuperDashboard() {
       .catch(() => setDashboardMetrics(null));
   }, []);
 
-  const openUpcomingEvent = (eventSeq: number) => {
+  const openEventDetail = (eventSeq: number) => {
     if (typeof window !== 'undefined') {
       window.sessionStorage.setItem(DASHBOARD_EVENT_DETAIL_KEY, String(eventSeq));
     }
@@ -213,24 +213,30 @@ export function SuperDashboard() {
       />
       <MetricGrid metrics={buildSuperMetrics(dashboardMetrics)} />
       <div className="saf-dashboard-grid">
-        <section className="saf-panel is-wide">
+        <section className="saf-panel saf-dashboard-review-panel">
           <PanelTitle title="Side Events Awaiting Review" />
-          {[
-            ['#SE-0042', 'Submitted 2 days ago', 'Cross-Border Arbitration Trends Seminar', 'ABC Law · 09.12 · Lotte Hotel · Capacity 80', '#arbitration #seminar'],
-            ['#SE-0043', 'Submitted 1 day ago', 'Emerging Markets Dispute Resolution Roundtable', 'XYZ Law · 09.13 · Shilla Hotel · Capacity 60', '#arbitration'],
-            ['#SE-0044', 'Submitted 5 hours ago', 'Construction Dispute Resolution Workshop', 'DEF Law · 09.11 · DEF Office · Capacity 100', '#construction #networking'],
-          ].map(([id, time, title, meta, tags]) => (
-            <article className="saf-review-card" key={id}>
-              <div>
-                <span>{id}</span>
-                <em>{time}</em>
-              </div>
-              <strong>{title}</strong>
-              <p>{meta}</p>
-              <small>{tags}</small>
-              <button type="button" onClick={() => move('/admin/side-events/SE-0042')}>Review →</button>
-            </article>
-          ))}
+          {dashboardMetrics?.pendingSideEvents?.length ? (
+            <div className="saf-review-list">
+              {dashboardMetrics.pendingSideEvents.map((event) => (
+                <article className="saf-review-card" key={event.eventSeq}>
+                  <div className="saf-review-card-main">
+                    <div className="saf-review-meta">
+                      <strong>{formatPendingEventId(event.eventSeq)}</strong>
+                      <span>{formatSubmittedAt(event.submittedAt)}</span>
+                    </div>
+                    <h3>{event.title}</h3>
+                    <p>{formatPendingEventMeta(event)}</p>
+                    <span className="saf-review-status">Pending Approval</span>
+                  </div>
+                  <button type="button" onClick={() => openEventDetail(event.eventSeq)}>
+                    Review -&gt;
+                  </button>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <p className="saf-empty">No side events awaiting review.</p>
+          )}
         </section>
         <section className="saf-panel">
           <PanelTitle title="Upcoming Events (D-day)" />
@@ -238,7 +244,7 @@ export function SuperDashboard() {
             {dashboardMetrics?.upcomingEvents?.length ? (
               dashboardMetrics.upcomingEvents.map((event) => (
                 <li key={event.eventSeq}>
-                  <button type="button" onClick={() => openUpcomingEvent(event.eventSeq)}>
+                  <button type="button" onClick={() => openEventDetail(event.eventSeq)}>
                     <CalendarOutlined />
                     <span>{formatUpcomingEvent(event)}</span>
                   </button>
@@ -289,6 +295,36 @@ function formatUpcomingEvent(event: AdminDashboardMetrics['upcomingEvents'][numb
   const dDay = typeof event.daysUntilEvent === 'number' ? (event.daysUntilEvent === 0 ? 'D-day' : `D-${event.daysUntilEvent}`) : '';
 
   return `${formatMonthDay(event.startAt)} ${event.title} · ${eventType}${pendingSuffix}${dDay ? ` · ${dDay}` : ''}`;
+}
+
+function formatPendingEventId(eventSeq: number) {
+  return `#SE-${String(eventSeq).padStart(4, '0')}`;
+}
+
+function formatPendingEventMeta(event: AdminDashboardMetrics['pendingSideEvents'][number]) {
+  const parts: string[] = [];
+  if (event.organizationName) parts.push(event.organizationName);
+  if (event.startAt) parts.push(formatMonthDay(event.startAt));
+  if (event.venueName) parts.push(event.venueName);
+  if (event.maxParticipants != null) parts.push(`Capacity ${event.maxParticipants}`);
+  return parts.join(' - ') || '-';
+}
+
+function formatSubmittedAt(submittedAt?: string | null) {
+  if (!submittedAt) return 'Submitted';
+  const submitted = new Date(submittedAt);
+  if (Number.isNaN(submitted.getTime())) return 'Submitted';
+
+  const diffMs = Date.now() - submitted.getTime();
+  const minutes = Math.max(0, Math.floor(diffMs / 60000));
+  if (minutes < 1) return 'Submitted just now';
+  if (minutes < 60) return `Submitted ${minutes} minute${minutes === 1 ? '' : 's'} ago`;
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `Submitted ${hours} hour${hours === 1 ? '' : 's'} ago`;
+
+  const days = Math.floor(hours / 24);
+  return `Submitted ${days} day${days === 1 ? '' : 's'} ago`;
 }
 
 function formatMonthDay(dateTime: string) {
@@ -443,40 +479,6 @@ export function EventEditor() {
             <Field label="Tags" wide><input defaultValue="# Conference  # ADR  # English" /></Field>
           </FormGrid>
           <p className="saf-warning">This event will be visible publicly after publishing.</p>
-        </section>
-      </div>
-    </div>
-  );
-}
-
-export function SideEventReview() {
-  return (
-    <div className="saf-screen">
-      <ScreenHeader title="Side Event Review" subtitle="#SE-0042 · Applicant ABC Law · 2026.04.22" />
-      <div className="saf-editor-layout">
-        <section className="saf-panel">
-          <PanelTitle title="Application Details" />
-          <DetailList items={[
-            ['Event Name', 'Cross-Border Arbitration Trends Seminar'],
-            ['Host', 'ABC Law · Contact: kim@abc.law'],
-            ['Date & Time', '2026.09.12 · 14:00 - 17:00'],
-            ['Venue', 'Lotte Hotel Seoul, Crystal Ballroom'],
-            ['Capacity', '80 (Free)'],
-            ['Language', 'Korean / English simultaneous interpretation'],
-            ['Description', 'Cross-border dispute trends and response strategies / 3 speakers + panel discussion + networking'],
-            ['Attachments', 'agenda.pdf · speakers.pdf · venue-map.png'],
-          ]} />
-        </section>
-        <section className="saf-panel">
-          <PanelTitle title="Approval Decision" />
-          <Field label="Comment to Applicant"><textarea placeholder="Comments will be included in the applicant notification email." /></Field>
-          <label className="saf-check-line"><input type="checkbox" defaultChecked /> Publish automatically after approval</label>
-          <label className="saf-check-line"><input type="checkbox" defaultChecked /> Notify applicant by email</label>
-          <div className="saf-decision-actions">
-            <button type="button" className="is-approve">Approve</button>
-            <button type="button" className="is-reject">Reject</button>
-            <button type="button">Request Changes</button>
-          </div>
         </section>
       </div>
     </div>

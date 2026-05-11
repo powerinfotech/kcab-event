@@ -16,4 +16,5 @@ public class SafDashboardMetricsDto {
     private Long recentParticipantCount;
     private Long pendingOrganizationApprovalCount;
     private List<SafDashboardUpcomingEventDto> upcomingEvents = List.of();
+    private List<SafDashboardPendingEventDto> pendingSideEvents = List.of();
 }

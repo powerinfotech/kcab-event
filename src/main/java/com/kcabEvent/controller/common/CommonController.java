@@ -71,13 +71,12 @@ public class CommonController {
             menus.add(fixedMenu(100, "Dashboard", "/", "DashBoard", 1, 1));
             menus.add(fixedMenu(110, "Event Management", "/events", "admin/SuperEventList", 2, 1));
             menus.add(fixedMenu(111, "Create Event", "/events/new", "admin/EventEditor", 3, 2));
-            menus.add(fixedMenu(120, "Side Event Approval", "/side-events/SE-0042", "admin/SideEventReview", 4, 1));
-            menus.add(fixedMenu(130, "Participant Management", "/participants", "admin/Participants", 5, 1));
-            menus.add(fixedMenu(140, "Payment Management", "/payments", "admin/Payments", 6, 1));
-            menus.add(fixedMenu(150, "Email CMS", "/email-cms/registration-confirm", "admin/EmailCms", 7, 1));
-            menus.add(fixedMenu(155, "Email History", "/email-logs", "admin/EmailLogHistory", 8, 1));
-            menus.add(fixedMenu(156, "Law Firm / Organization Management", "/organizations", "admin/OrganizationManagementMock", 9, 1));
-            menus.add(fixedMenu(160, "User Management", "/users", "admin/UserManagementMock", 10, 1));
+            menus.add(fixedMenu(130, "Participant Management", "/participants", "admin/Participants", 4, 1));
+            menus.add(fixedMenu(140, "Payment Management", "/payments", "admin/Payments", 5, 1));
+            menus.add(fixedMenu(150, "Email CMS", "/email-cms/registration-confirm", "admin/EmailCms", 6, 1));
+            menus.add(fixedMenu(155, "Email History", "/email-logs", "admin/EmailLogHistory", 7, 1));
+            menus.add(fixedMenu(156, "Law Firm / Organization Management", "/organizations", "admin/OrganizationManagementMock", 8, 1));
+            menus.add(fixedMenu(160, "User Management", "/users", "admin/UserManagementMock", 9, 1));
             return menus;
         }
 

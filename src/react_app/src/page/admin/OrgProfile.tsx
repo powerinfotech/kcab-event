@@ -14,6 +14,10 @@ import {
   callUpdateAdminUser,
 } from '@api/admin/AdminUserManagementApi';
 import {
+  callSendEmailCode,
+  callVerifyEmailCode,
+} from '@api/saf/SafAuthApi';
+import {
   AdminUserDetail,
   AdminUserSaveParam,
   AdminUserStatus,
@@ -32,6 +36,17 @@ const USER_STATUS_LABEL: Record<AdminUserStatus, string> = {
   active: 'Active',
   suspended: 'Suspended',
   withdrawn: 'Withdrawn',
+};
+
+const EMAIL_VERIFY_SECONDS = 10 * 60;
+
+const normalizeEmail = (email?: string) => (email ?? '').trim().toLowerCase();
+
+const formatRemaining = (totalSec: number) => {
+  if (totalSec <= 0) return 'Expired';
+  const minutes = Math.floor(totalSec / 60);
+  const seconds = totalSec % 60;
+  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 };
 
 const emptyDetail: AdminUserDetail = {
@@ -57,12 +72,33 @@ export default function OrgProfile() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [submitAttempted, setSubmitAttempted] = useState(false);
+  const [originalEmail, setOriginalEmail] = useState('');
+  const [emailVerified, setEmailVerified] = useState(true);
+  const [emailCodeSending, setEmailCodeSending] = useState(false);
+  const [emailVerifyOpen, setEmailVerifyOpen] = useState(false);
+  const [emailCodeInput, setEmailCodeInput] = useState('');
+  const [emailCodeVerifying, setEmailCodeVerifying] = useState(false);
+  const [emailExpiresAt, setEmailExpiresAt] = useState<number | null>(null);
+  const [emailRemainingSec, setEmailRemainingSec] = useState(0);
 
   const isOrganization = form.userType === 'organization';
   const emailValue = form.email.trim();
+  const normalizedEmailValue = normalizeEmail(form.email);
+  const emailChanged = !!form.userSeq && normalizedEmailValue !== originalEmail;
+  const isVerifiedChangedEmail = emailChanged && emailVerified;
+  const emailFieldLocked = emailVerifyOpen || isVerifiedChangedEmail;
+  const emailActionButtonDisabled = emailCodeSending || (!emailChanged && !emailVerifyOpen);
+  const emailActionButtonLabel = emailCodeSending
+    ? 'Sending...'
+    : emailVerifyOpen || isVerifiedChangedEmail
+      ? 'Change Email'
+      : emailChanged
+        ? 'Verify Email'
+        : 'Verified';
   const contactEmailValue = form.contactEmail?.trim() ?? '';
   const isRequiredEmpty = (value?: string) => submitAttempted && !value?.trim();
   const isEmailRuleInvalid = submitAttempted && !!emailValue && !EMAIL_REGEXP.value.test(emailValue);
+  const isEmailVerificationInvalid = submitAttempted && emailChanged && !emailVerified;
   const isContactEmailRuleInvalid = submitAttempted
     && isOrganization
     && !!contactEmailValue
@@ -70,6 +106,19 @@ export default function OrgProfile() {
 
   const updateForm = <K extends keyof AdminUserDetail>(key: K, value: AdminUserDetail[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const resetEmailVerification = (verified = false) => {
+    setEmailVerified(verified);
+    setEmailVerifyOpen(false);
+    setEmailExpiresAt(null);
+    setEmailRemainingSec(0);
+    setEmailCodeInput('');
+  };
+
+  const handleEmailChange = (value: string) => {
+    setForm((prev) => ({ ...prev, email: value }));
+    resetEmailVerification(normalizeEmail(value) === originalEmail);
   };
 
   const fetchProfile = async () => {
@@ -82,7 +131,10 @@ export default function OrgProfile() {
       }
 
       const detailRes = await callGetAdminUserDetail(loginRes.item.userSeq);
-      setForm({ ...emptyDetail, ...detailRes.item });
+      const nextForm = { ...emptyDetail, ...detailRes.item };
+      setForm(nextForm);
+      setOriginalEmail(normalizeEmail(nextForm.email));
+      resetEmailVerification(true);
       setPassword('');
       setShowPassword(false);
       setSubmitAttempted(false);
@@ -96,6 +148,23 @@ export default function OrgProfile() {
   useEffect(() => {
     fetchProfile();
   }, []);
+
+  useEffect(() => {
+    if (!emailExpiresAt || (!emailVerifyOpen && !isVerifiedChangedEmail)) return;
+
+    const tick = () => {
+      const remaining = Math.max(0, Math.ceil((emailExpiresAt - Date.now()) / 1000));
+      setEmailRemainingSec(remaining);
+      if (remaining <= 0) {
+        resetEmailVerification(false);
+        message.warning('Email verification has expired. Please request a new code.');
+      }
+    };
+
+    tick();
+    const intervalId = window.setInterval(tick, 1000);
+    return () => window.clearInterval(intervalId);
+  }, [emailVerifyOpen, emailExpiresAt, isVerifiedChangedEmail, message]);
 
   const buildSaveParam = (): AdminUserSaveParam => ({
     userId: form.userId?.trim(),
@@ -124,6 +193,11 @@ export default function OrgProfile() {
       return false;
     }
 
+    if (emailChanged && !emailVerified) {
+      message.warning('Please verify the new account email before saving.');
+      return false;
+    }
+
     if (isOrganization && (!form.organizationName?.trim() || !contactEmailValue || !form.orgType)) {
       message.warning('Please fill in all required organization fields.');
       return false;
@@ -135,6 +209,64 @@ export default function OrgProfile() {
     }
 
     return true;
+  };
+
+  const handleEmailButtonClick = async () => {
+    if (emailVerifyOpen || (emailChanged && emailVerified)) {
+      resetEmailVerification(false);
+      return;
+    }
+
+    if (!emailChanged) {
+      message.info('Change the account email first.');
+      return;
+    }
+
+    if (!emailValue) {
+      message.warning('Please enter an email first.');
+      return;
+    }
+
+    if (!EMAIL_REGEXP.value.test(emailValue)) {
+      message.warning('Please enter a valid email address.');
+      return;
+    }
+
+    setEmailCodeSending(true);
+    try {
+      const res = await callSendEmailCode(emailValue);
+      if (res?.code === 200) {
+        setEmailVerifyOpen(true);
+        setEmailExpiresAt(Date.now() + EMAIL_VERIFY_SECONDS * 1000);
+        setEmailRemainingSec(EMAIL_VERIFY_SECONDS);
+        setEmailCodeInput('');
+        message.success('Verification code sent. Please enter it within 10 minutes.');
+      }
+    } finally {
+      setEmailCodeSending(false);
+    }
+  };
+
+  const handleVerifyEmailCode = async () => {
+    const code = emailCodeInput.trim();
+
+    if (!/^\d{6}$/.test(code)) {
+      message.warning('Please enter the 6-digit verification code.');
+      return;
+    }
+
+    setEmailCodeVerifying(true);
+    try {
+      const res = await callVerifyEmailCode(emailValue, code);
+      if (res?.code === 200) {
+        message.success('Email verified. This email is locked until you choose Change Email.');
+        setEmailVerified(true);
+        setEmailVerifyOpen(false);
+        setEmailCodeInput('');
+      }
+    } finally {
+      setEmailCodeVerifying(false);
+    }
   };
 
   const saveProfile = async () => {
@@ -208,9 +340,59 @@ export default function OrgProfile() {
             <Field label="Position">
               <input value={form.position ?? ''} onChange={(event) => updateForm('position', event.target.value)} />
             </Field>
-            <Field label="Email *" invalid={isRequiredEmpty(form.email) || isEmailRuleInvalid}>
-              <input value={form.email} type="email" onChange={(event) => updateForm('email', event.target.value)} />
+            <Field label="Email *" invalid={isRequiredEmpty(form.email) || isEmailRuleInvalid || isEmailVerificationInvalid}>
+              <div className="saf-input-action">
+                <input
+                  value={form.email}
+                  type="email"
+                  disabled={emailFieldLocked}
+                  onChange={(event) => handleEmailChange(event.target.value)}
+                />
+                <button
+                  type="button"
+                  className={`saf-check-btn${emailVerifyOpen || isVerifiedChangedEmail || !emailChanged ? ' is-checked' : ''}`}
+                  onClick={handleEmailButtonClick}
+                  disabled={emailActionButtonDisabled}
+                >
+                  {emailActionButtonLabel}
+                </button>
+              </div>
+              {emailChanged && !emailVerifyOpen && !emailVerified && (
+                <p className="saf-verify-hint">Please verify this email before saving.</p>
+              )}
+              {isVerifiedChangedEmail && (
+                <p className="saf-verify-hint">
+                  Email verified. Save is available for {formatRemaining(emailRemainingSec)}.
+                </p>
+              )}
             </Field>
+            {emailVerifyOpen && (
+              <div className="saf-verify-form is-wide">
+                <div className="saf-verify-row">
+                  <input
+                    value={emailCodeInput}
+                    onChange={(event) => setEmailCodeInput(event.target.value.replace(/\D/g, '').slice(0, 6))}
+                    placeholder="6-digit code"
+                    inputMode="numeric"
+                    maxLength={6}
+                  />
+                  <span className={`saf-verify-timer${emailRemainingSec <= 0 ? ' is-expired' : ''}`}>
+                    {formatRemaining(emailRemainingSec)}
+                  </span>
+                  <button
+                    type="button"
+                    className="saf-verify-btn"
+                    onClick={handleVerifyEmailCode}
+                    disabled={emailCodeVerifying || emailRemainingSec <= 0}
+                  >
+                    {emailCodeVerifying ? 'Verifying...' : 'Verify'}
+                  </button>
+                </div>
+                <p className="saf-verify-hint">
+                  A verification code has been sent to your email. Please enter it within 10 minutes.
+                </p>
+              </div>
+            )}
             <Field label="Status">
               <input value={USER_STATUS_LABEL[form.status] ?? form.status} disabled />
             </Field>
