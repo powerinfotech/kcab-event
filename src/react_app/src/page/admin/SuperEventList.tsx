@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { App } from 'antd';
+import { App, DatePicker } from 'antd';
+import dayjs, { Dayjs } from 'dayjs';
 import {
   ArrowLeftOutlined,
   CalendarOutlined,
@@ -13,9 +14,7 @@ import {
   SearchOutlined,
   StopOutlined,
 } from '@ant-design/icons';
-import type { Address } from 'react-daum-postcode';
 import CustomRichEditor from '@component/special/CustomRichEditor';
-import CustomAddressSearchModal from '@component/special/CustomAddressSearchModal';
 import CustomFile, { FileDetailType } from '@component/upload/CustomFile';
 import { callGetFileList, callSaveFiles } from '@api/CommonApi';
 import {
@@ -32,6 +31,8 @@ import {
   EventDetail,
   EventListItem,
   EventSaveRequest,
+  REGISTRATION_TYPE_LABELS,
+  RegistrationType,
 } from '@interface/event/EventManagement';
 
 const STATUS_FILTERS: Array<{ value: string; label: string }> = [
@@ -54,6 +55,12 @@ const TYPE_OPTIONS: Array<{ value: string; label: string }> = [
   { value: 'side', label: 'Side Event' },
 ];
 
+const REGISTRATION_TYPE_OPTIONS: Array<{ value: RegistrationType; label: string }> = [
+  { value: 'direct', label: REGISTRATION_TYPE_LABELS.direct },
+  { value: 'external', label: REGISTRATION_TYPE_LABELS.external },
+  { value: 'none', label: REGISTRATION_TYPE_LABELS.none },
+];
+
 const URL_REGEXP = /^(https?:\/\/)[^\s]+$/i;
 
 const emptyDetail: EventDetail = {
@@ -61,15 +68,13 @@ const emptyDetail: EventDetail = {
   title: '',
   content: '',
   summary: '',
-  thumbnailUrl: '',
   eventStartDt: '',
   eventEndDt: '',
   registrationStartDt: '',
   registrationEndDt: '',
   location: '',
-  postalCode: '',
   venueAddress: '',
-  addressDetail: '',
+  registrationType: 'direct',
   registrationUrl: '',
   status: 'published',
   useYn: 'Y',
@@ -85,18 +90,22 @@ const emptyDetail: EventDetail = {
   uptDateTime: '',
 };
 
-/** ISO LocalDateTime ("2026-09-10T14:00:00...") → datetime-local input value ("2026-09-10T14:00") */
-function toDateTimeLocal(value?: string | null): string {
-  if (!value) return '';
-  // 백엔드는 LocalDateTime → "2026-09-10T14:00:00" 형식. 또는 timestamptz 직렬화 시 "2026-09-10T14:00:00+09:00".
-  // 둘 다 첫 16자가 "YYYY-MM-DDTHH:MM" 형태이므로 잘라내면 input value 로 사용 가능.
-  return value.slice(0, 16);
+/** Rich editor HTML이 실제 의미있는 텍스트를 가지는지 (빈 <p>, <br>만 있는 경우 false) */
+function hasRichContent(html?: string | null): boolean {
+  if (!html) return false;
+  return html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim().length > 0;
 }
 
-/** datetime-local 입력값 ("2026-09-10T14:00") → 백엔드로 보낼 ISO LocalDateTime ("2026-09-10T14:00:00") */
-function toIsoDateTime(value?: string | null): string {
-  if (!value) return '';
-  return value.length === 16 ? `${value}:00` : value;
+/** ISO LocalDateTime 문자열 → Dayjs (DatePicker value 바인딩용) */
+function toDayjs(value?: string | null): Dayjs | null {
+  if (!value) return null;
+  const d = dayjs(value);
+  return d.isValid() ? d : null;
+}
+
+/** Dayjs → 백엔드 LocalDateTime 문자열 ("YYYY-MM-DDTHH:mm:ss") */
+function fromDayjs(d: Dayjs | null): string {
+  return d ? d.format('YYYY-MM-DDTHH:mm:ss') : '';
 }
 
 /** 목록 테이블의 일자 표시 (MM.DD) — datetime/date 모두 처리 */
@@ -122,7 +131,6 @@ export default function SuperEventList() {
   const [form, setForm] = useState<EventDetail>(emptyDetail);
   const [thumbnailFiles, setThumbnailFiles] = useState<FileDetailType[]>([]);
   const [attachmentFiles, setAttachmentFiles] = useState<FileDetailType[]>([]);
-  const [addrModalOpen, setAddrModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [submitAttempted, setSubmitAttempted] = useState(false);
 
@@ -133,13 +141,22 @@ export default function SuperEventList() {
   const regStartValue = form.registrationStartDt?.trim() ?? '';
   const regEndValue = form.registrationEndDt?.trim() ?? '';
   const registrationUrlValue = form.registrationUrl?.trim() ?? '';
-  const postalCodeValue = form.postalCode?.trim() ?? '';
   const venueAddressValue = form.venueAddress?.trim() ?? '';
+  const locationValue = form.location?.trim() ?? '';
+  const hasContent = hasRichContent(form.content);
   const isRequiredEmpty = (value?: string | null) => submitAttempted && !value?.toString().trim();
+  const isContentRequiredEmpty = submitAttempted && !hasContent;
   const isDateRangeInvalid = submitAttempted && !!startValue && !!endValue && startValue > endValue;
   const isRegRangeInvalid = submitAttempted && !!regStartValue && !!regEndValue && regStartValue > regEndValue;
   const isRegAfterEventInvalid = submitAttempted && !!regEndValue && !!startValue && regEndValue > startValue;
-  const isUrlInvalid = submitAttempted && !!registrationUrlValue && !URL_REGEXP.test(registrationUrlValue);
+  const isExternalRegistration = form.registrationType === 'external';
+  const isNoRegistration = form.registrationType === 'none';
+  const showRegistrationDates = !isNoRegistration;
+  const isUrlRequiredEmpty = submitAttempted && isExternalRegistration && !registrationUrlValue;
+  const isUrlFormatInvalid = submitAttempted && isExternalRegistration && !!registrationUrlValue && !URL_REGEXP.test(registrationUrlValue);
+  const isUrlInvalid = isUrlRequiredEmpty || isUrlFormatInvalid;
+  const isRegStartRequiredEmpty = submitAttempted && showRegistrationDates && !regStartValue;
+  const isRegEndRequiredEmpty = submitAttempted && showRegistrationDates && !regEndValue;
 
   const selectedSummary = useMemo(
     () => events.find((event) => event.eventSeq === selectedSeq),
@@ -167,7 +184,12 @@ export default function SuperEventList() {
     try {
       const res = await callGetEventDetail(eventSeq);
       const detail = res?.item ?? null;
-      setForm({ ...emptyDetail, ...(detail ?? {}) });
+      // 백엔드가 registrationType을 누락한 레거시 데이터 호환: URL 유무로 추론
+      const merged: EventDetail = { ...emptyDetail, ...(detail ?? {}) };
+      if (!merged.registrationType) {
+        merged.registrationType = (merged.registrationUrl ?? '').trim() ? 'external' : 'direct';
+      }
+      setForm(merged);
       setSelectedSeq(eventSeq);
       setSubmitAttempted(false);
       setMode('detail');
@@ -213,15 +235,6 @@ export default function SuperEventList() {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
-  const handleAddressComplete = (data: Address) => {
-    setForm((prev) => ({
-      ...prev,
-      postalCode: data.zonecode ?? '',
-      venueAddress: data.roadAddress || data.jibunAddress || '',
-    }));
-    setAddrModalOpen(false);
-  };
-
   const validateForm = () => {
     if (!titleValue) {
       message.warning('Please enter the event name.');
@@ -229,6 +242,18 @@ export default function SuperEventList() {
     }
     if (!form.eventType) {
       message.warning('Please select the event type.');
+      return false;
+    }
+    if (!locationValue) {
+      message.warning('Please enter the venue name.');
+      return false;
+    }
+    if (!venueAddressValue) {
+      message.warning('Please enter the address.');
+      return false;
+    }
+    if (!hasContent) {
+      message.warning('Please enter the description.');
       return false;
     }
     if (!startValue || !endValue) {
@@ -239,22 +264,30 @@ export default function SuperEventList() {
       message.warning('End date/time must be on or after the start date/time.');
       return false;
     }
-    // 참가신청 일시 검증 (입력은 선택사항이지만 입력 시 짝/순서 체크)
-    if ((regStartValue && !regEndValue) || (!regStartValue && regEndValue)) {
-      message.warning('Please enter both registration start and end date/time.');
-      return false;
+    // 참가신청 일시 검증: 'none'이 아니면 시작/종료 둘 다 필수
+    if (showRegistrationDates) {
+      if (!regStartValue || !regEndValue) {
+        message.warning('Please enter both registration start and end date/time.');
+        return false;
+      }
+      if (regStartValue > regEndValue) {
+        message.warning('Registration end must be on or after registration start.');
+        return false;
+      }
+      if (startValue && regEndValue > startValue) {
+        message.warning('Registration must close on or before the event start.');
+        return false;
+      }
     }
-    if (regStartValue && regEndValue && regStartValue > regEndValue) {
-      message.warning('Registration end must be on or after registration start.');
-      return false;
-    }
-    if (regEndValue && startValue && regEndValue > startValue) {
-      message.warning('Registration must close on or before the event start.');
-      return false;
-    }
-    if (registrationUrlValue && !URL_REGEXP.test(registrationUrlValue)) {
-      message.warning('Please enter a valid registration URL.');
-      return false;
+    if (isExternalRegistration) {
+      if (!registrationUrlValue) {
+        message.warning('Please enter the external registration URL.');
+        return false;
+      }
+      if (!URL_REGEXP.test(registrationUrlValue)) {
+        message.warning('Please enter a valid registration URL.');
+        return false;
+      }
     }
     if (form.maxParticipants !== null && form.maxParticipants !== undefined && form.maxParticipants < 0) {
       message.warning('Max participants must be 0 or greater.');
@@ -268,16 +301,14 @@ export default function SuperEventList() {
     title: titleValue,
     content: form.content ?? '',
     summary: form.summary ?? '',
-    thumbnailUrl: form.thumbnailUrl?.trim() ?? '',
-    eventStartDt: toIsoDateTime(startValue),
-    eventEndDt: toIsoDateTime(endValue),
-    registrationStartDt: regStartValue ? toIsoDateTime(regStartValue) : null,
-    registrationEndDt: regEndValue ? toIsoDateTime(regEndValue) : null,
+    eventStartDt: startValue,
+    eventEndDt: endValue,
+    registrationStartDt: isNoRegistration ? null : (regStartValue || null),
+    registrationEndDt: isNoRegistration ? null : (regEndValue || null),
     location: form.location?.trim() ?? '',
-    postalCode: postalCodeValue || null,
     venueAddress: venueAddressValue || null,
-    addressDetail: form.addressDetail?.trim() || null,
-    registrationUrl: registrationUrlValue,
+    registrationType: isExternalRegistration ? 'external' : 'direct',
+    registrationUrl: isExternalRegistration ? registrationUrlValue : '',
     // 사용자 요구: 등록·수정 모두 status는 'published'로 강제 (백엔드도 동일하게 강제하지만 명시)
     status: 'published',
     useYn: form.useYn || 'Y',
@@ -456,33 +487,86 @@ export default function SuperEventList() {
                 </div>
               </Field>
               <Field label="Start Date *" invalid={isRequiredEmpty(form.eventStartDt) || isDateRangeInvalid}>
-                <input
-                  type="datetime-local"
-                  value={toDateTimeLocal(form.eventStartDt)}
-                  onChange={(e) => updateForm('eventStartDt', e.target.value)}
+                <DatePicker
+                  showTime={{ format: 'HH:mm' }}
+                  format="YYYY-MM-DD HH:mm"
+                  minuteStep={5}
+                  needConfirm={false}
+                  style={{ width: '100%' }}
+                  placeholder="Select start date & time"
+                  value={toDayjs(form.eventStartDt)}
+                  onChange={(d) => updateForm('eventStartDt', fromDayjs(d))}
                 />
               </Field>
               <Field label="End Date *" invalid={isRequiredEmpty(form.eventEndDt) || isDateRangeInvalid}>
-                <input
-                  type="datetime-local"
-                  value={toDateTimeLocal(form.eventEndDt)}
-                  onChange={(e) => updateForm('eventEndDt', e.target.value)}
+                <DatePicker
+                  showTime={{ format: 'HH:mm' }}
+                  format="YYYY-MM-DD HH:mm"
+                  minuteStep={5}
+                  needConfirm={false}
+                  style={{ width: '100%' }}
+                  placeholder="Select end date & time"
+                  value={toDayjs(form.eventEndDt)}
+                  onChange={(d) => updateForm('eventEndDt', fromDayjs(d))}
                 />
               </Field>
-              <Field label="Registration Open" invalid={isRegRangeInvalid}>
-                <input
-                  type="datetime-local"
-                  value={toDateTimeLocal(form.registrationStartDt)}
-                  onChange={(e) => updateForm('registrationStartDt', e.target.value)}
-                />
+              <Field label="Registration Type *" wide>
+                <select
+                  value={form.registrationType}
+                  onChange={(e) => {
+                    const next = e.target.value as RegistrationType;
+                    setForm((prev) => ({
+                      ...prev,
+                      registrationType: next,
+                      // External 외에는 URL 비움, none이면 등록 시작/종료도 비움
+                      registrationUrl: next === 'external' ? prev.registrationUrl : '',
+                      registrationStartDt: next === 'none' ? '' : prev.registrationStartDt,
+                      registrationEndDt: next === 'none' ? '' : prev.registrationEndDt,
+                    }));
+                  }}
+                >
+                  {REGISTRATION_TYPE_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
               </Field>
-              <Field label="Registration Close" invalid={isRegRangeInvalid || isRegAfterEventInvalid}>
-                <input
-                  type="datetime-local"
-                  value={toDateTimeLocal(form.registrationEndDt)}
-                  onChange={(e) => updateForm('registrationEndDt', e.target.value)}
-                />
-              </Field>
+              {isExternalRegistration && (
+                <Field label="Registration URL *" invalid={isUrlInvalid} wide>
+                  <input
+                    value={form.registrationUrl ?? ''}
+                    onChange={(e) => updateForm('registrationUrl', e.target.value)}
+                    placeholder="https://..."
+                  />
+                </Field>
+              )}
+              {showRegistrationDates && (
+                <Field label="Registration Open *" invalid={isRegStartRequiredEmpty || isRegRangeInvalid}>
+                  <DatePicker
+                    showTime={{ format: 'HH:mm' }}
+                    format="YYYY-MM-DD HH:mm"
+                    minuteStep={5}
+                    needConfirm={false}
+                    style={{ width: '100%' }}
+                    placeholder="Select registration open date & time"
+                    value={toDayjs(form.registrationStartDt)}
+                    onChange={(d) => updateForm('registrationStartDt', fromDayjs(d))}
+                  />
+                </Field>
+              )}
+              {showRegistrationDates && (
+                <Field label="Registration Close *" invalid={isRegEndRequiredEmpty || isRegRangeInvalid || isRegAfterEventInvalid}>
+                  <DatePicker
+                    showTime={{ format: 'HH:mm' }}
+                    format="YYYY-MM-DD HH:mm"
+                    minuteStep={5}
+                    needConfirm={false}
+                    style={{ width: '100%' }}
+                    placeholder="Select registration close date & time"
+                    value={toDayjs(form.registrationEndDt)}
+                    onChange={(d) => updateForm('registrationEndDt', fromDayjs(d))}
+                  />
+                </Field>
+              )}
               <Field label="Max Participants">
                 <input
                   type="number"
@@ -501,42 +585,18 @@ export default function SuperEventList() {
                   <option value="Y">Paid</option>
                 </select>
               </Field>
-              <Field label="Venue Name" wide>
+              <Field label="Venue Name *" invalid={isRequiredEmpty(form.location)} wide>
                 <input
                   value={form.location ?? ''}
                   onChange={(e) => updateForm('location', e.target.value)}
                   placeholder="e.g., Conrad Seoul"
                 />
               </Field>
-              <Field label="Postal Code" wide>
-                <div className="saf-address-row">
-                  <input
-                    value={form.postalCode ?? ''}
-                    readOnly
-                    placeholder="Search address →"
-                    className="saf-address-zip"
-                  />
-                  <button
-                    type="button"
-                    className="saf-address-search-btn"
-                    onClick={() => setAddrModalOpen(true)}
-                  >
-                    Search Address
-                  </button>
-                </div>
-              </Field>
-              <Field label="Address" wide>
+              <Field label="Address *" invalid={isRequiredEmpty(form.venueAddress)} wide>
                 <input
                   value={form.venueAddress ?? ''}
-                  readOnly
-                  placeholder="Address will be filled by address search"
-                />
-              </Field>
-              <Field label="Address Detail" wide>
-                <input
-                  value={form.addressDetail ?? ''}
-                  onChange={(e) => updateForm('addressDetail', e.target.value)}
-                  placeholder="e.g., Floor 5, Conference Hall A"
+                  onChange={(e) => updateForm('venueAddress', e.target.value)}
+                  placeholder="e.g., 511 Yeongdong-daero, Gangnam-gu, Seoul"
                 />
               </Field>
               <Field label="Summary" wide>
@@ -544,13 +604,6 @@ export default function SuperEventList() {
                   value={form.summary ?? ''}
                   onChange={(e) => updateForm('summary', e.target.value)}
                   placeholder="One-line description shown on list cards and link previews"
-                />
-              </Field>
-              <Field label="Registration URL" invalid={isUrlInvalid} wide>
-                <input
-                  value={form.registrationUrl ?? ''}
-                  onChange={(e) => updateForm('registrationUrl', e.target.value)}
-                  placeholder="https://..."
                 />
               </Field>
               <Field label="Thumbnail" wide>
@@ -579,8 +632,8 @@ export default function SuperEventList() {
           </section>
 
           <section className="saf-panel saf-event-description-panel">
-            <PanelTitle title="Description" subtitle="Detailed event content displayed on the public page." />
-            <div className="saf-event-description-editor">
+            <PanelTitle title="Description *" subtitle="Detailed event content displayed on the public page." />
+            <div className={`saf-event-description-editor${isContentRequiredEmpty ? ' is-invalid' : ''}`}>
               <CustomRichEditor
                 value={form.content ?? ''}
                 isEditable
@@ -592,11 +645,6 @@ export default function SuperEventList() {
           </section>
         </div>
 
-        <CustomAddressSearchModal
-          open={addrModalOpen}
-          onCancel={() => setAddrModalOpen(false)}
-          onAddrSearchComplete={handleAddressComplete}
-        />
       </div>
     );
   }

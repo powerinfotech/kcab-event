@@ -12,7 +12,6 @@ public class Event {
     private String title;
     private String content;
     private String summary;
-    private String thumbnailUrl;
     /** 행사 시작 일시 (날짜+시간) */
     private LocalDateTime eventStartDt;
     /** 행사 종료 일시 (날짜+시간) */
@@ -23,12 +22,11 @@ public class Event {
     private LocalDateTime registrationEndDt;
     /** 장소명 */
     private String location;
-    /** 우편번호 (Daum 우편번호) */
-    private String postalCode;
     /** 주소 (도로명/지번) */
     private String venueAddress;
-    /** 상세 주소 */
-    private String addressDetail;
+    /** 참가신청 방식: direct=자체 신청 화면, external=외부 URL로 이동, none=등록 불필요 */
+    private String registrationType;
+    /** 참가신청 외부 URL (registrationType=external 일 때만 사용) */
     private String registrationUrl;
     private String status;
     private String useYn;

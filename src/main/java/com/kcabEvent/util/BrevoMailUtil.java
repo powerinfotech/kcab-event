@@ -33,7 +33,7 @@ public class BrevoMailUtil {
     @Value("${brevo.sender.email:international@kcab.or.kr}")
     private String senderEmail;
 
-    public void sendHtmlEmail(String recipientEmail, String subject, String htmlContent) {
+    public String sendHtmlEmail(String recipientEmail, String subject, String htmlContent) {
         if (!StringUtils.hasText(apiKey)) {
             log.warn("[BrevoMailUtil] Brevo API key is not configured. recipient={}", recipientEmail);
             throw new BusinessException("Email service is not configured.");
@@ -55,11 +55,13 @@ public class BrevoMailUtil {
                     .retrieve()
                     .body(Map.class);
 
-            if (response == null || !StringUtils.hasText(Objects.toString(response.get("messageId"), ""))) {
+            String messageId = response == null ? "" : Objects.toString(response.get("messageId"), "");
+            if (!StringUtils.hasText(messageId)) {
                 log.warn("[BrevoMailUtil] Brevo response has no messageId. recipient={}", recipientEmail);
                 throw new BusinessException("Failed to send verification email.");
             }
             log.info("[BrevoMailUtil] Email sent. recipient={}", recipientEmail);
+            return messageId;
         } catch (RestClientResponseException e) {
             String responseBody = Objects.toString(e.getResponseBodyAsString(), "");
             log.error(

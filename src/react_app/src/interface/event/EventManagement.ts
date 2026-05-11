@@ -2,7 +2,6 @@ export interface EventListItem {
   eventSeq: number;
   title: string;
   summary: string;
-  thumbnailUrl: string;
   eventStartDt: string;
   eventEndDt: string;
   location: string;
@@ -20,15 +19,15 @@ export interface EventDetail {
   title: string;
   content: string;
   summary: string;
-  thumbnailUrl: string;
   eventStartDt: string;
   eventEndDt: string;
   registrationStartDt: string | null;
   registrationEndDt: string | null;
   location: string;
-  postalCode: string | null;
   venueAddress: string | null;
-  addressDetail: string | null;
+  /** 참가신청 방식: direct=자체 신청 화면, external=외부 URL로 이동 */
+  registrationType: RegistrationType;
+  /** 참가신청 외부 URL (registrationType=external 일 때만 사용) */
   registrationUrl: string;
   status: string;
   useYn: string;
@@ -49,15 +48,15 @@ export interface EventSaveRequest {
   title: string;
   content: string;
   summary: string;
-  thumbnailUrl: string;
   eventStartDt: string;
   eventEndDt: string;
   registrationStartDt?: string | null;
   registrationEndDt?: string | null;
   location: string;
-  postalCode?: string | null;
   venueAddress?: string | null;
-  addressDetail?: string | null;
+  /** 참가신청 방식: direct=자체 신청 화면, external=외부 URL로 이동 */
+  registrationType: RegistrationType;
+  /** 참가신청 외부 URL (registrationType=external 일 때만 사용) */
   registrationUrl: string;
   status: string;
   useYn: string;
@@ -97,6 +96,15 @@ export const EVENT_STATUS_TONE: Record<string, 'green' | 'yellow' | 'gray' | 'bl
 };
 
 export type EventType = 'main' | 'side';
+
+/** 참가신청 방식: direct=자체 신청 화면 / external=외부 URL / none=등록 불필요 */
+export type RegistrationType = 'direct' | 'external' | 'none';
+
+export const REGISTRATION_TYPE_LABELS: Record<RegistrationType, string> = {
+  direct: 'Direct',
+  external: 'External',
+  none: 'None (no registration)',
+};
 
 export const EVENT_TYPE_LABELS: Record<string, string> = {
   main: 'Official',

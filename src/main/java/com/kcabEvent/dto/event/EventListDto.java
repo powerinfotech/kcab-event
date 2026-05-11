@@ -11,7 +11,6 @@ public class EventListDto {
     private Long eventSeq;
     private String title;
     private String summary;
-    private String thumbnailUrl;
     private LocalDateTime eventStartDt;
     private LocalDateTime eventEndDt;
     private String location;

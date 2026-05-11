@@ -16,15 +16,15 @@ public class EventSaveDto {
 
     private String content;
     private String summary;
-    private String thumbnailUrl;
     private LocalDateTime eventStartDt;
     private LocalDateTime eventEndDt;
     private LocalDateTime registrationStartDt;
     private LocalDateTime registrationEndDt;
     private String location;
-    private String postalCode;
     private String venueAddress;
-    private String addressDetail;
+    /** 참가신청 방식: direct=자체 신청 화면, external=외부 URL로 이동, none=등록 불필요 */
+    private String registrationType;
+    /** 참가신청 외부 URL (registrationType=external 일 때만 사용) */
     private String registrationUrl;
     private String status;
     private String useYn;

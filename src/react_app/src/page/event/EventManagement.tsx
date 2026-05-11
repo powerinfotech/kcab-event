@@ -33,7 +33,6 @@ const EventManagement = () => {
   const { control, reset, handleSubmit } = useForm<{
     title: string;
     summary: string;
-    thumbnailUrl: string;
     eventStartDt: dayjs.Dayjs | null;
     eventEndDt: dayjs.Dayjs | null;
     location: string;
@@ -65,7 +64,7 @@ const EventManagement = () => {
   const handleInit = () => {
     setSelectedEvent(null);
     setContent('');
-    reset({ title: '', summary: '', thumbnailUrl: '', eventStartDt: null, eventEndDt: null,
+    reset({ title: '', summary: '', eventStartDt: null, eventEndDt: null,
       location: '', registrationUrl: '', status: 'UPCOMING', useYn: 'Y' });
   };
 
@@ -76,10 +75,10 @@ const EventManagement = () => {
       title: formData.title,
       content,
       summary: formData.summary ?? '',
-      thumbnailUrl: formData.thumbnailUrl ?? '',
       eventStartDt: formData.eventStartDt?.format('YYYY-MM-DDTHH:mm:ss') ?? '',
       eventEndDt: formData.eventEndDt?.format('YYYY-MM-DDTHH:mm:ss') ?? '',
       location: formData.location ?? '',
+      registrationType: (formData.registrationUrl ?? '').trim() ? 'external' : 'direct',
       registrationUrl: formData.registrationUrl ?? '',
       status: formData.status ?? 'UPCOMING',
       useYn: formData.useYn ?? 'Y',
@@ -124,7 +123,6 @@ const EventManagement = () => {
       reset({
         title: e.title,
         summary: e.summary ?? '',
-        thumbnailUrl: e.thumbnailUrl ?? '',
         eventStartDt: e.eventStartDt ? dayjs(e.eventStartDt) : null,
         eventEndDt: e.eventEndDt ? dayjs(e.eventEndDt) : null,
         location: e.location ?? '',
@@ -195,10 +193,6 @@ const EventManagement = () => {
           <div>
             <label style={{ fontSize: 13, fontWeight: 500, marginBottom: 4, display: 'block' }}>참가 신청 URL</label>
             <Controller name="registrationUrl" control={control} render={({ field }) => <CustomInput {...field} />} />
-          </div>
-          <div>
-            <label style={{ fontSize: 13, fontWeight: 500, marginBottom: 4, display: 'block' }}>썸네일 URL</label>
-            <Controller name="thumbnailUrl" control={control} render={({ field }) => <CustomInput {...field} />} />
           </div>
           <div style={{ display: 'flex', gap: 12 }}>
             <div style={{ flex: 1 }}>

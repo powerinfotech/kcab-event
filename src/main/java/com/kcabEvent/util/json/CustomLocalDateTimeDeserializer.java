@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 /**
  * CustomLocalDateTimeDeserializer - JSON 문자열 → {@link LocalDateTime} 역직렬화
@@ -38,7 +39,10 @@ import java.time.format.DateTimeFormatter;
  */
 public class CustomLocalDateTimeDeserializer extends JsonDeserializer<LocalDateTime> {
 
-    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    /** 레거시 포맷: 공백 구분자 (예: "2026-03-31 09:30:00") */
+    private static final DateTimeFormatter SPACE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    /** ISO 8601 표준: T 구분자 (예: "2026-03-31T09:30:00") — HTML datetime-local input의 기본 형식 */
+    private static final DateTimeFormatter ISO_FORMAT = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     /**
      * JSON 날짜+시간 문자열을 {@link LocalDateTime}으로 역직렬화한다.
@@ -48,7 +52,7 @@ public class CustomLocalDateTimeDeserializer extends JsonDeserializer<LocalDateT
      * @return 파싱된 {@link LocalDateTime}, 값이 null이거나 빈 문자열이면 {@code null}
      * @throws IOException            JSON 읽기 오류
      * @throws JacksonException       역직렬화 오류
-     * @throws java.time.format.DateTimeParseException {@code "yyyy-MM-dd HH:mm:ss"} 형식이 아닌 경우
+     * @throws DateTimeParseException 두 포맷 모두 매칭되지 않는 경우
      */
     @Override
     public LocalDateTime deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JacksonException {
@@ -56,6 +60,11 @@ public class CustomLocalDateTimeDeserializer extends JsonDeserializer<LocalDateT
         if (text == null || text.isBlank()) {
             return null;
         }
-        return LocalDateTime.parse(text.strip(), DATE_FORMAT);
+        String value = text.strip();
+        // 구분자 위치(인덱스 10)로 ISO(T) vs 레거시(공백) 자동 판별
+        if (value.length() > 10 && value.charAt(10) == 'T') {
+            return LocalDateTime.parse(value, ISO_FORMAT);
+        }
+        return LocalDateTime.parse(value, SPACE_FORMAT);
     }
 }

@@ -75,9 +75,9 @@ public class CommonController {
             menus.add(fixedMenu(130, "Participant Management", "/participants", "admin/Participants", 5, 1));
             menus.add(fixedMenu(140, "Payment Management", "/payments", "admin/Payments", 6, 1));
             menus.add(fixedMenu(150, "Email CMS", "/email-cms/registration-confirm", "admin/EmailCms", 7, 1));
-            menus.add(fixedMenu(155, "Law Firm / Organization Management", "/organizations", "admin/OrganizationManagementMock", 8, 1));
-            menus.add(fixedMenu(160, "User Management", "/users", "admin/UserManagementMock", 9, 1));
-            menus.add(fixedMenu(170, "Settings", "/settings", "admin/SettingsMock", 10, 1));
+            menus.add(fixedMenu(155, "Email History", "/email-logs", "admin/EmailLogHistory", 8, 1));
+            menus.add(fixedMenu(156, "Law Firm / Organization Management", "/organizations", "admin/OrganizationManagementMock", 9, 1));
+            menus.add(fixedMenu(160, "User Management", "/users", "admin/UserManagementMock", 10, 1));
             return menus;
         }
 

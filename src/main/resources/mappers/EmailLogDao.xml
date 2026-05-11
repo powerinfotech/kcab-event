@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kcabEvent.dao.EmailLogDao">
+    <sql id="emailLogSearchWhere">
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (
+                    LOWER(recipient_email) LIKE '%' || LOWER(#{keyword}) || '%'
+                    OR LOWER(COALESCE(recipient_name, '')) LIKE '%' || LOWER(#{keyword}) || '%'
+                    OR LOWER(subject) LIKE '%' || LOWER(#{keyword}) || '%'
+                    OR LOWER(COALESCE(provider_message_id, '')) LIKE '%' || LOWER(#{keyword}) || '%'
+                )
+            </if>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+            <if test="provider != null and provider != ''">
+                AND provider = #{provider}
+            </if>
+            <if test="fromDate != null and fromDate != ''">
+                AND created_at &gt;= CAST(#{fromDate} AS date)
+            </if>
+            <if test="toDate != null and toDate != ''">
+                AND created_at &lt; CAST(#{toDate} AS date) + INTERVAL '1 day'
+            </if>
+        </where>
+    </sql>
+
+    <select id="selectEmailLogList" parameterType="com.kcabEvent.dto.email.EmailLogSearchDto" resultType="com.kcabEvent.dto.email.EmailLogListDto">
+        SELECT
+             email_log_seq
+            ,recipient_email
+            ,recipient_name
+            ,subject
+            ,provider
+            ,provider_message_id
+            ,status
+            ,error_message
+            ,retry_count
+            ,sent_at
+            ,opened_at
+            ,created_at
+        FROM event.email_logs
+        <include refid="emailLogSearchWhere"/>
+        ORDER BY created_at DESC, email_log_seq DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="selectEmailLogDetail" resultType="com.kcabEvent.dto.email.EmailLogDetailDto">
+        SELECT
+             email_log_seq
+            ,template_seq
+            ,registration_seq
+            ,recipient_email
+            ,recipient_name
+            ,subject
+            ,body_html
+            ,provider
+            ,provider_message_id
+            ,status
+            ,error_message
+            ,retry_count
+            ,sent_at
+            ,opened_at
+            ,created_at
+        FROM event.email_logs
+        WHERE email_log_seq = #{emailLogSeq}
+    </select>
+
+    <insert id="insertEmailLog" parameterType="com.kcabEvent.domain.EmailLog" useGeneratedKeys="true" keyProperty="emailLogSeq" keyColumn="email_log_seq">
+        INSERT INTO event.email_logs
+        (
+             template_seq
+            ,registration_seq
+            ,recipient_email
+            ,recipient_name
+            ,subject
+            ,body_html
+            ,provider
+            ,status
+        )
+        VALUES
+        (
+             #{templateSeq,jdbcType=BIGINT}
+            ,#{registrationSeq,jdbcType=BIGINT}
+            ,#{recipientEmail}
+            ,#{recipientName,jdbcType=VARCHAR}
+            ,#{subject}
+            ,#{bodyHtml}
+            ,#{provider}
+            ,#{status}
+        )
+    </insert>
+
+    <update id="updateEmailLogSent">
+        UPDATE event.email_logs
+        SET
+             status = 'sent'
+            ,provider_message_id = #{providerMessageId}
+            ,error_message = NULL
+            ,sent_at = NOW()
+        WHERE email_log_seq = #{emailLogSeq}
+    </update>
+
+    <update id="updateEmailLogFailed">
+        UPDATE event.email_logs
+        SET
+             status = 'failed'
+            ,error_message = #{errorMessage}
+        WHERE email_log_seq = #{emailLogSeq}
+    </update>
+</mapper>

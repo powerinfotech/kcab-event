@@ -10,7 +10,7 @@ import com.kcabEvent.dto.auth.PasswordResetVerifyCodeRequestDto;
 import com.kcabEvent.enums.saf.SafUserStatus;
 import com.kcabEvent.exception.custom.BusinessException;
 import com.kcabEvent.service.auth.PasswordResetService;
-import com.kcabEvent.util.BrevoMailUtil;
+import com.kcabEvent.service.email.EmailLogService;
 import com.kcabEvent.util.CryptoUtil;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpSession;
@@ -39,7 +39,7 @@ public class PasswordResetServiceImpl implements PasswordResetService {
 
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
-    private final BrevoMailUtil brevoMailUtil;
+    private final EmailLogService emailLogService;
 
     @Resource(name = "userDao")
     private UserDao userDao;
@@ -58,12 +58,12 @@ public class PasswordResetServiceImpl implements PasswordResetService {
         session.setAttribute(SESSION_EXPIRES_AT, OffsetDateTime.now().plusMinutes(CODE_EXPIRE_MINUTES));
         session.setAttribute(SESSION_VERIFIED, false);
 
+        String subject = "[KCAB International] Password reset verification code";
+        String emailBody = buildPasswordResetEmail(code);
+        String logBody = buildPasswordResetEmail("******");
+
         try {
-            brevoMailUtil.sendHtmlEmail(
-                    target.email(),
-                    "[KCAB International] Password reset verification code",
-                    buildPasswordResetEmail(code)
-            );
+            emailLogService.sendHtmlAndLog(target.email(), target.name(), subject, emailBody, logBody);
         } catch (RuntimeException e) {
             clearSession(session);
             throw e;
@@ -142,7 +142,7 @@ public class PasswordResetServiceImpl implements PasswordResetService {
             log.warn("Legacy user lookup failed during password reset: {}", e.getMessage());
         }
         if (legacyUser != null && emailEquals(legacyUser.getEmail(), normalizedEmail)) {
-            return new ResetTarget("LEGACY", legacyUser.getUserSeq().longValue(), legacyUser.getEmail());
+            return new ResetTarget("LEGACY", legacyUser.getUserSeq().longValue(), legacyUser.getEmail(), legacyUser.getUserName());
         }
 
         SafUser safUser = safUserDao.selectByUserId(normalizedUserId);
@@ -150,7 +150,7 @@ public class PasswordResetServiceImpl implements PasswordResetService {
             if (!SafUserStatus.ACTIVE.getCode().equals(safUser.getStatus())) {
                 throw new BusinessException("You can reset your password after administrator approval.");
             }
-            return new ResetTarget("SAF", safUser.getUserSeq(), safUser.getEmail());
+            return new ResetTarget("SAF", safUser.getUserSeq(), safUser.getEmail(), safUser.getName());
         }
 
         throw new BusinessException("No matching account was found.");
@@ -202,6 +202,6 @@ public class PasswordResetServiceImpl implements PasswordResetService {
                 """.formatted(code);
     }
 
-    private record ResetTarget(String type, Long userSeq, String email) {
+    private record ResetTarget(String type, Long userSeq, String email, String name) {
     }
 }

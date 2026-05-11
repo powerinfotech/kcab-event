@@ -7,9 +7,8 @@
              e.event_seq
             ,e.title
             ,e.description AS summary
-            ,e.thumbnail_url
-            ,e.start_at AS event_start_dt
-            ,e.end_at AS event_end_dt
+            ,e.start_at   AS event_start_dt
+            ,e.end_at     AS event_end_dt
             ,COALESCE(e.venue_name, e.venue_address) AS location
             ,e.status
             ,CASE WHEN e.deleted_at IS NULL THEN 'Y' ELSE 'N' END AS use_yn
@@ -50,16 +49,14 @@
             ,e.title
             ,e.description AS content
             ,e.description AS summary
-            ,e.thumbnail_url
-            ,e.start_at AS event_start_dt
-            ,e.end_at AS event_end_dt
+            ,e.start_at              AS event_start_dt
+            ,e.end_at                AS event_end_dt
             ,e.registration_start_at AS registration_start_dt
-            ,e.registration_end_at AS registration_end_dt
+            ,e.registration_end_at   AS registration_end_dt
             ,e.venue_name AS location
-            ,e.postal_code
             ,e.venue_address
-            ,e.address_detail
-            ,NULL::varchar AS registration_url
+            ,e.registration_type
+            ,e.registration_url
             ,e.status
             ,CASE WHEN e.deleted_at IS NULL THEN 'Y' ELSE 'N' END AS use_yn
             ,e.file_seq
@@ -83,8 +80,9 @@
         INSERT INTO event.events (
             slug, title, description, event_type, is_paid,
             start_at, end_at, registration_start_at, registration_end_at,
-            venue_name, postal_code, venue_address, address_detail,
-            max_participants, organization_seq, thumbnail_url, file_seq, attachment_file_seq,
+            venue_name, venue_address,
+            max_participants, organization_seq, file_seq, attachment_file_seq,
+            registration_type, registration_url,
             status, created_by, updated_by
         ) VALUES (
             'event-' || substr(md5(random()::text || clock_timestamp()::text), 1, 12),
@@ -92,8 +90,10 @@
             COALESCE(NULLIF(#{eventType}, ''), 'main'),
             COALESCE(#{isPaid}, false),
             #{eventStartDt}, #{eventEndDt}, #{registrationStartDt}, #{registrationEndDt},
-            #{location}, #{postalCode}, #{venueAddress}, #{addressDetail},
-            #{maxParticipants}, #{organizationSeq}, #{thumbnailUrl}, #{fileSeq}, #{attachmentFileSeq},
+            #{location}, #{venueAddress},
+            #{maxParticipants}, #{organizationSeq}, #{fileSeq}, #{attachmentFileSeq},
+            COALESCE(NULLIF(#{registrationType,jdbcType=VARCHAR}, ''), 'direct'),
+            #{registrationUrl,jdbcType=VARCHAR},
             COALESCE(NULLIF(#{status}, ''), 'draft'), #{rgstUserSeq}, #{uptUserSeq}
         )
     </insert>
@@ -104,7 +104,6 @@
             ,description       = #{content}
             ,event_type        = COALESCE(NULLIF(#{eventType}, ''), event_type)
             ,is_paid           = COALESCE(#{isPaid}, is_paid)
-            ,thumbnail_url     = #{thumbnailUrl}
             ,file_seq          = #{fileSeq}
             ,attachment_file_seq = #{attachmentFileSeq}
             ,start_at          = #{eventStartDt}
@@ -112,11 +111,11 @@
             ,registration_start_at = #{registrationStartDt}
             ,registration_end_at   = #{registrationEndDt}
             ,venue_name        = #{location}
-            ,postal_code       = #{postalCode}
             ,venue_address     = #{venueAddress}
-            ,address_detail    = #{addressDetail}
             ,max_participants  = #{maxParticipants}
             ,organization_seq  = #{organizationSeq}
+            ,registration_type = COALESCE(NULLIF(#{registrationType,jdbcType=VARCHAR}, ''), registration_type)
+            ,registration_url  = #{registrationUrl,jdbcType=VARCHAR}
             ,status            = #{status}
             ,updated_by        = #{uptUserSeq}
             ,updated_at        = CURRENT_TIMESTAMP

@@ -44,17 +44,42 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
         event.setTitle(saveDto.getTitle());
         event.setContent(saveDto.getContent());
         event.setSummary(saveDto.getSummary());
-        event.setThumbnailUrl(saveDto.getThumbnailUrl());
         LocalDateTime startDt = saveDto.getEventStartDt() != null ? saveDto.getEventStartDt() : LocalDateTime.now();
         event.setEventStartDt(startDt);
         event.setEventEndDt(saveDto.getEventEndDt() != null ? saveDto.getEventEndDt() : startDt);
-        event.setRegistrationStartDt(saveDto.getRegistrationStartDt());
-        event.setRegistrationEndDt(saveDto.getRegistrationEndDt());
         event.setLocation(saveDto.getLocation());
-        event.setPostalCode(saveDto.getPostalCode());
         event.setVenueAddress(saveDto.getVenueAddress());
-        event.setAddressDetail(saveDto.getAddressDetail());
-        event.setRegistrationUrl(saveDto.getRegistrationUrl());
+        // 참가신청 방식 분기:
+        //   none     → 등록 자체가 없는 행사. URL과 등록 시작/종료 모두 null.
+        //   external → 외부 URL로 이동. URL 필수, 등록 시작/종료 필수.
+        //   direct   → 자체 신청 화면. 등록 시작/종료 필수, URL은 null.
+        String regType = saveDto.getRegistrationType();
+        if ("none".equals(regType)) {
+            event.setRegistrationType("none");
+            event.setRegistrationUrl(null);
+            event.setRegistrationStartDt(null);
+            event.setRegistrationEndDt(null);
+        } else if ("external".equals(regType)) {
+            String regUrl = saveDto.getRegistrationUrl() != null ? saveDto.getRegistrationUrl().trim() : "";
+            if (regUrl.isEmpty()) {
+                throw new IllegalArgumentException("외부 참가신청 URL을 입력해주세요.");
+            }
+            if (saveDto.getRegistrationStartDt() == null || saveDto.getRegistrationEndDt() == null) {
+                throw new IllegalArgumentException("참가신청 시작/종료 일시를 모두 입력해주세요.");
+            }
+            event.setRegistrationType("external");
+            event.setRegistrationUrl(regUrl);
+            event.setRegistrationStartDt(saveDto.getRegistrationStartDt());
+            event.setRegistrationEndDt(saveDto.getRegistrationEndDt());
+        } else {
+            if (saveDto.getRegistrationStartDt() == null || saveDto.getRegistrationEndDt() == null) {
+                throw new IllegalArgumentException("참가신청 시작/종료 일시를 모두 입력해주세요.");
+            }
+            event.setRegistrationType("direct");
+            event.setRegistrationUrl(null);
+            event.setRegistrationStartDt(saveDto.getRegistrationStartDt());
+            event.setRegistrationEndDt(saveDto.getRegistrationEndDt());
+        }
         // 사용자 요구: 등록·수정 모두 status는 'published'로 강제 (사용자가 변경 불가)
         event.setStatus("published");
         event.setUseYn(saveDto.getUseYn() != null ? saveDto.getUseYn() : "Y");

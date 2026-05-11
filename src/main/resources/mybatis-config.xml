@@ -12,7 +12,8 @@
 
     <typeHandlers>
         <typeHandler handler="org.apache.ibatis.type.LocalDateTypeHandler" />
-        <typeHandler handler="org.apache.ibatis.type.LocalDateTimeTypeHandler" />
+        <!-- timestamptz → LocalDateTime 호환을 위해 커스텀 핸들러로 교체 (PostgreSQL JDBC 42.7+ 대응) -->
+        <typeHandler handler="com.kcabEvent.util.mybatis.TimestamptzLocalDateTimeTypeHandler" />
         <typeHandler handler="org.apache.ibatis.type.LocalTimeTypeHandler" />
     </typeHandlers>
 </configuration>

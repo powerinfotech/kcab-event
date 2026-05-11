@@ -108,11 +108,6 @@ const PublicEvents: React.FC = () => {
                 const statusLabel = EVENT_STATUS_LABELS[event.status as EventStatus] ?? event.status;
                 return (
                   <div key={event.eventSeq} className="pub-event-card" onClick={() => handleSelect(event.eventSeq)}>
-                    {event.thumbnailUrl && (
-                      <div className="pub-event-card-img">
-                        <img src={event.thumbnailUrl} alt={event.title} />
-                      </div>
-                    )}
                     <div className="pub-event-card-body">
                       <span className={`pub-event-status-badge status-${event.status?.toLowerCase()}`}>
                         {statusLabel}

@@ -1,0 +1,45 @@
+package com.kcabEvent.domain;
+
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
+public class EmailLog {
+    private Long emailLogSeq;
+    private Long templateSeq;
+    private Long registrationSeq;
+    private String recipientEmail;
+    private String recipientName;
+    private String subject;
+    private String bodyHtml;
+    private String provider;
+    private String providerMessageId;
+    private String status;
+    private String errorMessage;
+    private Integer retryCount;
+
+    @Builder
+    public EmailLog(
+            Long templateSeq,
+            Long registrationSeq,
+            String recipientEmail,
+            String recipientName,
+            String subject,
+            String bodyHtml,
+            String provider,
+            String status
+    ) {
+        this.templateSeq = templateSeq;
+        this.registrationSeq = registrationSeq;
+        this.recipientEmail = recipientEmail;
+        this.recipientName = recipientName;
+        this.subject = subject;
+        this.bodyHtml = bodyHtml;
+        this.provider = provider;
+        this.status = status;
+    }
+}

@@ -18,6 +18,7 @@ import { getFixedAdminMenuInfo } from '@util/fixedAdminMenus';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const AUTH_MESSAGE_STORAGE_KEY = 'kcab-auth-message';
+const PASSWORD_RESET_EXPIRE_SECONDS = 5 * 60;
 type ForgotStep = 'request' | 'verify' | 'reset';
 
 const forgotLabelStyle = {
@@ -37,6 +38,13 @@ const forgotInputStyle = {
   fontSize: 14,
 };
 
+const formatRemainingTime = (seconds: number) => {
+  const safeSeconds = Math.max(seconds, 0);
+  const minutes = Math.floor(safeSeconds / 60).toString().padStart(2, '0');
+  const remainSeconds = (safeSeconds % 60).toString().padStart(2, '0');
+  return `${minutes}:${remainSeconds}`;
+};
+
 const Login = () => {
   const { message } = App.useApp();
   const setSessionInfo = useSetAtom(sessionInfoAtom);
@@ -54,6 +62,7 @@ const Login = () => {
   const [forgotCode, setForgotCode] = useState('');
   const [resetPassword, setResetPassword] = useState('');
   const [resetPasswordConfirm, setResetPasswordConfirm] = useState('');
+  const [forgotRemainingSec, setForgotRemainingSec] = useState(0);
   const [forgotSubmitting, setForgotSubmitting] = useState(false);
 
   const openForgotPassword = () => {
@@ -63,6 +72,7 @@ const Login = () => {
     setForgotCode('');
     setResetPassword('');
     setResetPasswordConfirm('');
+    setForgotRemainingSec(0);
     setForgotOpen(true);
   };
 
@@ -92,21 +102,33 @@ const Login = () => {
     try {
       if (forgotStep === 'request') {
         await ensureCsrfToken();
-        await callSendPasswordResetCode({userId: resetUserId, email});
+        const sendResult = await callSendPasswordResetCode({userId: resetUserId, email});
+        if (sendResult.code !== HttpStatusCode.Ok) return;
+
         message.success('Verification code has been sent to your email.');
+        setForgotRemainingSec(PASSWORD_RESET_EXPIRE_SECONDS);
         setForgotStep('verify');
         return;
       }
 
       if (forgotStep === 'verify') {
+        if (forgotRemainingSec <= 0) {
+          message.warning('Verification code has expired. Please request a new code.');
+          setForgotStep('request');
+          setForgotCode('');
+          return;
+        }
         if (!/^\d{6}$/.test(forgotCode)) {
           message.warning('Please enter the 6-digit verification code.');
           return;
         }
 
         await ensureCsrfToken();
-        await callVerifyPasswordResetCode({code: forgotCode});
+        const verifyResult = await callVerifyPasswordResetCode({code: forgotCode});
+        if (verifyResult.code !== HttpStatusCode.Ok) return;
+
         message.success('Verification code confirmed.');
+        setForgotRemainingSec(0);
         setForgotStep('reset');
         return;
       }
@@ -121,8 +143,11 @@ const Login = () => {
       }
 
       await ensureCsrfToken();
-      await callChangeForgotPassword({password: resetPassword, passwordConfirm: resetPasswordConfirm});
+      const changeResult = await callChangeForgotPassword({password: resetPassword, passwordConfirm: resetPasswordConfirm});
+      if (changeResult.code !== HttpStatusCode.Ok) return;
+
       message.success('Password has been changed. Please sign in with your new password.');
+      setForgotRemainingSec(0);
       setForgotOpen(false);
     } finally {
       setForgotSubmitting(false);
@@ -172,6 +197,23 @@ const Login = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!forgotOpen || forgotStep !== 'verify' || forgotRemainingSec <= 0) return;
+
+    const timerId = window.setTimeout(() => {
+      setForgotRemainingSec((remainingSec) => {
+        if (remainingSec <= 1) {
+          setForgotCode('');
+          setForgotStep('request');
+          return 0;
+        }
+        return remainingSec - 1;
+      });
+    }, 1000);
+
+    return () => window.clearTimeout(timerId);
+  }, [forgotOpen, forgotRemainingSec, forgotStep]);
 
   useEffect(() => {
     const authMessage = sessionStorage.getItem(AUTH_MESSAGE_STORAGE_KEY);
@@ -328,23 +370,48 @@ const Login = () => {
             </>
           )}
           {forgotStep === 'verify' && (
-            <label style={{ display: 'block' }}>
-              <span style={forgotLabelStyle}>Verification code</span>
-              <input
-                value={forgotCode}
-                onChange={(event) => setForgotCode(event.target.value.replace(/\D/g, '').slice(0, 6))}
-                placeholder="000000"
-                autoComplete="one-time-code"
-                inputMode="numeric"
-                maxLength={6}
+            <>
+              <label style={{ display: 'block' }}>
+                <span style={forgotLabelStyle}>Verification code</span>
+                <input
+                  value={forgotCode}
+                  onChange={(event) => setForgotCode(event.target.value.replace(/\D/g, '').slice(0, 6))}
+                  placeholder="000000"
+                  autoComplete="one-time-code"
+                  inputMode="numeric"
+                  maxLength={6}
+                  style={{
+                    ...forgotInputStyle,
+                    letterSpacing: 4,
+                    textAlign: 'center',
+                    fontWeight: 700,
+                  }}
+                />
+              </label>
+              <div
+                role="timer"
+                aria-live="polite"
                 style={{
-                  ...forgotInputStyle,
-                  letterSpacing: 4,
-                  textAlign: 'center',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 12,
+                  marginTop: 12,
+                  padding: '10px 12px',
+                  borderRadius: 6,
+                  background: forgotRemainingSec > 0 ? '#f8fafc' : '#fff1f2',
+                  border: `1px solid ${forgotRemainingSec > 0 ? '#e2e8f0' : '#fecdd3'}`,
+                  color: forgotRemainingSec > 0 ? '#475569' : '#be123c',
+                  fontSize: 13,
                   fontWeight: 700,
                 }}
-              />
-            </label>
+              >
+                <span>{forgotRemainingSec > 0 ? 'Code expires in' : 'Code expired'}</span>
+                <strong style={{ fontVariantNumeric: 'tabular-nums', fontSize: 16 }}>
+                  {formatRemainingTime(forgotRemainingSec)}
+                </strong>
+              </div>
+            </>
           )}
           {forgotStep === 'reset' && (
             <>
