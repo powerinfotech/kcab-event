@@ -8,13 +8,16 @@ import com.kcabEvent.util.formatter.LocalTimeFormatter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.Resource;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.resource.PathResourceResolver;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -22,13 +25,16 @@ import java.util.List;
  *
  * <h3>설정 항목</h3>
  *
- * <h4>1. View Controller (SPA 라우팅 지원)</h4>
- * <p>Next.js(React) SPA의 클라이언트 사이드 라우팅을 지원하기 위해
- * {@code /api}로 시작하지 않는 모든 URL 요청을 {@code /}(index.html)로 포워딩한다.</p>
+ * <h4>1. Static Resource Handler (Next.js static export 지원)</h4>
+ * <p>Next.js의 static export 산출물을 서빙한다. 요청 경로에 대해
+ * (원본 → {@code .html} → {@code /index.html}) 순으로 탐색하고,
+ * 모두 없으면 루트 {@code index.html}로 fallback 한다.
+ * {@code /api/**}, {@code /_next/**}는 fallback 대상에서 제외한다.</p>
  * <pre>
- * /dashboard         → forward:/
- * /user/management   → forward:/
- * /api/users         → 포워딩 없음 (API 요청으로 처리)
+ * /login             → /login.html (Next.js export)
+ * /admin/login       → /admin/login.html
+ * /dashboard         → /index.html (SPA 클라이언트 라우팅 fallback)
+ * /api/users         → controller 처리 (fallback 없음)
  * </pre>
  *
  * <h4>2. CORS 설정</h4>
@@ -68,18 +74,45 @@ public class WebMvcConfig implements WebMvcConfigurer {
     private String allowedOrigins;
 
     /**
-     * SPA(Single Page Application) 클라이언트 라우팅 지원을 위한 View Controller 등록.
+     * Next.js static export 라우팅 지원.
      *
-     * <p>{@code /api}로 시작하지 않는 URL은 모두 {@code /}로 포워딩하여
-     * Next.js 클라이언트가 라우팅을 처리하도록 한다.</p>
+     * <p>요청 경로에 대해 다음 순서로 정적 리소스를 탐색하고, 모두 없으면
+     * {@code index.html}로 fallback 한다. {@code /api}로 시작하는 경로는
+     * controller가 처리하므로 fallback 대상에서 제외한다.</p>
+     * <ol>
+     *   <li>{@code /login} → {@code /login} (원본 경로)</li>
+     *   <li>{@code /login} → {@code /login.html} (Next.js static export)</li>
+     *   <li>{@code /login} → {@code /login/index.html} (디렉토리 export)</li>
+     *   <li>모두 없으면 {@code /index.html}로 fallback (SPA 클라이언트 라우팅)</li>
+     * </ol>
      */
     @Override
-    public void addViewControllers(ViewControllerRegistry registry) {
-        // Spring Boot 3.x PathPatternParser 호환: /** 뒤에 추가 패턴 불가
-        // SPA 라우팅은 Next.js가 static export로 처리하므로 단순 패턴만 등록
-        registry.addViewController("/{spring:[\\w\\-]+}").setViewName("forward:/");
-        registry.addViewController("/{path1:[\\w\\-]+}/{path2:[\\w\\-]+}").setViewName("forward:/");
-        registry.addViewController("/{path1:[\\w\\-]+}/{path2:[\\w\\-]+}/{path3:[\\w\\-]+}").setViewName("forward:/");
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/**")
+                .addResourceLocations("classpath:/static/")
+                .resourceChain(true)
+                .addResolver(new PathResourceResolver() {
+                    @Override
+                    protected Resource getResource(String resourcePath, Resource location) throws IOException {
+                        Resource resource = location.createRelative(resourcePath);
+                        if (resource.isReadable()) {
+                            return resource;
+                        }
+                        Resource html = location.createRelative(resourcePath + ".html");
+                        if (html.isReadable()) {
+                            return html;
+                        }
+                        Resource dirIndex = location.createRelative(resourcePath + "/index.html");
+                        if (dirIndex.isReadable()) {
+                            return dirIndex;
+                        }
+                        if (resourcePath.startsWith("api/") || resourcePath.startsWith("_next/")) {
+                            return null;
+                        }
+                        Resource indexHtml = location.createRelative("index.html");
+                        return indexHtml.isReadable() ? indexHtml : null;
+                    }
+                });
     }
 
     /**
