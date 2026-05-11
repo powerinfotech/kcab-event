@@ -32,6 +32,7 @@ src/react_app/.env.local
 src/react_app/.env.dev
 src/react_app/.env.prod
 src/main/resources/application-local.yaml
+src/main/resources/application-dev.yaml
 
 ### Spring Boot static (빌드 시 copyFrontend로 생성됨) ###
 src/main/resources/static/

@@ -12,7 +12,7 @@ echo "============================================"
 java -version
 
 if [ -n "${BREVO_API_KEY:-}" ]; then
-  cat > src/main/resources/application-local.yaml <<EOF
+  cat > src/main/resources/application-dev.yaml <<EOF
 brevo:
   api:
     key: ${BREVO_API_KEY}
