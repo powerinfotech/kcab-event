@@ -137,9 +137,9 @@ spring:
 
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://rds-powerkit.cmtttlmhn4wb.ap-northeast-2.rds.amazonaws.com:5432/reactcomm
-    username: powerkit
-    password: power1120#$
+    url: jdbc:postgresql://34.22.65.230:5432/kcab_international?charSet=UTF-8&prepareThreshold=1&currentSchema=event
+    username: kcab_international_event
+    password: rndnsekfrif258
 
 springdoc:
   swagger-ui:
