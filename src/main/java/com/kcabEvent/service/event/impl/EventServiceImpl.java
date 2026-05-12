@@ -2,6 +2,7 @@ package com.kcabEvent.service.event.impl;
 
 import com.kcabEvent.dao.EventDao;
 import com.kcabEvent.dao.SafOrganizationDao;
+import com.kcabEvent.dao.SafSettingsDao;
 import com.kcabEvent.domain.Event;
 import com.kcabEvent.dto.common.LoginUser;
 import com.kcabEvent.dto.email.EmailTemplateDetailDto;
@@ -51,6 +52,9 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
 
     @Resource(name = "safOrganizationDao")
     private SafOrganizationDao safOrganizationDao;
+
+    @Resource(name = "safSettingsDao")
+    private SafSettingsDao safSettingsDao;
 
     @Resource(name = "emailTemplateService")
     private EmailTemplateService emailTemplateService;
@@ -145,6 +149,9 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
         event.setIsPaid(saveDto.getIsPaid() != null ? saveDto.getIsPaid() : Boolean.FALSE);
 
         if (saveDto.getEventSeq() == null) {
+            if (!admin) {
+                assertOrganizationEventLimit(organizationSeq);
+            }
             event.setRgstUserSeq(userSeq);
             event.setUptUserSeq(userSeq);
             eventDao.insertEvent(event);
@@ -256,6 +263,24 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
         }
         if (!STATUS_DRAFT.equals(event.getStatus()) && !STATUS_PUBLISHED.equals(event.getStatus())) {
             throw new BusinessException("This event can no longer be edited.");
+        }
+    }
+
+    private void assertOrganizationEventLimit(Long organizationSeq) {
+        safSettingsDao.createCommonCodeGroupTableIfMissing();
+        safSettingsDao.createCommonCodeTableIfMissing();
+        safSettingsDao.insertOrganizationGradeCodeGroupIfMissing();
+        safSettingsDao.insertDefaultOrganizationGradeCodesIfMissing();
+
+        Integer maxEventCount = safSettingsDao.selectOrganizationMaxEventCount(organizationSeq);
+        if (maxEventCount == null) {
+            return;
+        }
+
+        long currentEventCount = safSettingsDao.countOrganizationHostedEvents(organizationSeq);
+        if (currentEventCount >= maxEventCount) {
+            throw new BusinessException("This organization's grade allows up to "
+                    + maxEventCount + " hosted event(s). Please contact the administrator.");
         }
     }
 

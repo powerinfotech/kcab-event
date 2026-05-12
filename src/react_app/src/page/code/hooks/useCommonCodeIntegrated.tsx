@@ -14,25 +14,13 @@ import {callGetComGrpCdList, callSaveComGrpCd} from '@api/code/CommonGroupCodeAp
 import {callGetComCdList, callSaveComCd} from '@api/code/CommonCodeApi';
 import {useMessage} from '@hook/useMessage';
 import {applyDataChange} from '@util/dataSourceUtils';
-import {ALPHANUMERIC_REGEXP, INTEGER_REGEXP, FLOAT_REGEXP} from '@util/validationPatterns';
+import {ALPHANUMERIC_REGEXP} from '@util/validationPatterns';
 
 // ref 필드 정의
 const REF_FIELDS = [
     {ref: 'ref01', refval: 'refval01', type: 'string', label: '문자형1'},
     {ref: 'ref02', refval: 'refval02', type: 'string', label: '문자형2'},
     {ref: 'ref03', refval: 'refval03', type: 'string', label: '문자형3'},
-    {ref: 'ref04', refval: 'refval04', type: 'string', label: '문자형4'},
-    {ref: 'ref05', refval: 'refval05', type: 'string', label: '문자형5'},
-    {ref: 'ref06', refval: 'refval06', type: 'integer', label: '정수형1'},
-    {ref: 'ref07', refval: 'refval07', type: 'integer', label: '정수형2'},
-    {ref: 'ref08', refval: 'refval08', type: 'integer', label: '정수형3'},
-    {ref: 'ref09', refval: 'refval09', type: 'integer', label: '정수형4'},
-    {ref: 'ref10', refval: 'refval10', type: 'integer', label: '정수형5'},
-    {ref: 'ref11', refval: 'refval11', type: 'float', label: '실수형1'},
-    {ref: 'ref12', refval: 'refval12', type: 'float', label: '실수형2'},
-    {ref: 'ref13', refval: 'refval13', type: 'float', label: '실수형3'},
-    {ref: 'ref14', refval: 'refval14', type: 'float', label: '실수형4'},
-    {ref: 'ref15', refval: 'refval15', type: 'float', label: '실수형5'},
 ];
 
 export {REF_FIELDS};
@@ -123,7 +111,7 @@ export function useCommonCodeIntegrated() {
         }
         setSelectedGrpRowIndex(index);
         setSelectedGrpCd(record);
-        if (record.rgstUserSeq && record.comGrpCdSeq > 0) {
+        if (record.comGrpCdSeq > 0) {
             await fetchComCdList(record.comGrpCdSeq);
         } else {
             setComCdDataSource([]);
@@ -137,9 +125,7 @@ export function useCommonCodeIntegrated() {
         const maxSort = grpDataSource.reduce((max, v) => Math.max(max, v.sortSeq ?? 0), 0);
         setGrpDataSource(prev => [...prev, {
             comGrpCdSeq: tempSeq, comGrpCd: '', comGrpCdNm: '', comGrpCdDesc: '',
-            ref01: '', ref02: '', ref03: '', ref04: '', ref05: '',
-            ref06: '', ref07: '', ref08: '', ref09: '', ref10: '',
-            ref11: '', ref12: '', ref13: '', ref14: '', ref15: '',
+            ref01: '', ref02: '', ref03: '',
             sortSeq: maxSort + 1, useYn: 'Y', iudType: IudType.I,
         }]);
     };
@@ -173,9 +159,7 @@ export function useCommonCodeIntegrated() {
         setComCdDataSource(prev => [...prev, {
             comCdSeq: tempSeq, comGrpCdSeq: selectedGrpCd.comGrpCdSeq,
             comCd: '', comStdCd: '', comCdNm: '', comCdDesc: '',
-            refval01: '', refval02: '', refval03: '', refval04: '', refval05: '',
-            refval06: '', refval07: '', refval08: '', refval09: '', refval10: '',
-            refval11: '', refval12: '', refval13: '', refval14: '', refval15: '',
+            refval01: '', refval02: '', refval03: '',
             sortSeq: maxSort + 1, useYn: 'Y', iudType: IudType.I,
         }]);
     };
@@ -268,7 +252,7 @@ export function useCommonCodeIntegrated() {
             title: <span className="tit">그룹코드<em>*</em></span>,
             key: 'comGrpCd', dataIndex: 'comGrpCd', align: 'center', width: 90,
             render: (value: string, record: ComGrpCdList) =>
-                record.rgstUserSeq
+                record.comGrpCdSeq > 0
                     ? <span>{value}</span>
                     : <EditableFormCell record={record} seqField="comGrpCdSeq" fieldSuffix="comGrpCd"
                           value={value} setValue={grpForm.setValue} control={grpForm.control} register={grpForm.register}
@@ -300,9 +284,6 @@ export function useCommonCodeIntegrated() {
 
     // ── Dynamic Code Table Columns ──
     const comCdRegExp = ALPHANUMERIC_REGEXP;
-    const integerRegExp = INTEGER_REGEXP;
-    const floatRegExp = FLOAT_REGEXP;
-
     const dynamicComCdColumns: TableColumnsType<ComCdList> = useMemo(() => {
         const fixedCols: TableColumnsType<ComCdList> = [
             IUD_COLUMN,
@@ -310,7 +291,7 @@ export function useCommonCodeIntegrated() {
                 title: <span className="tit">공통코드<em>*</em></span>,
                 key: 'comCd', dataIndex: 'comCd', align: 'center', width: 80, fixed: 'left',
                 render: (value: string, record: ComCdList) =>
-                    record.rgstUserSeq
+                    record.comCdSeq > 0
                         ? <span>{value}</span>
                         : <EditableFormCell record={record} seqField="comCdSeq" fieldSuffix="comCd"
                               value={value} setValue={comForm.setValue} control={comForm.control} register={comForm.register}
@@ -351,12 +332,10 @@ export function useCommonCodeIntegrated() {
             .filter(f => selectedGrpCd?.[f.ref]?.trim())
             .map(f => {
                 const title = selectedGrpCd![f.ref];
-                const regExp = f.type === 'integer' ? integerRegExp : f.type === 'float' ? floatRegExp : undefined;
-                const maxLen = f.type === 'string' ? 100 : f.type === 'integer' ? 20 : 30;
                 return {
                     title, key: f.refval, dataIndex: f.refval, align: 'center' as const, width: 100,
                     render: (value: string, record: ComCdList) =>
-                        <CustomInput value={value ?? ''} maxLength={maxLen} regExp={regExp}
+                        <CustomInput value={value ?? ''} maxLength={100}
                             onChange={(e) => handleComCdDataChange(record, f.refval, e.target.value)}/>,
                 };
             });

@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * ComCdDao - 공통 코드 MyBatis 매퍼 인터페이스
  *
- * <p>공통 코드(tb_com_cd) 테이블의 CRUD를 담당한다.</p>
+ * <p>공통 코드(event.com_cd) 테이블의 CRUD를 담당한다.</p>
  *
  * @see com.kcabEvent.service.code.ComCdService
  */

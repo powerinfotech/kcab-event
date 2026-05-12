@@ -9,6 +9,7 @@ import {
   CalendarOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
+  DownloadOutlined,
   PlusOutlined,
   ReloadOutlined,
   RollbackOutlined,
@@ -20,6 +21,8 @@ import {
 import CustomRichEditor from '@component/special/CustomRichEditor';
 import CustomFile, { FileDetailType } from '@component/upload/CustomFile';
 import { callGetFileList, callSaveFiles } from '@api/CommonApi';
+import { callExcelDownload, type ExcelColumnDef } from '@api/CommonExcelApi';
+import { callGetParticipantList } from '@api/admin/ParticipantManagementApi';
 import {
   callApproveEvent,
   callCancelEventApproval,
@@ -44,6 +47,7 @@ import {
   RegistrationType,
 } from '@interface/event/EventManagement';
 import AdminGridPagination, { useClientGridPagination } from './AdminGridPagination';
+import type { ParticipantListItem } from '@interface/admin/ParticipantManagement';
 
 /** Status 멀티 셀렉트 옵션 (빈 항목 없이 실제 상태값만) */
 const STATUS_FILTERS: Array<{ value: string; label: string }> = [
@@ -72,8 +76,20 @@ const REGISTRATION_TYPE_OPTIONS: Array<{ value: RegistrationType; label: string 
   { value: 'none', label: REGISTRATION_TYPE_LABELS.none },
 ];
 
+const EVENT_PARTICIPANT_EXCEL_COLUMNS: ExcelColumnDef[] = [
+  { headerName: 'Name', dataIndex: 'name', width: 24 },
+  { headerName: 'Email', dataIndex: 'email', width: 34 },
+  { headerName: 'Organization', dataIndex: 'organization', width: 30 },
+  { headerName: 'Position', dataIndex: 'position', width: 22 },
+  { headerName: 'Country', dataIndex: 'country', width: 18 },
+  { headerName: 'Status', dataIndex: 'status', width: 18 },
+  { headerName: 'Registered At', dataIndex: 'registeredAt', width: 22 },
+];
+
 const URL_REGEXP = /^(https?:\/\/)[^\s]+$/i;
 const DASHBOARD_EVENT_DETAIL_KEY = 'saf.admin.dashboardEventSeq';
+const PARTICIPANT_DETAIL_KEY = 'saf.admin.participantDetailSeq';
+const PARTICIPANT_DETAIL_ITEM_KEY = 'saf.admin.participantDetailItem';
 
 const emptyDetail: EventDetail = {
   eventSeq: 0,
@@ -145,6 +161,9 @@ export default function SuperEventList() {
   const [form, setForm] = useState<EventDetail>(emptyDetail);
   const [thumbnailFiles, setThumbnailFiles] = useState<FileDetailType[]>([]);
   const [attachmentFiles, setAttachmentFiles] = useState<FileDetailType[]>([]);
+  const [eventParticipants, setEventParticipants] = useState<ParticipantListItem[]>([]);
+  const [eventParticipantKeyword, setEventParticipantKeyword] = useState('');
+  const [participantsLoading, setParticipantsLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [submitAttempted, setSubmitAttempted] = useState(false);
 
@@ -189,7 +208,16 @@ export default function SuperEventList() {
     () => events.find((event) => event.eventSeq === selectedSeq),
     [selectedSeq, events],
   );
+  const filteredEventParticipants = useMemo(() => {
+    const searchKeyword = eventParticipantKeyword.trim().toLowerCase();
+    if (!searchKeyword) return eventParticipants;
+    return eventParticipants.filter((participant) => participantMatchesKeyword(participant, searchKeyword));
+  }, [eventParticipantKeyword, eventParticipants]);
+  const participantSubtitle = eventParticipantKeyword.trim()
+    ? `${filteredEventParticipants.length} of ${eventParticipants.length} participant(s) matched.`
+    : `${eventParticipants.length} participant(s) registered for this event.`;
   const eventPagination = useClientGridPagination(events);
+  const eventParticipantPagination = useClientGridPagination(filteredEventParticipants);
 
   const fetchEvents = async () => {
     setLoading(true);
@@ -227,7 +255,9 @@ export default function SuperEventList() {
       setForm(merged);
       setSelectedSeq(eventSeq);
       setSubmitAttempted(false);
+      setEventParticipantKeyword('');
       setMode('detail');
+      fetchEventParticipants(eventSeq);
 
       // 썸네일 파일 로드
       const fileSeq = detail?.fileSeq ?? null;
@@ -258,6 +288,19 @@ export default function SuperEventList() {
       message.error('Failed to load event details.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchEventParticipants = async (eventSeq: number) => {
+    setParticipantsLoading(true);
+    try {
+      const res = await callGetParticipantList({ eventSeqs: [eventSeq] });
+      setEventParticipants(res?.item ?? []);
+    } catch {
+      setEventParticipants([]);
+      message.error('Failed to load event participants.');
+    } finally {
+      setParticipantsLoading(false);
     }
   };
 
@@ -549,6 +592,32 @@ export default function SuperEventList() {
     });
   };
 
+  const handleExportParticipants = async () => {
+    if (!filteredEventParticipants.length) {
+      message.warning('No participants to export.');
+      return;
+    }
+
+    try {
+      await callExcelDownload(
+        EVENT_PARTICIPANT_EXCEL_COLUMNS,
+        buildParticipantExcelRows(filteredEventParticipants),
+        `${sanitizeFileName(form.title || 'event')}_participants`,
+      );
+      message.success('Participant list has been exported.');
+    } catch (err) {
+      message.error('Failed to export participants.');
+    }
+  };
+
+  const handleOpenParticipantDetail = (participant: ParticipantListItem) => {
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.setItem(PARTICIPANT_DETAIL_KEY, String(participant.participantSeq));
+      window.sessionStorage.setItem(PARTICIPANT_DETAIL_ITEM_KEY, JSON.stringify(participant));
+      window.location.href = `/admin/participants?participantSeq=${participant.participantSeq}`;
+    }
+  };
+
   const handleNew = () => {
     setForm({
       ...emptyDetail,
@@ -557,6 +626,8 @@ export default function SuperEventList() {
     });
     setThumbnailFiles([]);
     setAttachmentFiles([]);
+    setEventParticipants([]);
+    setEventParticipantKeyword('');
     setSelectedSeq(null);
     setSubmitAttempted(false);
     setMode('detail');
@@ -810,6 +881,93 @@ export default function SuperEventList() {
           </section>
         </div>
 
+        {!isNew && (
+          <section className="saf-panel saf-event-participants-panel">
+            <div className="saf-panel-title-row">
+              <PanelTitle
+                title="Participants"
+                subtitle={participantSubtitle}
+              />
+              <button
+                type="button"
+                className="saf-action-btn is-secondary"
+                onClick={handleExportParticipants}
+                disabled={participantsLoading || !filteredEventParticipants.length}
+              >
+                <DownloadOutlined />
+                <span>Export Participants</span>
+              </button>
+            </div>
+            <div className="saf-event-participants-search-row">
+              <div className="saf-search saf-event-participants-search">
+                <SearchOutlined />
+                <input
+                  value={eventParticipantKeyword}
+                  placeholder="Search by name, email, organization, position, or country"
+                  onChange={(event) => setEventParticipantKeyword(event.target.value)}
+                />
+              </div>
+            </div>
+            <div className="saf-table-wrap">
+              <table className="saf-table saf-event-participants-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Organization</th>
+                    <th>Position</th>
+                    <th>Country</th>
+                    <th>Status</th>
+                    <th>Registered At</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {eventParticipantPagination.pagedItems.map((participant) => {
+                    const registration = participant.events[0];
+                    return (
+                      <tr
+                        key={participant.participantSeq}
+                        className="saf-clickable-row"
+                        tabIndex={0}
+                        onClick={() => handleOpenParticipantDetail(participant)}
+                        onKeyDown={(event) => {
+                          if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault();
+                            handleOpenParticipantDetail(participant);
+                          }
+                        }}
+                      >
+                        <td><strong>{participant.fullName || '-'}</strong></td>
+                        <td>{participant.email}</td>
+                        <td>{participant.organizationName || '-'}</td>
+                        <td>{participant.position || '-'}</td>
+                        <td>{participant.country || '-'}</td>
+                        <td>{renderParticipationStatus(registration?.status)}</td>
+                        <td>{formatDateTime(registration?.registeredAt)}</td>
+                      </tr>
+                    );
+                  })}
+                  {!filteredEventParticipants.length && (
+                    <tr>
+                      <td colSpan={7} className="saf-event-empty">
+                        <CalendarOutlined />
+                        <span>
+                          {participantsLoading
+                            ? 'Loading...'
+                            : eventParticipantKeyword.trim()
+                              ? 'No participants matched your search.'
+                              : 'No participants registered for this event.'}
+                        </span>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+              <AdminGridPagination {...eventParticipantPagination} />
+            </div>
+          </section>
+        )}
+
       </div>
     );
   }
@@ -918,6 +1076,68 @@ function readPendingDashboardEventSeq(): number | null {
   if (!value) return null;
   const eventSeq = Number(value);
   return Number.isFinite(eventSeq) && eventSeq > 0 ? eventSeq : null;
+}
+
+function formatDateTime(value?: string | null): string {
+  if (!value) return '-';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+function formatParticipationStatusText(status?: string | null): string {
+  const value = status ?? 'unknown';
+  const statusLabels: Record<string, string> = {
+    registered: 'Registered',
+    cancelled: 'Cancelled',
+    pending_approval: 'Pending Approval',
+    approved: 'Approved',
+    rejected: 'Rejected',
+  };
+  return statusLabels[value] ?? value.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function buildParticipantExcelRows(participants: ParticipantListItem[]) {
+  return participants.map((participant) => {
+    const registration = participant.events[0];
+    return {
+      name: participant.fullName || '',
+      email: participant.email || '',
+      organization: participant.organizationName || '',
+      position: participant.position || '',
+      country: participant.country || '',
+      status: formatParticipationStatusText(registration?.status),
+      registeredAt: formatDateTime(registration?.registeredAt),
+    };
+  });
+}
+
+function sanitizeFileName(value: string): string {
+  return (value || 'event')
+    .replace(/[\\/:*?"<>|]/g, '_')
+    .replace(/\s+/g, '_')
+    .slice(0, 80);
+}
+
+function participantMatchesKeyword(participant: ParticipantListItem, keyword: string): boolean {
+  const registration = participant.events[0];
+  return [
+    participant.fullName,
+    participant.email,
+    participant.organizationName,
+    participant.position,
+    participant.country,
+    formatParticipationStatusText(registration?.status),
+    formatDateTime(registration?.registeredAt),
+  ].some((value) => (value ?? '').toLowerCase().includes(keyword));
+}
+
+function renderParticipationStatus(status?: string | null) {
+  const value = status ?? 'unknown';
+  const label = formatParticipationStatusText(value);
+  const tone = value === 'registered' ? 'green' : value === 'cancelled' ? 'red' : 'gray';
+  return <span className={`saf-status is-${tone}`}>{label}</span>;
 }
 
 function PanelTitle({ title, subtitle }: { title: string; subtitle?: string }) {

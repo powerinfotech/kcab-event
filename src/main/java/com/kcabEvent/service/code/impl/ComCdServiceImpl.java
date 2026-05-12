@@ -46,12 +46,12 @@ public class ComCdServiceImpl extends EgovAbstractServiceImpl implements ComCdSe
                 case I:
                     item.setComGrpCdSeq(saveDto.getComGrpCdSeq());
                     item.setComStdCd(comGrpCd + item.getComCd());
-                    item.setRgstUserSeq(Long.valueOf(loginUser.getUserSeq()));
-                    item.setUptUserSeq(Long.valueOf(loginUser.getUserSeq()));
+                    item.setCreatedBy(Long.valueOf(loginUser.getUserSeq()));
+                    item.setUpdatedBy(Long.valueOf(loginUser.getUserSeq()));
                     comCdDao.insertComCd(item);
                     break;
                 case U:
-                    item.setUptUserSeq(Long.valueOf(loginUser.getUserSeq()));
+                    item.setUpdatedBy(Long.valueOf(loginUser.getUserSeq()));
                     comCdDao.updateComCd(item);
                     break;
                 case D:

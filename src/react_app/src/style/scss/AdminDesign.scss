@@ -852,6 +852,123 @@
   }
 }
 
+.saf-settings-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, .45fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.saf-settings-panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.saf-settings-row-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 34px;
+    padding: 0 12px;
+    border: 1px solid #d7dee8;
+    border-radius: 6px;
+    background: #fff;
+    color: #111827;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: .45;
+    }
+  }
+}
+
+.saf-settings-grade-table,
+.saf-settings-limit-table {
+  tr.is-selected {
+    background: #fffbe6;
+  }
+
+  tbody tr {
+    cursor: pointer;
+
+    &:hover {
+      background: #f8fafc;
+    }
+  }
+
+  input {
+    width: 100%;
+    min-width: 110px;
+    height: 36px;
+    padding: 0 10px;
+    border: 1px solid #d7dee8;
+    border-radius: 6px;
+    color: #111827;
+    font-weight: 800;
+  }
+}
+
+.saf-settings-grade-table {
+  td:first-child {
+    strong,
+    span {
+      display: block;
+    }
+
+    span {
+      margin-top: 4px;
+      color: #64748b;
+      font-size: 12px;
+      font-weight: 800;
+    }
+  }
+
+  th:nth-child(2),
+  td:nth-child(2) {
+    text-align: center;
+  }
+}
+
+.saf-settings-limit-table {
+  th:nth-child(2),
+  th:nth-child(3),
+  th:nth-child(4),
+  th:nth-child(5),
+  td:nth-child(2),
+  td:nth-child(3),
+  td:nth-child(4),
+  td:nth-child(5) {
+    text-align: center;
+  }
+
+  input {
+    text-align: center;
+  }
+}
+
+.saf-settings-empty {
+  height: 170px !important;
+  text-align: center !important;
+  color: #64748b !important;
+
+  svg {
+    margin-right: 8px;
+    color: #94a3b8;
+  }
+}
+
 .saf-panel-title {
   margin-bottom: 16px;
 
@@ -866,6 +983,22 @@
     color: #64748b;
     font-size: 12px;
     font-weight: 700;
+  }
+}
+
+.saf-panel-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+
+  .saf-panel-title {
+    margin-bottom: 0;
+  }
+
+  .saf-action-btn {
+    flex: 0 0 auto;
   }
 }
 
@@ -1172,6 +1305,19 @@
 
 .saf-table {
   width: 100%;
+
+  .saf-clickable-row {
+    cursor: pointer;
+
+    &:hover {
+      background: #f8fafc;
+    }
+
+    &:focus-visible {
+      outline: 2px solid #1f5b95;
+      outline-offset: -2px;
+    }
+  }
 
   th,
   td {
@@ -1958,6 +2104,7 @@
   .saf-dashboard-grid,
   .saf-editor-layout,
   .saf-email-layout,
+  .saf-settings-layout,
   .saf-card-list {
     grid-template-columns: 1fr;
   }
@@ -1988,6 +2135,7 @@
 
   .saf-filter-row,
   .saf-screen-header,
+  .saf-panel-title-row,
   .saf-form-footer {
     align-items: stretch;
     flex-direction: column;
@@ -2004,6 +2152,49 @@
   grid-template-columns: minmax(0, 5fr) minmax(0, 4fr);
   gap: 16px;
   align-items: stretch;
+}
+
+.saf-event-participants-panel {
+  margin-top: 16px;
+}
+
+.saf-event-participants-search-row {
+  display: flex;
+  margin-bottom: 12px;
+
+  .saf-event-participants-search {
+    width: 100%;
+    max-width: 560px;
+  }
+}
+
+.saf-event-participants-table {
+  table-layout: fixed;
+
+  th:nth-child(1) { width: 14%; }
+  th:nth-child(2) { width: 21%; }
+  th:nth-child(3) { width: 17%; }
+  th:nth-child(4) { width: 13%; }
+  th:nth-child(5) { width: 11%; }
+  th:nth-child(6) { width: 11%; text-align: center; }
+  th:nth-child(7) { width: 13%; }
+
+  td {
+    min-width: 0;
+  }
+
+  td:nth-child(2),
+  td:nth-child(3),
+  td:nth-child(4),
+  td:nth-child(5) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  td:nth-child(6) {
+    text-align: center;
+  }
 }
 
 .saf-address-row {
@@ -2200,6 +2391,7 @@
   .saf-editor-layout,
   .saf-event-detail-grid,
   .saf-email-layout,
+  .saf-settings-layout,
   .saf-card-list {
     grid-template-columns: 1fr;
   }

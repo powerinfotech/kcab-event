@@ -41,12 +41,12 @@ public class ComGrpCdServiceImpl extends EgovAbstractServiceImpl implements ComG
             if (item.getIudType() == null) continue;
             switch (item.getIudType()) {
                 case I:
-                    item.setRgstUserSeq(Long.valueOf(loginUser.getUserSeq()));
-                    item.setUptUserSeq(Long.valueOf(loginUser.getUserSeq()));
+                    item.setCreatedBy(Long.valueOf(loginUser.getUserSeq()));
+                    item.setUpdatedBy(Long.valueOf(loginUser.getUserSeq()));
                     comGrpCdDao.insertComGrpCd(item);
                     break;
                 case U:
-                    item.setUptUserSeq(Long.valueOf(loginUser.getUserSeq()));
+                    item.setUpdatedBy(Long.valueOf(loginUser.getUserSeq()));
                     comGrpCdDao.updateComGrpCd(item);
                     break;
                 default:

@@ -58,8 +58,8 @@ const GrpCodeTable: React.FC<GrpCodeTableProps> = ({
                             selectedRowKeys,
                             onChange: (keys: React.Key[]) => onSelectedRowKeysChange(keys),
                             getCheckboxProps: (record: any) => ({
-                                disabled: !!record.rgstUserSeq,
-                                style: record.rgstUserSeq ? {display: 'none'} : undefined,
+                                disabled: record.comGrpCdSeq > 0,
+                                style: record.comGrpCdSeq > 0 ? {display: 'none'} : undefined,
                             }),
                         }}
                         rowKey={'comGrpCdSeq'}

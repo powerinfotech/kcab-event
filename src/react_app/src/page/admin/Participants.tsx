@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { App, Select } from 'antd';
 import { ArrowLeftOutlined, CalendarOutlined, ReloadOutlined, SearchOutlined, TeamOutlined } from '@ant-design/icons';
 import {
@@ -14,6 +14,9 @@ import {
 } from '@interface/admin/ParticipantManagement';
 import { EVENT_TYPE_LABELS, EVENT_TYPE_TONE } from '@interface/event/EventManagement';
 import AdminGridPagination, { useClientGridPagination } from './AdminGridPagination';
+
+const PARTICIPANT_DETAIL_KEY = 'saf.admin.participantDetailSeq';
+const PARTICIPANT_DETAIL_ITEM_KEY = 'saf.admin.participantDetailItem';
 
 const PARTICIPATION_STATUS_OPTIONS = [
   { value: 'registered', label: 'Registered' },
@@ -50,6 +53,34 @@ function eventOptionLabel(option: ParticipantEventOption): string {
   return `${option.title} · ${typeLabel}`;
 }
 
+function readPendingParticipantDetailSeq(): number | null {
+  if (typeof window === 'undefined') return null;
+  let value = window.sessionStorage.getItem(PARTICIPANT_DETAIL_KEY);
+  if (value) {
+    window.sessionStorage.removeItem(PARTICIPANT_DETAIL_KEY);
+  } else {
+    value = new URLSearchParams(window.location.search).get('participantSeq');
+  }
+  if (!value) return null;
+  const participantSeq = Number(value);
+  if (Number.isFinite(participantSeq) && participantSeq > 0 && window.location.search) {
+    window.history.replaceState(null, '', window.location.pathname);
+  }
+  return Number.isFinite(participantSeq) && participantSeq > 0 ? participantSeq : null;
+}
+
+function readPendingParticipantDetailItem(): ParticipantListItem | null {
+  if (typeof window === 'undefined') return null;
+  const value = window.sessionStorage.getItem(PARTICIPANT_DETAIL_ITEM_KEY);
+  window.sessionStorage.removeItem(PARTICIPANT_DETAIL_ITEM_KEY);
+  if (!value) return null;
+  try {
+    return JSON.parse(value) as ParticipantListItem;
+  } catch {
+    return null;
+  }
+}
+
 export default function Participants() {
   const { message } = App.useApp();
   const [participants, setParticipants] = useState<ParticipantListItem[]>([]);
@@ -59,16 +90,31 @@ export default function Participants() {
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedParticipant, setSelectedParticipant] = useState<ParticipantListItem | null>(null);
+  const initialLoadRef = useRef(false);
 
-  const fetchParticipants = async () => {
+  const fetchParticipants = async (pendingParticipantSeq?: number | null) => {
     setLoading(true);
     try {
-      const res = await callGetParticipantList({
+      const res = await callGetParticipantList(pendingParticipantSeq ? {} : {
         keyword: keyword.trim() || undefined,
         eventSeqs: selectedEventSeqs,
         statuses: selectedStatuses,
       });
-      setParticipants(res?.item ?? []);
+      const list = res?.item ?? [];
+      if (pendingParticipantSeq) {
+        setKeyword('');
+        setSelectedEventSeqs([]);
+        setSelectedStatuses([]);
+      }
+      setParticipants(list);
+      if (pendingParticipantSeq) {
+        const target = list.find((participant) => participant.participantSeq === pendingParticipantSeq);
+        if (target) {
+          setSelectedParticipant(target);
+        } else {
+          message.warning('Participant was not found.');
+        }
+      }
     } catch (err) {
       message.error('Failed to load participants.');
     } finally {
@@ -87,7 +133,17 @@ export default function Participants() {
 
   useEffect(() => {
     fetchEventOptions();
-    fetchParticipants();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (initialLoadRef.current) return;
+    initialLoadRef.current = true;
+    const pendingParticipant = readPendingParticipantDetailItem();
+    if (pendingParticipant) {
+      setSelectedParticipant(pendingParticipant);
+    }
+    fetchParticipants(readPendingParticipantDetailSeq() ?? pendingParticipant?.participantSeq ?? null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -106,7 +162,7 @@ export default function Participants() {
       <div className="saf-screen saf-participant-admin-screen">
         <header className="saf-screen-header">
           <div>
-            <h1>{selectedParticipant.fullName || selectedParticipant.email}</h1>
+            <h1>{formatParticipantName(selectedParticipant)}</h1>
             <p>{selectedParticipant.email}</p>
           </div>
           <div className="saf-screen-actions">
@@ -176,7 +232,7 @@ export default function Participants() {
           <p>Participants are grouped by person, with their participating events summarized in the grid.</p>
         </div>
         <div className="saf-screen-actions">
-          <button type="button" className="saf-action-btn is-secondary" onClick={fetchParticipants} disabled={loading}>
+          <button type="button" className="saf-action-btn is-secondary" onClick={() => fetchParticipants()} disabled={loading}>
             <ReloadOutlined />
             <span>Refresh</span>
           </button>
@@ -218,7 +274,7 @@ export default function Participants() {
           options={PARTICIPATION_STATUS_OPTIONS}
           maxTagCount="responsive"
         />
-        <button type="button" onClick={fetchParticipants}>Search</button>
+        <button type="button" onClick={() => fetchParticipants()}>Search</button>
       </section>
 
       <p className="saf-summary-line">{summary}</p>
@@ -240,8 +296,7 @@ export default function Participants() {
             {participantPagination.pagedItems.map((participant) => (
               <tr key={participant.participantSeq} onClick={() => setSelectedParticipant(participant)}>
                 <td>
-                  <strong>{participant.fullName || '-'}</strong>
-                  {participant.position && <span>{participant.position}</span>}
+                  <strong>{formatParticipantName(participant)}</strong>
                 </td>
                 <td>{participant.email}</td>
                 <td>{participant.organizationName || '-'}</td>
@@ -265,6 +320,11 @@ export default function Participants() {
       </section>
     </div>
   );
+}
+
+function formatParticipantName(participant: Pick<ParticipantListItem, 'fullName' | 'email' | 'position'>) {
+  const name = participant.fullName || participant.email || '-';
+  return participant.position ? `${name} ${participant.position}` : name;
 }
 
 function renderEventSummary(events: ParticipantEventItem[]) {

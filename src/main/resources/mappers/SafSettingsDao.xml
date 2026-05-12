@@ -1,0 +1,411 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kcabEvent.dao.SafSettingsDao">
+
+    <update id="createCommonCodeGroupTableIfMissing">
+        CREATE TABLE IF NOT EXISTS event.com_grp_cd (
+             com_grp_cd_seq BIGSERIAL PRIMARY KEY
+            ,com_grp_cd VARCHAR(50) NOT NULL
+            ,com_grp_cd_nm VARCHAR(100) NOT NULL
+            ,com_grp_cd_desc VARCHAR(2000)
+            ,ref01 VARCHAR(100)
+            ,ref02 VARCHAR(100)
+            ,ref03 VARCHAR(100)
+            ,sort_seq INTEGER
+            ,use_yn CHAR(1) NOT NULL DEFAULT 'Y'
+            ,created_by BIGINT
+            ,updated_by BIGINT
+            ,created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+            ,updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+            ,CONSTRAINT com_grp_cd_code_uk UNIQUE (com_grp_cd)
+        )
+    </update>
+
+    <update id="createCommonCodeTableIfMissing">
+        CREATE TABLE IF NOT EXISTS event.com_cd (
+             com_cd_seq BIGSERIAL PRIMARY KEY
+            ,com_grp_cd_seq BIGINT NOT NULL REFERENCES event.com_grp_cd(com_grp_cd_seq)
+            ,com_cd VARCHAR(50) NOT NULL
+            ,com_std_cd VARCHAR(100) NOT NULL
+            ,com_cd_nm VARCHAR(100) NOT NULL
+            ,com_cd_desc VARCHAR(2000)
+            ,refval01 VARCHAR(100)
+            ,refval02 VARCHAR(100)
+            ,refval03 VARCHAR(100)
+            ,sort_seq INTEGER
+            ,use_yn CHAR(1) NOT NULL DEFAULT 'Y'
+            ,created_by BIGINT
+            ,updated_by BIGINT
+            ,created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+            ,updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+            ,CONSTRAINT com_cd_group_code_uk UNIQUE (com_grp_cd_seq, com_cd)
+            ,CONSTRAINT com_cd_std_code_uk UNIQUE (com_std_cd)
+        )
+    </update>
+
+    <insert id="insertOrganizationGradeCodeGroupIfMissing">
+        INSERT INTO event.com_grp_cd
+            (
+             com_grp_cd
+            ,com_grp_cd_nm
+            ,com_grp_cd_desc
+            ,ref01
+            ,sort_seq
+            ,use_yn
+            )
+        VALUES
+            (
+             'ORG_GRADE'
+            ,'Organization Grade'
+            ,'Organization grade and hosted event limit settings.'
+            ,'Hosted Event Limit'
+            ,1
+            ,'Y'
+            )
+        ON CONFLICT (com_grp_cd) DO UPDATE
+        SET ref01 = COALESCE(NULLIF(event.com_grp_cd.ref01, ''), EXCLUDED.ref01)
+    </insert>
+
+    <insert id="insertDefaultOrganizationGradeCodesIfMissing">
+        WITH grp AS (
+            SELECT com_grp_cd_seq
+            FROM event.com_grp_cd
+            WHERE com_grp_cd = 'ORG_GRADE'
+        )
+        INSERT INTO event.com_cd
+            (
+             com_grp_cd_seq
+            ,com_cd
+            ,com_std_cd
+            ,com_cd_nm
+            ,com_cd_desc
+            ,refval01
+            ,sort_seq
+            ,use_yn
+            )
+        SELECT
+             grp.com_grp_cd_seq
+            ,defaults.com_cd
+            ,'ORG_GRADE_' || defaults.com_cd
+            ,defaults.com_cd_nm
+            ,'Organization grade hosted event limit.'
+            ,defaults.max_event_count
+            ,defaults.sort_seq
+            ,'Y'
+        FROM grp
+        CROSS JOIN (
+            VALUES
+                 ('S', 'S', '10', 1)
+                ,('A', 'A', '5', 2)
+                ,('B', 'B', '3', 3)
+                ,('C', 'C', '1', 4)
+        ) AS defaults(com_cd, com_cd_nm, max_event_count, sort_seq)
+        ON CONFLICT (com_grp_cd_seq, com_cd) DO NOTHING
+    </insert>
+
+    <select id="selectSettingsGroups" resultType="com.kcabEvent.dto.settings.SettingsGroupDto">
+        SELECT
+             com_grp_cd_seq
+            ,com_grp_cd
+            ,com_grp_cd_nm
+            ,com_grp_cd_desc
+            ,ref01
+            ,ref02
+            ,ref03
+            ,sort_seq
+        FROM event.com_grp_cd
+        WHERE use_yn = 'Y'
+        ORDER BY sort_seq, com_grp_cd
+    </select>
+
+    <insert id="upsertSettingsGroup" parameterType="com.kcabEvent.dto.settings.SettingsGroupDto">
+        INSERT INTO event.com_grp_cd
+            (
+             com_grp_cd
+            ,com_grp_cd_nm
+            ,com_grp_cd_desc
+            ,ref01
+            ,ref02
+            ,ref03
+            ,sort_seq
+            ,use_yn
+            ,created_by
+            ,updated_by
+            ,created_at
+            ,updated_at
+            )
+        VALUES
+            (
+             #{comGrpCd}
+            ,#{comGrpCdNm}
+            ,#{comGrpCdDesc,jdbcType=VARCHAR}
+            ,#{ref01,jdbcType=VARCHAR}
+            ,#{ref02,jdbcType=VARCHAR}
+            ,#{ref03,jdbcType=VARCHAR}
+            ,COALESCE(#{sortSeq}, 0)
+            ,'Y'
+            ,#{updatedBy,jdbcType=BIGINT}
+            ,#{updatedBy,jdbcType=BIGINT}
+            ,CURRENT_TIMESTAMP
+            ,CURRENT_TIMESTAMP
+            )
+        ON CONFLICT (com_grp_cd) DO UPDATE
+        SET  com_grp_cd_nm   = EXCLUDED.com_grp_cd_nm
+            ,com_grp_cd_desc = EXCLUDED.com_grp_cd_desc
+            ,ref01           = EXCLUDED.ref01
+            ,ref02           = EXCLUDED.ref02
+            ,ref03           = EXCLUDED.ref03
+            ,sort_seq        = EXCLUDED.sort_seq
+            ,use_yn          = 'Y'
+            ,updated_by      = EXCLUDED.updated_by
+            ,updated_at      = CURRENT_TIMESTAMP
+    </insert>
+
+    <update id="deleteSettingsGroup" parameterType="com.kcabEvent.dto.settings.SettingsGroupDto">
+        UPDATE event.com_grp_cd
+        SET use_yn = 'N'
+           ,updated_by = #{updatedBy,jdbcType=BIGINT}
+           ,updated_at = CURRENT_TIMESTAMP
+        WHERE com_grp_cd = #{comGrpCd}
+    </update>
+
+    <select id="selectSettingsCodes" resultType="com.kcabEvent.dto.settings.SettingsCodeDto">
+        WITH code_rows AS (
+            SELECT
+                 c.com_cd_seq
+                ,c.com_grp_cd_seq
+                ,g.com_grp_cd
+                ,c.com_cd
+                ,c.com_cd_nm
+                ,c.com_cd_desc
+                ,c.refval01
+                ,c.refval02
+                ,c.refval03
+                ,COALESCE(c.sort_seq, 0) AS sort_seq
+            FROM event.com_grp_cd g
+            INNER JOIN event.com_cd c
+                ON c.com_grp_cd_seq = g.com_grp_cd_seq
+            WHERE g.com_grp_cd = #{comGrpCd}
+              AND g.use_yn = 'Y'
+              AND c.use_yn = 'Y'
+        ),
+        org_stats AS (
+            SELECT
+                 UPPER(COALESCE(NULLIF(grade, ''), 'C')) AS grade
+                ,COUNT(*) AS organization_count
+            FROM event.organizations
+            GROUP BY UPPER(COALESCE(NULLIF(grade, ''), 'C'))
+        ),
+        event_stats AS (
+            SELECT
+                 UPPER(COALESCE(NULLIF(o.grade, ''), 'C')) AS grade
+                ,COUNT(e.event_seq) AS current_event_count
+            FROM event.organizations o
+            LEFT JOIN event.events e
+                ON e.organization_seq = o.organization_seq
+               AND e.deleted_at IS NULL
+               AND COALESCE(e.status, '') NOT IN ('rejected', 'cancelled')
+            GROUP BY UPPER(COALESCE(NULLIF(o.grade, ''), 'C'))
+        )
+        SELECT
+             cr.com_cd_seq
+            ,cr.com_grp_cd_seq
+            ,cr.com_grp_cd
+            ,cr.com_cd
+            ,cr.com_cd_nm
+            ,cr.com_cd_desc
+            ,cr.refval01
+            ,cr.refval02
+            ,cr.refval03
+            ,cr.sort_seq
+            ,CASE WHEN cr.com_grp_cd = 'ORG_GRADE' THEN COALESCE(os.organization_count, 0) END AS organization_count
+            ,CASE WHEN cr.com_grp_cd = 'ORG_GRADE' THEN COALESCE(es.current_event_count, 0) END AS current_event_count
+        FROM code_rows cr
+        LEFT JOIN org_stats os
+            ON os.grade = cr.com_cd
+        LEFT JOIN event_stats es
+            ON es.grade = cr.com_cd
+        ORDER BY cr.sort_seq, cr.com_cd
+    </select>
+
+    <insert id="upsertSettingsCode" parameterType="com.kcabEvent.dto.settings.SettingsCodeDto">
+        WITH grp AS (
+            SELECT com_grp_cd_seq
+            FROM event.com_grp_cd
+            WHERE com_grp_cd = #{comGrpCd}
+        )
+        INSERT INTO event.com_cd
+            (
+             com_grp_cd_seq
+            ,com_cd
+            ,com_std_cd
+            ,com_cd_nm
+            ,com_cd_desc
+            ,refval01
+            ,refval02
+            ,refval03
+            ,sort_seq
+            ,use_yn
+            ,created_by
+            ,updated_by
+            ,created_at
+            ,updated_at
+            )
+        SELECT
+             grp.com_grp_cd_seq
+            ,#{comCd}
+            ,#{comGrpCd} || '_' || #{comCd}
+            ,#{comCdNm}
+            ,#{comCdDesc,jdbcType=VARCHAR}
+            ,#{refval01,jdbcType=VARCHAR}
+            ,#{refval02,jdbcType=VARCHAR}
+            ,#{refval03,jdbcType=VARCHAR}
+            ,COALESCE(#{sortSeq}, 0)
+            ,'Y'
+            ,#{updatedBy,jdbcType=BIGINT}
+            ,#{updatedBy,jdbcType=BIGINT}
+            ,CURRENT_TIMESTAMP
+            ,CURRENT_TIMESTAMP
+        FROM grp
+        ON CONFLICT (com_grp_cd_seq, com_cd) DO UPDATE
+        SET  com_cd_nm    = EXCLUDED.com_cd_nm
+            ,com_cd_desc  = EXCLUDED.com_cd_desc
+            ,refval01     = EXCLUDED.refval01
+            ,refval02     = EXCLUDED.refval02
+            ,refval03     = EXCLUDED.refval03
+            ,sort_seq     = EXCLUDED.sort_seq
+            ,use_yn       = 'Y'
+            ,updated_by   = EXCLUDED.updated_by
+            ,updated_at   = CURRENT_TIMESTAMP
+    </insert>
+
+    <update id="deleteSettingsCode" parameterType="com.kcabEvent.dto.settings.SettingsCodeDto">
+        UPDATE event.com_cd c
+        SET use_yn = 'N'
+           ,updated_by = #{updatedBy,jdbcType=BIGINT}
+           ,updated_at = CURRENT_TIMESTAMP
+        FROM event.com_grp_cd g
+        WHERE c.com_grp_cd_seq = g.com_grp_cd_seq
+          AND g.com_grp_cd = #{comGrpCd}
+          AND c.com_cd = #{comCd}
+    </update>
+
+    <select id="selectOrganizationGradeLimits" resultType="com.kcabEvent.dto.settings.OrganizationGradeLimitDto">
+        WITH grade_codes AS (
+            SELECT
+                 c.com_cd AS grade
+                ,c.com_cd_nm AS grade_name
+                ,CASE
+                    WHEN NULLIF(c.refval01, '') ~ '^[0-9]+$' THEN c.refval01::INTEGER
+                    ELSE 0
+                 END AS max_event_count
+                ,COALESCE(c.sort_seq, 0) AS sort_seq
+            FROM event.com_grp_cd g
+            INNER JOIN event.com_cd c
+                ON c.com_grp_cd_seq = g.com_grp_cd_seq
+            WHERE g.com_grp_cd = 'ORG_GRADE'
+              AND g.use_yn = 'Y'
+              AND c.use_yn = 'Y'
+        ),
+        org_stats AS (
+            SELECT
+                 UPPER(COALESCE(NULLIF(grade, ''), 'C')) AS grade
+                ,COUNT(*) AS organization_count
+            FROM event.organizations
+            GROUP BY UPPER(COALESCE(NULLIF(grade, ''), 'C'))
+        ),
+        event_stats AS (
+            SELECT
+                 UPPER(COALESCE(NULLIF(o.grade, ''), 'C')) AS grade
+                ,COUNT(e.event_seq) AS current_event_count
+            FROM event.organizations o
+            LEFT JOIN event.events e
+                ON e.organization_seq = o.organization_seq
+               AND e.deleted_at IS NULL
+               AND COALESCE(e.status, '') NOT IN ('rejected', 'cancelled')
+            GROUP BY UPPER(COALESCE(NULLIF(o.grade, ''), 'C'))
+        )
+        SELECT
+             gc.grade
+            ,gc.grade_name
+            ,gc.max_event_count
+            ,gc.sort_seq
+            ,COALESCE(os.organization_count, 0) AS organization_count
+            ,COALESCE(es.current_event_count, 0) AS current_event_count
+        FROM grade_codes gc
+        LEFT JOIN org_stats os ON os.grade = gc.grade
+        LEFT JOIN event_stats es ON es.grade = gc.grade
+        ORDER BY gc.sort_seq, gc.grade
+    </select>
+
+    <insert id="upsertOrganizationGradeLimit" parameterType="com.kcabEvent.dto.settings.OrganizationGradeLimitDto">
+        WITH grp AS (
+            SELECT com_grp_cd_seq
+            FROM event.com_grp_cd
+            WHERE com_grp_cd = 'ORG_GRADE'
+        )
+        INSERT INTO event.com_cd
+            (
+             com_grp_cd_seq
+            ,com_cd
+            ,com_std_cd
+            ,com_cd_nm
+            ,com_cd_desc
+            ,refval01
+            ,sort_seq
+            ,use_yn
+            ,created_by
+            ,updated_by
+            ,created_at
+            ,updated_at
+            )
+        SELECT
+             grp.com_grp_cd_seq
+            ,#{grade}
+            ,'ORG_GRADE_' || #{grade}
+            ,COALESCE(NULLIF(#{gradeName,jdbcType=VARCHAR}, ''), #{grade})
+            ,'Organization grade hosted event limit.'
+            ,CAST(#{maxEventCount} AS VARCHAR)
+            ,COALESCE(#{sortSeq}, 0)
+            ,'Y'
+            ,#{updatedBy,jdbcType=BIGINT}
+            ,#{updatedBy,jdbcType=BIGINT}
+            ,CURRENT_TIMESTAMP
+            ,CURRENT_TIMESTAMP
+        FROM grp
+        ON CONFLICT (com_grp_cd_seq, com_cd) DO UPDATE
+        SET  com_cd_nm    = EXCLUDED.com_cd_nm
+            ,com_cd_desc  = EXCLUDED.com_cd_desc
+            ,refval01     = EXCLUDED.refval01
+            ,sort_seq     = EXCLUDED.sort_seq
+            ,use_yn       = 'Y'
+            ,updated_by   = EXCLUDED.updated_by
+            ,updated_at   = CURRENT_TIMESTAMP
+    </insert>
+
+    <select id="selectOrganizationMaxEventCount" resultType="java.lang.Integer">
+        SELECT
+            CASE
+                WHEN NULLIF(c.refval01, '') ~ '^[0-9]+$' THEN c.refval01::INTEGER
+                ELSE NULL
+            END
+        FROM event.organizations o
+        INNER JOIN event.com_grp_cd g
+            ON g.com_grp_cd = 'ORG_GRADE'
+           AND g.use_yn = 'Y'
+        INNER JOIN event.com_cd c
+            ON c.com_grp_cd_seq = g.com_grp_cd_seq
+           AND c.com_cd = UPPER(COALESCE(NULLIF(o.grade, ''), 'C'))
+           AND c.use_yn = 'Y'
+        WHERE o.organization_seq = #{organizationSeq}
+    </select>
+
+    <select id="countOrganizationHostedEvents" resultType="long">
+        SELECT COUNT(*)
+        FROM event.events
+        WHERE organization_seq = #{organizationSeq}
+          AND deleted_at IS NULL
+          AND COALESCE(status, '') NOT IN ('rejected', 'cancelled')
+    </select>
+
+</mapper>

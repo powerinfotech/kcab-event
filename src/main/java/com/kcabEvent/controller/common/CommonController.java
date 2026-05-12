@@ -77,6 +77,7 @@ public class CommonController {
             menus.add(fixedMenu(155, "Email History", "/email-logs", "admin/EmailLogHistory", 7, 1));
             menus.add(fixedMenu(156, "Law Firm / Organization Management", "/organizations", "admin/OrganizationManagementMock", 8, 1));
             menus.add(fixedMenu(160, "User Management", "/users", "admin/UserManagementMock", 9, 1));
+            menus.add(fixedMenu(170, "Settings", "/settings", "admin/Settings", 99, 1));
             return menus;
         }
 

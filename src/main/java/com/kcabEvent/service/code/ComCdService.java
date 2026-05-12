@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * ComCdService - 공통 코드 서비스 인터페이스
  *
- * <p>공통 코드(tb_com_cd)의 조회 및 일괄 저장(I/U/D) 기능을 제공한다.</p>
+ * <p>공통 코드(event.com_cd)의 조회 및 일괄 저장(I/U/D) 기능을 제공한다.</p>
  *
  * @see com.kcabEvent.service.code.impl.ComCdServiceImpl
  */

@@ -1,0 +1,445 @@
+'use client';
+
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { App } from 'antd';
+import { PlusOutlined, ReloadOutlined, SaveOutlined, SettingOutlined } from '@ant-design/icons';
+import {
+  callGetSettingsCodes,
+  callGetSettingsGroups,
+  callSaveSettingsCodes,
+  callSaveSettingsGroups,
+} from '@api/admin/SettingsApi';
+import { SettingsCode, SettingsGroup } from '@interface/admin/Settings';
+
+type IudType = 'I' | 'U' | 'D';
+
+const ORGANIZATION_GRADE_GROUP = 'ORG_GRADE';
+
+export default function Settings() {
+  const { message } = App.useApp();
+  const tempSeqRef = useRef(-1);
+  const [groups, setGroups] = useState<SettingsGroup[]>([]);
+  const [settingCodes, setSettingCodes] = useState<SettingsCode[]>([]);
+  const [selectedGroupSeq, setSelectedGroupSeq] = useState<number | null>(null);
+  const [selectedCodeSeq, setSelectedCodeSeq] = useState<number | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [dirty, setDirty] = useState(false);
+
+  const visibleGroups = useMemo(() => groups.filter((item) => item.iudType !== 'D'), [groups]);
+  const visibleCodes = useMemo(() => settingCodes.filter((item) => item.iudType !== 'D'), [settingCodes]);
+
+  const selectedSettingGroup = useMemo(
+    () => visibleGroups.find((item) => item.comGrpCdSeq === selectedGroupSeq) ?? visibleGroups[0],
+    [visibleGroups, selectedGroupSeq],
+  );
+  const selectedSettingCode = useMemo(
+    () => visibleCodes.find((item) => item.comCdSeq === selectedCodeSeq),
+    [visibleCodes, selectedCodeSeq],
+  );
+
+  const isOrganizationGradeSelected = selectedSettingGroup?.comGrpCd === ORGANIZATION_GRADE_GROUP;
+
+  const markGroupChanged = (row: SettingsGroup): SettingsGroup => ({
+    ...row,
+    iudType: row.iudType === 'I' ? 'I' : 'U',
+  });
+
+  const markCodeChanged = (row: SettingsCode): SettingsCode => ({
+    ...row,
+    iudType: row.iudType === 'I' ? 'I' : 'U',
+  });
+
+  const fetchCodes = async (comGrpCd: string) => {
+    if (!comGrpCd) {
+      setSettingCodes([]);
+      setSelectedCodeSeq(null);
+      return;
+    }
+    const codeRes = await callGetSettingsCodes(comGrpCd);
+    const rows = codeRes?.item ?? [];
+    setSettingCodes(rows);
+    setSelectedCodeSeq(rows[0]?.comCdSeq ?? null);
+  };
+
+  const fetchSettings = async (preferredGroupCode?: string) => {
+    setLoading(true);
+    try {
+      const groupRes = await callGetSettingsGroups();
+      const groupRows = groupRes?.item ?? [];
+      const currentGroupCode = preferredGroupCode ?? selectedSettingGroup?.comGrpCd;
+      const nextGroup = groupRows.find((item) => item.comGrpCd === currentGroupCode) ?? groupRows[0];
+      setGroups(groupRows);
+      setSelectedGroupSeq(nextGroup?.comGrpCdSeq ?? null);
+      await fetchCodes(nextGroup?.comGrpCd ?? '');
+      setDirty(false);
+    } catch {
+      message.error('Failed to load settings.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSettings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleSelectGroup = async (group: SettingsGroup) => {
+    if (group.comGrpCdSeq === selectedGroupSeq) return;
+    setSelectedGroupSeq(group.comGrpCdSeq);
+    if (!group.comGrpCd || group.iudType === 'I') {
+      setSettingCodes([]);
+      setSelectedCodeSeq(null);
+      return;
+    }
+    setLoading(true);
+    try {
+      await fetchCodes(group.comGrpCd);
+    } catch {
+      message.error('Failed to load setting codes.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateGroup = (target: SettingsGroup, key: keyof SettingsGroup, value: string) => {
+    const normalizedValue = key === 'comGrpCd' ? value.toUpperCase() : value;
+    setGroups((prev) => prev.map((item) => (
+      item.comGrpCdSeq === target.comGrpCdSeq
+        ? markGroupChanged({ ...item, [key]: normalizedValue })
+        : item
+    )));
+    setDirty(true);
+  };
+
+  const updateCode = (target: SettingsCode, key: keyof SettingsCode, value: string) => {
+    const normalizedValue = key === 'comCd' ? value.toUpperCase() : value;
+    setSettingCodes((prev) => prev.map((item) => (
+      item.comCdSeq === target.comCdSeq
+        ? markCodeChanged({ ...item, [key]: normalizedValue })
+        : item
+    )));
+    setDirty(true);
+  };
+
+  const addGroup = () => {
+    const tempSeq = tempSeqRef.current--;
+    const nextRow: SettingsGroup = {
+      comGrpCdSeq: tempSeq,
+      comGrpCd: '',
+      comGrpCdNm: '',
+      comGrpCdDesc: '',
+      ref01: '',
+      ref02: '',
+      ref03: '',
+      sortSeq: visibleGroups.length + 1,
+      iudType: 'I',
+    };
+    setGroups((prev) => [...prev, nextRow]);
+    setSelectedGroupSeq(tempSeq);
+    setSettingCodes([]);
+    setSelectedCodeSeq(null);
+    setDirty(true);
+  };
+
+  const deleteGroup = () => {
+    if (!selectedSettingGroup) {
+      message.info('Select a setting group first.');
+      return;
+    }
+    if (selectedSettingGroup.iudType === 'I') {
+      setGroups((prev) => prev.filter((item) => item.comGrpCdSeq !== selectedSettingGroup.comGrpCdSeq));
+    } else {
+      setGroups((prev) => prev.map((item) => (
+        item.comGrpCdSeq === selectedSettingGroup.comGrpCdSeq ? { ...item, iudType: 'D' as IudType } : item
+      )));
+    }
+    const nextGroup = visibleGroups.find((item) => item.comGrpCdSeq !== selectedSettingGroup.comGrpCdSeq);
+    setSelectedGroupSeq(nextGroup?.comGrpCdSeq ?? null);
+    setSettingCodes([]);
+    setSelectedCodeSeq(null);
+    setDirty(true);
+  };
+
+  const addCode = () => {
+    if (!selectedSettingGroup?.comGrpCd || selectedSettingGroup.iudType === 'I') {
+      message.info('Save the setting group before adding codes.');
+      return;
+    }
+    const tempSeq = tempSeqRef.current--;
+    const nextRow: SettingsCode = {
+      comCdSeq: tempSeq,
+      comGrpCdSeq: selectedSettingGroup.comGrpCdSeq,
+      comGrpCd: selectedSettingGroup.comGrpCd,
+      comCd: '',
+      comCdNm: '',
+      comCdDesc: '',
+      refval01: '',
+      refval02: '',
+      refval03: '',
+      sortSeq: visibleCodes.length + 1,
+      iudType: 'I',
+    };
+    setSettingCodes((prev) => [...prev, nextRow]);
+    setSelectedCodeSeq(tempSeq);
+    setDirty(true);
+  };
+
+  const deleteCode = () => {
+    const row = selectedSettingCode;
+    if (!row) {
+      message.info('Select a code first.');
+      return;
+    }
+    if (row.iudType === 'I') {
+      setSettingCodes((prev) => prev.filter((item) => item.comCdSeq !== row.comCdSeq));
+    } else {
+      setSettingCodes((prev) => prev.map((item) => (
+        item.comCdSeq === row.comCdSeq ? { ...item, iudType: 'D' as IudType } : item
+      )));
+    }
+    const nextCode = visibleCodes.find((item) => item.comCdSeq !== row.comCdSeq);
+    setSelectedCodeSeq(nextCode?.comCdSeq ?? null);
+    setDirty(true);
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const selectedGroupCodeBeforeSave = selectedSettingGroup?.comGrpCd;
+      const changedGroups = groups.filter((item) => item.iudType);
+      if (changedGroups.length) {
+        await callSaveSettingsGroups(changedGroups.map((item, index) => ({
+          ...item,
+          sortSeq: item.sortSeq ?? index + 1,
+        })));
+      }
+
+      const changedCodes = settingCodes.filter((item) => item.iudType);
+      if (selectedSettingGroup?.comGrpCd && selectedSettingGroup.iudType !== 'I' && changedCodes.length) {
+        await callSaveSettingsCodes(selectedSettingGroup.comGrpCd, changedCodes.map((item, index) => ({
+          ...item,
+          comGrpCd: selectedSettingGroup.comGrpCd,
+          comCdNm: item.comCdNm || item.comCd,
+          sortSeq: item.sortSeq ?? index + 1,
+        })));
+      }
+
+      message.success('Settings have been saved.');
+      await fetchSettings(selectedGroupCodeBeforeSave);
+    } catch (err: any) {
+      message.error(err?.response?.data?.message ?? 'Failed to save settings.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const renderRefHeaderInput = (key: 'ref01' | 'ref02' | 'ref03', placeholder: string) => (
+    <input
+      className="saf-settings-header-input"
+      value={selectedSettingGroup?.[key] ?? ''}
+      placeholder={placeholder}
+      disabled={!selectedSettingGroup || loading || saving}
+      onChange={(event) => {
+        if (selectedSettingGroup) {
+          updateGroup(selectedSettingGroup, key, event.target.value);
+        }
+      }}
+    />
+  );
+
+  return (
+    <div className="saf-screen saf-settings-screen">
+      <header className="saf-screen-header">
+        <div>
+          <h1>Settings</h1>
+          <p>Manage operational rules used across the admin console.</p>
+        </div>
+        <div className="saf-screen-actions">
+            <button type="button" className="saf-action-btn is-secondary" onClick={() => fetchSettings()} disabled={loading || saving}>
+            <ReloadOutlined />
+            <span>Refresh</span>
+          </button>
+          <button type="button" className="saf-action-btn is-primary" onClick={handleSave} disabled={loading || saving || !dirty}>
+            <SaveOutlined />
+            <span>Save Changes</span>
+          </button>
+        </div>
+      </header>
+
+      <div className="saf-settings-layout">
+        <section className="saf-panel saf-settings-grade-panel">
+          <div className="saf-settings-panel-head">
+            <PanelTitle
+              title="Setting Groups"
+              subtitle="Manage common code groups used by settings."
+            />
+            <div className="saf-settings-row-actions">
+              <button type="button" onClick={addGroup} disabled={loading || saving}>
+                <PlusOutlined />
+                <span>Add Row</span>
+              </button>
+              <button type="button" onClick={deleteGroup} disabled={loading || saving || !selectedSettingGroup}>
+                <span>Delete Row</span>
+              </button>
+            </div>
+          </div>
+          <div className="saf-table-wrap">
+            <table className="saf-table saf-settings-grade-table">
+              <thead>
+                <tr>
+                  <th>Group Code</th>
+                  <th>Group Name</th>
+                  <th>Ref 01</th>
+                  <th>Ref 02</th>
+                  <th>Ref 03</th>
+                </tr>
+              </thead>
+              <tbody>
+                {visibleGroups.map((item) => (
+                  <tr
+                    key={item.comGrpCdSeq}
+                    className={item.comGrpCdSeq === selectedSettingGroup?.comGrpCdSeq ? 'is-selected' : ''}
+                    onClick={() => handleSelectGroup(item)}
+                  >
+                    <td>
+                      <input
+                        value={item.comGrpCd}
+                        disabled={item.iudType !== 'I'}
+                        onChange={(event) => updateGroup(item, 'comGrpCd', event.target.value)}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        value={item.comGrpCdNm ?? ''}
+                        onChange={(event) => updateGroup(item, 'comGrpCdNm', event.target.value)}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        value={item.ref01 ?? ''}
+                        onChange={(event) => updateGroup(item, 'ref01', event.target.value)}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        value={item.ref02 ?? ''}
+                        onChange={(event) => updateGroup(item, 'ref02', event.target.value)}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        value={item.ref03 ?? ''}
+                        onChange={(event) => updateGroup(item, 'ref03', event.target.value)}
+                      />
+                    </td>
+                  </tr>
+                ))}
+                {!visibleGroups.length && (
+                  <tr>
+                    <td colSpan={5} className="saf-settings-empty">
+                      <SettingOutlined />
+                      <span>{loading ? 'Loading...' : 'No setting groups found.'}</span>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section className="saf-panel saf-settings-limit-panel">
+          <div className="saf-settings-panel-head">
+            <PanelTitle
+              title={isOrganizationGradeSelected ? 'Hosted Event Limits' : 'Common Codes'}
+              subtitle="Manage common codes under the selected setting group."
+            />
+            <div className="saf-settings-row-actions">
+              <button type="button" onClick={addCode} disabled={loading || saving || !selectedSettingGroup}>
+                <PlusOutlined />
+                <span>Add Row</span>
+              </button>
+              <button type="button" onClick={deleteCode} disabled={loading || saving || !selectedSettingCode}>
+                <span>Delete Row</span>
+              </button>
+            </div>
+          </div>
+          <div className="saf-table-wrap">
+            <table className="saf-table saf-settings-limit-table">
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Name</th>
+                  <th>{renderRefHeaderInput('ref01', 'Ref 01')}</th>
+                  <th>{renderRefHeaderInput('ref02', 'Ref 02')}</th>
+                  <th>{renderRefHeaderInput('ref03', 'Ref 03')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {visibleCodes.map((item) => (
+                  <tr
+                    key={item.comCdSeq}
+                    className={item.comCdSeq === selectedCodeSeq ? 'is-selected' : ''}
+                    onClick={() => setSelectedCodeSeq(item.comCdSeq)}
+                  >
+                    <td>
+                      <input
+                        value={item.comCd}
+                        disabled={item.iudType !== 'I'}
+                        onChange={(event) => updateCode(item, 'comCd', event.target.value)}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        value={item.comCdNm ?? ''}
+                        onChange={(event) => updateCode(item, 'comCdNm', event.target.value)}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type={isOrganizationGradeSelected ? 'number' : 'text'}
+                        min={isOrganizationGradeSelected ? 0 : undefined}
+                        value={item.refval01 ?? ''}
+                        onChange={(event) => updateCode(item, 'refval01', event.target.value)}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        value={item.refval02 ?? ''}
+                        onChange={(event) => updateCode(item, 'refval02', event.target.value)}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        value={item.refval03 ?? ''}
+                        onChange={(event) => updateCode(item, 'refval03', event.target.value)}
+                      />
+                    </td>
+                  </tr>
+                ))}
+                {!visibleCodes.length && (
+                  <tr>
+                    <td colSpan={5} className="saf-settings-empty">
+                      <SettingOutlined />
+                      <span>{loading ? 'Loading...' : 'No common codes found.'}</span>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+}
+
+function PanelTitle({ title, subtitle }: { title: string; subtitle?: string }) {
+  return (
+    <div className="saf-panel-title">
+      <h2>{title}</h2>
+      {subtitle && <p>{subtitle}</p>}
+    </div>
+  );
+}
