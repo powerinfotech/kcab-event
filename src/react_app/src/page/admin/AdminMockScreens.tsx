@@ -205,6 +205,7 @@ export function SuperDashboard() {
     }
     move('/admin/events');
   };
+  const pendingSideEvents = getLatestPendingSideEvents(dashboardMetrics?.pendingSideEvents);
 
   return (
     <div className="saf-screen">
@@ -215,9 +216,9 @@ export function SuperDashboard() {
       <div className="saf-dashboard-grid">
         <section className="saf-panel saf-dashboard-review-panel">
           <PanelTitle title="Side Events Awaiting Review" />
-          {dashboardMetrics?.pendingSideEvents?.length ? (
+          {pendingSideEvents.length ? (
             <div className="saf-review-list">
-              {dashboardMetrics.pendingSideEvents.map((event) => (
+              {pendingSideEvents.map((event) => (
                 <article className="saf-review-card" key={event.eventSeq}>
                   <div className="saf-review-card-main">
                     <div className="saf-review-meta">
@@ -325,6 +326,18 @@ function formatSubmittedAt(submittedAt?: string | null) {
 
   const days = Math.floor(hours / 24);
   return `Submitted ${days} day${days === 1 ? '' : 's'} ago`;
+}
+
+function getLatestPendingSideEvents(events: AdminDashboardMetrics['pendingSideEvents'] | undefined) {
+  return [...(events ?? [])]
+    .sort((a, b) => getSubmittedAtTime(b.submittedAt) - getSubmittedAtTime(a.submittedAt) || b.eventSeq - a.eventSeq)
+    .slice(0, 3);
+}
+
+function getSubmittedAtTime(value: string | null) {
+  if (!value) return 0;
+  const time = new Date(value).getTime();
+  return Number.isNaN(time) ? 0 : time;
 }
 
 function formatMonthDay(dateTime: string) {

@@ -58,7 +58,7 @@
         LIMIT 5
     </select>
 
-    <!-- Pending side events awaiting admin review -->
+    <!-- Latest pending side events awaiting admin review -->
     <select id="selectPendingSideEvents" resultType="com.kcabEvent.dto.saf.SafDashboardPendingEventDto">
         SELECT
              e.event_seq
@@ -73,8 +73,8 @@
         WHERE e.deleted_at IS NULL
           AND e.event_type = 'side'
           AND e.status = 'pending_approval'
-        ORDER BY e.created_at ASC NULLS LAST, e.event_seq ASC
-        LIMIT 5
+        ORDER BY e.created_at DESC NULLS LAST, e.event_seq DESC
+        LIMIT 3
     </select>
 
     <!-- Organization for the logged-in user -->
