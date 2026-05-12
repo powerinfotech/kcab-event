@@ -10,23 +10,38 @@
             ,n.top_yn
             ,n.use_yn
             ,u.name AS rgst_user_name
-            ,n.rgst_date_time
+            ,n.created_at AS rgst_date_time
         FROM event.notice n
-        LEFT JOIN event.users u ON u.user_seq = n.rgst_user_seq
+        LEFT JOIN event.users u ON u.user_seq = n.created_by
         <where>
+            n.deleted_at IS NULL
             <if test="searchText != null and searchText != ''">
                 AND n.title LIKE '%' || #{searchText} || '%'
             </if>
         </where>
-        ORDER BY n.top_yn DESC, n.rgst_date_time DESC
+        ORDER BY n.top_yn DESC, n.created_at DESC
     </select>
 
     <select id="selectNoticeBySeq" resultType="com.kcabEvent.domain.Notice">
-        SELECT * FROM event.notice WHERE notice_seq = #{noticeSeq}
+        SELECT
+             notice_seq
+            ,title
+            ,content
+            ,view_count
+            ,top_yn
+            ,use_yn
+            ,file_seq
+            ,created_by AS rgst_user_seq
+            ,created_at AS rgst_date_time
+            ,updated_by AS upt_user_seq
+            ,updated_at AS upt_date_time
+        FROM event.notice
+        WHERE notice_seq = #{noticeSeq}
+          AND deleted_at IS NULL
     </select>
 
     <insert id="insertNotice" parameterType="com.kcabEvent.domain.Notice" useGeneratedKeys="true" keyProperty="noticeSeq">
-        INSERT INTO event.notice (title, content, top_yn, use_yn, file_seq, rgst_user_seq, upt_user_seq)
+        INSERT INTO event.notice (title, content, top_yn, use_yn, file_seq, created_by, updated_by)
         VALUES (#{title}, #{content}, #{topYn}, #{useYn}, #{fileSeq}, #{rgstUserSeq}, #{uptUserSeq})
     </insert>
 
@@ -37,17 +52,24 @@
             ,top_yn         = #{topYn}
             ,use_yn         = #{useYn}
             ,file_seq       = #{fileSeq}
-            ,upt_user_seq   = #{uptUserSeq}
-            ,upt_date_time  = CURRENT_TIMESTAMP
+            ,updated_by     = #{uptUserSeq}
+            ,updated_at     = CURRENT_TIMESTAMP
+        WHERE notice_seq = #{noticeSeq}
+          AND deleted_at IS NULL
+    </update>
+
+    <update id="deleteNotice">
+        UPDATE event.notice
+        SET  deleted_at = CURRENT_TIMESTAMP
+            ,updated_at = CURRENT_TIMESTAMP
         WHERE notice_seq = #{noticeSeq}
     </update>
 
-    <delete id="deleteNotice">
-        DELETE FROM event.notice WHERE notice_seq = #{noticeSeq}
-    </delete>
-
     <update id="incrementViewCount">
-        UPDATE event.notice SET view_count = view_count + 1 WHERE notice_seq = #{noticeSeq}
+        UPDATE event.notice
+        SET view_count = view_count + 1
+        WHERE notice_seq = #{noticeSeq}
+          AND deleted_at IS NULL
     </update>
 
 </mapper>

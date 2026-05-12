@@ -35,7 +35,7 @@ const handleSave = async () => {
 // fileList          - 파일 목록 (FileDetailType[])
 // onFileListChange  - 파일 목록 변경 콜백
 // isEditable        - 편집 가능 여부 (true: 업로드/삭제 가능)
-// 최대 5개 파일, 10MB 제한
+// 최대 5개 파일, 30MB 제한
 // 드래그앤드롭 정렬 지원
 // IUD 추적 (Insert/Update/Delete 상태 관리)
 
@@ -106,7 +106,7 @@ const FileGuide = ({ menuSeq }: FileGuideProps) => {
           </GuideStatusItem>
         </GuideStatusRow>
         <div className="guide-demo-description">
-          드래그앤드롭 정렬 지원 / 최대 5개, 10MB 제한 / 파일 다운로드 및 삭제 가능
+          드래그앤드롭 정렬 지원 / 최대 5개, 30MB 제한 / 파일 다운로드 및 삭제 가능
         </div>
       </GuideDemoBox>
 

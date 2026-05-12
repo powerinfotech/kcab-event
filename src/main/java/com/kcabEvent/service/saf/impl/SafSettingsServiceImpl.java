@@ -16,8 +16,6 @@ import java.util.List;
 @Service("safSettingsService")
 public class SafSettingsServiceImpl extends EgovAbstractServiceImpl implements SafSettingsService {
 
-    private static final String ORGANIZATION_GRADE_GROUP = "ORG_GRADE";
-
     @Resource(name = "safSettingsDao")
     private SafSettingsDao safSettingsDao;
 
@@ -85,9 +83,6 @@ public class SafSettingsServiceImpl extends EgovAbstractServiceImpl implements S
             code.setComCdNm(code.getComCdNm() == null || code.getComCdNm().isBlank()
                     ? code.getComCd()
                     : code.getComCdNm().trim());
-            if (ORGANIZATION_GRADE_GROUP.equals(normalizedGroupCode)) {
-                validateOrganizationGradeLimit(code.getRefval01());
-            }
             safSettingsDao.upsertSettingsCode(code);
         }
     }
@@ -136,18 +131,5 @@ public class SafSettingsServiceImpl extends EgovAbstractServiceImpl implements S
             throw new BusinessException("Common code group is required.");
         }
         return comGrpCd.trim().toUpperCase();
-    }
-
-    private void validateOrganizationGradeLimit(String value) {
-        if (value == null || value.isBlank()) {
-            throw new BusinessException("Hosted event limit is required.");
-        }
-        try {
-            if (Integer.parseInt(value.trim()) < 0) {
-                throw new BusinessException("Hosted event limit must be 0 or greater.");
-            }
-        } catch (NumberFormatException e) {
-            throw new BusinessException("Hosted event limit must be numeric.");
-        }
     }
 }

@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kcabEvent.dao.NoticeNewsDao">
+
+    <select id="selectNoticeNewsList" resultType="com.kcabEvent.dto.noticenews.NoticeNewsListDto"
+            parameterType="com.kcabEvent.dto.noticenews.NoticeNewsSearchDto">
+        SELECT
+             n.notice_news_seq
+            ,n.post_type
+            ,n.title
+            ,n.post_date
+            ,n.view_count
+            ,n.top_yn
+            ,n.top_start_date
+            ,n.top_end_date
+            ,n.use_yn
+            ,n.file_seq
+            ,u.name        AS rgst_user_name
+            ,n.created_at  AS rgst_date_time
+            ,n.updated_at  AS upt_date_time
+            ,COALESCE(att.attachment_count, 0) AS attachment_count
+        FROM event.notice_news n
+        LEFT JOIN event.users u ON u.user_seq = n.created_by
+        LEFT JOIN LATERAL (
+            SELECT COUNT(*) AS attachment_count
+            FROM event.tb_file_dtl d
+            WHERE d.file_seq = n.file_seq
+              AND d.del_yn = 'N'
+        ) att ON TRUE
+        <where>
+            n.deleted_at IS NULL
+            <if test="postType != null and postType != ''">
+                AND n.post_type = #{postType}
+            </if>
+            <if test="useYn != null and useYn != ''">
+                AND n.use_yn = #{useYn}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND n.title ILIKE '%' || #{keyword} || '%'
+            </if>
+        </where>
+        ORDER BY
+            CASE
+                WHEN n.top_yn = 'Y'
+                 AND CURRENT_DATE BETWEEN n.top_start_date AND n.top_end_date
+                THEN 0
+                ELSE 1
+            END,
+            n.post_date DESC,
+            n.notice_news_seq DESC
+    </select>
+
+    <select id="selectNoticeNewsDetail" resultType="com.kcabEvent.dto.noticenews.NoticeNewsDetailDto">
+        SELECT
+             n.notice_news_seq
+            ,n.post_type
+            ,n.title
+            ,n.content
+            ,n.post_date
+            ,n.view_count
+            ,n.top_yn
+            ,n.top_start_date
+            ,n.top_end_date
+            ,n.use_yn
+            ,n.file_seq
+            ,n.created_by  AS rgst_user_seq
+            ,cu.name       AS rgst_user_name
+            ,n.created_at  AS rgst_date_time
+            ,n.updated_by  AS upt_user_seq
+            ,uu.name       AS upt_user_name
+            ,n.updated_at  AS upt_date_time
+        FROM event.notice_news n
+        LEFT JOIN event.users cu ON cu.user_seq = n.created_by
+        LEFT JOIN event.users uu ON uu.user_seq = n.updated_by
+        WHERE n.notice_news_seq = #{noticeNewsSeq}
+          AND n.deleted_at IS NULL
+    </select>
+
+    <insert id="insertNoticeNews" parameterType="com.kcabEvent.domain.NoticeNews"
+            useGeneratedKeys="true" keyProperty="noticeNewsSeq">
+        INSERT INTO event.notice_news
+            (
+             post_type
+            ,title
+            ,content
+            ,post_date
+            ,top_yn
+            ,top_start_date
+            ,top_end_date
+            ,use_yn
+            ,file_seq
+            ,created_by
+            ,updated_by
+            )
+        VALUES
+            (
+             #{postType}
+            ,#{title}
+            ,#{content,jdbcType=VARCHAR}
+            ,#{postDate}
+            ,COALESCE(#{topYn,jdbcType=CHAR}, 'N')
+            ,#{topStartDate,jdbcType=DATE}
+            ,#{topEndDate,jdbcType=DATE}
+            ,COALESCE(#{useYn,jdbcType=CHAR}, 'Y')
+            ,#{fileSeq,jdbcType=BIGINT}
+            ,#{rgstUserSeq,jdbcType=BIGINT}
+            ,#{uptUserSeq,jdbcType=BIGINT}
+            )
+    </insert>
+
+    <update id="updateNoticeNews" parameterType="com.kcabEvent.domain.NoticeNews">
+        UPDATE event.notice_news
+        SET  post_type   = #{postType}
+            ,title       = #{title}
+            ,content     = #{content,jdbcType=VARCHAR}
+            ,post_date   = #{postDate}
+            ,top_yn      = COALESCE(#{topYn,jdbcType=CHAR}, top_yn)
+            ,top_start_date = #{topStartDate,jdbcType=DATE}
+            ,top_end_date   = #{topEndDate,jdbcType=DATE}
+            ,use_yn      = COALESCE(#{useYn,jdbcType=CHAR}, use_yn)
+            ,file_seq    = #{fileSeq,jdbcType=BIGINT}
+            ,updated_by  = #{uptUserSeq,jdbcType=BIGINT}
+            ,updated_at  = CURRENT_TIMESTAMP
+        WHERE notice_news_seq = #{noticeNewsSeq}
+          AND deleted_at IS NULL
+    </update>
+
+    <update id="softDeleteNoticeNews">
+        UPDATE event.notice_news
+        SET  deleted_at = CURRENT_TIMESTAMP
+            ,updated_by = #{uptUserSeq,jdbcType=BIGINT}
+            ,updated_at = CURRENT_TIMESTAMP
+        WHERE notice_news_seq = #{noticeNewsSeq}
+          AND deleted_at IS NULL
+    </update>
+
+    <update id="incrementViewCount">
+        UPDATE event.notice_news
+        SET view_count = view_count + 1
+        WHERE notice_news_seq = #{noticeNewsSeq}
+          AND deleted_at IS NULL
+    </update>
+
+</mapper>

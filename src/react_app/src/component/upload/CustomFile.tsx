@@ -8,7 +8,7 @@ import { message } from '@util/antdMessage';
  *
  * [주요 기능]
  * - 최대 5개 파일 첨부 (MAX_FILE_COUNT=5)
- * - 최대 파일 크기 10MB 제한
+ * - 최대 파일 크기 30MB 제한
  * - @dnd-kit 기반 드래그 앤 드롭 순서 변경
  * - 순서 변경 시 iudType=U, 새 파일=I, 삭제=D 자동 설정
  * - 기존 파일 클릭 다운로드 (서버 파일: axios GET /api/download-file, 신규 파일: Blob URL)
@@ -211,7 +211,7 @@ const CustomFile = (props:CustomFilePropsType) => {
         const isNew = !fileList.find(f => f.uid === newFile.uid);
 
         if (currentFiles.length >= MAX_FILE_COUNT && isNew) {
-            message.warning(`최대 ${MAX_FILE_COUNT}개의 파일만 첨부할 수 있습니다.`);
+            message.warning(`You can attach up to ${MAX_FILE_COUNT} files.`);
             return;
         }
 
@@ -249,12 +249,12 @@ const CustomFile = (props:CustomFilePropsType) => {
         } else {
             const rcFile = newFile as RcFile;
             if (!isFileAccepted(rcFile, props.accept)) {
-                message.error('허용되지 않은 파일 형식입니다.');
+                message.error('This file type is not allowed.');
                 return;
             }
-            const maxSize =  10 * 1024 * 1024;
+            const maxSize =  30 * 1024 * 1024;
             if (rcFile.size > maxSize) {
-                message.error('10MB 이하 파일만 업로드 가능합니다.');
+                message.error('Only files up to 30MB can be uploaded.');
                 return;
             }
             const newFileListItem = {
@@ -339,7 +339,7 @@ const CustomFile = (props:CustomFilePropsType) => {
                         return <CustomFileItem originNode={originNode} file={file} />;
                     }}
                 >
-                    <Button disabled={!props.isEditable} className="btn-bg-white" icon={<UploadOutlined />}>파일첨부</Button>
+                    <Button disabled={!props.isEditable} className="btn-bg-white" icon={<UploadOutlined />}>Attach File</Button>
                 </Upload>
             </SortableContext>
         </DndContext>

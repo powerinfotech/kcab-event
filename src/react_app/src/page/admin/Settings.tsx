@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { App } from 'antd';
-import { PlusOutlined, ReloadOutlined, SaveOutlined, SettingOutlined } from '@ant-design/icons';
+import { DeleteOutlined, PlusOutlined, ReloadOutlined, SaveOutlined, SettingOutlined } from '@ant-design/icons';
 import {
   callGetSettingsCodes,
   callGetSettingsGroups,
@@ -13,10 +13,8 @@ import { SettingsCode, SettingsGroup } from '@interface/admin/Settings';
 
 type IudType = 'I' | 'U' | 'D';
 
-const ORGANIZATION_GRADE_GROUP = 'ORG_GRADE';
-
 export default function Settings() {
-  const { message } = App.useApp();
+  const { message, modal } = App.useApp();
   const tempSeqRef = useRef(-1);
   const [groups, setGroups] = useState<SettingsGroup[]>([]);
   const [settingCodes, setSettingCodes] = useState<SettingsCode[]>([]);
@@ -37,8 +35,6 @@ export default function Settings() {
     () => visibleCodes.find((item) => item.comCdSeq === selectedCodeSeq),
     [visibleCodes, selectedCodeSeq],
   );
-
-  const isOrganizationGradeSelected = selectedSettingGroup?.comGrpCd === ORGANIZATION_GRADE_GROUP;
 
   const markGroupChanged = (row: SettingsGroup): SettingsGroup => ({
     ...row,
@@ -143,11 +139,8 @@ export default function Settings() {
     setDirty(true);
   };
 
-  const deleteGroup = () => {
-    if (!selectedSettingGroup) {
-      message.info('Select a setting group first.');
-      return;
-    }
+  const removeSelectedGroup = async () => {
+    if (!selectedSettingGroup) return;
     if (selectedSettingGroup.iudType === 'I') {
       setGroups((prev) => prev.filter((item) => item.comGrpCdSeq !== selectedSettingGroup.comGrpCdSeq));
     } else {
@@ -159,7 +152,33 @@ export default function Settings() {
     setSelectedGroupSeq(nextGroup?.comGrpCdSeq ?? null);
     setSettingCodes([]);
     setSelectedCodeSeq(null);
+    if (nextGroup?.comGrpCd && nextGroup.iudType !== 'I') {
+      setLoading(true);
+      try {
+        await fetchCodes(nextGroup.comGrpCd);
+      } catch {
+        message.error('Failed to load setting codes.');
+      } finally {
+        setLoading(false);
+      }
+    }
     setDirty(true);
+  };
+
+  const handleDeleteGroup = () => {
+    if (!selectedSettingGroup) {
+      message.info('Select a setting group first.');
+      return;
+    }
+    modal.confirm({
+      title: 'Delete Setting Group',
+      content: 'Do you want to delete this setting group row?',
+      okText: 'Delete',
+      okButtonProps: { danger: true },
+      cancelText: 'Cancel',
+      centered: true,
+      onOk: removeSelectedGroup,
+    });
   };
 
   const addCode = () => {
@@ -186,12 +205,9 @@ export default function Settings() {
     setDirty(true);
   };
 
-  const deleteCode = () => {
+  const removeSelectedCode = () => {
     const row = selectedSettingCode;
-    if (!row) {
-      message.info('Select a code first.');
-      return;
-    }
+    if (!row) return;
     if (row.iudType === 'I') {
       setSettingCodes((prev) => prev.filter((item) => item.comCdSeq !== row.comCdSeq));
     } else {
@@ -204,7 +220,23 @@ export default function Settings() {
     setDirty(true);
   };
 
-  const handleSave = async () => {
+  const handleDeleteCode = () => {
+    if (!selectedSettingCode) {
+      message.info('Select a code first.');
+      return;
+    }
+    modal.confirm({
+      title: 'Delete Common Code',
+      content: 'Do you want to delete this common code row?',
+      okText: 'Delete',
+      okButtonProps: { danger: true },
+      cancelText: 'Cancel',
+      centered: true,
+      onOk: removeSelectedCode,
+    });
+  };
+
+  const persistSettings = async () => {
     setSaving(true);
     try {
       const selectedGroupCodeBeforeSave = selectedSettingGroup?.comGrpCd;
@@ -235,19 +267,26 @@ export default function Settings() {
     }
   };
 
-  const renderRefHeaderInput = (key: 'ref01' | 'ref02' | 'ref03', placeholder: string) => (
-    <input
-      className="saf-settings-header-input"
-      value={selectedSettingGroup?.[key] ?? ''}
-      placeholder={placeholder}
-      disabled={!selectedSettingGroup || loading || saving}
-      onChange={(event) => {
-        if (selectedSettingGroup) {
-          updateGroup(selectedSettingGroup, key, event.target.value);
-        }
-      }}
-    />
-  );
+  const handleSave = () => {
+    if (!dirty) {
+      message.info('No changes to save.');
+      return;
+    }
+    modal.confirm({
+      title: 'Save Settings',
+      content: 'Do you want to save changes?',
+      okText: 'OK',
+      cancelText: 'Cancel',
+      centered: true,
+      onOk: persistSettings,
+    });
+  };
+
+  const refHeaders = [
+    selectedSettingGroup?.ref01 || 'Ref 01',
+    selectedSettingGroup?.ref02 || 'Ref 02',
+    selectedSettingGroup?.ref03 || 'Ref 03',
+  ];
 
   return (
     <div className="saf-screen saf-settings-screen">
@@ -263,7 +302,7 @@ export default function Settings() {
           </button>
           <button type="button" className="saf-action-btn is-primary" onClick={handleSave} disabled={loading || saving || !dirty}>
             <SaveOutlined />
-            <span>Save Changes</span>
+            <span>Save</span>
           </button>
         </div>
       </header>
@@ -276,16 +315,17 @@ export default function Settings() {
               subtitle="Manage common code groups used by settings."
             />
             <div className="saf-settings-row-actions">
-              <button type="button" onClick={addGroup} disabled={loading || saving}>
+              <button type="button" className="saf-action-btn is-secondary" onClick={addGroup} disabled={loading || saving}>
                 <PlusOutlined />
-                <span>Add Row</span>
+                <span>Add</span>
               </button>
-              <button type="button" onClick={deleteGroup} disabled={loading || saving || !selectedSettingGroup}>
-                <span>Delete Row</span>
+              <button type="button" className="saf-action-btn is-danger" onClick={handleDeleteGroup} disabled={loading || saving || !selectedSettingGroup}>
+                <DeleteOutlined />
+                <span>Delete</span>
               </button>
             </div>
           </div>
-          <div className="saf-table-wrap">
+          <div className="saf-table-wrap saf-settings-group-table-wrap">
             <table className="saf-table saf-settings-grade-table">
               <thead>
                 <tr>
@@ -352,16 +392,17 @@ export default function Settings() {
         <section className="saf-panel saf-settings-limit-panel">
           <div className="saf-settings-panel-head">
             <PanelTitle
-              title={isOrganizationGradeSelected ? 'Hosted Event Limits' : 'Common Codes'}
+              title="Setting Groups Code"
               subtitle="Manage common codes under the selected setting group."
             />
             <div className="saf-settings-row-actions">
-              <button type="button" onClick={addCode} disabled={loading || saving || !selectedSettingGroup}>
+              <button type="button" className="saf-action-btn is-secondary" onClick={addCode} disabled={loading || saving || !selectedSettingGroup}>
                 <PlusOutlined />
-                <span>Add Row</span>
+                <span>Add</span>
               </button>
-              <button type="button" onClick={deleteCode} disabled={loading || saving || !selectedSettingCode}>
-                <span>Delete Row</span>
+              <button type="button" className="saf-action-btn is-danger" onClick={handleDeleteCode} disabled={loading || saving || !selectedSettingCode}>
+                <DeleteOutlined />
+                <span>Delete</span>
               </button>
             </div>
           </div>
@@ -371,9 +412,9 @@ export default function Settings() {
                 <tr>
                   <th>Code</th>
                   <th>Name</th>
-                  <th>{renderRefHeaderInput('ref01', 'Ref 01')}</th>
-                  <th>{renderRefHeaderInput('ref02', 'Ref 02')}</th>
-                  <th>{renderRefHeaderInput('ref03', 'Ref 03')}</th>
+                  <th>{refHeaders[0]}</th>
+                  <th>{refHeaders[1]}</th>
+                  <th>{refHeaders[2]}</th>
                 </tr>
               </thead>
               <tbody>
@@ -398,8 +439,6 @@ export default function Settings() {
                     </td>
                     <td>
                       <input
-                        type={isOrganizationGradeSelected ? 'number' : 'text'}
-                        min={isOrganizationGradeSelected ? 0 : undefined}
                         value={item.refval01 ?? ''}
                         onChange={(event) => updateCode(item, 'refval01', event.target.value)}
                       />

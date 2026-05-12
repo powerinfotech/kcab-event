@@ -850,7 +850,7 @@ export default function SuperEventList() {
                     maxCount={1}
                     accept="image/*"
                   />
-                  <p className="saf-hint-inline">1 thumbnail image only (JPG/PNG/GIF/WebP) · max 10MB.</p>
+                  <p className="saf-hint-inline">1 thumbnail image only (JPG/PNG/GIF/WebP) · max 30MB.</p>
                 </div>
               </Field>
               <Field label="Attachments" wide>
@@ -860,7 +860,7 @@ export default function SuperEventList() {
                     onFileListChange={setAttachmentFiles}
                     isEditable={canEdit}
                   />
-                  <p className="saf-hint-inline">Up to 5 files (PDF, DOCX, etc.) · max 10MB each · drag to reorder.</p>
+                  <p className="saf-hint-inline">Up to 5 files (PDF, DOCX, etc.) · max 30MB each · drag to reorder.</p>
                 </div>
               </Field>
             </div>
@@ -986,7 +986,7 @@ export default function SuperEventList() {
           </button>
           <button type="button" className="saf-action-btn is-primary" onClick={handleNew}>
             <PlusOutlined />
-            <span>Register</span>
+            <span>New Event</span>
           </button>
         </div>
       </header>

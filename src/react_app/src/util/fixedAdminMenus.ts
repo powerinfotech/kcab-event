@@ -43,7 +43,9 @@ export function getFixedAdminMenuInfo(admYn?: string): MenuInfo[] {
       menu(140, 'Payment Management', '/payments', 'admin/Payments', 5),
       menu(150, 'Email CMS', '/email-cms/registration-confirm', 'admin/EmailCms', 6),
       menu(155, 'Email History', '/email-logs', 'admin/EmailLogHistory', 7),
-      menu(160, 'User Management', '/users', 'admin/UserManagementMock', 8),
+      menu(158, 'Notice & News', '/notice-news', 'admin/NoticeNews', 8),
+      menu(159, 'Gallery', '/gallery', 'admin/Gallery', 9),
+      menu(160, 'User Management', '/users', 'admin/UserManagementMock', 10),
       menu(170, 'Settings', '/settings', 'admin/Settings', 99),
     ];
   }

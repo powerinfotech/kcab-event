@@ -126,6 +126,7 @@ export function getPageComponent(viewPath: string): React.ComponentType<PageComp
  */
 export function getStaticRouteKey(pathname: string): string | null {
   if (pathname === '/') return 'HomePage';
+  if (pathname === '/gallery') return 'public/PublicGallery';
   if (pathname === '/admin' || pathname === '/admin/') return 'DashBoard';
   if (pathname === '/admin/profile') return 'admin/OrgProfile';
   return null;

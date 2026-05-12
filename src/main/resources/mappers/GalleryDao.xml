@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kcabEvent.dao.GalleryDao">
+
+    <select id="selectGalleryList" resultType="com.kcabEvent.dto.gallery.GalleryListDto"
+            parameterType="com.kcabEvent.dto.gallery.GallerySearchDto">
+        SELECT
+             g.gallery_seq
+            ,g.title
+            ,g.gallery_year
+            ,g.description
+            ,g.file_seq
+            ,g.sort_seq
+            ,g.use_yn
+            ,cu.name AS rgst_user_name
+            ,g.created_at AS rgst_date_time
+            ,uu.name AS upt_user_name
+            ,g.updated_at AS upt_date_time
+            ,COALESCE(img.image_count, 0) AS image_count
+            ,img.cover_file_path
+        FROM event.gallery g
+        LEFT JOIN event.users cu ON cu.user_seq = g.created_by
+        LEFT JOIN event.users uu ON uu.user_seq = g.updated_by
+        LEFT JOIN LATERAL (
+            SELECT
+                 COUNT(*)::integer AS image_count
+                ,(
+                    ARRAY_AGG(d.file_path ORDER BY d.sort_seq ASC, d.file_dtl_seq ASC)
+                )[1] AS cover_file_path
+            FROM event.tb_file_dtl d
+            WHERE d.file_seq = g.file_seq
+              AND d.del_yn = 'N'
+              AND LOWER(COALESCE(d.file_type, '')) IN ('jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp')
+        ) img ON TRUE
+        <where>
+            g.deleted_at IS NULL
+            <if test="galleryYear != null">
+                AND g.gallery_year = #{galleryYear}
+            </if>
+            <if test="useYn != null and useYn != ''">
+                AND g.use_yn = #{useYn}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (
+                    g.title ILIKE '%' || #{keyword} || '%'
+                    OR g.description ILIKE '%' || #{keyword} || '%'
+                )
+            </if>
+        </where>
+        ORDER BY g.gallery_year DESC, g.sort_seq ASC, g.gallery_seq DESC
+    </select>
+
+    <select id="selectGalleryDetail" resultType="com.kcabEvent.dto.gallery.GalleryDetailDto">
+        SELECT
+             g.gallery_seq
+            ,g.title
+            ,g.gallery_year
+            ,g.description
+            ,g.file_seq
+            ,g.sort_seq
+            ,g.use_yn
+            ,g.created_by AS rgst_user_seq
+            ,cu.name AS rgst_user_name
+            ,g.created_at AS rgst_date_time
+            ,g.updated_by AS upt_user_seq
+            ,uu.name AS upt_user_name
+            ,g.updated_at AS upt_date_time
+            ,COALESCE(img.image_count, 0) AS image_count
+            ,img.cover_file_path
+        FROM event.gallery g
+        LEFT JOIN event.users cu ON cu.user_seq = g.created_by
+        LEFT JOIN event.users uu ON uu.user_seq = g.updated_by
+        LEFT JOIN LATERAL (
+            SELECT
+                 COUNT(*)::integer AS image_count
+                ,(
+                    ARRAY_AGG(d.file_path ORDER BY d.sort_seq ASC, d.file_dtl_seq ASC)
+                )[1] AS cover_file_path
+            FROM event.tb_file_dtl d
+            WHERE d.file_seq = g.file_seq
+              AND d.del_yn = 'N'
+              AND LOWER(COALESCE(d.file_type, '')) IN ('jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp')
+        ) img ON TRUE
+        WHERE g.gallery_seq = #{gallerySeq}
+          AND g.deleted_at IS NULL
+    </select>
+
+    <select id="selectGalleryImages" resultType="com.kcabEvent.dto.gallery.GalleryImageDto">
+        SELECT
+             d.file_dtl_seq
+            ,d.file_seq
+            ,d.file_nm
+            ,d.file_path
+            ,d.file_type
+            ,d.sort_seq
+        FROM event.tb_file_dtl d
+        WHERE d.file_seq = #{fileSeq}
+          AND d.del_yn = 'N'
+          AND LOWER(COALESCE(d.file_type, '')) IN ('jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp')
+        ORDER BY d.sort_seq ASC, d.file_dtl_seq ASC
+    </select>
+
+    <insert id="insertGallery" parameterType="com.kcabEvent.domain.Gallery"
+            useGeneratedKeys="true" keyProperty="gallerySeq">
+        INSERT INTO event.gallery
+            (
+             title
+            ,gallery_year
+            ,description
+            ,file_seq
+            ,sort_seq
+            ,use_yn
+            ,created_by
+            ,updated_by
+            )
+        VALUES
+            (
+             #{title}
+            ,#{galleryYear}
+            ,#{description,jdbcType=VARCHAR}
+            ,#{fileSeq,jdbcType=BIGINT}
+            ,COALESCE(#{sortSeq,jdbcType=INTEGER}, 0)
+            ,COALESCE(#{useYn,jdbcType=CHAR}, 'Y')
+            ,#{rgstUserSeq,jdbcType=BIGINT}
+            ,#{uptUserSeq,jdbcType=BIGINT}
+            )
+    </insert>
+
+    <update id="updateGallery" parameterType="com.kcabEvent.domain.Gallery">
+        UPDATE event.gallery
+        SET  title = #{title}
+            ,gallery_year = #{galleryYear}
+            ,description = #{description,jdbcType=VARCHAR}
+            ,file_seq = #{fileSeq,jdbcType=BIGINT}
+            ,sort_seq = COALESCE(#{sortSeq,jdbcType=INTEGER}, 0)
+            ,use_yn = COALESCE(#{useYn,jdbcType=CHAR}, use_yn)
+            ,updated_by = #{uptUserSeq,jdbcType=BIGINT}
+            ,updated_at = CURRENT_TIMESTAMP
+        WHERE gallery_seq = #{gallerySeq}
+          AND deleted_at IS NULL
+    </update>
+
+    <update id="softDeleteGallery">
+        UPDATE event.gallery
+        SET  deleted_at = CURRENT_TIMESTAMP
+            ,updated_by = #{uptUserSeq,jdbcType=BIGINT}
+            ,updated_at = CURRENT_TIMESTAMP
+        WHERE gallery_seq = #{gallerySeq}
+          AND deleted_at IS NULL
+    </update>
+
+</mapper>
