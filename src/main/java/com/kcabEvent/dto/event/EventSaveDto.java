@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -39,4 +40,6 @@ public class EventSaveDto {
     private Long organizationSeq;
     private Integer maxParticipants;
     private Boolean isPaid;
+    private List<EventPricingDto> pricingList;
+    private List<EventDiscountCodeDto> discountCodes;
 }

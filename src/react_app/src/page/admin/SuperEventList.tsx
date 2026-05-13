@@ -9,6 +9,7 @@ import {
   CalendarOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
+  DeleteOutlined,
   DownloadOutlined,
   PlusOutlined,
   ReloadOutlined,
@@ -40,8 +41,10 @@ import {
   EVENT_STATUS_TONE,
   EVENT_TYPE_LABELS,
   EVENT_TYPE_TONE,
+  EventDiscountCodeItem,
   EventDetail,
   EventListItem,
+  EventPricingItem,
   EventSaveRequest,
   REGISTRATION_TYPE_LABELS,
   RegistrationType,
@@ -74,6 +77,20 @@ const REGISTRATION_TYPE_OPTIONS: Array<{ value: RegistrationType; label: string 
   { value: 'direct', label: REGISTRATION_TYPE_LABELS.direct },
   { value: 'external', label: REGISTRATION_TYPE_LABELS.external },
   { value: 'none', label: REGISTRATION_TYPE_LABELS.none },
+];
+
+const PRICE_TYPE_OPTIONS: Array<{ value: string; label: string }> = [
+  { value: 'early_bird', label: 'Early Bird' },
+  { value: 'regular', label: 'Regular' },
+  { value: 'student', label: 'Student' },
+  { value: 'member', label: 'Member' },
+];
+
+const CURRENCY_OPTIONS = ['USD', 'KRW', 'EUR', 'JPY'];
+
+const DISCOUNT_TYPE_OPTIONS: Array<{ value: EventDiscountCodeItem['discountType']; label: string }> = [
+  { value: 'percent', label: 'Percent' },
+  { value: 'amount', label: 'Amount' },
 ];
 
 const EVENT_PARTICIPANT_EXCEL_COLUMNS: ExcelColumnDef[] = [
@@ -114,6 +131,8 @@ const emptyDetail: EventDetail = {
   organizationName: '',
   maxParticipants: null,
   isPaid: false,
+  pricingList: [],
+  discountCodes: [],
   rgstUserSeq: 0,
   rgstDateTime: '',
   uptDateTime: '',
@@ -144,6 +163,40 @@ function formatDateRange(start?: string | null, end?: string | null): string {
   if (!s && !e) return '-';
   const fmt = 'YYYY-MM-DD HH:mm';
   return `${s ? s.format(fmt) : '-'} ~ ${e ? e.format(fmt) : '-'}`;
+}
+
+function getPriceTypeLabel(priceType?: string | null): string {
+  return PRICE_TYPE_OPTIONS.find((option) => option.value === priceType)?.label ?? 'Regular';
+}
+
+function createPricingRow(sortSeq: number): EventPricingItem {
+  return {
+    eventPricingSeq: null,
+    priceType: 'regular',
+    priceName: 'Regular',
+    currencyCode: 'USD',
+    amount: null,
+    salesStartAt: '',
+    salesEndAt: '',
+    useYn: 'Y',
+    sortSeq,
+  };
+}
+
+function createDiscountCodeRow(sortSeq: number): EventDiscountCodeItem {
+  return {
+    discountCodeSeq: null,
+    discountCode: '',
+    discountType: 'percent',
+    discountValue: null,
+    appliesToPriceType: '',
+    usageLimit: null,
+    usedCount: 0,
+    validFromAt: '',
+    validToAt: '',
+    useYn: 'Y',
+    sortSeq,
+  };
 }
 
 export default function SuperEventList() {
@@ -248,6 +301,8 @@ export default function SuperEventList() {
         ...(detail ?? {}),
         description,
         content: detail?.content ?? description,
+        pricingList: detail?.pricingList ?? [],
+        discountCodes: detail?.discountCodes ?? [],
       };
       if (!merged.registrationType) {
         merged.registrationType = (merged.registrationUrl ?? '').trim() ? 'external' : 'direct';
@@ -318,6 +373,78 @@ export default function SuperEventList() {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
+  const updatePricingMode = (isPaid: boolean) => {
+    setForm((prev) => ({
+      ...prev,
+      isPaid,
+      pricingList: isPaid && !prev.pricingList?.length ? [createPricingRow(1)] : (prev.pricingList ?? []),
+      discountCodes: prev.discountCodes ?? [],
+    }));
+  };
+
+  const addPricingRow = () => {
+    setForm((prev) => ({
+      ...prev,
+      pricingList: [...(prev.pricingList ?? []), createPricingRow((prev.pricingList?.length ?? 0) + 1)],
+    }));
+  };
+
+  const updatePricingRow = (index: number, patch: Partial<EventPricingItem>) => {
+    setForm((prev) => ({
+      ...prev,
+      pricingList: (prev.pricingList ?? []).map((row, rowIndex) => (
+        rowIndex === index ? { ...row, ...patch } : row
+      )),
+    }));
+  };
+
+  const updatePricingType = (index: number, priceType: string) => {
+    setForm((prev) => ({
+      ...prev,
+      pricingList: (prev.pricingList ?? []).map((row, rowIndex) => {
+        if (rowIndex !== index) return row;
+        const previousLabel = getPriceTypeLabel(row.priceType);
+        const nextLabel = getPriceTypeLabel(priceType);
+        const shouldRefreshName = !row.priceName || row.priceName === previousLabel;
+        return {
+          ...row,
+          priceType,
+          priceName: shouldRefreshName ? nextLabel : row.priceName,
+        };
+      }),
+    }));
+  };
+
+  const removePricingRow = (index: number) => {
+    setForm((prev) => ({
+      ...prev,
+      pricingList: (prev.pricingList ?? []).filter((_, rowIndex) => rowIndex !== index),
+    }));
+  };
+
+  const addDiscountCodeRow = () => {
+    setForm((prev) => ({
+      ...prev,
+      discountCodes: [...(prev.discountCodes ?? []), createDiscountCodeRow((prev.discountCodes?.length ?? 0) + 1)],
+    }));
+  };
+
+  const updateDiscountCodeRow = (index: number, patch: Partial<EventDiscountCodeItem>) => {
+    setForm((prev) => ({
+      ...prev,
+      discountCodes: (prev.discountCodes ?? []).map((row, rowIndex) => (
+        rowIndex === index ? { ...row, ...patch } : row
+      )),
+    }));
+  };
+
+  const removeDiscountCodeRow = (index: number) => {
+    setForm((prev) => ({
+      ...prev,
+      discountCodes: (prev.discountCodes ?? []).filter((_, rowIndex) => rowIndex !== index),
+    }));
+  };
+
   const validateForm = () => {
     if (!titleValue) {
       message.warning('Please enter the event name.');
@@ -372,7 +499,108 @@ export default function SuperEventList() {
       message.warning('Max participants must be 0 or greater.');
       return false;
     }
+    if (form.isPaid) {
+      const pricingList = form.pricingList ?? [];
+      if (!pricingList.length) {
+        message.warning('Please add at least one pricing tier.');
+        return false;
+      }
+      for (const pricing of pricingList) {
+        if (!pricing.priceType) {
+          message.warning('Please select a pricing type.');
+          return false;
+        }
+        if (!pricing.priceName?.trim()) {
+          message.warning('Please enter a pricing name.');
+          return false;
+        }
+        if (!pricing.currencyCode?.trim()) {
+          message.warning('Please select a currency.');
+          return false;
+        }
+        if (pricing.amount === null || pricing.amount === undefined || Number(pricing.amount) <= 0) {
+          message.warning('Pricing amount must be greater than 0.');
+          return false;
+        }
+        if ((pricing.salesStartAt ?? '') && (pricing.salesEndAt ?? '') && String(pricing.salesStartAt) > String(pricing.salesEndAt)) {
+          message.warning('Pricing sales end must be on or after sales start.');
+          return false;
+        }
+      }
+
+      const priceTypes = new Set(pricingList.map((pricing) => pricing.priceType).filter(Boolean));
+      const discountCodes = form.discountCodes ?? [];
+      const uniqueDiscountCodes = new Set<string>();
+      for (const discount of discountCodes) {
+        const code = discount.discountCode?.trim().toUpperCase() ?? '';
+        if (!code) {
+          message.warning('Please enter a discount code.');
+          return false;
+        }
+        if (uniqueDiscountCodes.has(code)) {
+          message.warning('Discount codes must be unique per event.');
+          return false;
+        }
+        uniqueDiscountCodes.add(code);
+        if (!discount.discountType) {
+          message.warning('Please select a discount type.');
+          return false;
+        }
+        if (discount.discountValue === null || discount.discountValue === undefined || Number(discount.discountValue) <= 0) {
+          message.warning('Discount value must be greater than 0.');
+          return false;
+        }
+        if (discount.discountType === 'percent' && Number(discount.discountValue) > 100) {
+          message.warning('Percent discount cannot exceed 100.');
+          return false;
+        }
+        if (discount.appliesToPriceType && !priceTypes.has(discount.appliesToPriceType)) {
+          message.warning('Discount code applies to a pricing type that does not exist.');
+          return false;
+        }
+        if (discount.usageLimit !== null && discount.usageLimit !== undefined && discount.usageLimit < 0) {
+          message.warning('Usage limit must be 0 or greater.');
+          return false;
+        }
+        if ((discount.validFromAt ?? '') && (discount.validToAt ?? '') && String(discount.validFromAt) > String(discount.validToAt)) {
+          message.warning('Discount valid-to date must be on or after valid-from date.');
+          return false;
+        }
+      }
+    }
     return true;
+  };
+
+  const normalizePricingForSave = (): EventPricingItem[] => {
+    if (!form.isPaid) return [];
+    return (form.pricingList ?? []).map((pricing, index) => ({
+      ...pricing,
+      priceType: pricing.priceType,
+      priceName: pricing.priceName?.trim() ?? '',
+      currencyCode: (pricing.currencyCode || 'USD').trim().toUpperCase(),
+      amount: pricing.amount === null || pricing.amount === undefined ? null : Number(pricing.amount),
+      salesStartAt: pricing.salesStartAt || null,
+      salesEndAt: pricing.salesEndAt || null,
+      useYn: pricing.useYn || 'Y',
+      sortSeq: index + 1,
+    }));
+  };
+
+  const normalizeDiscountCodesForSave = (): EventDiscountCodeItem[] => {
+    if (!form.isPaid) return [];
+    return (form.discountCodes ?? []).map((discount, index) => ({
+      ...discount,
+      discountCode: discount.discountCode?.trim().toUpperCase() ?? '',
+      discountType: discount.discountType || 'percent',
+      discountValue: discount.discountValue === null || discount.discountValue === undefined ? null : Number(discount.discountValue),
+      appliesToPriceType: discount.appliesToPriceType || null,
+      usageLimit: discount.usageLimit === null || discount.usageLimit === undefined ? null : Number(discount.usageLimit),
+      usedCount: discount.usedCount ?? 0,
+      validFromAt: discount.validFromAt || null,
+      validToAt: discount.validToAt || null,
+      useYn: discount.useYn || 'Y',
+      sortSeq: index + 1,
+    }));
   };
 
   const buildSaveParam = (fileSeq: number | null, attachmentFileSeq: number | null): EventSaveRequest => ({
@@ -396,6 +624,8 @@ export default function SuperEventList() {
     organizationSeq: form.organizationSeq ?? null,
     maxParticipants: form.maxParticipants ?? null,
     isPaid: form.isPaid ?? false,
+    pricingList: normalizePricingForSave(),
+    discountCodes: normalizeDiscountCodesForSave(),
   });
 
   const persist = async () => {
@@ -636,6 +866,9 @@ export default function SuperEventList() {
   if (mode === 'detail') {
     const detailStatusLabel = EVENT_STATUS_LABELS[form.status] ?? form.status ?? 'Published';
     const detailStatusTone = EVENT_STATUS_TONE[form.status] ?? 'green';
+    const discountPriceTypeOptions = PRICE_TYPE_OPTIONS.filter((option) => (
+      (form.pricingList ?? []).some((pricing) => pricing.priceType === option.value)
+    ));
 
     return (
       <div className="saf-screen saf-event-admin-screen">
@@ -826,8 +1059,8 @@ export default function SuperEventList() {
               <Field label="Pricing">
                 <select
                   value={form.isPaid ? 'Y' : 'N'}
-                  disabled={!canEdit}
-                  onChange={(e) => updateForm('isPaid', e.target.value === 'Y')}
+                  disabled={!canEdit || isOrganizationRole}
+                  onChange={(e) => updatePricingMode(e.target.value === 'Y')}
                 >
                   <option value="N">Free</option>
                   <option value="Y">Paid</option>
@@ -880,6 +1113,272 @@ export default function SuperEventList() {
             </div>
           </section>
         </div>
+
+        {form.isPaid && (
+          <section className="saf-panel saf-event-pricing-panel">
+            <PanelTitle title="Pricing" subtitle="Manage event-specific price tiers and discount codes." />
+
+            <div className="saf-pricing-block">
+              <div className="saf-panel-title-row">
+                <PanelTitle title="Pricing Tiers" subtitle="Early Bird, Regular, Student, and Member pricing for this event." />
+                {canEdit && (
+                  <button type="button" className="saf-action-btn is-secondary" onClick={addPricingRow}>
+                    <PlusOutlined />
+                    <span>Add Price</span>
+                  </button>
+                )}
+              </div>
+              <div className="saf-table-wrap saf-pricing-table-wrap">
+                <table className="saf-table saf-pricing-table">
+                  <thead>
+                    <tr>
+                      <th>Type</th>
+                      <th>Name</th>
+                      <th>Currency</th>
+                      <th>Amount</th>
+                      <th>Sales Start</th>
+                      <th>Sales End</th>
+                      <th>Active</th>
+                      {canEdit && <th>Action</th>}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(form.pricingList ?? []).map((pricing, index) => (
+                      <tr key={pricing.eventPricingSeq ?? `pricing-${index}`}>
+                        <td>
+                          <select
+                            value={pricing.priceType}
+                            disabled={!canEdit}
+                            onChange={(e) => updatePricingType(index, e.target.value)}
+                          >
+                            {PRICE_TYPE_OPTIONS.map((option) => (
+                              <option key={option.value} value={option.value}>{option.label}</option>
+                            ))}
+                          </select>
+                        </td>
+                        <td>
+                          <input
+                            value={pricing.priceName ?? ''}
+                            disabled={!canEdit}
+                            onChange={(e) => updatePricingRow(index, { priceName: e.target.value })}
+                            placeholder="Display name"
+                          />
+                        </td>
+                        <td>
+                          <select
+                            value={pricing.currencyCode || 'USD'}
+                            disabled={!canEdit}
+                            onChange={(e) => updatePricingRow(index, { currencyCode: e.target.value })}
+                          >
+                            {CURRENCY_OPTIONS.map((currency) => (
+                              <option key={currency} value={currency}>{currency}</option>
+                            ))}
+                          </select>
+                        </td>
+                        <td>
+                          <input
+                            type="number"
+                            min={0}
+                            step="0.01"
+                            value={pricing.amount ?? ''}
+                            disabled={!canEdit}
+                            onChange={(e) => updatePricingRow(index, { amount: e.target.value === '' ? null : Number(e.target.value) })}
+                            placeholder="0.00"
+                          />
+                        </td>
+                        <td>
+                          <DatePicker
+                            showTime={{ format: 'HH:mm' }}
+                            format="YYYY-MM-DD HH:mm"
+                            minuteStep={5}
+                            needConfirm={false}
+                            style={{ width: '100%' }}
+                            value={toDayjs(pricing.salesStartAt)}
+                            disabled={!canEdit}
+                            onChange={(d) => updatePricingRow(index, { salesStartAt: fromDayjs(d) })}
+                          />
+                        </td>
+                        <td>
+                          <DatePicker
+                            showTime={{ format: 'HH:mm' }}
+                            format="YYYY-MM-DD HH:mm"
+                            minuteStep={5}
+                            needConfirm={false}
+                            style={{ width: '100%' }}
+                            value={toDayjs(pricing.salesEndAt)}
+                            disabled={!canEdit}
+                            onChange={(d) => updatePricingRow(index, { salesEndAt: fromDayjs(d) })}
+                          />
+                        </td>
+                        <td>
+                          <select
+                            value={pricing.useYn || 'Y'}
+                            disabled={!canEdit}
+                            onChange={(e) => updatePricingRow(index, { useYn: e.target.value })}
+                          >
+                            <option value="Y">Y</option>
+                            <option value="N">N</option>
+                          </select>
+                        </td>
+                        {canEdit && (
+                          <td className="saf-pricing-action-cell">
+                            <button type="button" className="saf-table-icon-btn is-danger" onClick={() => removePricingRow(index)}>
+                              <DeleteOutlined />
+                            </button>
+                          </td>
+                        )}
+                      </tr>
+                    ))}
+                    {!(form.pricingList ?? []).length && (
+                      <tr>
+                        <td colSpan={canEdit ? 8 : 7} className="saf-event-empty">
+                          <CalendarOutlined />
+                          <span>No pricing tiers. Add at least one price for paid events.</span>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="saf-pricing-block">
+              <div className="saf-panel-title-row">
+                <PanelTitle title="Discount Codes" subtitle="Optional coupon codes for this event." />
+                {canEdit && (
+                  <button type="button" className="saf-action-btn is-secondary" onClick={addDiscountCodeRow}>
+                    <PlusOutlined />
+                    <span>Add Discount Code</span>
+                  </button>
+                )}
+              </div>
+              <div className="saf-table-wrap saf-pricing-table-wrap">
+                <table className="saf-table saf-discount-table">
+                  <thead>
+                    <tr>
+                      <th>Code</th>
+                      <th>Type</th>
+                      <th>Value</th>
+                      <th>Applies To</th>
+                      <th>Usage Limit</th>
+                      <th>Valid From</th>
+                      <th>Valid To</th>
+                      <th>Active</th>
+                      {canEdit && <th>Action</th>}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(form.discountCodes ?? []).map((discount, index) => (
+                      <tr key={discount.discountCodeSeq ?? `discount-${index}`}>
+                        <td>
+                          <input
+                            value={discount.discountCode ?? ''}
+                            disabled={!canEdit}
+                            onChange={(e) => updateDiscountCodeRow(index, { discountCode: e.target.value.toUpperCase() })}
+                            placeholder="EARLY10"
+                          />
+                        </td>
+                        <td>
+                          <select
+                            value={discount.discountType || 'percent'}
+                            disabled={!canEdit}
+                            onChange={(e) => updateDiscountCodeRow(index, { discountType: e.target.value })}
+                          >
+                            {DISCOUNT_TYPE_OPTIONS.map((option) => (
+                              <option key={option.value} value={option.value}>{option.label}</option>
+                            ))}
+                          </select>
+                        </td>
+                        <td>
+                          <input
+                            type="number"
+                            min={0}
+                            step="0.01"
+                            value={discount.discountValue ?? ''}
+                            disabled={!canEdit}
+                            onChange={(e) => updateDiscountCodeRow(index, { discountValue: e.target.value === '' ? null : Number(e.target.value) })}
+                            placeholder={discount.discountType === 'amount' ? '50.00' : '10'}
+                          />
+                        </td>
+                        <td>
+                          <select
+                            value={discount.appliesToPriceType ?? ''}
+                            disabled={!canEdit}
+                            onChange={(e) => updateDiscountCodeRow(index, { appliesToPriceType: e.target.value })}
+                          >
+                            <option value="">All Pricing</option>
+                            {discountPriceTypeOptions.map((option) => (
+                              <option key={option.value} value={option.value}>{option.label}</option>
+                            ))}
+                          </select>
+                        </td>
+                        <td>
+                          <input
+                            type="number"
+                            min={0}
+                            value={discount.usageLimit ?? ''}
+                            disabled={!canEdit}
+                            onChange={(e) => updateDiscountCodeRow(index, { usageLimit: e.target.value === '' ? null : Number(e.target.value) })}
+                            placeholder="No limit"
+                          />
+                        </td>
+                        <td>
+                          <DatePicker
+                            showTime={{ format: 'HH:mm' }}
+                            format="YYYY-MM-DD HH:mm"
+                            minuteStep={5}
+                            needConfirm={false}
+                            style={{ width: '100%' }}
+                            value={toDayjs(discount.validFromAt)}
+                            disabled={!canEdit}
+                            onChange={(d) => updateDiscountCodeRow(index, { validFromAt: fromDayjs(d) })}
+                          />
+                        </td>
+                        <td>
+                          <DatePicker
+                            showTime={{ format: 'HH:mm' }}
+                            format="YYYY-MM-DD HH:mm"
+                            minuteStep={5}
+                            needConfirm={false}
+                            style={{ width: '100%' }}
+                            value={toDayjs(discount.validToAt)}
+                            disabled={!canEdit}
+                            onChange={(d) => updateDiscountCodeRow(index, { validToAt: fromDayjs(d) })}
+                          />
+                        </td>
+                        <td>
+                          <select
+                            value={discount.useYn || 'Y'}
+                            disabled={!canEdit}
+                            onChange={(e) => updateDiscountCodeRow(index, { useYn: e.target.value })}
+                          >
+                            <option value="Y">Y</option>
+                            <option value="N">N</option>
+                          </select>
+                        </td>
+                        {canEdit && (
+                          <td className="saf-pricing-action-cell">
+                            <button type="button" className="saf-table-icon-btn is-danger" onClick={() => removeDiscountCodeRow(index)}>
+                              <DeleteOutlined />
+                            </button>
+                          </td>
+                        )}
+                      </tr>
+                    ))}
+                    {!(form.discountCodes ?? []).length && (
+                      <tr>
+                        <td colSpan={canEdit ? 9 : 8} className="saf-event-empty">
+                          <CalendarOutlined />
+                          <span>No discount codes. Add codes only when a coupon is needed.</span>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+        )}
 
         {!isNew && (
           <section className="saf-panel saf-event-participants-panel">

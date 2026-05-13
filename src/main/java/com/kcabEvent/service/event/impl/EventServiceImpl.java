@@ -6,8 +6,10 @@ import com.kcabEvent.dao.SafSettingsDao;
 import com.kcabEvent.domain.Event;
 import com.kcabEvent.dto.common.LoginUser;
 import com.kcabEvent.dto.email.EmailTemplateDetailDto;
+import com.kcabEvent.dto.event.EventDiscountCodeDto;
 import com.kcabEvent.dto.event.EventListDto;
 import com.kcabEvent.dto.event.EventNotificationRecipientDto;
+import com.kcabEvent.dto.event.EventPricingDto;
 import com.kcabEvent.dto.event.EventSaveDto;
 import com.kcabEvent.exception.custom.BusinessException;
 import com.kcabEvent.service.email.EmailLogService;
@@ -22,12 +24,16 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.util.HtmlUtils;
 
 import jakarta.annotation.Resource;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 이벤트 저장과 기본값 처리를 구현한다.
@@ -75,13 +81,16 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
 
     @Override
     public Event selectEventBySeq(Long eventSeq) {
-        return eventDao.selectEventBySeq(eventSeq);
+        Event event = eventDao.selectEventBySeq(eventSeq);
+        loadPricingDetails(event, false);
+        return event;
     }
 
     @Override
     public Event selectEventBySeq(Long eventSeq, LoginUser loginUser) {
         Event event = eventDao.selectEventBySeq(eventSeq);
         assertEventAccessible(event, loginUser);
+        loadPricingDetails(event, true);
         return event;
     }
 
@@ -146,7 +155,7 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
         event.setEventType(admin ? (saveDto.getEventType() != null ? saveDto.getEventType() : "main") : EVENT_TYPE_SIDE);
         event.setOrganizationSeq(organizationSeq != null ? organizationSeq : saveDto.getOrganizationSeq());
         event.setMaxParticipants(saveDto.getMaxParticipants());
-        event.setIsPaid(saveDto.getIsPaid() != null ? saveDto.getIsPaid() : Boolean.FALSE);
+        event.setIsPaid(admin && Boolean.TRUE.equals(saveDto.getIsPaid()));
 
         if (saveDto.getEventSeq() == null) {
             if (!admin) {
@@ -160,6 +169,7 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
             event.setUptUserSeq(userSeq);
             eventDao.updateEvent(event);
         }
+        savePricingDetails(event.getEventSeq(), saveDto, userSeq, Boolean.TRUE.equals(event.getIsPaid()));
         return event.getEventSeq();
     }
 
@@ -292,6 +302,180 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
             return STATUS_DRAFT;
         }
         return savedEvent.getStatus();
+    }
+
+    private void loadPricingDetails(Event event, boolean includeDiscountCodes) {
+        if (event == null) {
+            return;
+        }
+        event.setPricingList(eventDao.selectEventPricingList(event.getEventSeq()));
+        if (includeDiscountCodes) {
+            event.setDiscountCodes(eventDao.selectEventDiscountCodeList(event.getEventSeq()));
+        } else {
+            event.setDiscountCodes(List.of());
+        }
+    }
+
+    private void savePricingDetails(Long eventSeq, EventSaveDto saveDto, Long userSeq, boolean isPaid) {
+        eventDao.deleteEventDiscountCodesByEventSeq(eventSeq);
+        eventDao.deleteEventPricingByEventSeq(eventSeq);
+        if (!isPaid) {
+            return;
+        }
+
+        List<EventPricingDto> pricingList = normalizePricingList(saveDto.getPricingList());
+        List<EventDiscountCodeDto> discountCodes = normalizeDiscountCodes(saveDto.getDiscountCodes(), pricingList);
+
+        for (int i = 0; i < pricingList.size(); i++) {
+            EventPricingDto pricing = pricingList.get(i);
+            pricing.setEventSeq(eventSeq);
+            pricing.setSortSeq(i + 1);
+            eventDao.insertEventPricing(pricing, userSeq);
+        }
+        for (int i = 0; i < discountCodes.size(); i++) {
+            EventDiscountCodeDto discountCode = discountCodes.get(i);
+            discountCode.setEventSeq(eventSeq);
+            discountCode.setSortSeq(i + 1);
+            eventDao.insertEventDiscountCode(discountCode, userSeq);
+        }
+    }
+
+    private List<EventPricingDto> normalizePricingList(List<EventPricingDto> pricingList) {
+        List<EventPricingDto> normalized = new ArrayList<>();
+        if (pricingList == null) {
+            throw new BusinessException("Please add at least one pricing tier for paid events.");
+        }
+
+        for (EventPricingDto source : pricingList) {
+            if (source == null) {
+                continue;
+            }
+            String priceType = normalizeKey(source.getPriceType());
+            String priceName = trimToNull(source.getPriceName());
+            String currencyCode = normalizeCurrency(source.getCurrencyCode());
+            BigDecimal amount = source.getAmount();
+
+            if (!StringUtils.hasText(priceType)) {
+                throw new BusinessException("Please select a pricing type.");
+            }
+            if (!StringUtils.hasText(priceName)) {
+                throw new BusinessException("Please enter a pricing name.");
+            }
+            if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+                throw new BusinessException("Pricing amount must be greater than 0.");
+            }
+            if (source.getSalesStartAt() != null
+                    && source.getSalesEndAt() != null
+                    && source.getSalesStartAt().isAfter(source.getSalesEndAt())) {
+                throw new BusinessException("Pricing sales end must be on or after sales start.");
+            }
+
+            EventPricingDto target = new EventPricingDto();
+            target.setPriceType(priceType);
+            target.setPriceName(priceName);
+            target.setCurrencyCode(currencyCode);
+            target.setAmount(amount);
+            target.setSalesStartAt(source.getSalesStartAt());
+            target.setSalesEndAt(source.getSalesEndAt());
+            target.setUseYn(normalizeUseYn(source.getUseYn()));
+            normalized.add(target);
+        }
+
+        if (normalized.isEmpty()) {
+            throw new BusinessException("Please add at least one pricing tier for paid events.");
+        }
+        return normalized;
+    }
+
+    private List<EventDiscountCodeDto> normalizeDiscountCodes(List<EventDiscountCodeDto> discountCodes,
+                                                              List<EventPricingDto> pricingList) {
+        List<EventDiscountCodeDto> normalized = new ArrayList<>();
+        if (discountCodes == null || discountCodes.isEmpty()) {
+            return normalized;
+        }
+
+        Set<String> priceTypes = new HashSet<>();
+        for (EventPricingDto pricing : pricingList) {
+            priceTypes.add(pricing.getPriceType());
+        }
+
+        Set<String> uniqueCodes = new HashSet<>();
+        for (EventDiscountCodeDto source : discountCodes) {
+            if (source == null) {
+                continue;
+            }
+            String code = normalizeDiscountCode(source.getDiscountCode());
+            String discountType = normalizeKey(source.getDiscountType());
+            BigDecimal discountValue = source.getDiscountValue();
+            String appliesTo = normalizeKey(source.getAppliesToPriceType());
+
+            if (!StringUtils.hasText(code)) {
+                throw new BusinessException("Please enter a discount code.");
+            }
+            if (!uniqueCodes.add(code)) {
+                throw new BusinessException("Discount codes must be unique per event.");
+            }
+            if (!"percent".equals(discountType) && !"amount".equals(discountType)) {
+                throw new BusinessException("Please select a valid discount type.");
+            }
+            if (discountValue == null || discountValue.compareTo(BigDecimal.ZERO) <= 0) {
+                throw new BusinessException("Discount value must be greater than 0.");
+            }
+            if ("percent".equals(discountType) && discountValue.compareTo(BigDecimal.valueOf(100)) > 0) {
+                throw new BusinessException("Percent discount cannot exceed 100.");
+            }
+            if (StringUtils.hasText(appliesTo) && !priceTypes.contains(appliesTo)) {
+                throw new BusinessException("Discount code applies to a pricing type that does not exist.");
+            }
+            if (source.getUsageLimit() != null && source.getUsageLimit() < 0) {
+                throw new BusinessException("Usage limit must be 0 or greater.");
+            }
+            if (source.getValidFromAt() != null
+                    && source.getValidToAt() != null
+                    && source.getValidFromAt().isAfter(source.getValidToAt())) {
+                throw new BusinessException("Discount valid-to date must be on or after valid-from date.");
+            }
+
+            EventDiscountCodeDto target = new EventDiscountCodeDto();
+            target.setDiscountCode(code);
+            target.setDiscountType(discountType);
+            target.setDiscountValue(discountValue);
+            target.setAppliesToPriceType(StringUtils.hasText(appliesTo) ? appliesTo : null);
+            target.setUsageLimit(source.getUsageLimit());
+            target.setUsedCount(source.getUsedCount() != null ? source.getUsedCount() : 0);
+            target.setValidFromAt(source.getValidFromAt());
+            target.setValidToAt(source.getValidToAt());
+            target.setUseYn(normalizeUseYn(source.getUseYn()));
+            normalized.add(target);
+        }
+        return normalized;
+    }
+
+    private String normalizeKey(String value) {
+        String text = trimToNull(value);
+        return text == null ? "" : text.toLowerCase(Locale.ROOT);
+    }
+
+    private String normalizeCurrency(String value) {
+        String text = trimToNull(value);
+        return text == null ? "USD" : text.toUpperCase(Locale.ROOT);
+    }
+
+    private String normalizeUseYn(String value) {
+        return "N".equalsIgnoreCase(value) ? "N" : "Y";
+    }
+
+    private String normalizeDiscountCode(String value) {
+        String text = trimToNull(value);
+        return text == null ? "" : text.toUpperCase(Locale.ROOT);
+    }
+
+    private String trimToNull(String value) {
+        if (value == null) {
+            return null;
+        }
+        String text = value.trim();
+        return text.isEmpty() ? null : text;
     }
 
     private Event reviewPendingEvent(Long eventSeq, LoginUser loginUser, String nextStatus, String rejectionReason) {

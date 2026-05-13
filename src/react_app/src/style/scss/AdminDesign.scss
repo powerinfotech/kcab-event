@@ -2153,6 +2153,99 @@
   margin-top: 16px;
 }
 
+.saf-event-pricing-panel {
+  margin-top: 16px;
+}
+
+.saf-pricing-block {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+
+  &:first-of-type {
+    margin-top: 14px;
+  }
+}
+
+.saf-pricing-table-wrap {
+  overflow-x: auto;
+}
+
+.saf-pricing-table,
+.saf-discount-table {
+  min-width: 1120px;
+
+  th,
+  td {
+    height: 58px;
+    padding: 8px 10px;
+    vertical-align: middle;
+  }
+
+  input,
+  select {
+    width: 100%;
+    height: 38px;
+    border: 1px solid #d7dee8;
+    border-radius: 6px;
+    padding: 0 10px;
+    background: #fff;
+    color: #111827;
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  input:disabled,
+  select:disabled {
+    background: #f8fafc;
+    color: #64748b;
+  }
+
+  .ant-picker {
+    height: 38px;
+    border-color: #d7dee8;
+    border-radius: 6px;
+  }
+}
+
+.saf-pricing-table {
+  th:nth-child(1) { width: 150px; }
+  th:nth-child(2) { width: 170px; }
+  th:nth-child(3) { width: 110px; }
+  th:nth-child(4) { width: 130px; }
+  th:nth-child(5),
+  th:nth-child(6) { width: 190px; }
+  th:nth-child(7) { width: 90px; }
+  th:nth-child(8) { width: 86px; text-align: center; }
+}
+
+.saf-discount-table {
+  min-width: 1280px;
+
+  th:nth-child(1) { width: 150px; }
+  th:nth-child(2) { width: 130px; }
+  th:nth-child(3) { width: 120px; }
+  th:nth-child(4) { width: 150px; }
+  th:nth-child(5) { width: 130px; }
+  th:nth-child(6),
+  th:nth-child(7) { width: 190px; }
+  th:nth-child(8) { width: 90px; }
+  th:nth-child(9) { width: 86px; text-align: center; }
+}
+
+.saf-pricing-action-cell {
+  text-align: center !important;
+
+  .saf-table-icon-btn.is-danger {
+    background: #fee2e2;
+    color: #b91c1c;
+
+    &:hover {
+      background: #fecaca;
+    }
+  }
+}
+
 .saf-event-participants-search-row {
   display: flex;
   margin-bottom: 12px;

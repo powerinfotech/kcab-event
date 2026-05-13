@@ -3,7 +3,11 @@ package com.kcabEvent.domain;
 import lombok.Getter;
 import lombok.Setter;
 
+import com.kcabEvent.dto.event.EventDiscountCodeDto;
+import com.kcabEvent.dto.event.EventPricingDto;
+
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -40,6 +44,8 @@ public class Event {
     private String organizationName;
     private Integer maxParticipants;
     private Boolean isPaid;
+    private List<EventPricingDto> pricingList;
+    private List<EventDiscountCodeDto> discountCodes;
     private Long rgstUserSeq;
     private LocalDateTime rgstDateTime;
     private Long uptUserSeq;

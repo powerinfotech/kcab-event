@@ -39,6 +39,8 @@ export interface EventDetail {
   organizationName: string | null;
   maxParticipants: number | null;
   isPaid: boolean | null;
+  pricingList: EventPricingItem[];
+  discountCodes: EventDiscountCodeItem[];
   rgstUserSeq: number;
   rgstDateTime: string;
   uptDateTime: string;
@@ -67,6 +69,36 @@ export interface EventSaveRequest {
   organizationSeq?: number | null;
   maxParticipants?: number | null;
   isPaid?: boolean | null;
+  pricingList?: EventPricingItem[];
+  discountCodes?: EventDiscountCodeItem[];
+}
+
+export interface EventPricingItem {
+  eventPricingSeq?: number | null;
+  eventSeq?: number | null;
+  priceType: string;
+  priceName: string;
+  currencyCode: string;
+  amount: number | null;
+  salesStartAt?: string | null;
+  salesEndAt?: string | null;
+  useYn: string;
+  sortSeq?: number | null;
+}
+
+export interface EventDiscountCodeItem {
+  discountCodeSeq?: number | null;
+  eventSeq?: number | null;
+  discountCode: string;
+  discountType: 'percent' | 'amount' | string;
+  discountValue: number | null;
+  appliesToPriceType?: string | null;
+  usageLimit?: number | null;
+  usedCount?: number | null;
+  validFromAt?: string | null;
+  validToAt?: string | null;
+  useYn: string;
+  sortSeq?: number | null;
 }
 
 export interface EventListSearchParam {

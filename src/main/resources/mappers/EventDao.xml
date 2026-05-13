@@ -108,6 +108,44 @@
           AND e.deleted_at IS NULL
     </select>
 
+    <select id="selectEventPricingList" resultType="com.kcabEvent.dto.event.EventPricingDto">
+        SELECT
+             event_pricing_seq
+            ,event_seq
+            ,price_type
+            ,price_name
+            ,currency_code
+            ,amount
+            ,sales_start_at
+            ,sales_end_at
+            ,use_yn
+            ,sort_seq
+        FROM event.event_pricing
+        WHERE event_seq = #{eventSeq}
+          AND deleted_at IS NULL
+        ORDER BY sort_seq ASC, event_pricing_seq ASC
+    </select>
+
+    <select id="selectEventDiscountCodeList" resultType="com.kcabEvent.dto.event.EventDiscountCodeDto">
+        SELECT
+             discount_code_seq
+            ,event_seq
+            ,discount_code
+            ,discount_type
+            ,discount_value
+            ,applies_to_price_type
+            ,usage_limit
+            ,used_count
+            ,valid_from_at
+            ,valid_to_at
+            ,use_yn
+            ,sort_seq
+        FROM event.event_discount_codes
+        WHERE event_seq = #{eventSeq}
+          AND deleted_at IS NULL
+        ORDER BY sort_seq ASC, discount_code_seq ASC
+    </select>
+
     <insert id="insertEvent" parameterType="com.kcabEvent.domain.Event" useGeneratedKeys="true" keyProperty="eventSeq">
         INSERT INTO event.events (
             slug, title, description, event_type, is_paid,
@@ -153,6 +191,76 @@
         WHERE event_seq = #{eventSeq}
           AND deleted_at IS NULL
     </update>
+
+    <delete id="deleteEventPricingByEventSeq">
+        DELETE FROM event.event_pricing
+        WHERE event_seq = #{eventSeq}
+    </delete>
+
+    <delete id="deleteEventDiscountCodesByEventSeq">
+        DELETE FROM event.event_discount_codes
+        WHERE event_seq = #{eventSeq}
+    </delete>
+
+    <insert id="insertEventPricing">
+        INSERT INTO event.event_pricing (
+             event_seq
+            ,price_type
+            ,price_name
+            ,currency_code
+            ,amount
+            ,sales_start_at
+            ,sales_end_at
+            ,use_yn
+            ,sort_seq
+            ,created_by
+            ,updated_by
+        ) VALUES (
+             #{pricing.eventSeq}
+            ,#{pricing.priceType}
+            ,#{pricing.priceName}
+            ,#{pricing.currencyCode}
+            ,#{pricing.amount}
+            ,#{pricing.salesStartAt,jdbcType=TIMESTAMP}
+            ,#{pricing.salesEndAt,jdbcType=TIMESTAMP}
+            ,COALESCE(NULLIF(#{pricing.useYn}, ''), 'Y')
+            ,#{pricing.sortSeq}
+            ,#{userSeq}
+            ,#{userSeq}
+        )
+    </insert>
+
+    <insert id="insertEventDiscountCode">
+        INSERT INTO event.event_discount_codes (
+             event_seq
+            ,discount_code
+            ,discount_type
+            ,discount_value
+            ,applies_to_price_type
+            ,usage_limit
+            ,used_count
+            ,valid_from_at
+            ,valid_to_at
+            ,use_yn
+            ,sort_seq
+            ,created_by
+            ,updated_by
+        ) VALUES (
+             #{discountCode.eventSeq}
+            ,#{discountCode.discountCode}
+            ,#{discountCode.discountType}
+            ,#{discountCode.discountValue}
+            ,#{discountCode.appliesToPriceType,jdbcType=VARCHAR}
+            ,#{discountCode.usageLimit,jdbcType=INTEGER}
+            ,COALESCE(#{discountCode.usedCount,jdbcType=INTEGER}, 0)
+            ,#{discountCode.validFromAt,jdbcType=TIMESTAMP}
+            ,#{discountCode.validToAt,jdbcType=TIMESTAMP}
+            ,COALESCE(NULLIF(#{discountCode.useYn}, ''), 'Y')
+            ,#{discountCode.sortSeq}
+            ,#{userSeq}
+            ,#{userSeq}
+        )
+    </insert>
 
     <update id="updateEventStatus">
         UPDATE event.events
