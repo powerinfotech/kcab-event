@@ -540,6 +540,11 @@ export default function SuperEventList() {
   };
 
   const updateDiscountCodeRow = (index: number, patch: Partial<EventDiscountCodeItem>) => {
+    const discountCode = form.discountCodes?.[index];
+    if (discountCode && isDiscountCodeLocked(discountCode) && Object.prototype.hasOwnProperty.call(patch, 'discountCode')) {
+      message.warning('This discount code has usage history and cannot be changed.');
+      return;
+    }
     setForm((prev) => ({
       ...prev,
       discountCodes: (prev.discountCodes ?? []).map((row, rowIndex) => (
@@ -1440,7 +1445,8 @@ export default function SuperEventList() {
                             value={discount.discountCode ?? ''}
                             className={requiredGridClass(isMissingText(discount.discountCode))}
                             aria-invalid={submitAttempted && isMissingText(discount.discountCode)}
-                            disabled={!canEdit}
+                            disabled={!canEdit || locked}
+                            title={locked ? 'This discount code has usage history and cannot be changed.' : undefined}
                             onChange={(e) => updateDiscountCodeRow(index, { discountCode: e.target.value.toUpperCase() })}
                             placeholder="EARLY10"
                           />

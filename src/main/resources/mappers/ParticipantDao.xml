@@ -30,10 +30,13 @@
            AND e.deleted_at IS NULL
         LEFT JOIN LATERAL (
             SELECT
-                 pmt.price_name
-                ,pmt.price_type
+                 pr.price_name
+                ,pr.price_type
                 ,pmt.status
             FROM event.payments pmt
+            LEFT JOIN event.event_pricing pr
+                ON pr.event_pricing_seq = pmt.event_pricing_seq
+               AND pr.deleted_at IS NULL
             WHERE (
                     pmt.event_participant_seq = ep.event_participant_seq
                     OR (
