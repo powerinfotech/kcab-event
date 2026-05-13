@@ -17,6 +17,7 @@
             ,uu.name AS upt_user_name
             ,g.updated_at AS upt_date_time
             ,COALESCE(img.image_count, 0) AS image_count
+            ,img.cover_file_dtl_seq
             ,img.cover_file_path
         FROM event.gallery g
         LEFT JOIN event.users cu ON cu.user_seq = g.created_by
@@ -24,6 +25,9 @@
         LEFT JOIN LATERAL (
             SELECT
                  COUNT(*)::integer AS image_count
+                ,(
+                    ARRAY_AGG(d.file_dtl_seq ORDER BY d.sort_seq ASC, d.file_dtl_seq ASC)
+                )[1] AS cover_file_dtl_seq
                 ,(
                     ARRAY_AGG(d.file_path ORDER BY d.sort_seq ASC, d.file_dtl_seq ASC)
                 )[1] AS cover_file_path
@@ -66,6 +70,7 @@
             ,uu.name AS upt_user_name
             ,g.updated_at AS upt_date_time
             ,COALESCE(img.image_count, 0) AS image_count
+            ,img.cover_file_dtl_seq
             ,img.cover_file_path
         FROM event.gallery g
         LEFT JOIN event.users cu ON cu.user_seq = g.created_by
@@ -73,6 +78,9 @@
         LEFT JOIN LATERAL (
             SELECT
                  COUNT(*)::integer AS image_count
+                ,(
+                    ARRAY_AGG(d.file_dtl_seq ORDER BY d.sort_seq ASC, d.file_dtl_seq ASC)
+                )[1] AS cover_file_dtl_seq
                 ,(
                     ARRAY_AGG(d.file_path ORDER BY d.sort_seq ASC, d.file_dtl_seq ASC)
                 )[1] AS cover_file_path

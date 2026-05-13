@@ -15,7 +15,9 @@ public class GalleryListDto {
     private String description;
     private Long fileSeq;
     private Integer imageCount;
+    private Long coverFileDtlSeq;
     private String coverFilePath;
+    private String coverFileUrl;
     private Integer sortSeq;
     private String useYn;
     private String rgstUserName;

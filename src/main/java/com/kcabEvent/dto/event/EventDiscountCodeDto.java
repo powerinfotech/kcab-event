@@ -14,6 +14,7 @@ public class EventDiscountCodeDto {
     private String discountCode;
     private String discountType;
     private BigDecimal discountValue;
+    private String currencyCode;
     private String appliesToPriceType;
     private Integer usageLimit;
     private Integer usedCount;

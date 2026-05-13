@@ -49,13 +49,21 @@ public class FileServiceImpl implements FileService {
     @Value("${file.path.dir}")
     private String uploadDir;
 
+    @Value("${file.url.image-prefix:/api/public/file-image}")
+    private String imageUrlPrefix;
+
+    @Value("${file.url.inline-image-prefix:/api/public/editor-image}")
+    private String inlineImageUrlPrefix;
+
     public FileServiceImpl(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 
     @Override
     public List<FileDetailDto> getFileList(Integer fileSeq){
-        return fileDao.selectFile(fileSeq);
+        List<FileDetailDto> fileList = fileDao.selectFile(fileSeq);
+        fileList.forEach(this::applyImageUrl);
+        return fileList;
     }
 
     @Override
@@ -216,6 +224,126 @@ public class FileServiceImpl implements FileService {
 
             fileDao.deleteFileDetail(fileDto);
         }
+    }
+
+    @Override
+    public FileDetailDto uploadInlineImage(LoginUser loginUser, MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new com.kcabEvent.exception.custom.BusinessException("업로드할 이미지가 없습니다.");
+        }
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            throw new com.kcabEvent.exception.custom.BusinessException("이미지 파일만 업로드할 수 있습니다.");
+        }
+
+        String originalFileName = Objects.requireNonNullElse(file.getOriginalFilename(), "image");
+        String extension = "";
+        if (originalFileName.contains(".")) {
+            extension = originalFileName.substring(originalFileName.lastIndexOf('.') + 1);
+        }
+        String savedFileName = UUID.randomUUID() + "_" + originalFileName;
+        String filePath = uploadDir + File.separator + savedFileName;
+
+        try {
+            File destination = new File(filePath);
+            File parent = destination.getParentFile();
+            if (parent != null && !parent.exists() && !parent.mkdirs()) {
+                throw new IOException("업로드 디렉토리 생성 실패: " + parent.getAbsolutePath());
+            }
+            file.transferTo(destination);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        FileDetailDto group = new FileDetailDto();
+        group.setMenuSeq(null);
+        group.setRgstUserSeq(loginUser != null ? loginUser.getUserSeq() : null);
+        group.setUptUserSeq(loginUser != null ? loginUser.getUserSeq() : null);
+        fileDao.insertFile(group);
+
+        FileDetailDto detail = new FileDetailDto();
+        detail.setFileSeq(group.getFileSeq());
+        detail.setFileNm(originalFileName);
+        detail.setFilePath(filePath);
+        detail.setFileType(extension);
+        detail.setSortSeq(0);
+        detail.setRgstUserSeq(loginUser != null ? loginUser.getUserSeq() : null);
+        detail.setUptUserSeq(loginUser != null ? loginUser.getUserSeq() : null);
+        fileDao.insertFileDetail(detail);
+        detail.setFileUrl(buildPublicUrl(inlineImageUrlPrefix, detail.getFileDtlSeq()));
+        return detail;
+    }
+
+    @Override
+    public FileDetailDto getFileDetailBySeq(Integer fileDtlSeq) {
+        return applyImageUrl(fileDao.selectFileDetailBySeq(fileDtlSeq));
+    }
+
+    @Override
+    public ResponseEntity<org.springframework.core.io.Resource> streamInlineFile(Integer fileDtlSeq) {
+        FileDetailDto detail = fileDao.selectFileDetailBySeq(fileDtlSeq);
+        if (detail == null) {
+            return ResponseEntity.notFound().build();
+        }
+        Path uploadDirPath = Paths.get(uploadDir).toAbsolutePath().normalize();
+        Path normalizedPath = Paths.get(detail.getFilePath()).toAbsolutePath().normalize();
+        if (!normalizedPath.startsWith(uploadDirPath)) {
+            return ResponseEntity.badRequest().build();
+        }
+        File file = normalizedPath.toFile();
+        if (!file.exists()) {
+            return ResponseEntity.notFound().build();
+        }
+        org.springframework.core.io.Resource resource;
+        try {
+            resource = new UrlResource(file.toURI());
+        } catch (java.net.MalformedURLException e) {
+            throw new RuntimeException("잘못된 파일 경로", e);
+        }
+        MediaType mediaType = guessImageMediaType(detail.getFileType());
+        return ResponseEntity.ok()
+                .contentType(mediaType)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline")
+                .header(HttpHeaders.CACHE_CONTROL, "public, max-age=31536000")
+                .body(resource);
+    }
+
+    private MediaType guessImageMediaType(String extension) {
+        if (extension == null) return MediaType.APPLICATION_OCTET_STREAM;
+        return switch (extension.toLowerCase()) {
+            case "png" -> MediaType.IMAGE_PNG;
+            case "gif" -> MediaType.IMAGE_GIF;
+            case "jpg", "jpeg" -> MediaType.IMAGE_JPEG;
+            case "webp" -> MediaType.valueOf("image/webp");
+            case "svg" -> MediaType.valueOf("image/svg+xml");
+            default -> MediaType.APPLICATION_OCTET_STREAM;
+        };
+    }
+
+    private FileDetailDto applyImageUrl(FileDetailDto detail) {
+        if (detail != null && isImageExtension(detail.getFileType())) {
+            detail.setFileUrl(buildPublicUrl(imageUrlPrefix, detail.getFileDtlSeq()));
+        }
+        return detail;
+    }
+
+    private boolean isImageExtension(String extension) {
+        if (extension == null) return false;
+        return switch (extension.toLowerCase()) {
+            case "png", "gif", "jpg", "jpeg", "webp", "svg", "bmp" -> true;
+            default -> false;
+        };
+    }
+
+    private String buildPublicUrl(String prefix, Integer fileDtlSeq) {
+        if (fileDtlSeq == null) return null;
+        String normalizedPrefix = prefix == null || prefix.isBlank()
+                ? "/api/public/file-image"
+                : prefix.trim();
+        if (normalizedPrefix.endsWith("/")) {
+            normalizedPrefix = normalizedPrefix.substring(0, normalizedPrefix.length() - 1);
+        }
+        return normalizedPrefix + "/" + fileDtlSeq;
     }
 
     @Override

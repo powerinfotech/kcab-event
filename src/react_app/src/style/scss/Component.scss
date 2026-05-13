@@ -790,6 +790,82 @@ z-index: 3001;
         float: left;
         height: 0;
     }
+    .tiptap mark { background-color: #fff3a3; padding: 0 2px; border-radius: 2px; }
+    .tiptap blockquote {
+        border-left: 3px solid #d9d9d9;
+        margin: 8px 0;
+        padding: 4px 12px;
+        color: #555;
+    }
+    .tiptap pre {
+        background: #1e1e2e;
+        color: #cdd6f4;
+        padding: 12px 14px;
+        border-radius: 6px;
+        font-family: 'Fira Code', 'JetBrains Mono', Consolas, monospace;
+        font-size: 13px;
+        overflow-x: auto;
+        code { background: transparent; color: inherit; padding: 0; }
+        .hljs-comment, .hljs-quote { color: #6c7086; font-style: italic; }
+        .hljs-keyword, .hljs-selector-tag, .hljs-built_in { color: #cba6f7; }
+        .hljs-string, .hljs-attr { color: #a6e3a1; }
+        .hljs-number, .hljs-literal { color: #fab387; }
+        .hljs-title, .hljs-section, .hljs-name { color: #89b4fa; }
+        .hljs-tag, .hljs-meta { color: #f38ba8; }
+        .hljs-variable, .hljs-template-variable { color: #f9e2af; }
+    }
+    .tiptap table {
+        border-collapse: collapse;
+        margin: 8px 0;
+        width: 100%;
+        overflow: hidden;
+        table-layout: fixed;
+        td, th {
+            border: 1px solid #d9d9d9;
+            padding: 6px 8px;
+            min-width: 1em;
+            vertical-align: top;
+            position: relative;
+        }
+        th { background: #f5f5f5; font-weight: 600; }
+        .selectedCell::after {
+            content: ''; position: absolute; inset: 0;
+            background: rgba(24, 144, 255, 0.12); pointer-events: none;
+        }
+        .column-resize-handle {
+            position: absolute; right: -2px; top: 0; bottom: 0;
+            width: 4px; cursor: col-resize; background: #1890ff;
+        }
+    }
+    .tiptap ul[data-type="taskList"] {
+        list-style: none;
+        padding-left: 4px;
+        li {
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+            > label { user-select: none; margin-top: 3px; }
+            > div { flex: 1; > p { margin: 0; } }
+        }
+    }
+    .tiptap a {
+        color: #1890ff;
+        text-decoration: underline;
+        cursor: pointer;
+    }
+    .tiptap h1 { font-size: 1.6em; font-weight: 600; margin: 0.6em 0 0.3em; }
+    .tiptap h2 { font-size: 1.35em; font-weight: 600; margin: 0.6em 0 0.3em; }
+    .tiptap h3 { font-size: 1.15em; font-weight: 600; margin: 0.6em 0 0.3em; }
+}
+.rich-editor-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: 4px 10px;
+    border-top: 1px solid #f0f0f0;
+    background: #fafafa;
+    font-size: 11px;
+    color: #888;
+    .is-over { color: #ff4d4f; font-weight: 600; }
 }
 
 .autocomplete-mr {

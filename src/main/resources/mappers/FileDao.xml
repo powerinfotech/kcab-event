@@ -20,6 +20,24 @@
 		ORDER BY sort_seq
 	</select>
 
+	<select id="selectFileDetailBySeq" parameterType="Integer" resultType="com.kcabEvent.dto.common.FileDetailDto">
+		SELECT
+		    file_dtl_seq,
+		    file_seq,
+		    file_nm,
+		    file_path,
+		    file_type,
+		    del_yn,
+		    sort_seq,
+		    rgst_user_seq,
+		    rgst_date_time::timestamp AS rgst_date_time,
+		    upt_user_seq,
+		    upt_date_time::timestamp AS upt_date_time
+		FROM tb_file_dtl
+		WHERE file_dtl_seq = #{fileDtlSeq}
+			AND del_yn = 'N'
+	</select>
+
 	<select id="checkExistFileSeq" parameterType="Integer">
 		select
 		    COUNT(*)
@@ -27,7 +45,7 @@
 		where file_seq = #{fileSeq}
 	</select>
 
-	<insert id="insertFile" parameterType="com.kcabEvent.dto.common.FileDetailDto" useGeneratedKeys="true" keyProperty="fileSeq">
+	<insert id="insertFile" parameterType="com.kcabEvent.dto.common.FileDetailDto" useGeneratedKeys="true" keyProperty="fileSeq" keyColumn="file_seq">
 		INSERT INTO TB_FILE (
 		 	menu_seq,
 		    use_yn,
@@ -45,7 +63,7 @@
 	    )
 	</insert>
 
-	<insert id="insertFileDetail" parameterType="com.kcabEvent.dto.common.FileDetailDto">
+	<insert id="insertFileDetail" parameterType="com.kcabEvent.dto.common.FileDetailDto" useGeneratedKeys="true" keyProperty="fileDtlSeq" keyColumn="file_dtl_seq">
 		INSERT INTO TB_FILE_DTL (
 			file_seq,
 			file_nm,

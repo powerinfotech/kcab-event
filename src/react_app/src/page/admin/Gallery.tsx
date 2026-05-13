@@ -455,10 +455,10 @@ export default function Gallery() {
             {pagination.pagedItems.map((item) => (
               <tr key={item.gallerySeq} onClick={() => handleOpenEdit(item)}>
                 <td>
-                  {item.coverFilePath ? (
+                  {item.coverFileUrl || item.coverFilePath ? (
                     <img
                       className="saf-gallery-thumb"
-                      src={buildGalleryImageUrl(item.coverFilePath)}
+                      src={item.coverFileUrl || buildGalleryImageUrl(item.coverFilePath)}
                       alt={item.title}
                     />
                   ) : (

@@ -4,6 +4,7 @@ import com.kcabEvent.dao.GalleryDao;
 import com.kcabEvent.domain.Gallery;
 import com.kcabEvent.dto.common.LoginUser;
 import com.kcabEvent.dto.gallery.GalleryDetailDto;
+import com.kcabEvent.dto.gallery.GalleryImageDto;
 import com.kcabEvent.dto.gallery.GalleryListDto;
 import com.kcabEvent.dto.gallery.GallerySaveDto;
 import com.kcabEvent.dto.gallery.GallerySearchDto;
@@ -11,6 +12,7 @@ import com.kcabEvent.exception.custom.BusinessException;
 import com.kcabEvent.service.gallery.GalleryService;
 import jakarta.annotation.Resource;
 import org.egovframe.rte.fdl.cmmn.EgovAbstractServiceImpl;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,10 +24,15 @@ public class GalleryServiceImpl extends EgovAbstractServiceImpl implements Galle
     @Resource(name = "galleryDao")
     private GalleryDao galleryDao;
 
+    @Value("${file.url.image-prefix:/api/public/file-image}")
+    private String imageUrlPrefix;
+
     @Override
     public List<GalleryListDto> selectGalleryList(GallerySearchDto search) {
         GallerySearchDto normalized = normalizeSearch(search);
-        return galleryDao.selectGalleryList(normalized);
+        List<GalleryListDto> galleries = galleryDao.selectGalleryList(normalized);
+        galleries.forEach(this::applyCoverUrl);
+        return galleries;
     }
 
     @Override
@@ -38,8 +45,9 @@ public class GalleryServiceImpl extends EgovAbstractServiceImpl implements Galle
             throw new BusinessException("Gallery was not found.");
         }
         if (detail.getFileSeq() != null) {
-            detail.setImages(galleryDao.selectGalleryImages(detail.getFileSeq()));
+            detail.setImages(applyImageUrls(galleryDao.selectGalleryImages(detail.getFileSeq())));
         }
+        applyCoverUrl(detail);
         return detail;
     }
 
@@ -50,8 +58,9 @@ public class GalleryServiceImpl extends EgovAbstractServiceImpl implements Galle
         search.setUseYn("Y");
         List<GalleryListDto> galleries = galleryDao.selectGalleryList(search);
         galleries.forEach((gallery) -> {
+            applyCoverUrl(gallery);
             if (gallery.getFileSeq() != null) {
-                gallery.setImages(galleryDao.selectGalleryImages(gallery.getFileSeq()));
+                gallery.setImages(applyImageUrls(galleryDao.selectGalleryImages(gallery.getFileSeq())));
             }
         });
         return galleries;
@@ -147,5 +156,38 @@ public class GalleryServiceImpl extends EgovAbstractServiceImpl implements Galle
             throw new BusinessException(message);
         }
         return value.trim();
+    }
+
+    private void applyCoverUrl(GalleryListDto gallery) {
+        if (gallery == null || gallery.getCoverFileDtlSeq() == null) {
+            return;
+        }
+        gallery.setCoverFileUrl(buildImageUrl(gallery.getCoverFileDtlSeq()));
+    }
+
+    private void applyCoverUrl(GalleryDetailDto gallery) {
+        if (gallery == null || gallery.getCoverFileDtlSeq() == null) {
+            return;
+        }
+        gallery.setCoverFileUrl(buildImageUrl(gallery.getCoverFileDtlSeq()));
+    }
+
+    private List<GalleryImageDto> applyImageUrls(List<GalleryImageDto> images) {
+        if (images == null) {
+            return List.of();
+        }
+        images.forEach((image) -> image.setFileUrl(buildImageUrl(image.getFileDtlSeq())));
+        return images;
+    }
+
+    private String buildImageUrl(Long fileDtlSeq) {
+        if (fileDtlSeq == null) return null;
+        String normalizedPrefix = imageUrlPrefix == null || imageUrlPrefix.isBlank()
+                ? "/api/public/file-image"
+                : imageUrlPrefix.trim();
+        if (normalizedPrefix.endsWith("/")) {
+            normalizedPrefix = normalizedPrefix.substring(0, normalizedPrefix.length() - 1);
+        }
+        return normalizedPrefix + "/" + fileDtlSeq;
     }
 }

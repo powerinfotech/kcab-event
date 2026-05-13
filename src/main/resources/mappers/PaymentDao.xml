@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kcabEvent.dao.PaymentDao">
+
+    <select id="selectPaymentList" parameterType="com.kcabEvent.dto.payment.PaymentSearchDto"
+            resultType="com.kcabEvent.dto.payment.PaymentListDto">
+        SELECT
+             p.payment_seq
+            ,p.pg_provider
+            ,p.pg_order_id
+            ,p.pg_transaction_id
+            ,p.amount
+            ,p.currency
+            ,p.original_amount
+            ,p.discount_code
+            ,p.discount_amount
+            ,p.settle_amount
+            ,p.settle_currency
+            ,p.payment_method
+            ,p.card_company
+            ,p.card_last4
+            ,p.status
+            ,p.paid_at
+            ,p.created_at
+            ,p.cancelled_at
+            ,p.refunded_amount
+            ,COALESCE(rc.refund_count, 0) AS refund_count
+            ,p.event_seq
+            ,e.title       AS event_title
+            ,e.event_type
+            ,p.participant_seq
+            ,p.event_participant_seq
+            ,COALESCE(p.payer_name,
+                      TRIM(CONCAT_WS(' ', pa.first_name, NULLIF(pa.middle_name, ''), pa.last_name))
+            )              AS payer_name
+            ,COALESCE(p.payer_email, pa.email)   AS payer_email
+            ,COALESCE(p.payer_country, pa.country) AS payer_country
+        FROM event.payments p
+        LEFT JOIN event.events e
+            ON e.event_seq = p.event_seq
+        LEFT JOIN event.participants pa
+            ON pa.participant_seq = p.participant_seq
+        LEFT JOIN (
+            SELECT payment_seq, COUNT(*) AS refund_count
+              FROM event.refunds
+             GROUP BY payment_seq
+        ) rc ON rc.payment_seq = p.payment_seq
+        <where>
+            <if test="organizationSeq != null">
+                AND (e.organization_seq = #{organizationSeq} OR e.organization_seq IS NULL AND p.event_seq IS NULL)
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (
+                    LOWER(p.pg_order_id)         LIKE '%' || LOWER(#{keyword}) || '%'
+                    OR LOWER(COALESCE(p.pg_transaction_id, '')) LIKE '%' || LOWER(#{keyword}) || '%'
+                    OR LOWER(COALESCE(p.payer_name, '')) LIKE '%' || LOWER(#{keyword}) || '%'
+                    OR LOWER(COALESCE(p.payer_email, '')) LIKE '%' || LOWER(#{keyword}) || '%'
+                    OR LOWER(COALESCE(pa.email, '')) LIKE '%' || LOWER(#{keyword}) || '%'
+                )
+            </if>
+            <if test="eventSeqs != null and eventSeqs.size() > 0">
+                AND p.event_seq IN
+                <foreach collection="eventSeqs" item="eventSeq" open="(" separator="," close=")">
+                    #{eventSeq}
+                </foreach>
+            </if>
+            <if test="statuses != null and statuses.size() > 0">
+                AND p.status IN
+                <foreach collection="statuses" item="status" open="(" separator="," close=")">
+                    #{status}
+                </foreach>
+            </if>
+            <if test="pgProviders != null and pgProviders.size() > 0">
+                AND p.pg_provider IN
+                <foreach collection="pgProviders" item="provider" open="(" separator="," close=")">
+                    #{provider}
+                </foreach>
+            </if>
+            <if test="paymentMethods != null and paymentMethods.size() > 0">
+                AND p.payment_method IN
+                <foreach collection="paymentMethods" item="method" open="(" separator="," close=")">
+                    #{method}
+                </foreach>
+            </if>
+            <if test="currencies != null and currencies.size() > 0">
+                AND p.currency IN
+                <foreach collection="currencies" item="currency" open="(" separator="," close=")">
+                    #{currency}
+                </foreach>
+            </if>
+            <if test="fromDate != null">
+                AND COALESCE(p.paid_at, p.created_at) &gt;= #{fromDate}
+            </if>
+            <if test="toDate != null">
+                AND COALESCE(p.paid_at, p.created_at) &lt; #{toDate}
+            </if>
+            <if test="minAmount != null">
+                AND p.amount &gt;= #{minAmount}
+            </if>
+            <if test="maxAmount != null">
+                AND p.amount &lt;= #{maxAmount}
+            </if>
+        </where>
+        ORDER BY COALESCE(p.paid_at, p.created_at) DESC, p.payment_seq DESC
+    </select>
+
+    <select id="selectPaymentDetail" resultType="com.kcabEvent.dto.payment.PaymentDetailDto">
+        SELECT
+             p.payment_seq
+            ,p.pg_provider
+            ,p.pg_mid
+            ,p.pg_transaction_id
+            ,p.pg_order_id
+            ,p.amount
+            ,p.currency
+            ,p.payment_method
+            ,p.card_company
+            ,p.card_last4
+            ,p.status
+            ,p.paid_at
+            ,p.failed_reason
+            ,p.receipt_url
+            ,p.raw_response::text AS raw_response
+            ,p.pg_response_code
+            ,p.pg_response_message
+            ,p.verified_at
+            ,p.webhook_received_at
+            ,p.settle_amount
+            ,p.settle_currency
+            ,p.fx_rate
+            ,p.approval_no
+            ,p.installment_months
+            ,p.event_pricing_seq
+            ,p.price_type
+            ,p.original_amount
+            ,p.discount_code
+            ,p.discount_amount
+            ,p.refunded_amount
+            ,p.cancelled_at
+            ,p.cancel_reason
+            ,p.admin_memo
+            ,p.created_at
+            ,p.updated_at
+            ,p.event_seq
+            ,e.title       AS event_title
+            ,e.event_type
+            ,e.start_at    AS event_start_dt
+            ,p.event_participant_seq
+            ,ep.status     AS participation_status
+            ,p.participant_seq
+            ,COALESCE(p.payer_name,
+                      TRIM(CONCAT_WS(' ', pa.first_name, NULLIF(pa.middle_name, ''), pa.last_name))
+            )              AS payer_name
+            ,COALESCE(p.payer_email, pa.email)   AS payer_email
+            ,COALESCE(p.payer_country, pa.country) AS payer_country
+            ,pa.organization_name AS payer_organization
+            ,pa.position          AS payer_position
+        FROM event.payments p
+        LEFT JOIN event.events e
+            ON e.event_seq = p.event_seq
+        LEFT JOIN event.event_participants ep
+            ON ep.event_participant_seq = p.event_participant_seq
+        LEFT JOIN event.participants pa
+            ON pa.participant_seq = p.participant_seq
+        WHERE p.payment_seq = #{paymentSeq}
+        <if test="organizationSeq != null">
+            AND (e.organization_seq = #{organizationSeq} OR p.event_seq IS NULL)
+        </if>
+    </select>
+
+    <select id="selectPaymentForUpdate" resultType="com.kcabEvent.domain.Payment">
+        SELECT
+             payment_seq
+            ,pg_provider
+            ,pg_mid
+            ,pg_transaction_id
+            ,pg_order_id
+            ,amount
+            ,currency
+            ,payment_method
+            ,card_company
+            ,card_last4
+            ,status
+            ,paid_at
+            ,failed_reason
+            ,receipt_url
+            ,raw_response::text AS raw_response
+            ,pg_response_code
+            ,pg_response_message
+            ,verified_at
+            ,webhook_received_at
+            ,event_seq
+            ,event_participant_seq
+            ,participant_seq
+            ,payer_name
+            ,payer_email
+            ,payer_country
+            ,settle_amount
+            ,settle_currency
+            ,fx_rate
+            ,approval_no
+            ,installment_months
+            ,event_pricing_seq
+            ,price_type
+            ,original_amount
+            ,discount_code
+            ,discount_amount
+            ,refunded_amount
+            ,cancelled_at
+            ,cancel_reason
+            ,admin_memo
+            ,created_by
+            ,created_at
+            ,updated_by
+            ,updated_at
+        FROM event.payments
+        WHERE payment_seq = #{paymentSeq}
+        FOR UPDATE
+    </select>
+
+    <select id="selectPaymentEventOptions" resultType="com.kcabEvent.dto.payment.PaymentEventOptionDto">
+        SELECT DISTINCT
+             e.event_seq
+            ,e.title
+            ,e.event_type
+            ,e.start_at
+        FROM event.events e
+        INNER JOIN event.payments p
+            ON p.event_seq = e.event_seq
+        WHERE e.deleted_at IS NULL
+        <if test="organizationSeq != null">
+          AND e.organization_seq = #{organizationSeq}
+        </if>
+        ORDER BY e.start_at DESC NULLS LAST, e.event_seq DESC
+    </select>
+
+    <update id="updatePaymentStatusOnCancel">
+        UPDATE event.payments
+        SET status          = #{status}
+           ,refunded_amount = #{refundedAmount}
+           ,cancelled_at    = COALESCE(cancelled_at, #{cancelledAt})
+           ,cancel_reason   = COALESCE(cancel_reason, #{cancelReason})
+           ,updated_by      = #{updatedBy}
+           ,updated_at      = now()
+        WHERE payment_seq   = #{paymentSeq}
+    </update>
+
+    <update id="updatePaymentMemo">
+        UPDATE event.payments
+        SET admin_memo = #{adminMemo}
+           ,updated_by = #{updatedBy}
+           ,updated_at = now()
+        WHERE payment_seq = #{paymentSeq}
+    </update>
+
+</mapper>

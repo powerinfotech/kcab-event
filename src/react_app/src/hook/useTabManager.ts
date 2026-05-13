@@ -38,7 +38,7 @@ import { useCallback, useRef } from 'react';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { tabListAtom, activeTabKeyAtom } from '@atom/tabListAtom';
 import { tabModeAtom } from '@atom/tabModeAtom';
-import { currentPathAtom, pushPath } from '@atom/currentPathAtom';
+import { KCAB_PATH_CHANGE_EVENT, currentPathAtom, pushPath } from '@atom/currentPathAtom';
 import { useMessage } from '@hook/useMessage';
 import { MenuInfo } from '@interface/auth/MenuManagement';
 
@@ -49,6 +49,7 @@ const MAX_TABS = 10;
 function updateUrl(url: string) {
   if (typeof window !== 'undefined') {
     window.history.pushState(null, '', url);
+    window.dispatchEvent(new Event(KCAB_PATH_CHANGE_EVENT));
   }
 }
 

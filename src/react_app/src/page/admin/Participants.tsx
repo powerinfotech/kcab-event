@@ -3,10 +3,12 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { App, Select } from 'antd';
 import { ArrowLeftOutlined, CalendarOutlined, ReloadOutlined, SearchOutlined, TeamOutlined } from '@ant-design/icons';
+import { useSetAtom } from 'jotai';
 import {
   callGetParticipantEventOptions,
   callGetParticipantList,
 } from '@api/admin/ParticipantManagementApi';
+import { currentPathAtom, pushPath } from '@atom/currentPathAtom';
 import {
   ParticipantEventItem,
   ParticipantEventOption,
@@ -17,6 +19,7 @@ import AdminGridPagination, { useClientGridPagination } from './AdminGridPaginat
 
 const PARTICIPANT_DETAIL_KEY = 'saf.admin.participantDetailSeq';
 const PARTICIPANT_DETAIL_ITEM_KEY = 'saf.admin.participantDetailItem';
+const PARTICIPANT_RETURN_PATH_KEY = 'saf.admin.participantReturnPath';
 
 const PARTICIPATION_STATUS_OPTIONS = [
   { value: 'registered', label: 'Registered' },
@@ -81,8 +84,18 @@ function readPendingParticipantDetailItem(): ParticipantListItem | null {
   }
 }
 
+function readParticipantReturnPath(): string | null {
+  if (typeof window === 'undefined') return null;
+  const value = window.sessionStorage.getItem(PARTICIPANT_RETURN_PATH_KEY);
+  if (value) {
+    window.sessionStorage.removeItem(PARTICIPANT_RETURN_PATH_KEY);
+  }
+  return value || null;
+}
+
 export default function Participants() {
   const { message } = App.useApp();
+  const setCurrentPath = useSetAtom(currentPathAtom);
   const [participants, setParticipants] = useState<ParticipantListItem[]>([]);
   const [eventOptions, setEventOptions] = useState<ParticipantEventOption[]>([]);
   const [keyword, setKeyword] = useState('');
@@ -90,6 +103,7 @@ export default function Participants() {
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedParticipant, setSelectedParticipant] = useState<ParticipantListItem | null>(null);
+  const [returnPath, setReturnPath] = useState<string | null>(null);
   const initialLoadRef = useRef(false);
 
   const fetchParticipants = async (pendingParticipantSeq?: number | null) => {
@@ -140,6 +154,7 @@ export default function Participants() {
     if (initialLoadRef.current) return;
     initialLoadRef.current = true;
     const pendingParticipant = readPendingParticipantDetailItem();
+    setReturnPath(readParticipantReturnPath());
     if (pendingParticipant) {
       setSelectedParticipant(pendingParticipant);
     }
@@ -157,6 +172,14 @@ export default function Participants() {
   }, [participants]);
   const participantPagination = useClientGridPagination(participants);
 
+  const handleDetailBack = () => {
+    if (returnPath) {
+      pushPath(returnPath, setCurrentPath);
+      return;
+    }
+    setSelectedParticipant(null);
+  };
+
   if (selectedParticipant) {
     return (
       <div className="saf-screen saf-participant-admin-screen">
@@ -166,9 +189,9 @@ export default function Participants() {
             <p>{selectedParticipant.email}</p>
           </div>
           <div className="saf-screen-actions">
-            <button type="button" className="saf-action-btn is-secondary" onClick={() => setSelectedParticipant(null)}>
+            <button type="button" className="saf-action-btn is-secondary" onClick={handleDetailBack}>
               <ArrowLeftOutlined />
-              <span>List</span>
+              <span>{returnPath ? 'Back' : 'List'}</span>
             </button>
           </div>
         </header>

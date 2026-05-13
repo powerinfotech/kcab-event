@@ -62,4 +62,23 @@ public interface FileService {
      * @param fileSeq   파일 그룹 순번
      */
     void deleteAllFile(LoginUser loginUser, Integer fileSeq);
+
+    /**
+     * 리치 에디터 본문에 삽입할 인라인 이미지를 업로드한다.
+     *
+     * @param loginUser 현재 로그인 사용자
+     * @param file      업로드된 이미지 파일
+     * @return 저장된 파일 상세
+     */
+    FileDetailDto uploadInlineImage(LoginUser loginUser, MultipartFile file);
+
+    /**
+     * 파일 상세 단건을 조회한다.
+     */
+    FileDetailDto getFileDetailBySeq(Integer fileDtlSeq);
+
+    /**
+     * 인라인 이미지 등 파일을 브라우저에 인라인으로 서빙한다 (Content-Disposition: inline).
+     */
+    ResponseEntity<Resource> streamInlineFile(Integer fileDtlSeq);
 }

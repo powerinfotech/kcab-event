@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kcabEvent.dao.RefundDao">
+
+    <select id="selectRefundsByPaymentSeq" resultType="com.kcabEvent.dto.payment.RefundListDto">
+        SELECT
+             r.refund_seq
+            ,r.payment_seq
+            ,r.amount
+            ,r.currency
+            ,r.settle_amount
+            ,r.reason
+            ,r.status
+            ,r.refund_type
+            ,r.refund_request_id
+            ,r.pg_refund_id
+            ,r.pg_refund_transaction_id
+            ,r.pg_response_code
+            ,r.pg_response_message
+            ,r.balance_before
+            ,r.balance_after
+            ,r.failed_reason
+            ,r.requested_at
+            ,r.processed_at
+            ,u_req.name  AS requested_by_name
+            ,u_proc.name AS processed_by_name
+        FROM event.refunds r
+        LEFT JOIN event.users u_req  ON u_req.user_seq  = r.requested_by
+        LEFT JOIN event.users u_proc ON u_proc.user_seq = r.processed_by
+        WHERE r.payment_seq = #{paymentSeq}
+        ORDER BY r.requested_at DESC, r.refund_seq DESC
+    </select>
+
+    <insert id="insertRefund" parameterType="com.kcabEvent.domain.Refund" useGeneratedKeys="true" keyProperty="refundSeq" keyColumn="refund_seq">
+        INSERT INTO event.refunds(
+             payment_seq
+            ,amount
+            ,currency
+            ,reason
+            ,status
+            ,refund_type
+            ,refund_request_id
+            ,settle_amount
+            ,pg_refund_id
+            ,pg_refund_transaction_id
+            ,pg_response_code
+            ,pg_response_message
+            ,balance_before
+            ,balance_after
+            ,raw_request
+            ,raw_response
+            ,failed_reason
+            ,requested_by
+            ,processed_by
+            ,requested_at
+            ,processed_at
+            ,created_by
+            ,updated_by
+        ) VALUES (
+             #{paymentSeq}
+            ,#{amount}
+            ,#{currency,jdbcType=VARCHAR}
+            ,#{reason}
+            ,#{status}
+            ,#{refundType}
+            ,#{refundRequestId,jdbcType=VARCHAR}
+            ,#{settleAmount}
+            ,#{pgRefundId,jdbcType=VARCHAR}
+            ,#{pgRefundTransactionId,jdbcType=VARCHAR}
+            ,#{pgResponseCode,jdbcType=VARCHAR}
+            ,#{pgResponseMessage,jdbcType=VARCHAR}
+            ,#{balanceBefore,jdbcType=NUMERIC}
+            ,#{balanceAfter,jdbcType=NUMERIC}
+            ,CAST(#{rawRequest,jdbcType=VARCHAR} AS JSONB)
+            ,CAST(#{rawResponse,jdbcType=VARCHAR} AS JSONB)
+            ,#{failedReason,jdbcType=VARCHAR}
+            ,#{requestedBy}
+            ,#{processedBy}
+            ,COALESCE(#{requestedAt}, now())
+            ,#{processedAt}
+            ,#{createdBy}
+            ,#{updatedBy}
+        )
+    </insert>
+
+</mapper>

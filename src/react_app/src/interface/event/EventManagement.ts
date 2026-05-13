@@ -92,6 +92,7 @@ export interface EventDiscountCodeItem {
   discountCode: string;
   discountType: 'percent' | 'amount' | string;
   discountValue: number | null;
+  currencyCode?: string | null;
   appliesToPriceType?: string | null;
   usageLimit?: number | null;
   usedCount?: number | null;

@@ -95,6 +95,7 @@ export interface FileDetailType {
     fileSeq?: number;
     fileNm: string;
     filePath?: string;
+    fileUrl?: string;
     fileType?: string;
     delYn?: string;
     sortSeq: number;
@@ -105,6 +106,8 @@ export interface FileDetailType {
 export interface CustomFileUpload extends UploadFile{
     fileSeq?: number;
     fileDtlSeq?: number;
+    filePath?: string;
+    fileUrl?: string;
     sortSeq: number;
     iudType?: IudType;
 }
@@ -147,7 +150,9 @@ const CustomFile = (props:CustomFilePropsType) => {
         fileDtlSeq: fileDto.fileDtlSeq,
         fileName: fileDto.fileNm,
         name: fileDto.fileNm,
-        url: fileDto.filePath,
+        url: fileDto.fileUrl ?? fileDto.filePath,
+        filePath: fileDto.filePath,
+        fileUrl: fileDto.fileUrl,
         status: 'done',
         sortSeq: fileDto.sortSeq,
         iudType: fileDto.iudType,
@@ -159,7 +164,8 @@ const CustomFile = (props:CustomFilePropsType) => {
         fileSeq: antdFileData.fileSeq,
         fileDtlSeq: antdFileData.fileDtlSeq,
         fileNm: antdFileData.name,
-        filePath: antdFileData.url,
+        filePath: antdFileData.filePath ?? antdFileData.url,
+        fileUrl: antdFileData.fileUrl,
         sortSeq: antdFileData.sortSeq,
         iudType: antdFileData.iudType,
         originFileObj: antdFileData.originFileObj
@@ -303,9 +309,11 @@ const CustomFile = (props:CustomFilePropsType) => {
         }
 
         // 2) 서버에 있는 파일 (file.url 존재)
-        if (file.url) {
+        const serverFile = file as CustomFileUpload;
+        const downloadPath = serverFile.filePath ?? file.url;
+        if (downloadPath) {
             const res = await axios.get('/api/download-file', {
-                params: { filePath : file.url },
+                params: { filePath : downloadPath },
                 responseType: 'blob',
             });
 

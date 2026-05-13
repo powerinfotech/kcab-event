@@ -133,6 +133,7 @@
             ,discount_code
             ,discount_type
             ,discount_value
+            ,currency_code
             ,applies_to_price_type
             ,usage_limit
             ,used_count
@@ -236,6 +237,7 @@
             ,discount_code
             ,discount_type
             ,discount_value
+            ,currency_code
             ,applies_to_price_type
             ,usage_limit
             ,used_count
@@ -250,6 +252,7 @@
             ,#{discountCode.discountCode}
             ,#{discountCode.discountType}
             ,#{discountCode.discountValue}
+            ,#{discountCode.currencyCode,jdbcType=VARCHAR}
             ,#{discountCode.appliesToPriceType,jdbcType=VARCHAR}
             ,#{discountCode.usageLimit,jdbcType=INTEGER}
             ,COALESCE(#{discountCode.usedCount,jdbcType=INTEGER}, 0)
@@ -270,6 +273,21 @@
             ,updated_at = CURRENT_TIMESTAMP
         WHERE event_seq = #{eventSeq}
           AND deleted_at IS NULL
+    </update>
+
+    <update id="closeExpiredEvents">
+        UPDATE event.events
+        SET  status     = #{closedStatus}
+            ,updated_at = CURRENT_TIMESTAMP
+        WHERE deleted_at IS NULL
+          AND end_at &lt; CURRENT_TIMESTAMP
+          AND status != #{closedStatus}
+        <if test="currentStatuses != null and currentStatuses.size() &gt; 0">
+          AND status IN
+          <foreach collection="currentStatuses" item="status" open="(" separator="," close=")">
+              #{status}
+          </foreach>
+        </if>
     </update>
 
     <delete id="deleteEvent">

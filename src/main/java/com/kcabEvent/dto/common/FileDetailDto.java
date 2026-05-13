@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
  *   "fileSeq": 101,
  *   "fileNm": "report.pdf",
  *   "filePath": "/upload/abc123_report.pdf",
+ *   "fileUrl": "/api/public/file-image/5",
  *   "fileType": "pdf",
  *   "delYn": "N",
  *   "sortSeq": 1
@@ -37,6 +38,8 @@ public class FileDetailDto extends FileDto{
     private String fileNm;
     /** 서버 저장 경로 (UUID 포함 전체 경로) */
     private String filePath;
+    /** 브라우저에서 접근 가능한 공개 파일 URL */
+    private String fileUrl;
     /** 파일 확장자 (예: {@code "pdf"}, {@code "png"}) */
     private String fileType;
     /** 삭제 여부 ({@code "Y"} / {@code "N"}) */

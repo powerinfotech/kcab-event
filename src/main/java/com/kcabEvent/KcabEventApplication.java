@@ -2,6 +2,7 @@ package com.kcabEvent;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * KcabEventApplication - 애플리케이션 진입점
@@ -10,6 +11,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * {@link SpringBootApplication}이 컴포넌트 스캔, 자동 설정, 프로퍼티 로딩을 일괄 처리한다.</p>
  */
 @SpringBootApplication
+@EnableScheduling
 public class KcabEventApplication {
 
 	public static void main(String[] args) {

@@ -13,7 +13,7 @@ import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { sessionInfoAtom } from '@atom/sessionInfoAtom';
 import { menuInfoAtom } from '@atom/menuInfoAtom';
 import { showErrorPageAtom } from '@atom/showErrorPageAtom';
-import { currentPathAtom } from '@atom/currentPathAtom';
+import { KCAB_PATH_CHANGE_EVENT, currentPathAtom } from '@atom/currentPathAtom';
 import { HttpStatusCode } from 'axios';
 import { getFixedAdminMenuInfo } from '@util/fixedAdminMenus';
 import { usePathname } from 'next/navigation';
@@ -38,7 +38,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const showErrorPage = useAtomValue(showErrorPageAtom);
   const atomCurrentPath = useAtomValue(currentPathAtom);
   const pathname = usePathname();
-  const [browserPath, setBrowserPath] = useState('');
+  const [browserPath, setBrowserPath] = useState(
+    typeof window !== 'undefined' ? window.location.pathname : '',
+  );
   const currentPath = browserPath || pathname || atomCurrentPath;
   const [isLogin, setIsLogin] = useState<boolean | undefined>(undefined);
   const [sidebarSubpanelOpen, setSidebarSubpanelOpen] = useState(false);
@@ -86,17 +88,20 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     syncCurrentPath();
     window.addEventListener('popstate', syncCurrentPath);
     window.addEventListener('pageshow', syncCurrentPath);
+    window.addEventListener(KCAB_PATH_CHANGE_EVENT, syncCurrentPath);
     return () => {
       window.removeEventListener('popstate', syncCurrentPath);
       window.removeEventListener('pageshow', syncCurrentPath);
+      window.removeEventListener(KCAB_PATH_CHANGE_EVENT, syncCurrentPath);
     };
   }, [setCurrentPath]);
 
   useEffect(() => {
-    if (pathname && pathname !== browserPath) {
+    const actualPath = typeof window !== 'undefined' ? window.location.pathname : pathname;
+    if (pathname && pathname === actualPath && pathname !== browserPath) {
       setBrowserPath(pathname);
     }
-    if (pathname && pathname !== atomCurrentPath) {
+    if (pathname && pathname === actualPath && pathname !== atomCurrentPath) {
       setCurrentPath(pathname);
     }
   }, [pathname, browserPath, atomCurrentPath, setCurrentPath]);

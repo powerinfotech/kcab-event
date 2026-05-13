@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { buildGalleryImageUrl, callGetPublicGalleryList } from '@api/gallery/GalleryApi';
+import { callGetPublicGalleryList, resolveGalleryImageUrl } from '@api/gallery/GalleryApi';
 import { GalleryImage, GalleryListItem } from '@interface/admin/Gallery';
 import PublicFooter from './components/PublicFooter';
 import PublicHeader from './components/PublicHeader';
@@ -72,7 +72,7 @@ export default function PublicGallery() {
                           className="pub-gallery-photo"
                           onClick={() => setSelectedImage({ gallery, image })}
                         >
-                          <img src={buildGalleryImageUrl(image.filePath)} alt={image.fileNm || gallery.title} />
+                          <img src={resolveGalleryImageUrl(image)} alt={image.fileNm || gallery.title} />
                         </button>
                       ))}
                     </div>
@@ -97,7 +97,7 @@ export default function PublicGallery() {
           </button>
           <figure onClick={(event) => event.stopPropagation()}>
             <img
-              src={buildGalleryImageUrl(selectedImage.image.filePath)}
+              src={resolveGalleryImageUrl(selectedImage.image)}
               alt={selectedImage.image.fileNm || selectedImage.gallery.title}
             />
             <figcaption>

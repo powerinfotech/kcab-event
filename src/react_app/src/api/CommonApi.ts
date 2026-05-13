@@ -65,6 +65,23 @@ export const callGetFileList = async (fileSeq : number|null) => {
     return data;
 };
 
+export interface EditorImageUploadResponse {
+    fileDtlSeq: number;
+    fileNm: string;
+    url: string;
+}
+
+export const callUploadEditorImage = async (file: File): Promise<EditorImageUploadResponse> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const { data } = await axios.post<ApiResponse<EditorImageUploadResponse>>(
+        '/api/editor/upload-image',
+        formData,
+        { headers: { 'Content-Type': 'multipart/form-data' } },
+    );
+    return data.item;
+};
+
 export const callSaveFiles = async (fileSeq : number|null, menuSeq : number, fileList : FileDetailType[]) => {
     const insertFileList = fileList.filter((fileData) => fileData.iudType === IudType.I);
     const updateFileList = fileList.filter((fileData) => fileData.iudType === IudType.U);

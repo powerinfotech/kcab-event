@@ -46,6 +46,25 @@ interface CustomImageUploadProps {
   onChange?: (fileList: UploadFile[]) => void;
 }
 
+type ImageUploadFile = UploadFile & {
+  fileDtlSeq?: number;
+  filePath?: string;
+  fileUrl?: string;
+};
+
+const isBrowserReadableUrl = (url?: string): boolean => {
+  if (!url) return false;
+  return /^(https?:|data:|blob:|\/api\/|\/_next\/|\/images\/|\/uploads?\/)/i.test(url);
+};
+
+const getServerImageUrl = (file: ImageUploadFile): string | undefined => {
+  if (file.fileUrl) return file.fileUrl;
+  const rawPath = file.url;
+  if (!rawPath) return undefined;
+  if (isBrowserReadableUrl(rawPath)) return rawPath;
+  return undefined;
+};
+
 const getBase64 = (file: File): Promise<string> =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -58,8 +77,20 @@ const CustomImageUpload = ({ maxCount = 5, disabled = false, fileList = [], onCh
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
   const [previewTitle, setPreviewTitle] = useState('');
+  const displayFileList = fileList.map((file) => {
+    const imageFile = file as ImageUploadFile;
+    const imageUrl = getServerImageUrl(imageFile);
+    return imageUrl ? { ...file, url: imageUrl, thumbUrl: imageUrl } : file;
+  });
 
   const handlePreview = async (file: UploadFile) => {
+    const serverImageUrl = getServerImageUrl(file as ImageUploadFile);
+    if (serverImageUrl) {
+      setPreviewImage(serverImageUrl);
+      setPreviewOpen(true);
+      setPreviewTitle(file.name || file.url?.substring(file.url.lastIndexOf('/') + 1) || '');
+      return;
+    }
     if (!file.url && !file.preview && file.originFileObj) {
       file.preview = await getBase64(file.originFileObj);
     }
@@ -76,7 +107,7 @@ const CustomImageUpload = ({ maxCount = 5, disabled = false, fileList = [], onCh
     <>
       <Upload
         listType="picture-card"
-        fileList={fileList}
+        fileList={displayFileList}
         onPreview={handlePreview}
         onChange={handleChange}
         beforeUpload={(file: RcFile) => {

@@ -13,3 +13,8 @@ export const buildGalleryImageUrl = (filePath?: string | null) => {
   if (!filePath) return '';
   return `/api/public/gallery/image?filePath=${encodeURIComponent(filePath)}`;
 };
+
+export const resolveGalleryImageUrl = (image?: { fileUrl?: string | null; filePath?: string | null } | null) => {
+  if (!image) return '';
+  return image.fileUrl || buildGalleryImageUrl(image.filePath);
+};

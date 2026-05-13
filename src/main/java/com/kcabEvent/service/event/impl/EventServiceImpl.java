@@ -152,10 +152,11 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
         event.setUseYn(saveDto.getUseYn() != null ? saveDto.getUseYn() : "Y");
         event.setFileSeq(saveDto.getFileSeq());
         event.setAttachmentFileSeq(saveDto.getAttachmentFileSeq());
-        event.setEventType(admin ? (saveDto.getEventType() != null ? saveDto.getEventType() : "main") : EVENT_TYPE_SIDE);
+        String resolvedEventType = admin ? (saveDto.getEventType() != null ? saveDto.getEventType() : "main") : EVENT_TYPE_SIDE;
+        event.setEventType(resolvedEventType);
         event.setOrganizationSeq(organizationSeq != null ? organizationSeq : saveDto.getOrganizationSeq());
         event.setMaxParticipants(saveDto.getMaxParticipants());
-        event.setIsPaid(admin && Boolean.TRUE.equals(saveDto.getIsPaid()));
+        event.setIsPaid(admin && !EVENT_TYPE_SIDE.equals(resolvedEventType) && Boolean.TRUE.equals(saveDto.getIsPaid()));
 
         if (saveDto.getEventSeq() == null) {
             if (!admin) {
@@ -361,6 +362,9 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
             if (!StringUtils.hasText(priceName)) {
                 throw new BusinessException("Please enter a pricing name.");
             }
+            if (!"USD".equals(currencyCode) && !"KRW".equals(currencyCode)) {
+                throw new BusinessException("Currency must be USD or KRW.");
+            }
             if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
                 throw new BusinessException("Pricing amount must be greater than 0.");
             }
@@ -407,6 +411,7 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
             String code = normalizeDiscountCode(source.getDiscountCode());
             String discountType = normalizeKey(source.getDiscountType());
             BigDecimal discountValue = source.getDiscountValue();
+            String currencyCode = normalizeOptionalCurrency(source.getCurrencyCode());
             String appliesTo = normalizeKey(source.getAppliesToPriceType());
 
             if (!StringUtils.hasText(code)) {
@@ -424,6 +429,12 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
             if ("percent".equals(discountType) && discountValue.compareTo(BigDecimal.valueOf(100)) > 0) {
                 throw new BusinessException("Percent discount cannot exceed 100.");
             }
+            if ("amount".equals(discountType) && !StringUtils.hasText(currencyCode)) {
+                throw new BusinessException("Please select a discount currency.");
+            }
+            if (StringUtils.hasText(currencyCode) && !"USD".equals(currencyCode) && !"KRW".equals(currencyCode)) {
+                throw new BusinessException("Discount currency must be USD or KRW.");
+            }
             if (StringUtils.hasText(appliesTo) && !priceTypes.contains(appliesTo)) {
                 throw new BusinessException("Discount code applies to a pricing type that does not exist.");
             }
@@ -440,6 +451,7 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
             target.setDiscountCode(code);
             target.setDiscountType(discountType);
             target.setDiscountValue(discountValue);
+            target.setCurrencyCode("amount".equals(discountType) ? currencyCode : null);
             target.setAppliesToPriceType(StringUtils.hasText(appliesTo) ? appliesTo : null);
             target.setUsageLimit(source.getUsageLimit());
             target.setUsedCount(source.getUsedCount() != null ? source.getUsedCount() : 0);
@@ -459,6 +471,11 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
     private String normalizeCurrency(String value) {
         String text = trimToNull(value);
         return text == null ? "USD" : text.toUpperCase(Locale.ROOT);
+    }
+
+    private String normalizeOptionalCurrency(String value) {
+        String text = trimToNull(value);
+        return text == null ? null : text.toUpperCase(Locale.ROOT);
     }
 
     private String normalizeUseYn(String value) {

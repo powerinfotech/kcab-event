@@ -3,6 +3,7 @@ export interface GalleryImage {
   fileSeq: number;
   fileNm: string;
   filePath: string;
+  fileUrl?: string | null;
   fileType?: string | null;
   sortSeq: number;
 }
@@ -14,7 +15,9 @@ export interface GalleryListItem {
   description?: string | null;
   fileSeq?: number | null;
   imageCount: number;
+  coverFileDtlSeq?: number | null;
   coverFilePath?: string | null;
+  coverFileUrl?: string | null;
   sortSeq: number;
   useYn: string;
   rgstUserName?: string | null;

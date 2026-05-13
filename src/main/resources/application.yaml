@@ -85,6 +85,12 @@ brevo:
     name: ${BREVO_SENDER_NAME:KCAB International}
     email: ${BREVO_SENDER_EMAIL:international@kcab.or.kr}
 
+saf:
+  batch:
+    close-expired-events:
+      cron: "0 0 * * * *"
+      zone: Asia/Seoul
+
 
 ---
 
@@ -126,6 +132,10 @@ system:
 file:
   path:
     dir: C:/Upload
+  url:
+    inline-image-prefix: /api/public/editor-image
+    image-prefix: /api/public/file-image
+    gallery-image-path: /api/public/gallery/image
 
 ---
 
@@ -155,6 +165,10 @@ system:
 file:
   path:
     dir: /data/upload/kcab-event
+  url:
+    inline-image-prefix: /api/public/editor-image
+    image-prefix: /api/public/file-image
+    gallery-image-path: /api/public/gallery/image
 
 ---
 
@@ -184,4 +198,8 @@ system:
 file:
   path:
     dir: C:/upload
+  url:
+    inline-image-prefix: /api/public/editor-image
+    image-prefix: /api/public/file-image
+    gallery-image-path: /api/public/gallery/image
 

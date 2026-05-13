@@ -20,6 +20,8 @@ public interface FileDao {
      * @param fileSeq 파일 그룹 순번
      */
     List<FileDetailDto> selectFile(@Param("fileSeq") Integer fileSeq);
+    /** 파일 상세 단건 조회 (인라인 이미지 서빙용). */
+    FileDetailDto selectFileDetailBySeq(@Param("fileDtlSeq") Integer fileDtlSeq);
     /**
      * 파일 그룹 순번의 존재 여부를 확인한다.
      *

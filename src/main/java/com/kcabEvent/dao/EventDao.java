@@ -45,6 +45,9 @@ public interface EventDao {
                           @Param("updatedBy") Long updatedBy,
                           @Param("rejectionReason") String rejectionReason);
 
+    int closeExpiredEvents(@Param("closedStatus") String closedStatus,
+                           @Param("currentStatuses") List<String> currentStatuses);
+
     void deleteEvent(@Param("eventSeq") Long eventSeq);
 
 }

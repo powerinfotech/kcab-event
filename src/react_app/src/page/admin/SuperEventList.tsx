@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { App, DatePicker, Select } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
-import { useAtomValue } from 'jotai';
+import { useAtomValue, useSetAtom } from 'jotai';
 import {
   ArrowLeftOutlined,
   CalendarOutlined,
@@ -35,6 +35,7 @@ import {
   callSaveEvent,
 } from '@api/event/EventApi';
 import { sessionInfoAtom } from '@atom/sessionInfoAtom';
+import { currentPathAtom, pushPath } from '@atom/currentPathAtom';
 import { getAdminRole } from '@util/fixedAdminMenus';
 import {
   EVENT_STATUS_LABELS,
@@ -86,7 +87,7 @@ const PRICE_TYPE_OPTIONS: Array<{ value: string; label: string }> = [
   { value: 'member', label: 'Member' },
 ];
 
-const CURRENCY_OPTIONS = ['USD', 'KRW', 'EUR', 'JPY'];
+const CURRENCY_OPTIONS = ['USD', 'KRW'];
 
 const DISCOUNT_TYPE_OPTIONS: Array<{ value: EventDiscountCodeItem['discountType']; label: string }> = [
   { value: 'percent', label: 'Percent' },
@@ -107,6 +108,7 @@ const URL_REGEXP = /^(https?:\/\/)[^\s]+$/i;
 const DASHBOARD_EVENT_DETAIL_KEY = 'saf.admin.dashboardEventSeq';
 const PARTICIPANT_DETAIL_KEY = 'saf.admin.participantDetailSeq';
 const PARTICIPANT_DETAIL_ITEM_KEY = 'saf.admin.participantDetailItem';
+const PARTICIPANT_RETURN_PATH_KEY = 'saf.admin.participantReturnPath';
 
 const emptyDetail: EventDetail = {
   eventSeq: 0,
@@ -189,6 +191,7 @@ function createDiscountCodeRow(sortSeq: number): EventDiscountCodeItem {
     discountCode: '',
     discountType: 'percent',
     discountValue: null,
+    currencyCode: null,
     appliesToPriceType: '',
     usageLimit: null,
     usedCount: 0,
@@ -202,6 +205,7 @@ function createDiscountCodeRow(sortSeq: number): EventDiscountCodeItem {
 export default function SuperEventList() {
   const { message, modal } = App.useApp();
   const sessionInfo = useAtomValue(sessionInfoAtom);
+  const setCurrentPath = useSetAtom(currentPathAtom);
   const isOrganizationRole = getAdminRole(sessionInfo.admYn) === 'ORGANIZATION';
   const [events, setEvents] = useState<EventListItem[]>([]);
   const [keyword, setKeyword] = useState('');
@@ -242,6 +246,8 @@ export default function SuperEventList() {
   const isUrlInvalid = isUrlRequiredEmpty || isUrlFormatInvalid;
   const isRegStartRequiredEmpty = submitAttempted && showRegistrationDates && !regStartValue;
   const isRegEndRequiredEmpty = submitAttempted && showRegistrationDates && !regEndValue;
+  const isSideEvent = form.eventType === 'side';
+  const canUsePaidPricing = !isOrganizationRole && !isSideEvent;
   const canReviewApproval = !isOrganizationRole && !isNew && form.status === 'pending_approval';
   const canCancelApproval = isOrganizationRole && !isNew && form.status === 'pending_approval';
   const canOrganizationEdit = form.status === 'draft' || form.status === 'published';
@@ -304,6 +310,11 @@ export default function SuperEventList() {
         pricingList: detail?.pricingList ?? [],
         discountCodes: detail?.discountCodes ?? [],
       };
+      if (merged.eventType === 'side') {
+        merged.isPaid = false;
+        merged.pricingList = [];
+        merged.discountCodes = [];
+      }
       if (!merged.registrationType) {
         merged.registrationType = (merged.registrationUrl ?? '').trim() ? 'external' : 'direct';
       }
@@ -374,11 +385,24 @@ export default function SuperEventList() {
   };
 
   const updatePricingMode = (isPaid: boolean) => {
+    setForm((prev) => {
+      const nextIsPaid = prev.eventType === 'side' ? false : isPaid;
+      return {
+        ...prev,
+        isPaid: nextIsPaid,
+        pricingList: nextIsPaid && !prev.pricingList?.length ? [createPricingRow(1)] : (nextIsPaid ? (prev.pricingList ?? []) : []),
+        discountCodes: nextIsPaid ? (prev.discountCodes ?? []) : [],
+      };
+    });
+  };
+
+  const updateEventType = (eventType: string) => {
     setForm((prev) => ({
       ...prev,
-      isPaid,
-      pricingList: isPaid && !prev.pricingList?.length ? [createPricingRow(1)] : (prev.pricingList ?? []),
-      discountCodes: prev.discountCodes ?? [],
+      eventType,
+      isPaid: eventType === 'side' ? false : prev.isPaid,
+      pricingList: eventType === 'side' ? [] : (prev.pricingList ?? []),
+      discountCodes: eventType === 'side' ? [] : (prev.discountCodes ?? []),
     }));
   };
 
@@ -436,6 +460,13 @@ export default function SuperEventList() {
         rowIndex === index ? { ...row, ...patch } : row
       )),
     }));
+  };
+
+  const updateDiscountType = (index: number, discountType: EventDiscountCodeItem['discountType']) => {
+    updateDiscountCodeRow(index, {
+      discountType,
+      currencyCode: discountType === 'amount' ? (form.discountCodes?.[index]?.currencyCode || 'USD') : null,
+    });
   };
 
   const removeDiscountCodeRow = (index: number) => {
@@ -499,6 +530,10 @@ export default function SuperEventList() {
       message.warning('Max participants must be 0 or greater.');
       return false;
     }
+    if (form.isPaid && isSideEvent) {
+      message.warning('Side events must be free.');
+      return false;
+    }
     if (form.isPaid) {
       const pricingList = form.pricingList ?? [];
       if (!pricingList.length) {
@@ -554,6 +589,11 @@ export default function SuperEventList() {
           message.warning('Percent discount cannot exceed 100.');
           return false;
         }
+        const discountCurrency = (discount.currencyCode || 'USD').trim().toUpperCase();
+        if (discount.discountType === 'amount' && !CURRENCY_OPTIONS.includes(discountCurrency)) {
+          message.warning('Please select a discount currency.');
+          return false;
+        }
         if (discount.appliesToPriceType && !priceTypes.has(discount.appliesToPriceType)) {
           message.warning('Discount code applies to a pricing type that does not exist.');
           return false;
@@ -572,7 +612,7 @@ export default function SuperEventList() {
   };
 
   const normalizePricingForSave = (): EventPricingItem[] => {
-    if (!form.isPaid) return [];
+    if (!form.isPaid || isSideEvent) return [];
     return (form.pricingList ?? []).map((pricing, index) => ({
       ...pricing,
       priceType: pricing.priceType,
@@ -587,12 +627,13 @@ export default function SuperEventList() {
   };
 
   const normalizeDiscountCodesForSave = (): EventDiscountCodeItem[] => {
-    if (!form.isPaid) return [];
+    if (!form.isPaid || isSideEvent) return [];
     return (form.discountCodes ?? []).map((discount, index) => ({
       ...discount,
       discountCode: discount.discountCode?.trim().toUpperCase() ?? '',
       discountType: discount.discountType || 'percent',
       discountValue: discount.discountValue === null || discount.discountValue === undefined ? null : Number(discount.discountValue),
+      currencyCode: discount.discountType === 'amount' ? ((discount.currencyCode || 'USD').trim().toUpperCase()) : null,
       appliesToPriceType: discount.appliesToPriceType || null,
       usageLimit: discount.usageLimit === null || discount.usageLimit === undefined ? null : Number(discount.usageLimit),
       usedCount: discount.usedCount ?? 0,
@@ -623,7 +664,7 @@ export default function SuperEventList() {
     eventType: form.eventType || 'main',
     organizationSeq: form.organizationSeq ?? null,
     maxParticipants: form.maxParticipants ?? null,
-    isPaid: form.isPaid ?? false,
+    isPaid: isSideEvent ? false : (form.isPaid ?? false),
     pricingList: normalizePricingForSave(),
     discountCodes: normalizeDiscountCodesForSave(),
   });
@@ -844,7 +885,11 @@ export default function SuperEventList() {
     if (typeof window !== 'undefined') {
       window.sessionStorage.setItem(PARTICIPANT_DETAIL_KEY, String(participant.participantSeq));
       window.sessionStorage.setItem(PARTICIPANT_DETAIL_ITEM_KEY, JSON.stringify(participant));
-      window.location.href = `/admin/participants?participantSeq=${participant.participantSeq}`;
+      window.sessionStorage.setItem(PARTICIPANT_RETURN_PATH_KEY, window.location.pathname + window.location.search);
+      if (selectedSeq !== null) {
+        window.sessionStorage.setItem(DASHBOARD_EVENT_DETAIL_KEY, String(selectedSeq));
+      }
+      pushPath(`/admin/participants?participantSeq=${participant.participantSeq}`, setCurrentPath);
     }
   };
 
@@ -942,7 +987,7 @@ export default function SuperEventList() {
                 <select
                   value={form.eventType}
                   disabled={!canEdit || isOrganizationRole}
-                  onChange={(e) => updateForm('eventType', e.target.value)}
+                  onChange={(e) => updateEventType(e.target.value)}
                 >
                   {TYPE_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -1059,7 +1104,7 @@ export default function SuperEventList() {
               <Field label="Pricing">
                 <select
                   value={form.isPaid ? 'Y' : 'N'}
-                  disabled={!canEdit || isOrganizationRole}
+                  disabled={!canEdit || !canUsePaidPricing}
                   onChange={(e) => updatePricingMode(e.target.value === 'Y')}
                 >
                   <option value="N">Free</option>
@@ -1259,6 +1304,7 @@ export default function SuperEventList() {
                       <th>Code</th>
                       <th>Type</th>
                       <th>Value</th>
+                      <th>Currency</th>
                       <th>Applies To</th>
                       <th>Usage Limit</th>
                       <th>Valid From</th>
@@ -1282,7 +1328,7 @@ export default function SuperEventList() {
                           <select
                             value={discount.discountType || 'percent'}
                             disabled={!canEdit}
-                            onChange={(e) => updateDiscountCodeRow(index, { discountType: e.target.value })}
+                            onChange={(e) => updateDiscountType(index, e.target.value)}
                           >
                             {DISCOUNT_TYPE_OPTIONS.map((option) => (
                               <option key={option.value} value={option.value}>{option.label}</option>
@@ -1299,6 +1345,18 @@ export default function SuperEventList() {
                             onChange={(e) => updateDiscountCodeRow(index, { discountValue: e.target.value === '' ? null : Number(e.target.value) })}
                             placeholder={discount.discountType === 'amount' ? '50.00' : '10'}
                           />
+                        </td>
+                        <td>
+                          <select
+                            value={discount.discountType === 'amount' ? (discount.currencyCode || 'USD') : ''}
+                            disabled={!canEdit || discount.discountType !== 'amount'}
+                            onChange={(e) => updateDiscountCodeRow(index, { currencyCode: e.target.value })}
+                          >
+                            <option value="">-</option>
+                            {CURRENCY_OPTIONS.map((currency) => (
+                              <option key={currency} value={currency}>{currency}</option>
+                            ))}
+                          </select>
                         </td>
                         <td>
                           <select
@@ -1367,7 +1425,7 @@ export default function SuperEventList() {
                     ))}
                     {!(form.discountCodes ?? []).length && (
                       <tr>
-                        <td colSpan={canEdit ? 9 : 8} className="saf-event-empty">
+                        <td colSpan={canEdit ? 10 : 9} className="saf-event-empty">
                           <CalendarOutlined />
                           <span>No discount codes. Add codes only when a coupon is needed.</span>
                         </td>

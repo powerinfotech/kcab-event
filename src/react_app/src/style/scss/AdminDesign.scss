@@ -2220,17 +2220,18 @@
 }
 
 .saf-discount-table {
-  min-width: 1280px;
+  min-width: 1400px;
 
   th:nth-child(1) { width: 150px; }
   th:nth-child(2) { width: 130px; }
   th:nth-child(3) { width: 120px; }
-  th:nth-child(4) { width: 150px; }
-  th:nth-child(5) { width: 130px; }
-  th:nth-child(6),
-  th:nth-child(7) { width: 190px; }
-  th:nth-child(8) { width: 90px; }
-  th:nth-child(9) { width: 86px; text-align: center; }
+  th:nth-child(4) { width: 110px; }
+  th:nth-child(5) { width: 150px; }
+  th:nth-child(6) { width: 130px; }
+  th:nth-child(7),
+  th:nth-child(8) { width: 190px; }
+  th:nth-child(9) { width: 90px; }
+  th:nth-child(10) { width: 86px; text-align: center; }
 }
 
 .saf-pricing-action-cell {
