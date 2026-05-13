@@ -12,7 +12,6 @@
             ,p.amount
             ,p.currency
             ,p.original_amount
-            ,p.discount_code
             ,p.discount_amount
             ,p.settle_amount
             ,p.settle_currency

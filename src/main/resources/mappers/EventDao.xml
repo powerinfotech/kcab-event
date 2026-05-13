@@ -359,7 +359,15 @@
 
     <update id="updateEventDiscountCode">
         UPDATE event.event_discount_codes
-        SET  discount_code         = #{discountCode.discountCode}
+        SET  discount_code         = CASE
+                                      WHEN EXISTS (
+                                          SELECT 1
+                                          FROM event.payments p
+                                          WHERE p.discount_code_seq = event.event_discount_codes.discount_code_seq
+                                      )
+                                      THEN discount_code
+                                      ELSE #{discountCode.discountCode}
+                                      END
             ,discount_type         = #{discountCode.discountType}
             ,discount_value        = #{discountCode.discountValue}
             ,currency_code         = #{discountCode.currencyCode,jdbcType=VARCHAR}
