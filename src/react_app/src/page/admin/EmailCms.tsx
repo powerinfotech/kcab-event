@@ -188,6 +188,7 @@ export default function EmailCms() {
               onChange={setBodyHtml}
               height={360}
               placeholder="Write email body content in English."
+              variables={variables}
             />
           </div>
 
