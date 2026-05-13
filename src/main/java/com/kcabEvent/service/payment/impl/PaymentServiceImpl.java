@@ -13,6 +13,7 @@ import com.kcabEvent.dto.payment.PaymentListDto;
 import com.kcabEvent.dto.payment.PaymentSearchDto;
 import com.kcabEvent.dto.payment.RefundListDto;
 import com.kcabEvent.exception.custom.BusinessException;
+import com.kcabEvent.service.payment.EximbayPaymentClient;
 import com.kcabEvent.service.payment.PaymentService;
 import jakarta.annotation.Resource;
 import org.egovframe.rte.fdl.cmmn.EgovAbstractServiceImpl;
@@ -24,6 +25,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Map;
 import java.util.List;
 
 @Service("paymentService")
@@ -37,6 +39,12 @@ public class PaymentServiceImpl extends EgovAbstractServiceImpl implements Payme
 
     @Resource(name = "safOrganizationDao")
     private SafOrganizationDao safOrganizationDao;
+
+    private final EximbayPaymentClient eximbayPaymentClient;
+
+    public PaymentServiceImpl(EximbayPaymentClient eximbayPaymentClient) {
+        this.eximbayPaymentClient = eximbayPaymentClient;
+    }
 
     @Override
     public List<PaymentListDto> selectPaymentList(PaymentSearchDto searchDto, LoginUser loginUser) {
@@ -124,6 +132,38 @@ public class PaymentServiceImpl extends EgovAbstractServiceImpl implements Payme
         Long userSeq = loginUser != null && loginUser.getUserSeq() != null ? loginUser.getUserSeq().longValue() : null;
         LocalDateTime now = LocalDateTime.now();
         BigDecimal balanceAfter = cancellable.subtract(applyAmount);
+        String refundRequestId = buildRefundRequestId(paymentSeq);
+        Map<String, Object> eximbayCancelRequest = null;
+        Map<String, Object> eximbayCancelResponse = null;
+
+        if ("eximbay".equalsIgnoreCase(payment.getPgProvider())) {
+            if (!StringUtils.hasText(payment.getPgTransactionId())) {
+                throw new BusinessException("Eximbay transaction ID is missing. This payment cannot be cancelled through PG.");
+            }
+            eximbayCancelRequest = eximbayPaymentClient.buildCancelRequest(
+                    refundRequestId,
+                    applyAmount,
+                    request.getReason(),
+                    payment.getPgOrderId(),
+                    payment.getCurrency(),
+                    totalAmount,
+                    cancellable
+            );
+            eximbayCancelResponse = eximbayPaymentClient.cancel(
+                    payment.getPgTransactionId(),
+                    refundRequestId,
+                    applyAmount,
+                    request.getReason(),
+                    payment.getPgOrderId(),
+                    payment.getCurrency(),
+                    totalAmount,
+                    cancellable
+            );
+            if (!"0000".equals(stringValue(eximbayCancelResponse.get("rescode")))) {
+                throw new BusinessException("Eximbay cancel failed: "
+                        + stringValue(eximbayCancelResponse.getOrDefault("resmsg", "Unknown error")));
+            }
+        }
 
         Refund refund = new Refund();
         refund.setPaymentSeq(paymentSeq);
@@ -132,10 +172,16 @@ public class PaymentServiceImpl extends EgovAbstractServiceImpl implements Payme
         refund.setReason(request.getReason());
         refund.setStatus("completed");
         refund.setRefundType(refundType);
-        refund.setRefundRequestId(buildRefundRequestId(paymentSeq));
+        refund.setRefundRequestId(refundRequestId);
         refund.setSettleAmount(calculateSettleRefundAmount(payment, applyAmount, totalAmount));
+        refund.setPgRefundId(nestedString(eximbayCancelResponse, "refund", "refund_id"));
+        refund.setPgRefundTransactionId(nestedString(eximbayCancelResponse, "refund", "refund_transaction_id"));
+        refund.setPgResponseCode(eximbayCancelResponse != null ? stringValue(eximbayCancelResponse.get("rescode")) : null);
+        refund.setPgResponseMessage(eximbayCancelResponse != null ? stringValue(eximbayCancelResponse.get("resmsg")) : null);
         refund.setBalanceBefore(cancellable);
         refund.setBalanceAfter(balanceAfter);
+        refund.setRawRequest(eximbayCancelRequest != null ? eximbayPaymentClient.toJson(eximbayCancelRequest) : null);
+        refund.setRawResponse(eximbayCancelResponse != null ? eximbayPaymentClient.toJson(eximbayCancelResponse) : null);
         refund.setRequestedBy(userSeq != null ? userSeq : 0L);
         refund.setProcessedBy(userSeq);
         refund.setRequestedAt(now);
@@ -185,6 +231,22 @@ public class PaymentServiceImpl extends EgovAbstractServiceImpl implements Payme
 
     private String buildRefundRequestId(Long paymentSeq) {
         return "RF" + paymentSeq + System.currentTimeMillis();
+    }
+
+    @SuppressWarnings("unchecked")
+    private String nestedString(Map<String, Object> source, String parentKey, String key) {
+        if (source == null) {
+            return null;
+        }
+        Object parent = source.get(parentKey);
+        if (!(parent instanceof Map<?, ?> parentMap)) {
+            return null;
+        }
+        return stringValue(parentMap.get(key));
+    }
+
+    private String stringValue(Object value) {
+        return value == null ? null : String.valueOf(value);
     }
 
     private BigDecimal calculateSettleRefundAmount(Payment payment, BigDecimal refundAmount, BigDecimal totalAmount) {

@@ -28,6 +28,7 @@ const iconByUrl: Record<string, React.ReactNode> = {
   '/side-events': <FormOutlined />,
   '/participants': <TeamOutlined />,
   '/payments': <CreditCardOutlined />,
+  '/pay-test': <CreditCardOutlined />,
   '/email-cms/registration-confirm': <MailOutlined />,
   '/email-logs': <HistoryOutlined />,
   '/notice-news': <ReadOutlined />,

@@ -46,6 +46,9 @@ public class CsrfRequireMatcher implements RequestMatcher {
 		if (ALLOWED_METHODS.matcher(request.getMethod()).matches())
 			return false;
 
+		if (request.getRequestURI() != null && request.getRequestURI().startsWith("/api/public/"))
+			return false;
+
 		// Swagger UI에서 온 요청은 CSRF 검사 제외 (개발/테스트 편의)
 		final String referer = request.getHeader("Referer");
 		return referer == null || !referer.contains("/swagger-ui");

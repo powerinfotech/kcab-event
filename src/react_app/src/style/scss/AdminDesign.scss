@@ -848,8 +848,154 @@
 
 .saf-email-cms-screen {
   .saf-email-layout {
-    grid-template-columns: 240px minmax(0, 1.1fr) minmax(320px, .9fr);
+  grid-template-columns: 240px minmax(0, 1.1fr) minmax(320px, .9fr);
   }
+}
+
+.saf-pay-test-screen {
+  letter-spacing: 0;
+}
+
+.saf-pay-test-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, .9fr) minmax(360px, 1.1fr) minmax(300px, .75fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.saf-pay-test-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 12px;
+
+  .saf-form-field.is-wide {
+    grid-column: 1 / -1;
+  }
+}
+
+.saf-pay-test-event-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 4px 0 14px;
+
+  span {
+    min-height: 28px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: #eef3f8;
+    color: #334155;
+    font-size: 12px;
+    font-weight: 800;
+  }
+}
+
+.saf-pay-test-summary {
+  min-height: 142px;
+  display: grid;
+  align-content: center;
+  gap: 6px;
+  padding: 18px;
+  border: 1px solid #dbe4ef;
+  border-left: 4px solid #ffdd00;
+  border-radius: 8px;
+  background: #fffdf0;
+
+  span {
+    color: #1f5b95;
+    font-size: 12px;
+    font-weight: 900;
+  }
+
+  strong {
+    color: #111827;
+    font-size: 30px;
+    line-height: 1.15;
+    font-weight: 900;
+  }
+
+  p {
+    color: #475569;
+    font-weight: 700;
+  }
+
+  &.is-empty {
+    background: #f8fafc;
+    border-left-color: #94a3b8;
+  }
+}
+
+.saf-pay-test-warning {
+  margin: -4px 0 14px;
+  padding: 10px 12px;
+  border: 1px solid #fed7aa;
+  border-radius: 6px;
+  background: #fff7ed;
+  color: #9a3412;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.saf-pay-test-submit {
+  width: 100%;
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 6px;
+  background: #ffdd00;
+  color: #111827;
+  font-size: 15px;
+  font-weight: 900;
+
+  &:disabled {
+    opacity: .58;
+    cursor: not-allowed;
+  }
+}
+
+.saf-pay-test-result {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid #e3e8ef;
+
+  > div {
+    display: grid;
+    gap: 4px;
+  }
+
+  span {
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  strong {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    color: #111827;
+    font-size: 14px;
+    font-weight: 900;
+  }
+
+  .saf-action-btn {
+    width: 100%;
+  }
+}
+
+.saf-pay-test-error {
+  padding: 10px 12px;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  background: #fef2f2;
+  color: #991b1b;
+  font-size: 12px;
+  font-weight: 800;
 }
 
 .saf-settings-layout {
@@ -2756,6 +2902,7 @@
   .saf-event-detail-grid,
   .saf-email-layout,
   .saf-settings-layout,
+  .saf-pay-test-layout,
   .saf-card-list {
     grid-template-columns: 1fr;
   }
@@ -2880,6 +3027,7 @@
 
   .saf-user-detail-grid,
   .saf-form-grid,
+  .saf-pay-test-form-grid,
   .saf-metric-grid {
     grid-template-columns: 1fr;
   }

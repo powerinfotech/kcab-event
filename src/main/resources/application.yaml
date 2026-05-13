@@ -85,6 +85,12 @@ brevo:
     name: ${BREVO_SENDER_NAME:KCAB International}
     email: ${BREVO_SENDER_EMAIL:international@kcab.or.kr}
 
+eximbay:
+  api-base-url: ${EXIMBAY_API_BASE_URL:https://api-test.eximbay.com}
+  sdk-url: ${EXIMBAY_SDK_URL:https://api-test.eximbay.com/v2/javascriptSDK.js}
+  mid: ${EXIMBAY_MID:1849705C64}
+  api-key: ${EXIMBAY_API_KEY:test_1849705C642C217E0B2D}
+
 saf:
   batch:
     close-expired-events:
