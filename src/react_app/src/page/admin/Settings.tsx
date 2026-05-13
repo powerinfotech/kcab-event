@@ -23,6 +23,7 @@ export default function Settings() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
+  const [submitAttempted, setSubmitAttempted] = useState(false);
 
   const visibleGroups = useMemo(() => groups.filter((item) => item.iudType !== 'D'), [groups]);
   const visibleCodes = useMemo(() => settingCodes.filter((item) => item.iudType !== 'D'), [settingCodes]);
@@ -69,6 +70,7 @@ export default function Settings() {
       setSelectedGroupSeq(nextGroup?.comGrpCdSeq ?? null);
       await fetchCodes(nextGroup?.comGrpCd ?? '');
       setDirty(false);
+      setSubmitAttempted(false);
     } catch {
       message.error('Failed to load settings.');
     } finally {
@@ -272,6 +274,13 @@ export default function Settings() {
       message.info('No changes to save.');
       return;
     }
+    setSubmitAttempted(true);
+    const hasInvalidGroup = visibleGroups.some((item) => !item.comGrpCd?.trim() || !item.comGrpCdNm?.trim());
+    const hasInvalidCode = visibleCodes.some((item) => !item.comCd?.trim() || !item.comCdNm?.trim());
+    if (hasInvalidGroup || hasInvalidCode) {
+      message.error('Please fill in all required fields.');
+      return;
+    }
     modal.confirm({
       title: 'Save Settings',
       content: 'Do you want to save changes?',
@@ -287,6 +296,9 @@ export default function Settings() {
     selectedSettingGroup?.ref02 || 'Ref 02',
     selectedSettingGroup?.ref03 || 'Ref 03',
   ];
+  const requiredInputClass = (value?: string | null) => (
+    submitAttempted && !value?.trim() ? 'is-required-error' : undefined
+  );
 
   return (
     <div className="saf-screen saf-settings-screen">
@@ -329,8 +341,8 @@ export default function Settings() {
             <table className="saf-table saf-settings-grade-table">
               <thead>
                 <tr>
-                  <th>Group Code</th>
-                  <th>Group Name</th>
+                  <th><RequiredHeader>Group Code</RequiredHeader></th>
+                  <th><RequiredHeader>Group Name</RequiredHeader></th>
                   <th>Ref 01</th>
                   <th>Ref 02</th>
                   <th>Ref 03</th>
@@ -346,6 +358,8 @@ export default function Settings() {
                     <td>
                       <input
                         value={item.comGrpCd}
+                        className={requiredInputClass(item.comGrpCd)}
+                        aria-invalid={submitAttempted && !item.comGrpCd?.trim()}
                         disabled={item.iudType !== 'I'}
                         onChange={(event) => updateGroup(item, 'comGrpCd', event.target.value)}
                       />
@@ -353,6 +367,8 @@ export default function Settings() {
                     <td>
                       <input
                         value={item.comGrpCdNm ?? ''}
+                        className={requiredInputClass(item.comGrpCdNm)}
+                        aria-invalid={submitAttempted && !item.comGrpCdNm?.trim()}
                         onChange={(event) => updateGroup(item, 'comGrpCdNm', event.target.value)}
                       />
                     </td>
@@ -410,8 +426,8 @@ export default function Settings() {
             <table className="saf-table saf-settings-limit-table">
               <thead>
                 <tr>
-                  <th>Code</th>
-                  <th>Name</th>
+                  <th><RequiredHeader>Code</RequiredHeader></th>
+                  <th><RequiredHeader>Name</RequiredHeader></th>
                   <th>{refHeaders[0]}</th>
                   <th>{refHeaders[1]}</th>
                   <th>{refHeaders[2]}</th>
@@ -427,6 +443,8 @@ export default function Settings() {
                     <td>
                       <input
                         value={item.comCd}
+                        className={requiredInputClass(item.comCd)}
+                        aria-invalid={submitAttempted && !item.comCd?.trim()}
                         disabled={item.iudType !== 'I'}
                         onChange={(event) => updateCode(item, 'comCd', event.target.value)}
                       />
@@ -434,6 +452,8 @@ export default function Settings() {
                     <td>
                       <input
                         value={item.comCdNm ?? ''}
+                        className={requiredInputClass(item.comCdNm)}
+                        aria-invalid={submitAttempted && !item.comCdNm?.trim()}
                         onChange={(event) => updateCode(item, 'comCdNm', event.target.value)}
                       />
                     </td>
@@ -471,6 +491,15 @@ export default function Settings() {
         </section>
       </div>
     </div>
+  );
+}
+
+function RequiredHeader({ children }: { children: React.ReactNode }) {
+  return (
+    <>
+      {children}
+      <span className="saf-grid-required-mark" aria-hidden="true">*</span>
+    </>
   );
 }
 

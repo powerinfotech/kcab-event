@@ -248,6 +248,19 @@ export default function SuperEventList() {
   const isRegEndRequiredEmpty = submitAttempted && showRegistrationDates && !regEndValue;
   const isSideEvent = form.eventType === 'side';
   const canUsePaidPricing = !isOrganizationRole && !isSideEvent;
+  const requiredGridClass = (invalid: boolean) => (submitAttempted && invalid ? 'is-required-error' : undefined);
+  const isMissingText = (value?: string | null) => !value?.trim();
+  const isInvalidPositiveAmount = (value?: number | string | null) => (
+    value === null || value === undefined || value === '' || Number(value) <= 0
+  );
+  const isDiscountValueInvalid = (discount: EventDiscountCodeItem) => (
+    isInvalidPositiveAmount(discount.discountValue)
+    || (discount.discountType === 'percent' && Number(discount.discountValue) > 100)
+  );
+  const isDiscountCurrencyInvalid = (discount: EventDiscountCodeItem) => (
+    discount.discountType === 'amount'
+    && !CURRENCY_OPTIONS.includes((discount.currencyCode ?? '').trim().toUpperCase())
+  );
   const canReviewApproval = !isOrganizationRole && !isNew && form.status === 'pending_approval';
   const canCancelApproval = isOrganizationRole && !isNew && form.status === 'pending_approval';
   const canOrganizationEdit = form.status === 'draft' || form.status === 'published';
@@ -589,7 +602,7 @@ export default function SuperEventList() {
           message.warning('Percent discount cannot exceed 100.');
           return false;
         }
-        const discountCurrency = (discount.currencyCode || 'USD').trim().toUpperCase();
+        const discountCurrency = (discount.currencyCode ?? '').trim().toUpperCase();
         if (discount.discountType === 'amount' && !CURRENCY_OPTIONS.includes(discountCurrency)) {
           message.warning('Please select a discount currency.');
           return false;
@@ -617,7 +630,7 @@ export default function SuperEventList() {
       ...pricing,
       priceType: pricing.priceType,
       priceName: pricing.priceName?.trim() ?? '',
-      currencyCode: (pricing.currencyCode || 'USD').trim().toUpperCase(),
+      currencyCode: pricing.currencyCode?.trim().toUpperCase() ?? '',
       amount: pricing.amount === null || pricing.amount === undefined ? null : Number(pricing.amount),
       salesStartAt: pricing.salesStartAt || null,
       salesEndAt: pricing.salesEndAt || null,
@@ -633,7 +646,7 @@ export default function SuperEventList() {
       discountCode: discount.discountCode?.trim().toUpperCase() ?? '',
       discountType: discount.discountType || 'percent',
       discountValue: discount.discountValue === null || discount.discountValue === undefined ? null : Number(discount.discountValue),
-      currencyCode: discount.discountType === 'amount' ? ((discount.currencyCode || 'USD').trim().toUpperCase()) : null,
+      currencyCode: discount.discountType === 'amount' ? (discount.currencyCode?.trim().toUpperCase() || null) : null,
       appliesToPriceType: discount.appliesToPriceType || null,
       usageLimit: discount.usageLimit === null || discount.usageLimit === undefined ? null : Number(discount.usageLimit),
       usedCount: discount.usedCount ?? 0,
@@ -1177,10 +1190,10 @@ export default function SuperEventList() {
                 <table className="saf-table saf-pricing-table">
                   <thead>
                     <tr>
-                      <th>Type</th>
-                      <th>Name</th>
-                      <th>Currency</th>
-                      <th>Amount</th>
+                      <th><GridRequiredHeader>Type</GridRequiredHeader></th>
+                      <th><GridRequiredHeader>Name</GridRequiredHeader></th>
+                      <th><GridRequiredHeader>Currency</GridRequiredHeader></th>
+                      <th><GridRequiredHeader>Amount</GridRequiredHeader></th>
                       <th>Sales Start</th>
                       <th>Sales End</th>
                       <th>Active</th>
@@ -1192,10 +1205,13 @@ export default function SuperEventList() {
                       <tr key={pricing.eventPricingSeq ?? `pricing-${index}`}>
                         <td>
                           <select
-                            value={pricing.priceType}
+                            value={pricing.priceType || ''}
+                            className={requiredGridClass(isMissingText(pricing.priceType))}
+                            aria-invalid={submitAttempted && isMissingText(pricing.priceType)}
                             disabled={!canEdit}
                             onChange={(e) => updatePricingType(index, e.target.value)}
                           >
+                            <option value="">Select</option>
                             {PRICE_TYPE_OPTIONS.map((option) => (
                               <option key={option.value} value={option.value}>{option.label}</option>
                             ))}
@@ -1204,6 +1220,8 @@ export default function SuperEventList() {
                         <td>
                           <input
                             value={pricing.priceName ?? ''}
+                            className={requiredGridClass(isMissingText(pricing.priceName))}
+                            aria-invalid={submitAttempted && isMissingText(pricing.priceName)}
                             disabled={!canEdit}
                             onChange={(e) => updatePricingRow(index, { priceName: e.target.value })}
                             placeholder="Display name"
@@ -1211,10 +1229,13 @@ export default function SuperEventList() {
                         </td>
                         <td>
                           <select
-                            value={pricing.currencyCode || 'USD'}
+                            value={pricing.currencyCode || ''}
+                            className={requiredGridClass(isMissingText(pricing.currencyCode))}
+                            aria-invalid={submitAttempted && isMissingText(pricing.currencyCode)}
                             disabled={!canEdit}
                             onChange={(e) => updatePricingRow(index, { currencyCode: e.target.value })}
                           >
+                            <option value="">Select</option>
                             {CURRENCY_OPTIONS.map((currency) => (
                               <option key={currency} value={currency}>{currency}</option>
                             ))}
@@ -1226,6 +1247,8 @@ export default function SuperEventList() {
                             min={0}
                             step="0.01"
                             value={pricing.amount ?? ''}
+                            className={requiredGridClass(isInvalidPositiveAmount(pricing.amount))}
+                            aria-invalid={submitAttempted && isInvalidPositiveAmount(pricing.amount)}
                             disabled={!canEdit}
                             onChange={(e) => updatePricingRow(index, { amount: e.target.value === '' ? null : Number(e.target.value) })}
                             placeholder="0.00"
@@ -1301,10 +1324,10 @@ export default function SuperEventList() {
                 <table className="saf-table saf-discount-table">
                   <thead>
                     <tr>
-                      <th>Code</th>
-                      <th>Type</th>
-                      <th>Value</th>
-                      <th>Currency</th>
+                      <th><GridRequiredHeader>Code</GridRequiredHeader></th>
+                      <th><GridRequiredHeader>Type</GridRequiredHeader></th>
+                      <th><GridRequiredHeader>Value</GridRequiredHeader></th>
+                      <th><GridRequiredHeader>Currency</GridRequiredHeader></th>
                       <th>Applies To</th>
                       <th>Usage Limit</th>
                       <th>Valid From</th>
@@ -1319,6 +1342,8 @@ export default function SuperEventList() {
                         <td>
                           <input
                             value={discount.discountCode ?? ''}
+                            className={requiredGridClass(isMissingText(discount.discountCode))}
+                            aria-invalid={submitAttempted && isMissingText(discount.discountCode)}
                             disabled={!canEdit}
                             onChange={(e) => updateDiscountCodeRow(index, { discountCode: e.target.value.toUpperCase() })}
                             placeholder="EARLY10"
@@ -1326,10 +1351,13 @@ export default function SuperEventList() {
                         </td>
                         <td>
                           <select
-                            value={discount.discountType || 'percent'}
+                            value={discount.discountType || ''}
+                            className={requiredGridClass(isMissingText(discount.discountType))}
+                            aria-invalid={submitAttempted && isMissingText(discount.discountType)}
                             disabled={!canEdit}
                             onChange={(e) => updateDiscountType(index, e.target.value)}
                           >
+                            <option value="">Select</option>
                             {DISCOUNT_TYPE_OPTIONS.map((option) => (
                               <option key={option.value} value={option.value}>{option.label}</option>
                             ))}
@@ -1341,6 +1369,8 @@ export default function SuperEventList() {
                             min={0}
                             step="0.01"
                             value={discount.discountValue ?? ''}
+                            className={requiredGridClass(isDiscountValueInvalid(discount))}
+                            aria-invalid={submitAttempted && isDiscountValueInvalid(discount)}
                             disabled={!canEdit}
                             onChange={(e) => updateDiscountCodeRow(index, { discountValue: e.target.value === '' ? null : Number(e.target.value) })}
                             placeholder={discount.discountType === 'amount' ? '50.00' : '10'}
@@ -1348,7 +1378,9 @@ export default function SuperEventList() {
                         </td>
                         <td>
                           <select
-                            value={discount.discountType === 'amount' ? (discount.currencyCode || 'USD') : ''}
+                            value={discount.discountType === 'amount' ? (discount.currencyCode || '') : ''}
+                            className={requiredGridClass(isDiscountCurrencyInvalid(discount))}
+                            aria-invalid={submitAttempted && isDiscountCurrencyInvalid(discount)}
                             disabled={!canEdit || discount.discountType !== 'amount'}
                             onChange={(e) => updateDiscountCodeRow(index, { currencyCode: e.target.value })}
                           >
@@ -1695,6 +1727,15 @@ function renderParticipationStatus(status?: string | null) {
   const label = formatParticipationStatusText(value);
   const tone = value === 'registered' ? 'green' : value === 'cancelled' ? 'red' : 'gray';
   return <span className={`saf-status is-${tone}`}>{label}</span>;
+}
+
+function GridRequiredHeader({ children }: { children: React.ReactNode }) {
+  return (
+    <>
+      {children}
+      <span className="saf-grid-required-mark" aria-hidden="true">*</span>
+    </>
+  );
 }
 
 function PanelTitle({ title, subtitle }: { title: string; subtitle?: string }) {
