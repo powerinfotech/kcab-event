@@ -891,6 +891,10 @@
 
 .saf-settings-grade-table,
 .saf-settings-limit-table {
+  th {
+    text-align: center;
+  }
+
   tr.is-selected {
     background: #fffbe6;
   }
@@ -912,6 +916,13 @@
     border-radius: 6px;
     color: #111827;
     font-weight: 800;
+  }
+}
+
+.saf-table.saf-settings-grade-table,
+.saf-table.saf-settings-limit-table {
+  th {
+    text-align: center;
   }
 }
 
@@ -1469,9 +1480,9 @@
   td {
     min-width: 0;
 
-    > span {
-      display: block;
-      margin-top: 4px;
+    .saf-participant-position {
+      display: inline;
+      margin-left: 6px;
       color: #64748b;
       font-size: 12px;
       font-weight: 700;
@@ -1971,6 +1982,54 @@
     border: 1px solid #e3e8ef;
     border-radius: 8px;
     background: #fff;
+  }
+}
+
+.saf-email-log-table {
+  .saf-email-log-select-col {
+    width: 46px;
+    text-align: center;
+
+    input {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+      accent-color: #1f5b95;
+    }
+  }
+}
+
+.saf-email-send-modal {
+  display: grid;
+  gap: 14px;
+
+  iframe {
+    width: 100%;
+    min-height: 420px;
+    border: 1px solid #e3e8ef;
+    border-radius: 8px;
+    background: #fff;
+  }
+}
+
+.saf-email-send-subject {
+  display: grid;
+  gap: 6px;
+  padding: 12px 14px;
+  border: 1px solid #e3e8ef;
+  border-radius: 8px;
+  background: #f8fafc;
+
+  span {
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 900;
+  }
+
+  strong {
+    color: #111827;
+    font-size: 14px;
+    font-weight: 900;
   }
 }
 

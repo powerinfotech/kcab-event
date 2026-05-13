@@ -18,6 +18,7 @@ import com.kcabEvent.service.email.EmailLogService;
 import com.kcabEvent.service.email.EmailTemplateService;
 import com.kcabEvent.service.saf.SafAdminUserService;
 import com.kcabEvent.service.saf.SafEmailVerificationService;
+import com.kcabEvent.util.EmailHtmlLayout;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
@@ -269,14 +270,15 @@ public class SafAdminUserServiceImpl extends EgovAbstractServiceImpl implements 
 
         String subject = renderTemplate(template.getSubject(), variables, false);
         String bodyHtml = renderTemplate(template.getBodyHtml(), variables, true);
+        String emailHtml = EmailHtmlLayout.wrapTemplateBody(bodyHtml);
 
         emailLogService.sendHtmlAndLog(
                 template.getTemplateSeq(),
                 detail.getEmail(),
                 detail.getName(),
                 subject,
-                bodyHtml,
-                bodyHtml
+                emailHtml,
+                emailHtml
         );
     }
 

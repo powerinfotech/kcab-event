@@ -123,6 +123,8 @@ interface CustomFilePropsType {
      * 예) 'image/*', '.pdf,.docx', 'application/pdf'
      */
     accept?: string;
+    /** OS 파일 선택창에서 여러 파일 선택 허용 */
+    multiple?: boolean;
 }
 
 /** 파일이 accept 패턴에 부합하는지 검사. accept가 비어있으면 true. */
@@ -208,77 +210,85 @@ const CustomFile = (props:CustomFilePropsType) => {
 
     const MAX_FILE_COUNT = props.maxCount ?? 5;
 
-    const onChange: UploadProps['onChange'] = ({file:newFile}) => {
-        const targetFileIdx = fileList.findIndex(f => f.uid === newFile.uid);
+    const reindexFileList = (list: CustomFileUpload[]) => {
+        let currentSrtSq = 1;
+        return list.map((fileData) => {
+            const sortSeq = fileData.iudType !== IudType.D ? currentSrtSq++ : 0;
+            return { ...fileData, sortSeq };
+        });
+    };
 
-
-        const currentFiles = fileList.filter((f) => f.iudType !== IudType.D);
-
-        const isNew = !fileList.find(f => f.uid === newFile.uid);
-
-        if (currentFiles.length >= MAX_FILE_COUNT && isNew) {
-            message.warning(`You can attach up to ${MAX_FILE_COUNT} files.`);
-            return;
+    const createUploadItem = (uploadFile: UploadFile): CustomFileUpload | null => {
+        const rcFile = (uploadFile.originFileObj ?? uploadFile) as RcFile;
+        if (!isFileAccepted(rcFile, props.accept)) {
+            message.error('This file type is not allowed.');
+            return null;
         }
+        const maxSize = 30 * 1024 * 1024;
+        if (rcFile.size > maxSize) {
+            message.error('Only files up to 30MB can be uploaded.');
+            return null;
+        }
+        return {
+            uid: uploadFile.uid,
+            fileName: uploadFile.name,
+            name: uploadFile.name,
+            url: URL.createObjectURL(rcFile),
+            status: uploadFile.status,
+            sortSeq: 0,
+            originFileObj: rcFile,
+            iudType: IudType.I,
+        };
+    };
 
-        let newFileList: CustomFileUpload[];
+    const onChange: UploadProps['onChange'] = ({ file: newFile, fileList: uploadFileList }) => {
+        setFileList((prevFileList) => {
+            const targetFileIdx = prevFileList.findIndex((f) => f.uid === newFile.uid);
 
-        if(targetFileIdx > -1){
-            let currentSrtSq = 1;
+            if (targetFileIdx > -1) {
+                const nextList = prevFileList.map((fileData) => {
+                    if (fileData.uid !== newFile.uid) return fileData;
 
-            newFileList = fileList.map((fileData) => {
-                if(fileData.uid !== newFile.uid) return fileData;
+                    const isRemoved = newFile.status === 'removed';
+                    if (isRemoved && fileData.iudType === IudType.I) {
+                        if (fileData.url?.startsWith('blob:')) URL.revokeObjectURL(fileData.url);
+                        return null;
+                    }
 
-                const isRemoved = newFile.status === 'removed';
-
-                if (isRemoved && fileData.iudType === IudType.I) {
-                    if (fileData.url?.startsWith('blob:')) URL.revokeObjectURL(fileData.url);
-                    return null;
-                } else {
                     return {
                         ...fileData,
                         status: newFile.status,
                         ...(isRemoved ? { iudType: IudType.D } : {}),
                     };
-                }
-            })
-            .filter((fileData): fileData is CustomFileUpload => fileData !== null)
-            .map((fileData) => {
-                let sortSeq = 0;
+                })
+                .filter((fileData): fileData is CustomFileUpload => fileData !== null);
 
-                if (fileData.iudType !== IudType.D) {
-                    sortSeq = currentSrtSq++;
-                }
-
-                return { ...fileData, sortSeq: sortSeq};
-            });
-        } else {
-            const rcFile = newFile as RcFile;
-            if (!isFileAccepted(rcFile, props.accept)) {
-                message.error('This file type is not allowed.');
-                return;
+                return reindexFileList(nextList);
             }
-            const maxSize =  30 * 1024 * 1024;
-            if (rcFile.size > maxSize) {
-                message.error('Only files up to 30MB can be uploaded.');
-                return;
+
+            const candidates = props.multiple
+                ? uploadFileList.filter((uploadFile) => (
+                    uploadFile.status !== 'removed'
+                    && !prevFileList.some((fileData) => fileData.uid === uploadFile.uid)
+                ))
+                : [newFile];
+
+            let nextList = cloneDeep(prevFileList);
+            for (const candidate of candidates) {
+                const currentFileCount = nextList.filter((fileData) => fileData.iudType !== IudType.D).length;
+                if (currentFileCount >= MAX_FILE_COUNT) {
+                    message.warning(`You can attach up to ${MAX_FILE_COUNT} files.`);
+                    break;
+                }
+
+                const nextItem = createUploadItem(candidate);
+                if (nextItem) {
+                    nextList = [...nextList, nextItem];
+                }
             }
-            const newFileListItem = {
-                uid: newFile.uid,
-                fileName: newFile.name,
-                name: newFile.name,
-                url: URL.createObjectURL(newFile as any),
-                status: newFile.status,
-                sortSeq: fileList.filter((fileData) => fileData.iudType !== IudType.D).length + 1,
-                originFileObj : newFile as RcFile,
-                iudType: IudType.I,
-            };
 
-            const newFileListBase: CustomFileUpload[] = cloneDeep(fileList);
-            newFileList = [...newFileListBase, newFileListItem];
-        }
-
-        setFileList(newFileList);
+            return reindexFileList(nextList);
+        });
     };
 
     useEffect(() => {
@@ -343,6 +353,7 @@ const CustomFile = (props:CustomFilePropsType) => {
                     onPreview={handlePreview}
                     disabled={!props.isEditable}
                     accept={props.accept}
+                    multiple={props.multiple}
                     itemRender={(originNode, file) => {
                         return <CustomFileItem originNode={originNode} file={file} />;
                     }}

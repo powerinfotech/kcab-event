@@ -10,12 +10,12 @@ import java.time.OffsetDateTime;
 public class EmailLogDetailDto {
     private Long emailLogSeq;
     private Long templateSeq;
+    private String templateCode;
+    private String templateName;
     private String recipientEmail;
     private String recipientName;
     private String subject;
     private String bodyHtml;
-    private String provider;
-    private String providerMessageId;
     private String status;
     private String errorMessage;
     private Integer retryCount;

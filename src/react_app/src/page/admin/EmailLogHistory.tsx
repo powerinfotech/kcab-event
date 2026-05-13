@@ -7,8 +7,11 @@ import {
   MailOutlined,
   ReloadOutlined,
   SearchOutlined,
+  SendOutlined,
 } from '@ant-design/icons';
-import { callGetEmailLogDetail, callGetEmailLogs } from '@api/admin/EmailLogApi';
+import { callGetEmailTemplates } from '@api/admin/EmailTemplateApi';
+import { callGetEmailLogDetail, callGetEmailLogs, callResendEmailLogs } from '@api/admin/EmailLogApi';
+import { EmailTemplateListItem } from '@interface/admin/EmailTemplate';
 import { EmailLogDetail, EmailLogListItem } from '@interface/admin/EmailLog';
 import AdminGridPagination, { useClientGridPagination } from './AdminGridPagination';
 
@@ -27,17 +30,22 @@ const STATUS_TONE: Record<string, 'green' | 'yellow' | 'red' | 'gray'> = {
 const DEFAULT_LIMIT = 500;
 
 export default function EmailLogHistory() {
-  const { message } = App.useApp();
+  const { message, modal } = App.useApp();
   const [logs, setLogs] = useState<EmailLogListItem[]>([]);
+  const [templates, setTemplates] = useState<EmailTemplateListItem[]>([]);
+  const [selectedLogSeqs, setSelectedLogSeqs] = useState<number[]>([]);
   const [keyword, setKeyword] = useState('');
   const [status, setStatus] = useState('');
-  const [provider, setProvider] = useState('');
+  const [templateCode, setTemplateCode] = useState('');
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
   const [detail, setDetail] = useState<EmailLogDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const logPagination = useClientGridPagination(logs);
+  const visibleLogSeqs = logPagination.pagedItems.map((log) => log.emailLogSeq);
+  const allVisibleSelected = visibleLogSeqs.length > 0 && visibleLogSeqs.every((emailLogSeq) => selectedLogSeqs.includes(emailLogSeq));
 
   const fetchLogs = async () => {
     setLoading(true);
@@ -45,12 +53,13 @@ export default function EmailLogHistory() {
       const res = await callGetEmailLogs({
         keyword: keyword.trim() || undefined,
         status: status || undefined,
-        provider: provider.trim() || undefined,
+        templateCode: templateCode || undefined,
         fromDate: fromDate || undefined,
         toDate: toDate || undefined,
         limit: DEFAULT_LIMIT,
       });
       setLogs(res.item ?? []);
+      setSelectedLogSeqs([]);
     } catch (error) {
       message.error('Failed to load email history.');
     } finally {
@@ -70,7 +79,68 @@ export default function EmailLogHistory() {
     }
   };
 
+  const fetchTemplates = async () => {
+    try {
+      const res = await callGetEmailTemplates();
+      setTemplates(res.item ?? []);
+    } catch (error) {
+      message.error('Failed to load email templates.');
+    }
+  };
+
+  const toggleLogSelection = (emailLogSeq: number) => {
+    setSelectedLogSeqs((prev) => (
+      prev.includes(emailLogSeq)
+        ? prev.filter((seq) => seq !== emailLogSeq)
+        : [...prev, emailLogSeq]
+    ));
+  };
+
+  const toggleVisibleSelection = () => {
+    setSelectedLogSeqs((prev) => {
+      if (allVisibleSelected) {
+        return prev.filter((seq) => !visibleLogSeqs.includes(seq));
+      }
+      return Array.from(new Set([...prev, ...visibleLogSeqs]));
+    });
+  };
+
+  const confirmResend = () => {
+    if (!selectedLogSeqs.length) {
+      message.warning('Please select email logs to resend.');
+      return;
+    }
+
+    modal.confirm({
+      title: 'Resend Selected Emails',
+      content: `Do you want to resend ${selectedLogSeqs.length} selected email(s)? Sent At will be updated after successful delivery.`,
+      okText: 'Send',
+      cancelText: 'Cancel',
+      centered: true,
+      onOk: resendSelectedLogs,
+    });
+  };
+
+  const resendSelectedLogs = async () => {
+    setResending(true);
+    try {
+      const res = await callResendEmailLogs({ emailLogSeqs: selectedLogSeqs });
+      const result = res.item;
+      message.success(
+        result
+          ? `Resend complete. Sent: ${result.successCount}, Failed: ${result.failedCount}.`
+          : 'Resend complete.',
+      );
+      await fetchLogs();
+    } catch (error) {
+      message.error('Failed to resend selected emails.');
+    } finally {
+      setResending(false);
+    }
+  };
+
   useEffect(() => {
+    fetchTemplates();
     fetchLogs();
   }, []);
 
@@ -79,9 +149,18 @@ export default function EmailLogHistory() {
       <header className="saf-screen-header">
         <div>
           <h1>Email History</h1>
-          <p>Review delivery status, recipients, and provider responses from email_logs.</p>
+          <p>Review delivery status, recipients, and template-based email logs.</p>
         </div>
         <div className="saf-screen-actions">
+          <button
+            type="button"
+            className="saf-action-btn is-primary"
+            onClick={confirmResend}
+            disabled={!selectedLogSeqs.length || loading || resending}
+          >
+            <SendOutlined />
+            <span>{resending ? 'Sending...' : `Resend${selectedLogSeqs.length ? ` (${selectedLogSeqs.length})` : ''}`}</span>
+          </button>
           <button type="button" className="saf-action-btn is-secondary" onClick={fetchLogs} disabled={loading}>
             <ReloadOutlined />
             <span>Refresh</span>
@@ -94,7 +173,7 @@ export default function EmailLogHistory() {
           <SearchOutlined />
           <input
             value={keyword}
-            placeholder="Search by recipient, subject, or message ID"
+            placeholder="Search by recipient, subject, or template"
             onChange={(event) => setKeyword(event.target.value)}
             onKeyDown={(event) => {
               if (event.key === 'Enter') fetchLogs();
@@ -107,10 +186,11 @@ export default function EmailLogHistory() {
           <option value="sent">Sent</option>
           <option value="failed">Failed</option>
         </select>
-        <select className="saf-filter-select" value={provider} onChange={(event) => setProvider(event.target.value)}>
-          <option value="">All Providers</option>
-          <option value="brevo">Brevo</option>
-          <option value="ses">SES</option>
+        <select className="saf-filter-select" value={templateCode} onChange={(event) => setTemplateCode(event.target.value)}>
+          <option value="">All Templates</option>
+          {templates.map((template) => (
+            <option key={template.code} value={template.code}>{template.name}</option>
+          ))}
         </select>
         <input
           className="saf-filter-date"
@@ -133,10 +213,19 @@ export default function EmailLogHistory() {
         <table className="saf-table saf-email-log-table">
           <thead>
             <tr>
+              <th className="saf-email-log-select-col">
+                <input
+                  type="checkbox"
+                  aria-label="Select visible email logs"
+                  checked={allVisibleSelected}
+                  disabled={!visibleLogSeqs.length}
+                  onChange={toggleVisibleSelection}
+                />
+              </th>
               <th>Status</th>
               <th>Recipient</th>
+              <th>Template</th>
               <th>Subject</th>
-              <th>Provider</th>
               <th>Sent At</th>
               <th>Created At</th>
               <th>Detail</th>
@@ -145,16 +234,27 @@ export default function EmailLogHistory() {
           <tbody>
             {logPagination.pagedItems.map((log) => (
               <tr key={log.emailLogSeq} onClick={() => openDetail(log.emailLogSeq)}>
+                <td className="saf-email-log-select-col" onClick={(event) => event.stopPropagation()}>
+                  <input
+                    type="checkbox"
+                    aria-label={`Select email log ${log.emailLogSeq}`}
+                    checked={selectedLogSeqs.includes(log.emailLogSeq)}
+                    onChange={() => toggleLogSelection(log.emailLogSeq)}
+                  />
+                </td>
                 <td><StatusBadge status={log.status} /></td>
                 <td>
                   <strong>{log.recipientEmail}</strong>
                   {log.recipientName && <span>{log.recipientName}</span>}
                 </td>
                 <td>
+                  <strong>{log.templateName || '-'}</strong>
+                  {log.templateCode && <span>{log.templateCode}</span>}
+                </td>
+                <td>
                   <strong>{log.subject}</strong>
                   {log.errorMessage && <span className="is-error">{log.errorMessage}</span>}
                 </td>
-                <td>{log.provider || '-'}</td>
                 <td>{formatDate(log.sentAt)}</td>
                 <td>{formatDate(log.createdAt)}</td>
                 <td>
@@ -174,7 +274,7 @@ export default function EmailLogHistory() {
             ))}
             {!logs.length && (
               <tr>
-                <td colSpan={7} className="saf-user-empty">
+                <td colSpan={8} className="saf-user-empty">
                   <MailOutlined />
                   <span>{loading ? 'Loading...' : 'No email history found.'}</span>
                 </td>
@@ -198,6 +298,7 @@ export default function EmailLogHistory() {
           <div className="saf-email-detail">
             <dl>
               <div><dt>Status</dt><dd><StatusBadge status={detail.status} /></dd></div>
+              <div><dt>Template</dt><dd>{detail.templateName || '-'}{detail.templateCode ? ` (${detail.templateCode})` : ''}</dd></div>
               <div><dt>Recipient</dt><dd>{detail.recipientEmail}{detail.recipientName ? ` (${detail.recipientName})` : ''}</dd></div>
               <div><dt>Subject</dt><dd>{detail.subject}</dd></div>
               <div><dt>Sent At</dt><dd>{formatDate(detail.sentAt)}</dd></div>

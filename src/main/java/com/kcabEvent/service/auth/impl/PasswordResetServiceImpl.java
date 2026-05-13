@@ -7,11 +7,14 @@ import com.kcabEvent.domain.saf.SafUser;
 import com.kcabEvent.dto.auth.PasswordResetChangePasswordRequestDto;
 import com.kcabEvent.dto.auth.PasswordResetSendCodeRequestDto;
 import com.kcabEvent.dto.auth.PasswordResetVerifyCodeRequestDto;
+import com.kcabEvent.dto.email.EmailTemplateDetailDto;
 import com.kcabEvent.enums.saf.SafUserStatus;
 import com.kcabEvent.exception.custom.BusinessException;
 import com.kcabEvent.service.auth.PasswordResetService;
 import com.kcabEvent.service.email.EmailLogService;
+import com.kcabEvent.service.email.EmailTemplateService;
 import com.kcabEvent.util.CryptoUtil;
+import com.kcabEvent.util.EmailHtmlLayout;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -20,10 +23,13 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import org.springframework.web.util.HtmlUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.time.OffsetDateTime;
 import java.util.Locale;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -35,11 +41,13 @@ public class PasswordResetServiceImpl implements PasswordResetService {
     private static final String SESSION_CODE = "passwordResetCode";
     private static final String SESSION_EXPIRES_AT = "passwordResetExpiresAt";
     private static final String SESSION_VERIFIED = "passwordResetVerified";
+    private static final String PASSWORD_RESET_TEMPLATE_CODE = "password_reset";
     private static final int CODE_EXPIRE_MINUTES = 5;
 
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     private final EmailLogService emailLogService;
+    private final EmailTemplateService emailTemplateService;
 
     @Resource(name = "userDao")
     private UserDao userDao;
@@ -52,18 +60,34 @@ public class PasswordResetServiceImpl implements PasswordResetService {
         ResetTarget target = findResetTarget(requestDto.getUserId(), requestDto.getEmail());
         String code = createSixDigitCode();
 
+        EmailTemplateDetailDto template = emailTemplateService.selectTemplateDetail(PASSWORD_RESET_TEMPLATE_CODE);
+        if (!Boolean.TRUE.equals(template.getIsActive())) {
+            throw new BusinessException("Password reset email template is inactive.");
+        }
+
+        Map<String, String> variables = Map.of(
+                "user_name", defaultText(target.name(), "there"),
+                "reset_code", code,
+                "expire_minutes", String.valueOf(CODE_EXPIRE_MINUTES)
+        );
+        Map<String, String> logVariables = Map.of(
+                "user_name", defaultText(target.name(), "there"),
+                "reset_code", "******",
+                "expire_minutes", String.valueOf(CODE_EXPIRE_MINUTES)
+        );
+
+        String subject = renderTemplate(template.getSubject(), variables, false);
+        String emailBody = EmailHtmlLayout.wrapTemplateBody(renderTemplate(template.getBodyHtml(), variables, true));
+        String logBody = EmailHtmlLayout.wrapTemplateBody(renderTemplate(template.getBodyHtml(), logVariables, true));
+
         session.setAttribute(SESSION_TARGET_TYPE, target.type());
         session.setAttribute(SESSION_TARGET_USER_SEQ, target.userSeq());
         session.setAttribute(SESSION_CODE, code);
         session.setAttribute(SESSION_EXPIRES_AT, OffsetDateTime.now().plusMinutes(CODE_EXPIRE_MINUTES));
         session.setAttribute(SESSION_VERIFIED, false);
 
-        String subject = "[KCAB International] Password reset verification code";
-        String emailBody = buildPasswordResetEmail(code);
-        String logBody = buildPasswordResetEmail("******");
-
         try {
-            emailLogService.sendHtmlAndLog(target.email(), target.name(), subject, emailBody, logBody);
+            emailLogService.sendHtmlAndLog(template.getTemplateSeq(), target.email(), target.name(), subject, emailBody, logBody);
         } catch (RuntimeException e) {
             clearSession(session);
             throw e;
@@ -174,32 +198,20 @@ public class PasswordResetServiceImpl implements PasswordResetService {
         session.removeAttribute(SESSION_VERIFIED);
     }
 
-    private String buildPasswordResetEmail(String code) {
-        return """
-                <html>
-                <head><meta charset="UTF-8"></head>
-                <body style="margin:0;padding:0;background:#ffffff;font-family:Arial,'Segoe UI',sans-serif;">
-                  <div style="width:500px;padding:40px 20px;">
-                    <div style="width:400px;border:1px solid #eeeeee;border-radius:8px;padding:32px 24px;">
-                      <div style="font-size:20px;font-weight:700;color:#333;padding-bottom:14px;border-bottom:2px solid #f0f0f0;">
-                        KCAB INTERNATIONAL
-                      </div>
-                      <div style="font-size:15px;color:#444;line-height:1.6;padding:24px 0 18px;">
-                        Hello,<br>
-                        Please use the verification code below to reset your password.
-                      </div>
-                      <div style="display:inline-block;background:#f8f9fa;border:1px solid #eeeeee;border-radius:6px;padding:15px 30px;font-size:28px;font-weight:700;color:#007BFF;letter-spacing:3px;">
-                        %s
-                      </div>
-                      <div style="margin-top:24px;padding-top:18px;border-top:1px solid #f0f0f0;font-size:13px;line-height:1.5;">
-                        <strong style="color:#d9534f;">Never share this verification code with anyone else.</strong><br>
-                        <span style="color:#999;">This code will expire in 5 minutes.</span>
-                      </div>
-                    </div>
-                  </div>
-                </body>
-                </html>
-                """.formatted(code);
+    private String renderTemplate(String template, Map<String, String> variables, boolean escapeHtml) {
+        String rendered = template == null ? "" : template;
+        for (Map.Entry<String, String> entry : variables.entrySet()) {
+            String value = entry.getValue() == null ? "" : entry.getValue();
+            if (escapeHtml) {
+                value = HtmlUtils.htmlEscape(value, StandardCharsets.UTF_8.name());
+            }
+            rendered = rendered.replace("{{" + entry.getKey() + "}}", value);
+        }
+        return rendered;
+    }
+
+    private String defaultText(String value, String defaultValue) {
+        return StringUtils.hasText(value) ? value : defaultValue;
     }
 
     private record ResetTarget(String type, Long userSeq, String email, String name) {

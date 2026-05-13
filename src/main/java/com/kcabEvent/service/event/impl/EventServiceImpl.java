@@ -15,6 +15,7 @@ import com.kcabEvent.exception.custom.BusinessException;
 import com.kcabEvent.service.email.EmailLogService;
 import com.kcabEvent.service.email.EmailTemplateService;
 import com.kcabEvent.service.event.EventService;
+import com.kcabEvent.util.EmailHtmlLayout;
 import lombok.extern.slf4j.Slf4j;
 import org.egovframe.rte.fdl.cmmn.EgovAbstractServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -538,14 +539,15 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
 
         String subject = renderTemplate(template.getSubject(), variables, false);
         String bodyHtml = renderTemplate(template.getBodyHtml(), variables, true);
+        String emailHtml = EmailHtmlLayout.wrapTemplateBody(bodyHtml);
 
         emailLogService.sendHtmlAndLog(
                 template.getTemplateSeq(),
                 recipient.getRecipientEmail(),
                 recipient.getRecipientName(),
                 subject,
-                bodyHtml,
-                bodyHtml
+                emailHtml,
+                emailHtml
         );
     }
 

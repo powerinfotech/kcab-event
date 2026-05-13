@@ -364,6 +364,7 @@ export default function Gallery() {
                 isEditable={!saving}
                 maxCount={80}
                 accept="image/*"
+                multiple
               />
               <p className="saf-hint-inline">Images only · max 30MB each · up to 80 images per album.</p>
             </div>

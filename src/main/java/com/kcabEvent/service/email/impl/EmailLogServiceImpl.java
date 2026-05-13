@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class EmailLogServiceImpl implements EmailLogService {
 
-    private static final String PROVIDER_BREVO = "brevo";
     private static final int ERROR_MESSAGE_MAX_LENGTH = 4000;
 
     private final BrevoMailUtil brevoMailUtil;
@@ -48,7 +47,6 @@ public class EmailLogServiceImpl implements EmailLogService {
                 .recipientName(recipientName)
                 .subject(subject)
                 .bodyHtml(logHtmlContent != null ? logHtmlContent : htmlContent)
-                .provider(PROVIDER_BREVO)
                 .status("queued")
                 .build();
 
@@ -56,7 +54,7 @@ public class EmailLogServiceImpl implements EmailLogService {
 
         try {
             String messageId = brevoMailUtil.sendHtmlEmail(recipientEmail, subject, htmlContent);
-            emailLogDao.updateEmailLogSent(emailLog.getEmailLogSeq(), messageId);
+            emailLogDao.updateEmailLogSent(emailLog.getEmailLogSeq());
             return messageId;
         } catch (RuntimeException e) {
             markFailed(emailLog.getEmailLogSeq(), e);

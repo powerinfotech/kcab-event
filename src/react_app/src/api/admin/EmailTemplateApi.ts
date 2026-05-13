@@ -3,6 +3,7 @@ import { ApiResponse } from '@interface/common';
 import {
   EmailTemplateDetail,
   EmailTemplateListItem,
+  EmailTemplatePreviewSendParam,
   EmailTemplateSaveParam,
 } from '@interface/admin/EmailTemplate';
 
@@ -20,5 +21,10 @@ export const callGetEmailTemplateDetail = async (code: string) => {
 
 export const callSaveEmailTemplate = async (code: string, param: EmailTemplateSaveParam) => {
   const { data } = await axios.put<ApiResponse<void>>(`${BASE}/${code}`, param);
+  return data;
+};
+
+export const callSendEmailTemplatePreview = async (code: string, param: EmailTemplatePreviewSendParam) => {
+  const { data } = await axios.post<ApiResponse<void>>(`${BASE}/${code}/preview-send`, param);
   return data;
 };

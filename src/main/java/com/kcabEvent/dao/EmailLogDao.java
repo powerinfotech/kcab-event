@@ -17,12 +17,16 @@ public interface EmailLogDao {
 
     EmailLogDetailDto selectEmailLogDetail(@Param("emailLogSeq") Long emailLogSeq);
 
-    int updateEmailLogSent(
-            @Param("emailLogSeq") Long emailLogSeq,
-            @Param("providerMessageId") String providerMessageId
-    );
+    int updateEmailLogSent(@Param("emailLogSeq") Long emailLogSeq);
 
     int updateEmailLogFailed(
+            @Param("emailLogSeq") Long emailLogSeq,
+            @Param("errorMessage") String errorMessage
+    );
+
+    int updateEmailLogResent(@Param("emailLogSeq") Long emailLogSeq);
+
+    int updateEmailLogResendFailed(
             @Param("emailLogSeq") Long emailLogSeq,
             @Param("errorMessage") String errorMessage
     );

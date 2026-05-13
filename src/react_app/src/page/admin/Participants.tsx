@@ -320,6 +320,7 @@ export default function Participants() {
               <tr key={participant.participantSeq} onClick={() => setSelectedParticipant(participant)}>
                 <td>
                   <strong>{formatParticipantName(participant)}</strong>
+                  <span className="saf-participant-position">{participant.position || '-'}</span>
                 </td>
                 <td>{participant.email}</td>
                 <td>{participant.organizationName || '-'}</td>
@@ -346,8 +347,7 @@ export default function Participants() {
 }
 
 function formatParticipantName(participant: Pick<ParticipantListItem, 'fullName' | 'email' | 'position'>) {
-  const name = participant.fullName || participant.email || '-';
-  return participant.position ? `${name} ${participant.position}` : name;
+  return participant.fullName || participant.email || '-';
 }
 
 function renderEventSummary(events: ParticipantEventItem[]) {

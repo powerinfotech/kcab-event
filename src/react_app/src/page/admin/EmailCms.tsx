@@ -6,18 +6,21 @@ import {
   EyeOutlined,
   ReloadOutlined,
   SaveOutlined,
+  SendOutlined,
 } from '@ant-design/icons';
 import CustomRichEditor from '@component/special/CustomRichEditor';
 import {
   callGetEmailTemplateDetail,
   callGetEmailTemplates,
   callSaveEmailTemplate,
+  callSendEmailTemplatePreview,
 } from '@api/admin/EmailTemplateApi';
 import {
   EmailTemplateDetail,
   EmailTemplateListItem,
   EmailTemplateVariable,
 } from '@interface/admin/EmailTemplate';
+import { EMAIL_REGEXP } from '@util/validationPatterns';
 
 const EMPTY_TEMPLATE: EmailTemplateDetail = {
   templateSeq: 0,
@@ -38,11 +41,16 @@ export default function EmailCms() {
   const [isActive, setIsActive] = useState(true);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [sending, setSending] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [sendOpen, setSendOpen] = useState(false);
+  const [sendRecipientEmail, setSendRecipientEmail] = useState('');
+  const [sendRecipientName, setSendRecipientName] = useState('');
 
   const variables = useMemo(() => parseVariables(detail.variables), [detail.variables]);
   const previewSubject = useMemo(() => renderTemplate(subject, variables), [subject, variables]);
-  const previewHtml = useMemo(() => buildEmailPreviewHtml(renderTemplate(bodyHtml, variables)), [bodyHtml, variables]);
+  const renderedBodyHtml = useMemo(() => renderTemplate(bodyHtml, variables), [bodyHtml, variables]);
+  const previewHtml = useMemo(() => buildEmailPreviewHtml(renderedBodyHtml), [renderedBodyHtml]);
   const unknownVariables = useMemo(() => findUnknownVariables(`${subject} ${bodyHtml}`, variables), [subject, bodyHtml, variables]);
 
   const fetchTemplates = async () => {
@@ -108,6 +116,44 @@ export default function EmailCms() {
     }
   };
 
+  const sendPreviewEmail = async () => {
+    if (!selectedCode) return;
+
+    const recipientEmail = sendRecipientEmail.trim();
+    if (!recipientEmail) {
+      message.warning('Recipient email is required.');
+      return;
+    }
+    if (!EMAIL_REGEXP.value.test(recipientEmail)) {
+      message.warning('Please enter a valid recipient email.');
+      return;
+    }
+    if (!previewSubject.trim()) {
+      message.warning('Subject is required.');
+      return;
+    }
+    if (!stripHtml(renderedBodyHtml).trim()) {
+      message.warning('Body is required.');
+      return;
+    }
+
+    setSending(true);
+    try {
+      await callSendEmailTemplatePreview(selectedCode, {
+        recipientEmail,
+        recipientName: sendRecipientName.trim() || undefined,
+        subject: previewSubject.trim(),
+        bodyHtml: renderedBodyHtml,
+      });
+      message.success('Preview email has been sent.');
+      setSendOpen(false);
+    } catch (error) {
+      message.error('Failed to send preview email.');
+    } finally {
+      setSending(false);
+    }
+  };
+
   const copyVariable = async (key: string) => {
     try {
       await navigator.clipboard.writeText(key);
@@ -137,6 +183,10 @@ export default function EmailCms() {
           <button type="button" className="saf-action-btn is-secondary" onClick={() => setPreviewOpen(true)} disabled={!selectedCode}>
             <EyeOutlined />
             <span>Preview</span>
+          </button>
+          <button type="button" className="saf-action-btn is-secondary" onClick={() => setSendOpen(true)} disabled={!selectedCode}>
+            <SendOutlined />
+            <span>Send</span>
           </button>
           <button type="button" className="saf-action-btn is-primary" onClick={saveTemplate} disabled={saving || !selectedCode}>
             <SaveOutlined />
@@ -232,6 +282,50 @@ export default function EmailCms() {
         <div className="saf-email-preview-modal">
           <strong>{previewSubject}</strong>
           <iframe title="Email preview modal" sandbox="" srcDoc={previewHtml} />
+        </div>
+      </Modal>
+
+      <Modal
+        title="Send Preview Email"
+        open={sendOpen}
+        onCancel={() => setSendOpen(false)}
+        footer={[
+          <button key="cancel" type="button" className="saf-action-btn is-secondary" onClick={() => setSendOpen(false)} disabled={sending}>
+            Cancel
+          </button>,
+          <button key="send" type="button" className="saf-action-btn is-primary" onClick={sendPreviewEmail} disabled={sending}>
+            <SendOutlined />
+            <span>{sending ? 'Sending...' : 'Send'}</span>
+          </button>,
+        ]}
+        width={920}
+        destroyOnHidden
+      >
+        <div className="saf-email-send-modal">
+          <div className="saf-form-grid">
+            <label className="saf-form-field">
+              <span>Recipient Email *</span>
+              <input
+                value={sendRecipientEmail}
+                onChange={(event) => setSendRecipientEmail(event.target.value)}
+                placeholder="name@example.com"
+                type="email"
+              />
+            </label>
+            <label className="saf-form-field">
+              <span>Recipient Name</span>
+              <input
+                value={sendRecipientName}
+                onChange={(event) => setSendRecipientName(event.target.value)}
+                placeholder="Optional"
+              />
+            </label>
+          </div>
+          <div className="saf-email-send-subject">
+            <span>Subject</span>
+            <strong>{previewSubject || 'Subject preview'}</strong>
+          </div>
+          <iframe title="Email send preview" sandbox="" srcDoc={previewHtml} />
         </div>
       </Modal>
     </div>

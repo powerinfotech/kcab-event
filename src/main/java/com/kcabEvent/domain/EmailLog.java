@@ -15,8 +15,6 @@ public class EmailLog {
     private String recipientName;
     private String subject;
     private String bodyHtml;
-    private String provider;
-    private String providerMessageId;
     private String status;
     private String errorMessage;
     private Integer retryCount;
@@ -28,7 +26,6 @@ public class EmailLog {
             String recipientName,
             String subject,
             String bodyHtml,
-            String provider,
             String status
     ) {
         this.templateSeq = templateSeq;
@@ -36,7 +33,6 @@ public class EmailLog {
         this.recipientName = recipientName;
         this.subject = subject;
         this.bodyHtml = bodyHtml;
-        this.provider = provider;
         this.status = status;
     }
 }

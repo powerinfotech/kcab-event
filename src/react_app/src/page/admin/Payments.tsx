@@ -517,10 +517,6 @@ export default function Payments() {
         <button type="button" onClick={fetchPayments}>Search</button>
       </section>
 
-      <p className="saf-summary-line">
-        {`${payments.length} payment(s)`}
-      </p>
-
       <section className="saf-table-wrap">
         <table className="saf-table">
           <thead>

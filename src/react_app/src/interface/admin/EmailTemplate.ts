@@ -24,3 +24,10 @@ export interface EmailTemplateSaveParam {
   bodyHtml: string;
   isActive: boolean;
 }
+
+export interface EmailTemplatePreviewSendParam {
+  recipientEmail: string;
+  recipientName?: string;
+  subject: string;
+  bodyHtml: string;
+}

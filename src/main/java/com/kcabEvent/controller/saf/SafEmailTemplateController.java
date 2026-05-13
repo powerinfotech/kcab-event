@@ -5,12 +5,14 @@ import com.kcabEvent.dto.common.ApiResponse;
 import com.kcabEvent.dto.common.LoginUser;
 import com.kcabEvent.dto.email.EmailTemplateDetailDto;
 import com.kcabEvent.dto.email.EmailTemplateListDto;
+import com.kcabEvent.dto.email.EmailTemplatePreviewSendDto;
 import com.kcabEvent.dto.email.EmailTemplateSaveDto;
 import com.kcabEvent.exception.custom.BusinessException;
 import com.kcabEvent.service.email.EmailTemplateService;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -48,6 +50,17 @@ public class SafEmailTemplateController {
     ) {
         validateAdmin(loginUser);
         emailTemplateService.updateTemplate(code, saveDto);
+        return ApiResponse.ok();
+    }
+
+    @PostMapping("/{code}/preview-send")
+    public ApiResponse<Void> sendPreviewEmail(
+            @KcabEventSession LoginUser loginUser,
+            @PathVariable String code,
+            @RequestBody EmailTemplatePreviewSendDto sendDto
+    ) {
+        validateAdmin(loginUser);
+        emailTemplateService.sendPreviewEmail(code, sendDto);
         return ApiResponse.ok();
     }
 

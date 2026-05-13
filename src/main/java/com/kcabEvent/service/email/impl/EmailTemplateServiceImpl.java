@@ -3,10 +3,14 @@ package com.kcabEvent.service.email.impl;
 import com.kcabEvent.dao.EmailTemplateDao;
 import com.kcabEvent.dto.email.EmailTemplateDetailDto;
 import com.kcabEvent.dto.email.EmailTemplateListDto;
+import com.kcabEvent.dto.email.EmailTemplatePreviewSendDto;
 import com.kcabEvent.dto.email.EmailTemplateSaveDto;
 import com.kcabEvent.exception.custom.BusinessException;
+import com.kcabEvent.service.email.EmailLogService;
 import com.kcabEvent.service.email.EmailTemplateService;
+import com.kcabEvent.util.EmailHtmlLayout;
 import jakarta.annotation.Resource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.egovframe.rte.fdl.cmmn.EgovAbstractServiceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +34,18 @@ public class EmailTemplateServiceImpl extends EgovAbstractServiceImpl implements
                             <p><a href="{{login_url}}">Go to Admin Console</a></p>
                             """,
                     variables("user_name", "organization_name", "login_url")
+            ),
+            new DefaultTemplate(
+                    "password_reset",
+                    "Password Reset Verification",
+                    "[KCAB International] Password reset verification code",
+                    """
+                            <p>Hello {{user_name}},</p>
+                            <p>Please use the verification code below to reset your password.</p>
+                            <p style="font-size:28px;font-weight:700;color:#1f5b95;letter-spacing:3px;">{{reset_code}}</p>
+                            <p><strong>Never share this verification code with anyone else.</strong><br>This code will expire in {{expire_minutes}} minutes.</p>
+                            """,
+                    variables("user_name", "reset_code", "expire_minutes")
             ),
             new DefaultTemplate(
                     "side_event_participation_confirm",
@@ -109,6 +125,9 @@ public class EmailTemplateServiceImpl extends EgovAbstractServiceImpl implements
     @Resource(name = "emailTemplateDao")
     private EmailTemplateDao emailTemplateDao;
 
+    @Autowired
+    private EmailLogService emailLogService;
+
     @Override
     @Transactional("transactionManager")
     public List<EmailTemplateListDto> selectTemplateList() {
@@ -149,6 +168,36 @@ public class EmailTemplateServiceImpl extends EgovAbstractServiceImpl implements
         }
     }
 
+    @Override
+    @Transactional("transactionManager")
+    public void sendPreviewEmail(String code, EmailTemplatePreviewSendDto sendDto) {
+        if (sendDto == null) {
+            throw new BusinessException("Email content is required.");
+        }
+        if (!StringUtils.hasText(sendDto.getRecipientEmail())) {
+            throw new BusinessException("Recipient email is required.");
+        }
+        if (!StringUtils.hasText(sendDto.getSubject())) {
+            throw new BusinessException("Subject is required.");
+        }
+        if (!StringUtils.hasText(sendDto.getBodyHtml())) {
+            throw new BusinessException("Body is required.");
+        }
+
+        EmailTemplateDetailDto detail = selectTemplateDetail(code);
+        String subject = sendDto.getSubject().trim();
+        String bodyHtml = EmailHtmlLayout.wrapTemplateBody(sanitizeEditableHtml(sendDto.getBodyHtml()));
+
+        emailLogService.sendHtmlAndLog(
+                detail.getTemplateSeq(),
+                sendDto.getRecipientEmail().trim(),
+                StringUtils.hasText(sendDto.getRecipientName()) ? sendDto.getRecipientName().trim() : null,
+                subject,
+                bodyHtml,
+                bodyHtml
+        );
+    }
+
     private void ensureDefaultTemplates() {
         DEFAULT_TEMPLATES.forEach(template -> emailTemplateDao.insertDefaultTemplateIfMissing(
                 template.code(),
@@ -186,6 +235,8 @@ public class EmailTemplateServiceImpl extends EgovAbstractServiceImpl implements
             case "user_name" -> "Administrator name";
             case "organization_name" -> "Organization name";
             case "login_url" -> "Admin console URL";
+            case "reset_code" -> "Password reset verification code";
+            case "expire_minutes" -> "Verification code expiration minutes";
             case "participant_name" -> "Participant name";
             case "event_name" -> "Event name";
             case "event_date" -> "Event date";
@@ -205,6 +256,8 @@ public class EmailTemplateServiceImpl extends EgovAbstractServiceImpl implements
             case "user_name" -> "Alex Kim";
             case "organization_name" -> "ABC Law";
             case "login_url" -> "https://saf.kcabinternational.or.kr/admin";
+            case "reset_code" -> "123456";
+            case "expire_minutes" -> "5";
             case "participant_name" -> "Jordan Lee";
             case "event_name" -> "Seoul ADR Conference 2026";
             case "event_date" -> "September 10, 2026";

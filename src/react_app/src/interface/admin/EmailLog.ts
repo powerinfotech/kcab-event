@@ -3,7 +3,7 @@ export type EmailLogStatus = 'queued' | 'sent' | 'failed' | string;
 export interface EmailLogSearchParam {
   keyword?: string;
   status?: string;
-  provider?: string;
+  templateCode?: string;
   fromDate?: string;
   toDate?: string;
   limit?: number;
@@ -11,11 +11,12 @@ export interface EmailLogSearchParam {
 
 export interface EmailLogListItem {
   emailLogSeq: number;
+  templateSeq?: number;
+  templateCode?: string;
+  templateName?: string;
   recipientEmail: string;
   recipientName?: string;
   subject: string;
-  provider: string;
-  providerMessageId?: string;
   status: EmailLogStatus;
   errorMessage?: string;
   retryCount?: number;
@@ -28,4 +29,14 @@ export interface EmailLogDetail extends EmailLogListItem {
   templateSeq?: number;
   registrationSeq?: number;
   bodyHtml: string;
+}
+
+export interface EmailLogResendParam {
+  emailLogSeqs: number[];
+}
+
+export interface EmailLogResendResult {
+  requestedCount: number;
+  successCount: number;
+  failedCount: number;
 }
