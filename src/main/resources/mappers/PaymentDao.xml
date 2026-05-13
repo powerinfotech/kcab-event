@@ -26,8 +26,8 @@
             ,p.refunded_amount
             ,COALESCE(rc.refund_count, 0) AS refund_count
             ,p.event_pricing_seq
-            ,p.price_type
-            ,p.price_name
+            ,COALESCE(pr.price_type, p.price_type) AS price_type
+            ,COALESCE(pr.price_name, p.price_name, p.price_type) AS price_name
             ,p.discount_code_seq
             ,p.event_seq
             ,e.title       AS event_title
@@ -42,6 +42,9 @@
         FROM event.payments p
         LEFT JOIN event.events e
             ON e.event_seq = p.event_seq
+        LEFT JOIN event.event_pricing pr
+            ON pr.event_pricing_seq = p.event_pricing_seq
+           AND pr.deleted_at IS NULL
         LEFT JOIN event.participants pa
             ON pa.participant_seq = p.participant_seq
         LEFT JOIN (
@@ -135,8 +138,8 @@
             ,p.approval_no
             ,p.installment_months
             ,p.event_pricing_seq
-            ,p.price_type
-            ,p.price_name
+            ,COALESCE(pr.price_type, p.price_type) AS price_type
+            ,COALESCE(pr.price_name, p.price_name, p.price_type) AS price_name
             ,p.original_amount
             ,p.discount_code_seq
             ,p.discount_code
@@ -164,6 +167,9 @@
         FROM event.payments p
         LEFT JOIN event.events e
             ON e.event_seq = p.event_seq
+        LEFT JOIN event.event_pricing pr
+            ON pr.event_pricing_seq = p.event_pricing_seq
+           AND pr.deleted_at IS NULL
         LEFT JOIN event.event_participants ep
             ON ep.event_participant_seq = p.event_participant_seq
         LEFT JOIN event.participants pa

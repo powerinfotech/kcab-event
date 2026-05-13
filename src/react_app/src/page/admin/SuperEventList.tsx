@@ -499,6 +499,11 @@ export default function SuperEventList() {
   };
 
   const updatePricingType = (index: number, priceType: string) => {
+    const pricing = form.pricingList?.[index];
+    if (pricing && isPricingLocked(pricing)) {
+      message.warning('This price type has payment history and cannot be changed.');
+      return;
+    }
     setForm((prev) => ({
       ...prev,
       pricingList: (prev.pricingList ?? []).map((row, rowIndex) => {
@@ -1285,7 +1290,8 @@ export default function SuperEventList() {
                             value={pricing.priceType || ''}
                             className={requiredGridClass(isMissingText(pricing.priceType))}
                             aria-invalid={submitAttempted && isMissingText(pricing.priceType)}
-                            disabled={!canEdit}
+                            disabled={!canEdit || locked}
+                            title={locked ? 'This price type has payment history and cannot be changed.' : undefined}
                             onChange={(e) => updatePricingType(index, e.target.value)}
                           >
                             <option value="">Select</option>

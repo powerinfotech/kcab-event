@@ -319,8 +319,17 @@
     </insert>
 
     <update id="updateEventPricing">
-        UPDATE event.event_pricing
-        SET  price_type      = #{pricing.priceType}
+        UPDATE event.event_pricing ep
+        SET  price_type      = CASE
+                                WHEN EXISTS (
+                                    SELECT 1
+                                    FROM event.payments p
+                                    WHERE p.event_pricing_seq = ep.event_pricing_seq
+                                    LIMIT 1
+                                )
+                                THEN ep.price_type
+                                ELSE #{pricing.priceType}
+                               END
             ,price_name      = #{pricing.priceName}
             ,currency_code   = #{pricing.currencyCode}
             ,amount          = #{pricing.amount}
@@ -330,9 +339,9 @@
             ,sort_seq        = #{pricing.sortSeq}
             ,updated_by      = #{userSeq}
             ,updated_at      = CURRENT_TIMESTAMP
-        WHERE event_pricing_seq = #{pricing.eventPricingSeq}
-          AND event_seq = #{pricing.eventSeq}
-          AND deleted_at IS NULL
+        WHERE ep.event_pricing_seq = #{pricing.eventPricingSeq}
+          AND ep.event_seq = #{pricing.eventSeq}
+          AND ep.deleted_at IS NULL
     </update>
 
     <insert id="insertEventDiscountCode">

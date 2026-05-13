@@ -1600,6 +1600,9 @@
 
   td {
     min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 
     .saf-participant-position {
       display: inline;
@@ -1607,18 +1610,20 @@
       color: #64748b;
       font-size: 12px;
       font-weight: 700;
+      white-space: nowrap;
     }
   }
 }
 
 .saf-participant-event-list {
-  display: grid;
-  gap: 6px;
+  display: block;
+  overflow: hidden;
   min-width: 0;
 }
 
 .saf-participant-event-chip {
   min-width: 0;
+  max-width: 100%;
   display: flex;
   align-items: center;
   gap: 6px;
