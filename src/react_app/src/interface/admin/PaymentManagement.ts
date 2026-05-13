@@ -29,6 +29,10 @@ export interface PaymentListItem {
   cancelledAt: string | null;
   refundedAmount: string | number | null;
   refundCount: number;
+  eventPricingSeq: number | null;
+  priceType: string | null;
+  priceName: string | null;
+  discountCodeSeq: number | null;
   eventSeq: number | null;
   eventTitle: string | null;
   eventType: string | null;
@@ -96,6 +100,8 @@ export interface PaymentDetail {
   installmentMonths: number | null;
   eventPricingSeq: number | null;
   priceType: string | null;
+  priceName: string | null;
+  discountCodeSeq: number | null;
   originalAmount: string | number | null;
   discountCode: string | null;
   discountAmount: string | number | null;

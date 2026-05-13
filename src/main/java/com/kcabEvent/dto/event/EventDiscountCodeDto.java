@@ -22,4 +22,5 @@ public class EventDiscountCodeDto {
     private LocalDateTime validToAt;
     private String useYn;
     private Integer sortSeq;
+    private Integer paymentCount;
 }

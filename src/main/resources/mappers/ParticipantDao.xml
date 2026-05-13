@@ -15,6 +15,8 @@
             ,ep.event_seq
             ,e.title AS event_title
             ,e.event_type
+            ,COALESCE(NULLIF(pay.price_name, ''), NULLIF(pay.price_type, '')) AS payment_name
+            ,pay.status AS payment_status
             ,ep.status AS participation_status
             ,ep.registered_at
             ,ep.cancelled_at
@@ -26,6 +28,31 @@
         INNER JOIN event.events e
             ON e.event_seq = ep.event_seq
            AND e.deleted_at IS NULL
+        LEFT JOIN LATERAL (
+            SELECT
+                 pmt.price_name
+                ,pmt.price_type
+                ,pmt.status
+            FROM event.payments pmt
+            WHERE (
+                    pmt.event_participant_seq = ep.event_participant_seq
+                    OR (
+                        pmt.event_participant_seq IS NULL
+                        AND pmt.event_seq = ep.event_seq
+                        AND pmt.participant_seq = p.participant_seq
+                    )
+                )
+            ORDER BY
+                 CASE pmt.status
+                    WHEN 'paid' THEN 1
+                    WHEN 'cancelled' THEN 2
+                    WHEN 'failed' THEN 4
+                    ELSE 3
+                 END
+                ,COALESCE(pmt.paid_at, pmt.created_at) DESC NULLS LAST
+                ,pmt.payment_seq DESC
+            LIMIT 1
+        ) pay ON TRUE
         LEFT JOIN (
             SELECT
                  ep2.participant_seq

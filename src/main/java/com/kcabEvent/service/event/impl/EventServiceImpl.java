@@ -30,10 +30,12 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -319,27 +321,119 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
     }
 
     private void savePricingDetails(Long eventSeq, EventSaveDto saveDto, Long userSeq, boolean isPaid) {
-        eventDao.deleteEventDiscountCodesByEventSeq(eventSeq);
-        eventDao.deleteEventPricingByEventSeq(eventSeq);
         if (!isPaid) {
+            eventDao.softDeleteEventDiscountCodesByEventSeq(eventSeq, userSeq);
+            eventDao.softDeleteEventPricingByEventSeq(eventSeq, userSeq);
             return;
         }
 
         List<EventPricingDto> pricingList = normalizePricingList(saveDto.getPricingList());
         List<EventDiscountCodeDto> discountCodes = normalizeDiscountCodes(saveDto.getDiscountCodes(), pricingList);
+        Map<Long, EventPricingDto> currentPricing = mapPricingBySeq(eventDao.selectEventPricingList(eventSeq));
+        Map<Long, EventDiscountCodeDto> currentDiscountCodes = mapDiscountCodesBySeq(eventDao.selectEventDiscountCodeList(eventSeq));
+        Set<Long> retainedPricingSeqs = new HashSet<>();
+        Set<Long> retainedDiscountCodeSeqs = new HashSet<>();
 
         for (int i = 0; i < pricingList.size(); i++) {
             EventPricingDto pricing = pricingList.get(i);
             pricing.setEventSeq(eventSeq);
             pricing.setSortSeq(i + 1);
-            eventDao.insertEventPricing(pricing, userSeq);
+            Long pricingSeq = pricing.getEventPricingSeq();
+            if (pricingSeq != null && currentPricing.containsKey(pricingSeq)) {
+                assertPricingCanBeUpdated(currentPricing.get(pricingSeq), pricing);
+                eventDao.updateEventPricing(pricing, userSeq);
+                retainedPricingSeqs.add(pricingSeq);
+            } else {
+                pricing.setEventPricingSeq(null);
+                eventDao.insertEventPricing(pricing, userSeq);
+            }
         }
         for (int i = 0; i < discountCodes.size(); i++) {
             EventDiscountCodeDto discountCode = discountCodes.get(i);
             discountCode.setEventSeq(eventSeq);
             discountCode.setSortSeq(i + 1);
-            eventDao.insertEventDiscountCode(discountCode, userSeq);
+            Long discountCodeSeq = discountCode.getDiscountCodeSeq();
+            if (discountCodeSeq != null && currentDiscountCodes.containsKey(discountCodeSeq)) {
+                assertDiscountCodeCanBeUpdated(currentDiscountCodes.get(discountCodeSeq), discountCode);
+                eventDao.updateEventDiscountCode(discountCode, userSeq);
+                retainedDiscountCodeSeqs.add(discountCodeSeq);
+            } else {
+                discountCode.setDiscountCodeSeq(null);
+                eventDao.insertEventDiscountCode(discountCode, userSeq);
+            }
         }
+        for (EventPricingDto current : currentPricing.values()) {
+            if (!retainedPricingSeqs.contains(current.getEventPricingSeq())) {
+                eventDao.softDeleteEventPricingBySeq(current.getEventPricingSeq(), userSeq);
+            }
+        }
+        for (EventDiscountCodeDto current : currentDiscountCodes.values()) {
+            if (!retainedDiscountCodeSeqs.contains(current.getDiscountCodeSeq())) {
+                eventDao.softDeleteEventDiscountCodeBySeq(current.getDiscountCodeSeq(), userSeq);
+            }
+        }
+    }
+
+    private Map<Long, EventPricingDto> mapPricingBySeq(List<EventPricingDto> pricingList) {
+        Map<Long, EventPricingDto> result = new HashMap<>();
+        if (pricingList == null) {
+            return result;
+        }
+        for (EventPricingDto pricing : pricingList) {
+            if (pricing.getEventPricingSeq() != null) {
+                result.put(pricing.getEventPricingSeq(), pricing);
+            }
+        }
+        return result;
+    }
+
+    private Map<Long, EventDiscountCodeDto> mapDiscountCodesBySeq(List<EventDiscountCodeDto> discountCodes) {
+        Map<Long, EventDiscountCodeDto> result = new HashMap<>();
+        if (discountCodes == null) {
+            return result;
+        }
+        for (EventDiscountCodeDto discountCode : discountCodes) {
+            if (discountCode.getDiscountCodeSeq() != null) {
+                result.put(discountCode.getDiscountCodeSeq(), discountCode);
+            }
+        }
+        return result;
+    }
+
+    private void assertPricingCanBeUpdated(EventPricingDto current, EventPricingDto next) {
+        if (current == null || nullToZero(current.getPaymentCount()) <= 0) {
+            return;
+        }
+        boolean immutableChanged = !Objects.equals(normalizeKey(current.getPriceType()), normalizeKey(next.getPriceType()))
+                || !Objects.equals(normalizeCurrency(current.getCurrencyCode()), normalizeCurrency(next.getCurrencyCode()))
+                || compareAmount(current.getAmount(), next.getAmount()) != 0;
+        if (immutableChanged) {
+            throw new BusinessException("A sold pricing tier cannot change type, currency, or amount. Deactivate it and add a new price.");
+        }
+    }
+
+    private void assertDiscountCodeCanBeUpdated(EventDiscountCodeDto current, EventDiscountCodeDto next) {
+        if (current == null || nullToZero(current.getPaymentCount()) <= 0) {
+            return;
+        }
+        boolean immutableChanged = !Objects.equals(normalizeDiscountCode(current.getDiscountCode()), normalizeDiscountCode(next.getDiscountCode()))
+                || !Objects.equals(normalizeKey(current.getDiscountType()), normalizeKey(next.getDiscountType()))
+                || compareAmount(current.getDiscountValue(), next.getDiscountValue()) != 0
+                || !Objects.equals(normalizeOptionalCurrency(current.getCurrencyCode()), normalizeOptionalCurrency(next.getCurrencyCode()))
+                || !Objects.equals(normalizeKey(current.getAppliesToPriceType()), normalizeKey(next.getAppliesToPriceType()));
+        if (immutableChanged) {
+            throw new BusinessException("A used discount code cannot change code, type, value, currency, or applies-to. Deactivate it and add a new code.");
+        }
+    }
+
+    private int compareAmount(BigDecimal left, BigDecimal right) {
+        BigDecimal safeLeft = left != null ? left : BigDecimal.ZERO;
+        BigDecimal safeRight = right != null ? right : BigDecimal.ZERO;
+        return safeLeft.compareTo(safeRight);
+    }
+
+    private int nullToZero(Integer value) {
+        return value != null ? value : 0;
     }
 
     private List<EventPricingDto> normalizePricingList(List<EventPricingDto> pricingList) {
@@ -376,6 +470,7 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
             }
 
             EventPricingDto target = new EventPricingDto();
+            target.setEventPricingSeq(source.getEventPricingSeq());
             target.setPriceType(priceType);
             target.setPriceName(priceName);
             target.setCurrencyCode(currencyCode);
@@ -449,6 +544,7 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
             }
 
             EventDiscountCodeDto target = new EventDiscountCodeDto();
+            target.setDiscountCodeSeq(source.getDiscountCodeSeq());
             target.setDiscountCode(code);
             target.setDiscountType(discountType);
             target.setDiscountValue(discountValue);

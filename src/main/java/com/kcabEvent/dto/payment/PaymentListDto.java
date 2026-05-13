@@ -29,6 +29,10 @@ public class PaymentListDto {
     private LocalDateTime cancelledAt;
     private BigDecimal refundedAmount;
     private Integer refundCount;
+    private Long eventPricingSeq;
+    private String priceType;
+    private String priceName;
+    private Long discountCodeSeq;
 
     private Long eventSeq;
     private String eventTitle;

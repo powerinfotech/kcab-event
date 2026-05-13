@@ -30,14 +30,28 @@ public interface EventDao {
 
     void updateEvent(Event event);
 
-    void deleteEventPricingByEventSeq(@Param("eventSeq") Long eventSeq);
+    void softDeleteEventPricingByEventSeq(@Param("eventSeq") Long eventSeq,
+                                          @Param("userSeq") Long userSeq);
 
-    void deleteEventDiscountCodesByEventSeq(@Param("eventSeq") Long eventSeq);
+    void softDeleteEventPricingBySeq(@Param("eventPricingSeq") Long eventPricingSeq,
+                                     @Param("userSeq") Long userSeq);
+
+    void softDeleteEventDiscountCodesByEventSeq(@Param("eventSeq") Long eventSeq,
+                                                @Param("userSeq") Long userSeq);
+
+    void softDeleteEventDiscountCodeBySeq(@Param("discountCodeSeq") Long discountCodeSeq,
+                                          @Param("userSeq") Long userSeq);
 
     void insertEventPricing(@Param("pricing") EventPricingDto pricing,
                             @Param("userSeq") Long userSeq);
 
+    void updateEventPricing(@Param("pricing") EventPricingDto pricing,
+                            @Param("userSeq") Long userSeq);
+
     void insertEventDiscountCode(@Param("discountCode") EventDiscountCodeDto discountCode,
+                                 @Param("userSeq") Long userSeq);
+
+    void updateEventDiscountCode(@Param("discountCode") EventDiscountCodeDto discountCode,
                                  @Param("userSeq") Long userSeq);
 
     int updateEventStatus(@Param("eventSeq") Long eventSeq,

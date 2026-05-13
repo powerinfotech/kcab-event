@@ -3,6 +3,8 @@ export interface ParticipantEventItem {
   eventSeq: number;
   eventTitle: string;
   eventType: string;
+  paymentName?: string | null;
+  paymentStatus?: string | null;
   status: string;
   registeredAt: string | null;
   cancelledAt: string | null;

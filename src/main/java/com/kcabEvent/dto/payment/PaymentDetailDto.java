@@ -37,7 +37,9 @@ public class PaymentDetailDto {
     private Integer installmentMonths;
     private Long eventPricingSeq;
     private String priceType;
+    private String priceName;
     private BigDecimal originalAmount;
+    private Long discountCodeSeq;
     private String discountCode;
     private BigDecimal discountAmount;
     private BigDecimal refundedAmount;

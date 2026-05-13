@@ -110,41 +110,66 @@
 
     <select id="selectEventPricingList" resultType="com.kcabEvent.dto.event.EventPricingDto">
         SELECT
-             event_pricing_seq
-            ,event_seq
-            ,price_type
-            ,price_name
-            ,currency_code
-            ,amount
-            ,sales_start_at
-            ,sales_end_at
-            ,use_yn
-            ,sort_seq
-        FROM event.event_pricing
-        WHERE event_seq = #{eventSeq}
-          AND deleted_at IS NULL
-        ORDER BY sort_seq ASC, event_pricing_seq ASC
+             ep.event_pricing_seq
+            ,ep.event_seq
+            ,ep.price_type
+            ,ep.price_name
+            ,ep.currency_code
+            ,ep.amount
+            ,ep.sales_start_at
+            ,ep.sales_end_at
+            ,ep.use_yn
+            ,ep.sort_seq
+            ,COALESCE(payment_usage.sold_count, 0) AS sold_count
+            ,COALESCE(payment_usage.payment_count, 0) AS payment_count
+        FROM event.event_pricing ep
+        LEFT JOIN LATERAL (
+            SELECT
+                 COUNT(*) FILTER (WHERE p.status = 'paid') AS sold_count
+                ,COUNT(*) AS payment_count
+            FROM event.payments p
+            WHERE p.event_pricing_seq = ep.event_pricing_seq
+        ) payment_usage ON TRUE
+        WHERE ep.event_seq = #{eventSeq}
+          AND ep.deleted_at IS NULL
+        ORDER BY ep.sort_seq ASC, ep.event_pricing_seq ASC
     </select>
 
     <select id="selectEventDiscountCodeList" resultType="com.kcabEvent.dto.event.EventDiscountCodeDto">
         SELECT
-             discount_code_seq
-            ,event_seq
-            ,discount_code
-            ,discount_type
-            ,discount_value
-            ,currency_code
-            ,applies_to_price_type
-            ,usage_limit
-            ,used_count
-            ,valid_from_at
-            ,valid_to_at
-            ,use_yn
-            ,sort_seq
-        FROM event.event_discount_codes
-        WHERE event_seq = #{eventSeq}
-          AND deleted_at IS NULL
-        ORDER BY sort_seq ASC, discount_code_seq ASC
+             dc.discount_code_seq
+            ,dc.event_seq
+            ,dc.discount_code
+            ,dc.discount_type
+            ,dc.discount_value
+            ,dc.currency_code
+            ,dc.applies_to_price_type
+            ,dc.usage_limit
+            ,COALESCE(payment_usage.used_count, 0) AS used_count
+            ,COALESCE(payment_usage.payment_count, 0) AS payment_count
+            ,dc.valid_from_at
+            ,dc.valid_to_at
+            ,dc.use_yn
+            ,dc.sort_seq
+        FROM event.event_discount_codes dc
+        LEFT JOIN LATERAL (
+            SELECT
+                 COUNT(*) FILTER (WHERE p.status = 'paid') AS used_count
+                ,COUNT(*) AS payment_count
+            FROM event.payments p
+            WHERE p.event_seq = dc.event_seq
+              AND (
+                    p.discount_code_seq = dc.discount_code_seq
+                    OR (
+                        p.discount_code_seq IS NULL
+                        AND p.discount_code IS NOT NULL
+                        AND UPPER(p.discount_code) = UPPER(dc.discount_code)
+                    )
+              )
+        ) payment_usage ON TRUE
+        WHERE dc.event_seq = #{eventSeq}
+          AND dc.deleted_at IS NULL
+        ORDER BY dc.sort_seq ASC, dc.discount_code_seq ASC
     </select>
 
     <insert id="insertEvent" parameterType="com.kcabEvent.domain.Event" useGeneratedKeys="true" keyProperty="eventSeq">
@@ -193,15 +218,77 @@
           AND deleted_at IS NULL
     </update>
 
-    <delete id="deleteEventPricingByEventSeq">
-        DELETE FROM event.event_pricing
-        WHERE event_seq = #{eventSeq}
-    </delete>
+    <update id="softDeleteEventPricingByEventSeq">
+        UPDATE event.event_pricing ep
+        SET deleted_at = COALESCE(deleted_at, CURRENT_TIMESTAMP)
+           ,updated_by = #{userSeq}
+           ,updated_at = CURRENT_TIMESTAMP
+        WHERE ep.event_seq = #{eventSeq}
+          AND ep.deleted_at IS NULL
+          AND NOT EXISTS (
+              SELECT 1
+                FROM event.payments p
+               WHERE p.event_pricing_seq = ep.event_pricing_seq
+          )
+    </update>
 
-    <delete id="deleteEventDiscountCodesByEventSeq">
-        DELETE FROM event.event_discount_codes
-        WHERE event_seq = #{eventSeq}
-    </delete>
+    <update id="softDeleteEventPricingBySeq">
+        UPDATE event.event_pricing ep
+        SET deleted_at = COALESCE(deleted_at, CURRENT_TIMESTAMP)
+           ,updated_by = #{userSeq}
+           ,updated_at = CURRENT_TIMESTAMP
+        WHERE ep.event_pricing_seq = #{eventPricingSeq}
+          AND ep.deleted_at IS NULL
+          AND NOT EXISTS (
+              SELECT 1
+                FROM event.payments p
+               WHERE p.event_pricing_seq = ep.event_pricing_seq
+          )
+    </update>
+
+    <update id="softDeleteEventDiscountCodesByEventSeq">
+        UPDATE event.event_discount_codes dc
+        SET deleted_at = COALESCE(deleted_at, CURRENT_TIMESTAMP)
+           ,updated_by = #{userSeq}
+           ,updated_at = CURRENT_TIMESTAMP
+        WHERE dc.event_seq = #{eventSeq}
+          AND dc.deleted_at IS NULL
+          AND NOT EXISTS (
+              SELECT 1
+                FROM event.payments p
+               WHERE p.event_seq = dc.event_seq
+                 AND (
+                      p.discount_code_seq = dc.discount_code_seq
+                      OR (
+                          p.discount_code_seq IS NULL
+                          AND p.discount_code IS NOT NULL
+                          AND UPPER(p.discount_code) = UPPER(dc.discount_code)
+                      )
+                 )
+          )
+    </update>
+
+    <update id="softDeleteEventDiscountCodeBySeq">
+        UPDATE event.event_discount_codes dc
+        SET deleted_at = COALESCE(deleted_at, CURRENT_TIMESTAMP)
+           ,updated_by = #{userSeq}
+           ,updated_at = CURRENT_TIMESTAMP
+        WHERE dc.discount_code_seq = #{discountCodeSeq}
+          AND dc.deleted_at IS NULL
+          AND NOT EXISTS (
+              SELECT 1
+                FROM event.payments p
+               WHERE p.event_seq = dc.event_seq
+                 AND (
+                      p.discount_code_seq = dc.discount_code_seq
+                      OR (
+                          p.discount_code_seq IS NULL
+                          AND p.discount_code IS NOT NULL
+                          AND UPPER(p.discount_code) = UPPER(dc.discount_code)
+                      )
+                 )
+          )
+    </update>
 
     <insert id="insertEventPricing">
         INSERT INTO event.event_pricing (
@@ -230,6 +317,23 @@
             ,#{userSeq}
         )
     </insert>
+
+    <update id="updateEventPricing">
+        UPDATE event.event_pricing
+        SET  price_type      = #{pricing.priceType}
+            ,price_name      = #{pricing.priceName}
+            ,currency_code   = #{pricing.currencyCode}
+            ,amount          = #{pricing.amount}
+            ,sales_start_at  = #{pricing.salesStartAt,jdbcType=TIMESTAMP}
+            ,sales_end_at    = #{pricing.salesEndAt,jdbcType=TIMESTAMP}
+            ,use_yn          = COALESCE(NULLIF(#{pricing.useYn}, ''), 'Y')
+            ,sort_seq        = #{pricing.sortSeq}
+            ,updated_by      = #{userSeq}
+            ,updated_at      = CURRENT_TIMESTAMP
+        WHERE event_pricing_seq = #{pricing.eventPricingSeq}
+          AND event_seq = #{pricing.eventSeq}
+          AND deleted_at IS NULL
+    </update>
 
     <insert id="insertEventDiscountCode">
         INSERT INTO event.event_discount_codes (
@@ -264,6 +368,25 @@
             ,#{userSeq}
         )
     </insert>
+
+    <update id="updateEventDiscountCode">
+        UPDATE event.event_discount_codes
+        SET  discount_code         = #{discountCode.discountCode}
+            ,discount_type         = #{discountCode.discountType}
+            ,discount_value        = #{discountCode.discountValue}
+            ,currency_code         = #{discountCode.currencyCode,jdbcType=VARCHAR}
+            ,applies_to_price_type = #{discountCode.appliesToPriceType,jdbcType=VARCHAR}
+            ,usage_limit           = #{discountCode.usageLimit,jdbcType=INTEGER}
+            ,valid_from_at         = #{discountCode.validFromAt,jdbcType=TIMESTAMP}
+            ,valid_to_at           = #{discountCode.validToAt,jdbcType=TIMESTAMP}
+            ,use_yn                = COALESCE(NULLIF(#{discountCode.useYn}, ''), 'Y')
+            ,sort_seq              = #{discountCode.sortSeq}
+            ,updated_by            = #{userSeq}
+            ,updated_at            = CURRENT_TIMESTAMP
+        WHERE discount_code_seq = #{discountCode.discountCodeSeq}
+          AND event_seq = #{discountCode.eventSeq}
+          AND deleted_at IS NULL
+    </update>
 
     <update id="updateEventStatus">
         UPDATE event.events

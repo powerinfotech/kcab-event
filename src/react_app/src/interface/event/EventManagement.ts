@@ -84,6 +84,8 @@ export interface EventPricingItem {
   salesEndAt?: string | null;
   useYn: string;
   sortSeq?: number | null;
+  soldCount?: number | null;
+  paymentCount?: number | null;
 }
 
 export interface EventDiscountCodeItem {
@@ -96,6 +98,7 @@ export interface EventDiscountCodeItem {
   appliesToPriceType?: string | null;
   usageLimit?: number | null;
   usedCount?: number | null;
+  paymentCount?: number | null;
   validFromAt?: string | null;
   validToAt?: string | null;
   useYn: string;

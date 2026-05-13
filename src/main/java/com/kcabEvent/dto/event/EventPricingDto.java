@@ -19,4 +19,6 @@ public class EventPricingDto {
     private LocalDateTime salesEndAt;
     private String useYn;
     private Integer sortSeq;
+    private Integer soldCount;
+    private Integer paymentCount;
 }

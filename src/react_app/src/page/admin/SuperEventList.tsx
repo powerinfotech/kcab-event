@@ -104,6 +104,17 @@ const EVENT_PARTICIPANT_EXCEL_COLUMNS: ExcelColumnDef[] = [
   { headerName: 'Registered At', dataIndex: 'registeredAt', width: 22 },
 ];
 
+const EVENT_PARTICIPANT_PAID_EXCEL_COLUMNS: ExcelColumnDef[] = [
+  { headerName: 'Name', dataIndex: 'name', width: 24 },
+  { headerName: 'Email', dataIndex: 'email', width: 34 },
+  { headerName: 'Organization', dataIndex: 'organization', width: 30 },
+  { headerName: 'Position', dataIndex: 'position', width: 22 },
+  { headerName: 'Country', dataIndex: 'country', width: 18 },
+  { headerName: 'Payment Name', dataIndex: 'paymentName', width: 22 },
+  { headerName: 'Status', dataIndex: 'status', width: 18 },
+  { headerName: 'Registered At', dataIndex: 'registeredAt', width: 22 },
+];
+
 const URL_REGEXP = /^(https?:\/\/)[^\s]+$/i;
 const DASHBOARD_EVENT_DETAIL_KEY = 'saf.admin.dashboardEventSeq';
 const PARTICIPANT_DETAIL_KEY = 'saf.admin.participantDetailSeq';
@@ -167,6 +178,33 @@ function formatDateRange(start?: string | null, end?: string | null): string {
   return `${s ? s.format(fmt) : '-'} ~ ${e ? e.format(fmt) : '-'}`;
 }
 
+function formatPricingAmount(value?: number | string | null): string {
+  if (value === null || value === undefined || value === '') return '';
+  const numberValue = Number(value);
+  if (!Number.isFinite(numberValue)) return '';
+  return new Intl.NumberFormat('en-US', {
+    maximumFractionDigits: 1,
+  }).format(numberValue);
+}
+
+function normalizePricingAmountText(value: string): string {
+  const cleaned = value.replace(/,/g, '').replace(/[^\d.]/g, '');
+  const hasDot = cleaned.includes('.');
+  const [integerRaw, ...decimalParts] = cleaned.split('.');
+  const integerPart = integerRaw.replace(/^0+(?=\d)/, '');
+  const decimalPart = decimalParts.join('').slice(0, 1);
+  const formattedInteger = integerPart ? Number(integerPart).toLocaleString('en-US') : (hasDot ? '0' : '');
+  return hasDot ? `${formattedInteger}.${decimalPart}` : formattedInteger;
+}
+
+function parsePricingAmountText(value: string): number | null {
+  const normalized = value.replace(/,/g, '');
+  if (!normalized || normalized === '.') return null;
+  const numberValue = Number(normalized.endsWith('.') ? normalized.slice(0, -1) : normalized);
+  if (!Number.isFinite(numberValue)) return null;
+  return Math.trunc(numberValue * 10) / 10;
+}
+
 function getPriceTypeLabel(priceType?: string | null): string {
   return PRICE_TYPE_OPTIONS.find((option) => option.value === priceType)?.label ?? 'Regular';
 }
@@ -223,6 +261,7 @@ export default function SuperEventList() {
   const [participantsLoading, setParticipantsLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [submitAttempted, setSubmitAttempted] = useState(false);
+  const [pricingAmountDrafts, setPricingAmountDrafts] = useState<Record<string, string>>({});
 
   const isNew = selectedSeq === null;
   const titleValue = form.title.trim();
@@ -261,6 +300,7 @@ export default function SuperEventList() {
     discount.discountType === 'amount'
     && !CURRENCY_OPTIONS.includes((discount.currencyCode ?? '').trim().toUpperCase())
   );
+  const getPricingAmountKey = (pricing: EventPricingItem, index: number) => `${pricing.eventPricingSeq ?? 'new'}-${index}`;
   const canReviewApproval = !isOrganizationRole && !isNew && form.status === 'pending_approval';
   const canCancelApproval = isOrganizationRole && !isNew && form.status === 'pending_approval';
   const canOrganizationEdit = form.status === 'draft' || form.status === 'published';
@@ -290,6 +330,7 @@ export default function SuperEventList() {
     : `${eventParticipants.length} participant(s) registered for this event.`;
   const eventPagination = useClientGridPagination(events);
   const eventParticipantPagination = useClientGridPagination(filteredEventParticipants);
+  const showPaymentNameColumn = !!form.isPaid;
 
   const fetchEvents = async () => {
     setLoading(true);
@@ -334,6 +375,7 @@ export default function SuperEventList() {
       setForm(merged);
       setSelectedSeq(eventSeq);
       setSubmitAttempted(false);
+      setPricingAmountDrafts({});
       setEventParticipantKeyword('');
       setMode('detail');
       fetchEventParticipants(eventSeq);
@@ -435,6 +477,27 @@ export default function SuperEventList() {
     }));
   };
 
+  const updatePricingAmountInput = (index: number, pricing: EventPricingItem, value: string) => {
+    const amountText = normalizePricingAmountText(value);
+    const amount = parsePricingAmountText(amountText);
+    setPricingAmountDrafts((prev) => ({
+      ...prev,
+      [getPricingAmountKey(pricing, index)]: amountText,
+    }));
+    updatePricingRow(index, { amount });
+  };
+
+  const finalizePricingAmountInput = (index: number, pricing: EventPricingItem) => {
+    const key = getPricingAmountKey(pricing, index);
+    const amount = parsePricingAmountText(pricingAmountDrafts[key] ?? formatPricingAmount(pricing.amount));
+    setPricingAmountDrafts((prev) => {
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+    updatePricingRow(index, { amount });
+  };
+
   const updatePricingType = (index: number, priceType: string) => {
     setForm((prev) => ({
       ...prev,
@@ -453,6 +516,11 @@ export default function SuperEventList() {
   };
 
   const removePricingRow = (index: number) => {
+    const pricing = form.pricingList?.[index];
+    if (pricing && isPricingLocked(pricing)) {
+      message.warning('This price has payment history and cannot be deleted.');
+      return;
+    }
     setForm((prev) => ({
       ...prev,
       pricingList: (prev.pricingList ?? []).filter((_, rowIndex) => rowIndex !== index),
@@ -483,6 +551,11 @@ export default function SuperEventList() {
   };
 
   const removeDiscountCodeRow = (index: number) => {
+    const discountCode = form.discountCodes?.[index];
+    if (discountCode && isDiscountCodeLocked(discountCode)) {
+      message.warning('This discount code has usage history and cannot be deleted.');
+      return;
+    }
     setForm((prev) => ({
       ...prev,
       discountCodes: (prev.discountCodes ?? []).filter((_, rowIndex) => rowIndex !== index),
@@ -631,7 +704,7 @@ export default function SuperEventList() {
       priceType: pricing.priceType,
       priceName: pricing.priceName?.trim() ?? '',
       currencyCode: pricing.currencyCode?.trim().toUpperCase() ?? '',
-      amount: pricing.amount === null || pricing.amount === undefined ? null : Number(pricing.amount),
+      amount: pricing.amount === null || pricing.amount === undefined ? null : Math.trunc(Number(pricing.amount) * 10) / 10,
       salesStartAt: pricing.salesStartAt || null,
       salesEndAt: pricing.salesEndAt || null,
       useYn: pricing.useYn || 'Y',
@@ -884,7 +957,7 @@ export default function SuperEventList() {
 
     try {
       await callExcelDownload(
-        EVENT_PARTICIPANT_EXCEL_COLUMNS,
+        showPaymentNameColumn ? EVENT_PARTICIPANT_PAID_EXCEL_COLUMNS : EVENT_PARTICIPANT_EXCEL_COLUMNS,
         buildParticipantExcelRows(filteredEventParticipants),
         `${sanitizeFileName(form.title || 'event')}_participants`,
       );
@@ -918,6 +991,7 @@ export default function SuperEventList() {
     setEventParticipantKeyword('');
     setSelectedSeq(null);
     setSubmitAttempted(false);
+    setPricingAmountDrafts({});
     setMode('detail');
   };
 
@@ -1197,11 +1271,14 @@ export default function SuperEventList() {
                       <th>Sales Start</th>
                       <th>Sales End</th>
                       <th>Active</th>
+                      <th>Sold</th>
                       {canEdit && <th>Action</th>}
                     </tr>
                   </thead>
                   <tbody>
-                    {(form.pricingList ?? []).map((pricing, index) => (
+                    {(form.pricingList ?? []).map((pricing, index) => {
+                      const locked = isPricingLocked(pricing);
+                      return (
                       <tr key={pricing.eventPricingSeq ?? `pricing-${index}`}>
                         <td>
                           <select
@@ -1243,15 +1320,15 @@ export default function SuperEventList() {
                         </td>
                         <td>
                           <input
-                            type="number"
-                            min={0}
-                            step="0.01"
-                            value={pricing.amount ?? ''}
+                            type="text"
+                            inputMode="decimal"
+                            value={pricingAmountDrafts[getPricingAmountKey(pricing, index)] ?? formatPricingAmount(pricing.amount)}
                             className={requiredGridClass(isInvalidPositiveAmount(pricing.amount))}
                             aria-invalid={submitAttempted && isInvalidPositiveAmount(pricing.amount)}
                             disabled={!canEdit}
-                            onChange={(e) => updatePricingRow(index, { amount: e.target.value === '' ? null : Number(e.target.value) })}
-                            placeholder="0.00"
+                            onChange={(e) => updatePricingAmountInput(index, pricing, e.target.value)}
+                            onBlur={() => finalizePricingAmountInput(index, pricing)}
+                            placeholder="0.0"
                           />
                         </td>
                         <td>
@@ -1288,18 +1365,28 @@ export default function SuperEventList() {
                             <option value="N">N</option>
                           </select>
                         </td>
+                        <td className="saf-pricing-count-cell">
+                          {pricing.soldCount ?? 0}
+                        </td>
                         {canEdit && (
                           <td className="saf-pricing-action-cell">
-                            <button type="button" className="saf-table-icon-btn is-danger" onClick={() => removePricingRow(index)}>
+                            <button
+                              type="button"
+                              className="saf-table-icon-btn is-danger"
+                              onClick={() => removePricingRow(index)}
+                              disabled={locked}
+                              title={locked ? 'This price has payment history and cannot be deleted.' : 'Delete price'}
+                            >
                               <DeleteOutlined />
                             </button>
                           </td>
                         )}
                       </tr>
-                    ))}
+                      );
+                    })}
                     {!(form.pricingList ?? []).length && (
                       <tr>
-                        <td colSpan={canEdit ? 8 : 7} className="saf-event-empty">
+                        <td colSpan={canEdit ? 9 : 8} className="saf-event-empty">
                           <CalendarOutlined />
                           <span>No pricing tiers. Add at least one price for paid events.</span>
                         </td>
@@ -1333,11 +1420,14 @@ export default function SuperEventList() {
                       <th>Valid From</th>
                       <th>Valid To</th>
                       <th>Active</th>
+                      <th>Used</th>
                       {canEdit && <th>Action</th>}
                     </tr>
                   </thead>
                   <tbody>
-                    {(form.discountCodes ?? []).map((discount, index) => (
+                    {(form.discountCodes ?? []).map((discount, index) => {
+                      const locked = isDiscountCodeLocked(discount);
+                      return (
                       <tr key={discount.discountCodeSeq ?? `discount-${index}`}>
                         <td>
                           <input
@@ -1446,18 +1536,28 @@ export default function SuperEventList() {
                             <option value="N">N</option>
                           </select>
                         </td>
+                        <td className="saf-pricing-count-cell">
+                          {formatDiscountUsage(discount)}
+                        </td>
                         {canEdit && (
                           <td className="saf-pricing-action-cell">
-                            <button type="button" className="saf-table-icon-btn is-danger" onClick={() => removeDiscountCodeRow(index)}>
+                            <button
+                              type="button"
+                              className="saf-table-icon-btn is-danger"
+                              onClick={() => removeDiscountCodeRow(index)}
+                              disabled={locked}
+                              title={locked ? 'This discount code has usage history and cannot be deleted.' : 'Delete discount code'}
+                            >
                               <DeleteOutlined />
                             </button>
                           </td>
                         )}
                       </tr>
-                    ))}
+                      );
+                    })}
                     {!(form.discountCodes ?? []).length && (
                       <tr>
-                        <td colSpan={canEdit ? 10 : 9} className="saf-event-empty">
+                        <td colSpan={canEdit ? 11 : 10} className="saf-event-empty">
                           <CalendarOutlined />
                           <span>No discount codes. Add codes only when a coupon is needed.</span>
                         </td>
@@ -1492,13 +1592,13 @@ export default function SuperEventList() {
                 <SearchOutlined />
                 <input
                   value={eventParticipantKeyword}
-                  placeholder="Search by name, email, organization, position, or country"
+                  placeholder={`Search by name, email, organization, position, country${showPaymentNameColumn ? ', or payment name' : ''}`}
                   onChange={(event) => setEventParticipantKeyword(event.target.value)}
                 />
               </div>
             </div>
             <div className="saf-table-wrap">
-              <table className="saf-table saf-event-participants-table">
+              <table className={`saf-table saf-event-participants-table${showPaymentNameColumn ? ' is-paid' : ''}`}>
                 <thead>
                   <tr>
                     <th>Name</th>
@@ -1506,6 +1606,7 @@ export default function SuperEventList() {
                     <th>Organization</th>
                     <th>Position</th>
                     <th>Country</th>
+                    {showPaymentNameColumn && <th>Payment Name</th>}
                     <th>Status</th>
                     <th>Registered At</th>
                   </tr>
@@ -1531,6 +1632,7 @@ export default function SuperEventList() {
                         <td>{participant.organizationName || '-'}</td>
                         <td>{participant.position || '-'}</td>
                         <td>{participant.country || '-'}</td>
+                        {showPaymentNameColumn && <td>{registration?.paymentName || '-'}</td>}
                         <td>{renderParticipationStatus(registration?.status)}</td>
                         <td>{formatDateTime(registration?.registeredAt)}</td>
                       </tr>
@@ -1538,7 +1640,7 @@ export default function SuperEventList() {
                   })}
                   {!filteredEventParticipants.length && (
                     <tr>
-                      <td colSpan={7} className="saf-event-empty">
+                      <td colSpan={showPaymentNameColumn ? 8 : 7} className="saf-event-empty">
                         <CalendarOutlined />
                         <span>
                           {participantsLoading
@@ -1696,6 +1798,7 @@ function buildParticipantExcelRows(participants: ParticipantListItem[]) {
       organization: participant.organizationName || '',
       position: participant.position || '',
       country: participant.country || '',
+      paymentName: registration?.paymentName || '',
       status: formatParticipationStatusText(registration?.status),
       registeredAt: formatDateTime(registration?.registeredAt),
     };
@@ -1717,6 +1820,7 @@ function participantMatchesKeyword(participant: ParticipantListItem, keyword: st
     participant.organizationName,
     participant.position,
     participant.country,
+    registration?.paymentName,
     formatParticipationStatusText(registration?.status),
     formatDateTime(registration?.registeredAt),
   ].some((value) => (value ?? '').toLowerCase().includes(keyword));
@@ -1727,6 +1831,19 @@ function renderParticipationStatus(status?: string | null) {
   const label = formatParticipationStatusText(value);
   const tone = value === 'registered' ? 'green' : value === 'cancelled' ? 'red' : 'gray';
   return <span className={`saf-status is-${tone}`}>{label}</span>;
+}
+
+function formatDiscountUsage(discount: EventDiscountCodeItem): string {
+  const used = discount.usedCount ?? 0;
+  return discount.usageLimit !== null && discount.usageLimit !== undefined ? `${used} / ${discount.usageLimit}` : String(used);
+}
+
+function isPricingLocked(pricing: EventPricingItem): boolean {
+  return (pricing.soldCount ?? 0) > 0 || (pricing.paymentCount ?? 0) > 0;
+}
+
+function isDiscountCodeLocked(discount: EventDiscountCodeItem): boolean {
+  return (discount.usedCount ?? 0) > 0 || (discount.paymentCount ?? 0) > 0;
 }
 
 function GridRequiredHeader({ children }: { children: React.ReactNode }) {

@@ -12,6 +12,8 @@ public class ParticipantEventDto {
     private Long eventSeq;
     private String eventTitle;
     private String eventType;
+    private String paymentName;
+    private String paymentStatus;
     private String status;
     private LocalDateTime registeredAt;
     private LocalDateTime cancelledAt;

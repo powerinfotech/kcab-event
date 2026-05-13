@@ -282,6 +282,7 @@ export default function Payments() {
             <div className="saf-panel-title"><h2>Payment</h2></div>
             <dl className="saf-participant-meta">
               <div><dt>Status</dt><dd>{renderStatusBadge(detail.status)}</dd></div>
+              <div><dt>Ticket</dt><dd>{detail.priceName || detail.priceType || '-'}</dd></div>
               <div><dt>Amount</dt><dd>{formatMoney(detail.amount, detail.currency)}</dd></div>
               <div><dt>Original Amount</dt><dd>{detail.originalAmount != null ? formatMoney(detail.originalAmount, detail.currency) : '-'}</dd></div>
               <div><dt>Discount</dt><dd>{detail.discountAmount != null && toNumber(detail.discountAmount) > 0 ? `${formatMoney(detail.discountAmount, detail.currency)}${detail.discountCode ? ` · ${detail.discountCode}` : ''}` : '-'}</dd></div>
@@ -465,12 +466,12 @@ export default function Payments() {
         </article>
       </section>
 
-      <section className="saf-filter-row saf-participant-filter-row">
+      <section className="saf-filter-row saf-payment-filter-row">
         <div className="saf-search">
           <SearchOutlined />
           <input
             value={keyword}
-            placeholder="Order ID / TX ID / Payer name or email"
+            placeholder="Order / payer"
             onChange={(e) => setKeyword(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') fetchPayments(); }}
           />
@@ -478,7 +479,7 @@ export default function Payments() {
         <Select
           mode="multiple"
           allowClear
-          className="saf-filter-select saf-participant-event-select"
+          className="saf-filter-select saf-participant-event-select saf-payment-event-select"
           placeholder="Events"
           value={selectedEventSeqs}
           onChange={(values) => setSelectedEventSeqs(values)}
@@ -513,6 +514,7 @@ export default function Payments() {
           value={dateRange as [Dayjs, Dayjs] | null}
           onChange={(values) => setDateRange((values as [Dayjs | null, Dayjs | null]) ?? null)}
           allowClear
+          placeholder={['From', 'To']}
         />
         <button type="button" onClick={fetchPayments}>Search</button>
       </section>
@@ -543,6 +545,7 @@ export default function Payments() {
                 <td>
                   <div>{p.eventTitle ?? '-'}</div>
                   {p.eventType && <div>{renderEventTypeBadge(p.eventType)}</div>}
+                  {(p.priceName || p.priceType) && <div style={{ fontSize: 11, color: '#888' }}>{p.priceName || p.priceType}</div>}
                 </td>
                 <td>
                   <div>{p.payerName ?? '-'}</div>

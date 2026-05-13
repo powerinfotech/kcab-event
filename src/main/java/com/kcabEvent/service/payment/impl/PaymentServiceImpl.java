@@ -145,11 +145,10 @@ public class PaymentServiceImpl extends EgovAbstractServiceImpl implements Payme
         refundDao.insertRefund(refund);
 
         BigDecimal newRefundedAmount = alreadyRefunded.add(applyAmount);
-        String nextStatus = "void".equals(refundType) ? "cancelled" : "refunded";
 
         paymentDao.updatePaymentStatusOnCancel(
                 paymentSeq,
-                nextStatus,
+                "cancelled",
                 newRefundedAmount,
                 now,
                 request.getReason(),
