@@ -1,5 +1,6 @@
 export interface EventListItem {
   eventSeq: number;
+  slug: string;
   title: string;
   summary: string;
   eventStartDt: string;
@@ -16,6 +17,7 @@ export interface EventListItem {
 
 export interface EventDetail {
   eventSeq: number;
+  slug: string;
   title: string;
   description?: string;
   content: string;
@@ -48,6 +50,7 @@ export interface EventDetail {
 
 export interface EventSaveRequest {
   eventSeq?: number;
+  slug?: string;
   title: string;
   description?: string;
   content: string;
@@ -71,6 +74,115 @@ export interface EventSaveRequest {
   isPaid?: boolean | null;
   pricingList?: EventPricingItem[];
   discountCodes?: EventDiscountCodeItem[];
+}
+
+export interface EventPageBlock {
+  blockSeq: number;
+  sectionSeq: number;
+  componentTemplateSeq?: number | null;
+  parentBlockSeq?: number | null;
+  blockKey?: string | null;
+  blockType: string;
+  title?: string | null;
+  subtitle?: string | null;
+  summary?: string | null;
+  body?: string | null;
+  badgeText?: string | null;
+  startAt?: string | null;
+  endAt?: string | null;
+  venueName?: string | null;
+  speakerNames?: string | null;
+  organizationName?: string | null;
+  buttonLabel?: string | null;
+  linkUrl?: string | null;
+  linkTarget?: '_self' | '_blank' | string;
+  imageFileSeq?: number | null;
+  attachmentFileSeq?: number | null;
+  featuredYn?: string | null;
+  sortSeq?: number | null;
+  useYn?: string | null;
+  styleJson?: string | null;
+  contentJson?: string | null;
+}
+
+export interface EventPageSection {
+  sectionSeq: number;
+  eventPageSeq: number;
+  componentTemplateSeq?: number | null;
+  sectionKey: string;
+  sectionType: string;
+  title?: string | null;
+  eyebrow?: string | null;
+  subtitle?: string | null;
+  body?: string | null;
+  anchorId?: string | null;
+  navLabel?: string | null;
+  showInNavYn?: string | null;
+  layoutType?: string | null;
+  columnCount?: number | null;
+  sortSeq?: number | null;
+  useYn?: string | null;
+  settingsJson?: string | null;
+  blocks: EventPageBlock[];
+}
+
+export interface PublicEventPage {
+  eventPageSeq: number;
+  eventSeq: number;
+  languageCode: string;
+  urlSlug: string;
+  pageStatus: string;
+  pageTitle?: string | null;
+  pageSubtitle?: string | null;
+  heroTitle?: string | null;
+  heroSubtitle?: string | null;
+  heroFileSeq?: number | null;
+  themeCode?: string | null;
+  themeJson?: string | null;
+  settingsJson?: string | null;
+  publishedAt?: string | null;
+  eventTitle: string;
+  eventSummary?: string | null;
+  eventStartDt?: string | null;
+  eventEndDt?: string | null;
+  location?: string | null;
+  registrationType?: RegistrationType | string | null;
+  registrationUrl?: string | null;
+  eventStatus?: string | null;
+  eventType?: string | null;
+  sections: EventPageSection[];
+}
+
+export interface EventPageComponentCategory {
+  componentCategorySeq: number;
+  categoryCode: string;
+  categoryName: string;
+  description?: string | null;
+  sortSeq?: number | null;
+}
+
+export interface EventPageComponentTemplate {
+  componentTemplateSeq: number;
+  componentCategorySeq: number;
+  componentScope: 'section' | 'block' | string;
+  templateCode: string;
+  componentType: string;
+  templateName: string;
+  description?: string | null;
+  iconName?: string | null;
+  previewFileSeq?: number | null;
+  defaultTitle?: string | null;
+  defaultSubtitle?: string | null;
+  formSchemaJson?: string | null;
+  defaultSettingsJson?: string | null;
+  defaultContentJson?: string | null;
+  allowedChildTypes?: string | null;
+  sortSeq?: number | null;
+}
+
+export interface EventPageComponentCatalog {
+  categories: EventPageComponentCategory[];
+  templates: EventPageComponentTemplate[];
 }
 
 export interface EventPricingItem {

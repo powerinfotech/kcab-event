@@ -9,8 +9,12 @@ import com.kcabEvent.dto.email.EmailTemplateDetailDto;
 import com.kcabEvent.dto.event.EventDiscountCodeDto;
 import com.kcabEvent.dto.event.EventListDto;
 import com.kcabEvent.dto.event.EventNotificationRecipientDto;
+import com.kcabEvent.dto.event.EventPageBlockDto;
+import com.kcabEvent.dto.event.EventPageComponentCatalogDto;
+import com.kcabEvent.dto.event.EventPageSectionDto;
 import com.kcabEvent.dto.event.EventPricingDto;
 import com.kcabEvent.dto.event.EventSaveDto;
+import com.kcabEvent.dto.event.PublicEventPageDto;
 import com.kcabEvent.exception.custom.BusinessException;
 import com.kcabEvent.service.email.EmailLogService;
 import com.kcabEvent.service.email.EmailTemplateService;
@@ -49,6 +53,7 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
     private static final String STATUS_PENDING_APPROVAL = "pending_approval";
     private static final String STATUS_PUBLISHED = "published";
     private static final String STATUS_REJECTED = "rejected";
+    private static final String EVENT_TYPE_MAIN = "main";
     private static final String EVENT_TYPE_SIDE = "side";
     private static final String SIDE_EVENT_APPROVED_TEMPLATE_CODE = "side_event_approved";
     private static final String SIDE_EVENT_REJECTED_TEMPLATE_CODE = "side_event_rejected";
@@ -90,6 +95,75 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
     }
 
     @Override
+    public PublicEventPageDto selectPublishedEventPageBySlug(String urlSlug) {
+        if (!StringUtils.hasText(urlSlug)) {
+            return null;
+        }
+
+        String normalizedSlug = urlSlug.trim().toLowerCase(Locale.ROOT);
+        PublicEventPageDto page = eventDao.selectPublishedEventPageBySlug(normalizedSlug);
+        if (page == null) {
+            return null;
+        }
+
+        loadPageSections(page, false);
+        return page;
+    }
+
+    @Override
+    public EventPageComponentCatalogDto selectEventPageComponentCatalog() {
+        EventPageComponentCatalogDto catalog = new EventPageComponentCatalogDto();
+        catalog.setCategories(eventDao.selectEventPageComponentCategories());
+        catalog.setTemplates(eventDao.selectEventPageComponentTemplates());
+        return catalog;
+    }
+
+    @Override
+    @Transactional("transactionManager")
+    public PublicEventPageDto selectEventPageBuilder(Long eventSeq, LoginUser loginUser) {
+        assertAdmin(loginUser);
+        Event event = eventDao.selectEventBySeq(eventSeq);
+        assertEventAccessible(event, loginUser);
+        assertOfficialEvent(event);
+
+        PublicEventPageDto page = eventDao.selectEventPageBuilderByEventSeq(eventSeq, "en");
+        if (page == null) {
+            page = createDefaultOfficialPage(event);
+            eventDao.insertEventPage(page);
+        }
+
+        loadPageSections(page, true);
+        return page;
+    }
+
+    @Override
+    @Transactional("transactionManager")
+    public PublicEventPageDto saveEventPageBuilder(PublicEventPageDto saveDto, LoginUser loginUser) {
+        assertAdmin(loginUser);
+        if (saveDto == null || saveDto.getEventSeq() == null) {
+            throw new BusinessException("Event was not found.");
+        }
+
+        Long userSeq = getLoginUserSeq(loginUser);
+        Event event = eventDao.selectEventBySeq(saveDto.getEventSeq());
+        assertEventAccessible(event, loginUser);
+        assertOfficialEvent(event);
+
+        PublicEventPageDto currentPage = eventDao.selectEventPageBuilderByEventSeq(saveDto.getEventSeq(), defaultLanguage(saveDto.getLanguageCode()));
+        PublicEventPageDto page = normalizePageForSave(saveDto, currentPage, event);
+        if (page.getEventPageSeq() == null) {
+            eventDao.insertEventPage(page);
+        } else {
+            eventDao.updateEventPage(page);
+        }
+
+        eventDao.softDeleteEventPageBlocksByPageSeq(page.getEventPageSeq(), userSeq);
+        eventDao.softDeleteEventPageSectionsByPageSeq(page.getEventPageSeq(), userSeq);
+        savePageSections(page.getEventPageSeq(), saveDto.getSections());
+        return selectEventPageBuilder(event.getEventSeq(), loginUser);
+    }
+
+    @Override
     public Event selectEventBySeq(Long eventSeq, LoginUser loginUser) {
         Event event = eventDao.selectEventBySeq(eventSeq);
         assertEventAccessible(event, loginUser);
@@ -111,6 +185,7 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
         }
 
         Event event = new Event();
+        event.setSlug(normalizeEventSlug(saveDto.getSlug()));
         event.setTitle(saveDto.getTitle());
         String description = saveDto.getDescription() != null ? saveDto.getDescription() : saveDto.getContent();
         event.setDescription(description);
@@ -246,6 +321,234 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
         eventDao.deleteEvent(eventSeq);
     }
 
+    private void loadPageSections(PublicEventPageDto page, boolean includeInactive) {
+        List<EventPageSectionDto> sections = includeInactive
+                ? eventDao.selectEventPageBuilderSections(page.getEventPageSeq())
+                : eventDao.selectPublishedEventPageSections(page.getEventPageSeq());
+        List<EventPageBlockDto> blocks = includeInactive
+                ? eventDao.selectEventPageBuilderBlocks(page.getEventPageSeq())
+                : eventDao.selectPublishedEventPageBlocks(page.getEventPageSeq());
+        Map<Long, EventPageSectionDto> sectionMap = new HashMap<>();
+        for (EventPageSectionDto section : sections) {
+            if (section.getBlocks() == null) {
+                section.setBlocks(new ArrayList<>());
+            }
+            sectionMap.put(section.getSectionSeq(), section);
+        }
+        for (EventPageBlockDto block : blocks) {
+            EventPageSectionDto section = sectionMap.get(block.getSectionSeq());
+            if (section != null) {
+                section.getBlocks().add(block);
+            }
+        }
+        page.setSections(sections);
+    }
+
+    private PublicEventPageDto createDefaultOfficialPage(Event event) {
+        PublicEventPageDto page = new PublicEventPageDto();
+        page.setEventSeq(event.getEventSeq());
+        page.setLanguageCode("en");
+        page.setUrlSlug(event.getSlug());
+        page.setPageStatus(STATUS_DRAFT);
+        page.setPageTitle(event.getTitle());
+        page.setPageSubtitle(event.getSummary());
+        page.setHeroTitle(event.getTitle());
+        page.setHeroSubtitle(event.getDescription());
+        page.setThemeCode("kcab");
+        page.setThemeJson("{}");
+        page.setSettingsJson("{}");
+        page.setEventTitle(event.getTitle());
+        page.setEventSummary(event.getDescription());
+        page.setEventStartDt(event.getEventStartDt());
+        page.setEventEndDt(event.getEventEndDt());
+        page.setLocation(event.getLocation());
+        page.setRegistrationType(event.getRegistrationType());
+        page.setRegistrationUrl(event.getRegistrationUrl());
+        page.setEventStatus(event.getStatus());
+        page.setEventType(event.getEventType());
+        return page;
+    }
+
+    private PublicEventPageDto normalizePageForSave(PublicEventPageDto source,
+                                                    PublicEventPageDto currentPage,
+                                                    Event event) {
+        PublicEventPageDto page = new PublicEventPageDto();
+        Long sourcePageSeq = source.getEventPageSeq();
+        page.setEventPageSeq(currentPage != null
+                ? currentPage.getEventPageSeq()
+                : (sourcePageSeq != null && sourcePageSeq > 0 ? sourcePageSeq : null));
+        page.setEventSeq(event.getEventSeq());
+        page.setLanguageCode(defaultLanguage(source.getLanguageCode()));
+        page.setPageStatus(normalizePageStatus(source.getPageStatus()));
+        page.setPageTitle(defaultText(source.getPageTitle(), event.getTitle()));
+        page.setPageSubtitle(trimToNull(source.getPageSubtitle()));
+        page.setHeroTitle(defaultText(source.getHeroTitle(), event.getTitle()));
+        page.setHeroSubtitle(trimToNull(source.getHeroSubtitle()));
+        page.setHeroFileSeq(source.getHeroFileSeq());
+        page.setThemeCode(defaultText(source.getThemeCode(), "kcab"));
+        page.setThemeJson(defaultJson(source.getThemeJson()));
+        page.setSettingsJson(defaultJson(source.getSettingsJson()));
+        page.setPublishedAt(currentPage != null ? currentPage.getPublishedAt() : source.getPublishedAt());
+        return page;
+    }
+
+    private void savePageSections(Long eventPageSeq, List<EventPageSectionDto> sourceSections) {
+        if (sourceSections == null || sourceSections.isEmpty()) {
+            return;
+        }
+
+        for (int i = 0; i < sourceSections.size(); i++) {
+            EventPageSectionDto source = sourceSections.get(i);
+            if (source == null) {
+                continue;
+            }
+
+            Long sourceSectionSeq = source.getSectionSeq();
+            String sectionType = defaultText(normalizeKey(source.getSectionType()), "section");
+            EventPageSectionDto section = new EventPageSectionDto();
+            section.setEventPageSeq(eventPageSeq);
+            section.setComponentTemplateSeq(source.getComponentTemplateSeq());
+            section.setSectionKey(defaultBuilderKey(source.getSectionKey(), sectionType, i + 1));
+            section.setSectionType(sectionType);
+            section.setTitle(trimToNull(source.getTitle()));
+            section.setEyebrow(trimToNull(source.getEyebrow()));
+            section.setSubtitle(trimToNull(source.getSubtitle()));
+            section.setBody(source.getBody());
+            section.setAnchorId(defaultBuilderKey(source.getAnchorId(), section.getSectionKey(), i + 1));
+            section.setNavLabel(trimToNull(source.getNavLabel()));
+            section.setShowInNavYn(normalizeUseYn(source.getShowInNavYn()));
+            section.setLayoutType(defaultText(normalizeKey(source.getLayoutType()), "standard"));
+            section.setColumnCount(normalizeColumnCount(source.getColumnCount()));
+            section.setSortSeq(i + 1);
+            section.setUseYn(normalizeUseYn(source.getUseYn()));
+            section.setSettingsJson(defaultJson(source.getSettingsJson()));
+            eventDao.insertEventPageSection(section);
+            savePageBlocks(section.getSectionSeq(), sourceSectionSeq, source.getBlocks());
+        }
+    }
+
+    private void savePageBlocks(Long sectionSeq, Long sourceSectionSeq, List<EventPageBlockDto> sourceBlocks) {
+        if (sourceBlocks == null || sourceBlocks.isEmpty()) {
+            return;
+        }
+
+        Set<Long> sourceBlockSeqs = new HashSet<>();
+        List<EventPageBlockDto> pending = new ArrayList<>();
+        for (EventPageBlockDto block : sourceBlocks) {
+            if (block == null) {
+                continue;
+            }
+            pending.add(block);
+            if (block.getBlockSeq() != null) {
+                sourceBlockSeqs.add(block.getBlockSeq());
+            }
+        }
+
+        Map<Long, Long> savedBlockSeqMap = new HashMap<>();
+        int safety = pending.size() + 1;
+        while (!pending.isEmpty() && safety-- > 0) {
+            boolean progressed = false;
+            List<EventPageBlockDto> stillPending = new ArrayList<>();
+            for (int i = 0; i < pending.size(); i++) {
+                EventPageBlockDto source = pending.get(i);
+                Long parentSourceSeq = source.getParentBlockSeq();
+                boolean parentReady = parentSourceSeq == null
+                        || savedBlockSeqMap.containsKey(parentSourceSeq)
+                        || !sourceBlockSeqs.contains(parentSourceSeq);
+                if (!parentReady) {
+                    stillPending.add(source);
+                    continue;
+                }
+                EventPageBlockDto block = normalizeBlockForInsert(source, sectionSeq, sourceSectionSeq, savedBlockSeqMap, i + 1);
+                eventDao.insertEventPageBlock(block);
+                if (source.getBlockSeq() != null) {
+                    savedBlockSeqMap.put(source.getBlockSeq(), block.getBlockSeq());
+                }
+                progressed = true;
+            }
+            if (!progressed) {
+                for (int i = 0; i < stillPending.size(); i++) {
+                    EventPageBlockDto block = normalizeBlockForInsert(stillPending.get(i), sectionSeq, sourceSectionSeq, savedBlockSeqMap, i + 1);
+                    block.setParentBlockSeq(null);
+                    eventDao.insertEventPageBlock(block);
+                }
+                break;
+            }
+            pending = stillPending;
+        }
+    }
+
+    private EventPageBlockDto normalizeBlockForInsert(EventPageBlockDto source,
+                                                      Long sectionSeq,
+                                                      Long sourceSectionSeq,
+                                                      Map<Long, Long> savedBlockSeqMap,
+                                                      int sortSeq) {
+        String blockType = defaultText(normalizeKey(source.getBlockType()), "card");
+        EventPageBlockDto block = new EventPageBlockDto();
+        block.setSectionSeq(sectionSeq);
+        block.setParentBlockSeq(savedBlockSeqMap.get(source.getParentBlockSeq()));
+        block.setBlockKey(defaultBuilderKey(source.getBlockKey(), blockType, sortSeq));
+        block.setBlockType(blockType);
+        block.setTitle(trimToNull(source.getTitle()));
+        block.setSubtitle(trimToNull(source.getSubtitle()));
+        block.setSummary(trimToNull(source.getSummary()));
+        block.setBody(source.getBody());
+        block.setBadgeText(trimToNull(source.getBadgeText()));
+        block.setStartAt(source.getStartAt());
+        block.setEndAt(source.getEndAt());
+        block.setVenueName(trimToNull(source.getVenueName()));
+        block.setSpeakerNames(trimToNull(source.getSpeakerNames()));
+        block.setOrganizationName(trimToNull(source.getOrganizationName()));
+        block.setButtonLabel(trimToNull(source.getButtonLabel()));
+        block.setLinkUrl(trimToNull(source.getLinkUrl()));
+        block.setLinkTarget(defaultText(source.getLinkTarget(), "_self"));
+        block.setImageFileSeq(source.getImageFileSeq());
+        block.setAttachmentFileSeq(source.getAttachmentFileSeq());
+        block.setFeaturedYn("Y".equalsIgnoreCase(source.getFeaturedYn()) ? "Y" : "N");
+        block.setSortSeq(sortSeq);
+        block.setUseYn(normalizeUseYn(source.getUseYn()));
+        block.setStyleJson(defaultJson(source.getStyleJson()));
+        block.setContentJson(defaultJson(source.getContentJson()));
+        if (sourceSectionSeq != null && source.getSectionSeq() != null && !sourceSectionSeq.equals(source.getSectionSeq())) {
+            block.setParentBlockSeq(null);
+        }
+        return block;
+    }
+
+    private String defaultLanguage(String languageCode) {
+        String language = trimToNull(languageCode);
+        return language == null ? "en" : language.toLowerCase(Locale.ROOT);
+    }
+
+    private String normalizePageStatus(String pageStatus) {
+        String status = normalizeKey(pageStatus);
+        if ("published".equals(status) || "archived".equals(status)) {
+            return status;
+        }
+        return STATUS_DRAFT;
+    }
+
+    private Integer normalizeColumnCount(Integer columnCount) {
+        if (columnCount == null) {
+            return 1;
+        }
+        return Math.max(1, Math.min(columnCount, 6));
+    }
+
+    private String defaultJson(String json) {
+        String text = trimToNull(json);
+        return text == null ? "{}" : text;
+    }
+
+    private String defaultBuilderKey(String value, String prefix, int index) {
+        String text = trimToNull(value);
+        String base = text != null ? text : prefix + "-" + index;
+        String normalized = base.toLowerCase(Locale.ROOT)
+                .replaceAll("[^a-z0-9_-]+", "-")
+                .replaceAll("(^[-_]+|[-_]+$)", "");
+        return StringUtils.hasText(normalized) ? normalized : prefix + "-" + index;
+    }
+
     private Long resolveScopedOrganizationSeq(LoginUser loginUser) {
         if (isAdmin(loginUser)) {
             return null;
@@ -265,6 +568,22 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
         Long organizationSeq = resolveScopedOrganizationSeq(loginUser);
         if (organizationSeq != null && !organizationSeq.equals(event.getOrganizationSeq())) {
             throw new BusinessException("You can only access events owned by your organization.");
+        }
+    }
+
+    private void assertAdmin(LoginUser loginUser) {
+        if (!isAdmin(loginUser)) {
+            throw new BusinessException("Only administrators can manage official event pages.");
+        }
+    }
+
+    private void assertOfficialEvent(Event event) {
+        String eventType = normalizeKey(event.getEventType());
+        if (!StringUtils.hasText(eventType)) {
+            eventType = EVENT_TYPE_MAIN;
+        }
+        if (!EVENT_TYPE_MAIN.equals(eventType)) {
+            throw new BusinessException("Only official events support the page builder.");
         }
     }
 
@@ -682,6 +1001,17 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
 
     private boolean isAdmin(LoginUser loginUser) {
         return loginUser != null && "Y".equals(loginUser.getAdmYn());
+    }
+
+    private String normalizeEventSlug(String slug) {
+        if (!StringUtils.hasText(slug)) {
+            return null;
+        }
+        String normalized = slug.trim().toLowerCase(Locale.ROOT);
+        if (!normalized.matches("^[a-z0-9]([a-z0-9-]{0,198}[a-z0-9])?$")) {
+            throw new BusinessException("Event URL key can only contain lowercase letters, numbers, and hyphens.");
+        }
+        return normalized;
     }
 
     private Long getLoginUserSeq(LoginUser loginUser) {

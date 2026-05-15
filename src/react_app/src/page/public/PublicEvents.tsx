@@ -103,7 +103,11 @@ const PublicEvents: React.FC = () => {
               {filtered.map((event) => {
                 const statusLabel = EVENT_STATUS_LABELS[event.status as EventStatus] ?? event.status;
                 return (
-                  <div key={event.eventSeq} className="pub-event-card" onClick={() => handleSelect(event.eventSeq)}>
+                  <div
+                    key={event.eventSeq}
+                    className="pub-event-card"
+                    onClick={() => event.slug ? handleNavigate(`/event/${event.slug}`) : handleSelect(event.eventSeq)}
+                  >
                     <div className="pub-event-card-body">
                       <span className={`pub-event-status-badge status-${event.status?.toLowerCase()}`}>
                         {statusLabel}

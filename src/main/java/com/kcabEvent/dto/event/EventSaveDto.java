@@ -11,6 +11,7 @@ import java.util.List;
 @Setter
 public class EventSaveDto {
     private Long eventSeq;
+    private String slug;
 
     @NotBlank(message = "행사명을 입력해주세요.")
     private String title;

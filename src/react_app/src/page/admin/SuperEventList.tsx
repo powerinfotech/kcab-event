@@ -51,6 +51,7 @@ import {
   RegistrationType,
 } from '@interface/event/EventManagement';
 import AdminGridPagination, { useClientGridPagination } from './AdminGridPagination';
+import OfficialEventPageBuilder from './OfficialEventPageBuilder';
 import type { ParticipantListItem } from '@interface/admin/ParticipantManagement';
 
 /** Status 멀티 셀렉트 옵션 (빈 항목 없이 실제 상태값만) */
@@ -116,6 +117,7 @@ const EVENT_PARTICIPANT_PAID_EXCEL_COLUMNS: ExcelColumnDef[] = [
 ];
 
 const URL_REGEXP = /^(https?:\/\/)[^\s]+$/i;
+const EVENT_SLUG_REGEXP = /^[a-z0-9]([a-z0-9-]{0,198}[a-z0-9])?$/;
 const DASHBOARD_EVENT_DETAIL_KEY = 'saf.admin.dashboardEventSeq';
 const PARTICIPANT_DETAIL_KEY = 'saf.admin.participantDetailSeq';
 const PARTICIPANT_DETAIL_ITEM_KEY = 'saf.admin.participantDetailItem';
@@ -123,6 +125,7 @@ const PARTICIPANT_RETURN_PATH_KEY = 'saf.admin.participantReturnPath';
 
 const emptyDetail: EventDetail = {
   eventSeq: 0,
+  slug: '',
   title: '',
   description: '',
   content: '',
@@ -265,6 +268,7 @@ export default function SuperEventList() {
 
   const isNew = selectedSeq === null;
   const titleValue = form.title.trim();
+  const slugValue = form.slug?.trim().toLowerCase() ?? '';
   const startValue = form.eventStartDt?.trim() ?? '';
   const endValue = form.eventEndDt?.trim() ?? '';
   const regStartValue = form.registrationStartDt?.trim() ?? '';
@@ -272,8 +276,10 @@ export default function SuperEventList() {
   const registrationUrlValue = form.registrationUrl?.trim() ?? '';
   const locationValue = form.location?.trim() ?? '';
   const hasContent = hasRichContent(form.content);
+  const isSideEvent = form.eventType === 'side';
+  const isOfficialEvent = form.eventType === 'main';
   const isRequiredEmpty = (value?: string | null) => submitAttempted && !value?.toString().trim();
-  const isContentRequiredEmpty = submitAttempted && !hasContent;
+  const isContentRequiredEmpty = submitAttempted && isSideEvent && !hasContent;
   const isDateRangeInvalid = submitAttempted && !!startValue && !!endValue && startValue > endValue;
   const isRegRangeInvalid = submitAttempted && !!regStartValue && !!regEndValue && regStartValue > regEndValue;
   const isRegAfterEventInvalid = submitAttempted && !!regEndValue && !!startValue && regEndValue > startValue;
@@ -285,7 +291,9 @@ export default function SuperEventList() {
   const isUrlInvalid = isUrlRequiredEmpty || isUrlFormatInvalid;
   const isRegStartRequiredEmpty = submitAttempted && showRegistrationDates && !regStartValue;
   const isRegEndRequiredEmpty = submitAttempted && showRegistrationDates && !regEndValue;
-  const isSideEvent = form.eventType === 'side';
+  const isSlugRequiredEmpty = submitAttempted && isOfficialEvent && !slugValue;
+  const isSlugFormatInvalid = submitAttempted && !!slugValue && !EVENT_SLUG_REGEXP.test(slugValue);
+  const isSlugInvalid = isSlugRequiredEmpty || isSlugFormatInvalid;
   const canUsePaidPricing = !isOrganizationRole && !isSideEvent;
   const requiredGridClass = (invalid: boolean) => (submitAttempted && invalid ? 'is-required-error' : undefined);
   const isMissingText = (value?: string | null) => !value?.trim();
@@ -581,11 +589,19 @@ export default function SuperEventList() {
       message.warning('Please select the event type.');
       return false;
     }
+    if (isOfficialEvent && !slugValue) {
+      message.warning('Please enter the event URL key.');
+      return false;
+    }
+    if (slugValue && !EVENT_SLUG_REGEXP.test(slugValue)) {
+      message.warning('Event URL key can only contain lowercase letters, numbers, and hyphens.');
+      return false;
+    }
     if (!locationValue) {
       message.warning('Please enter the venue.');
       return false;
     }
-    if (!hasContent) {
+    if (isSideEvent && !hasContent) {
       message.warning('Please enter the description.');
       return false;
     }
@@ -742,6 +758,7 @@ export default function SuperEventList() {
 
   const buildSaveParam = (fileSeq: number | null, attachmentFileSeq: number | null): EventSaveRequest => ({
     eventSeq: isNew ? undefined : selectedSeq!,
+    slug: slugValue,
     title: titleValue,
     description: form.description ?? form.content ?? '',
     content: form.description ?? form.content ?? '',
@@ -1068,7 +1085,7 @@ export default function SuperEventList() {
           </div>
         </header>
 
-        <div className="saf-event-detail-grid">
+        <div className={`saf-event-detail-grid${isOfficialEvent ? ' is-single' : ''}`}>
           <section className="saf-panel">
             <PanelTitle title="Basic Information" subtitle="Based on the events table." />
             <div className="saf-form-grid">
@@ -1078,6 +1095,14 @@ export default function SuperEventList() {
                   disabled={!canEdit}
                   onChange={(e) => updateForm('title', e.target.value)}
                   placeholder="e.g., Seoul International Arbitration Conference 2026"
+                />
+              </Field>
+              <Field label={`Event URL Key${isOfficialEvent ? ' *' : ''}`} invalid={isSlugInvalid} wide>
+                <input
+                  value={form.slug ?? ''}
+                  disabled={!canEdit}
+                  onChange={(e) => updateForm('slug', e.target.value.toLowerCase())}
+                  placeholder="event1"
                 />
               </Field>
               <Field label="Event Type *" invalid={isRequiredEmpty(form.eventType)}>
@@ -1241,20 +1266,29 @@ export default function SuperEventList() {
             </div>
           </section>
 
-          <section className="saf-panel saf-event-description-panel">
-            <PanelTitle title="Description *" subtitle="Detailed event content displayed on the public page." />
-            <div className={`saf-event-description-editor${isContentRequiredEmpty ? ' is-invalid' : ''}`}>
-              <CustomRichEditor
-                key={selectedSeq ?? 'new'}
-                value={form.description ?? form.content ?? ''}
-                isEditable={canEdit}
-                onChange={(html) => setForm((prev) => ({ ...prev, description: html, content: html }))}
-                placeholder="Event overview, topics, target audience, agenda, speakers, etc."
-                height={480}
-              />
-            </div>
-          </section>
+          {isSideEvent && (
+            <section className="saf-panel saf-event-description-panel">
+              <PanelTitle title="Description *" subtitle="Detailed event content displayed on the public page." />
+              <div className={`saf-event-description-editor${isContentRequiredEmpty ? ' is-invalid' : ''}`}>
+                <CustomRichEditor
+                  key={selectedSeq ?? 'new'}
+                  value={form.description ?? form.content ?? ''}
+                  isEditable={canEdit}
+                  onChange={(html) => setForm((prev) => ({ ...prev, description: html, content: html }))}
+                  placeholder="Event overview, topics, target audience, agenda, speakers, etc."
+                  height={480}
+                />
+              </div>
+            </section>
+          )}
         </div>
+
+        {isOfficialEvent && (
+          <OfficialEventPageBuilder
+            eventSeq={isNew ? null : selectedSeq}
+            canEdit={canEdit}
+          />
+        )}
 
         {form.isPaid && (
           <section className="saf-panel saf-event-pricing-panel">

@@ -13,6 +13,7 @@ import java.util.List;
 @Setter
 public class Event {
     private Long eventSeq;
+    private String slug;
     private String title;
     /** events.description 컬럼 */
     private String description;

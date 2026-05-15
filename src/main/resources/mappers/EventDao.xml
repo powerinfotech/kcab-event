@@ -5,6 +5,7 @@
     <select id="selectEventList" resultType="com.kcabEvent.dto.event.EventListDto">
         SELECT
              e.event_seq
+            ,e.slug
             ,e.title
             ,e.description AS summary
             ,e.start_at   AS event_start_dt
@@ -50,6 +51,7 @@
     <select id="selectEventBySeq" resultType="com.kcabEvent.domain.Event">
         SELECT
              e.event_seq
+            ,e.slug
             ,e.title
             ,e.description
             ,e.description AS content
@@ -80,6 +82,406 @@
         WHERE e.event_seq = #{eventSeq}
           AND e.deleted_at IS NULL
     </select>
+
+    <select id="selectPublishedEventPageBySlug" resultType="com.kcabEvent.dto.event.PublicEventPageDto">
+        SELECT
+            ep.event_page_seq
+            ,ep.event_seq
+            ,ep.language_code
+            ,e.slug AS url_slug
+            ,ep.page_status
+            ,ep.page_title
+            ,ep.page_subtitle
+            ,ep.hero_title
+            ,ep.hero_subtitle
+            ,ep.hero_file_seq
+            ,ep.theme_code
+            ,ep.theme_json::text AS theme_json
+            ,ep.settings_json::text AS settings_json
+            ,ep.published_at
+            ,e.title AS event_title
+            ,e.description AS event_summary
+            ,e.start_at AS event_start_dt
+            ,e.end_at AS event_end_dt
+            ,e.venue_name AS location
+            ,e.registration_type
+            ,e.registration_url
+            ,e.status AS event_status
+            ,e.event_type
+        FROM event.event_pages ep
+        INNER JOIN event.events e
+            ON e.event_seq = ep.event_seq
+           AND e.deleted_at IS NULL
+        WHERE ep.deleted_at IS NULL
+          AND ep.use_yn = 'Y'
+          AND ep.page_status = 'published'
+          AND LOWER(e.slug) = LOWER(#{urlSlug})
+        LIMIT 1
+    </select>
+
+    <select id="selectEventPageBuilderByEventSeq" resultType="com.kcabEvent.dto.event.PublicEventPageDto">
+        SELECT
+             ep.event_page_seq
+            ,ep.event_seq
+            ,ep.language_code
+            ,e.slug AS url_slug
+            ,ep.page_status
+            ,ep.page_title
+            ,ep.page_subtitle
+            ,ep.hero_title
+            ,ep.hero_subtitle
+            ,ep.hero_file_seq
+            ,ep.theme_code
+            ,ep.theme_json::text AS theme_json
+            ,ep.settings_json::text AS settings_json
+            ,ep.published_at
+            ,e.title AS event_title
+            ,e.description AS event_summary
+            ,e.start_at AS event_start_dt
+            ,e.end_at AS event_end_dt
+            ,e.venue_name AS location
+            ,e.registration_type
+            ,e.registration_url
+            ,e.status AS event_status
+            ,e.event_type
+        FROM event.event_pages ep
+        INNER JOIN event.events e
+            ON e.event_seq = ep.event_seq
+           AND e.deleted_at IS NULL
+        WHERE ep.deleted_at IS NULL
+          AND ep.event_seq = #{eventSeq}
+          AND ep.language_code = COALESCE(NULLIF(#{languageCode}, ''), 'en')
+        LIMIT 1
+    </select>
+
+    <select id="selectPublishedEventPageSections" resultType="com.kcabEvent.dto.event.EventPageSectionDto">
+        SELECT
+             section_seq
+            ,event_page_seq
+            ,component_template_seq
+            ,section_key
+            ,section_type
+            ,title
+            ,eyebrow
+            ,subtitle
+            ,body
+            ,anchor_id
+            ,nav_label
+            ,show_in_nav_yn
+            ,layout_type
+            ,column_count
+            ,sort_seq
+            ,use_yn
+            ,settings_json::text AS settings_json
+        FROM event.event_page_sections
+        WHERE event_page_seq = #{eventPageSeq}
+          AND deleted_at IS NULL
+          AND use_yn = 'Y'
+        ORDER BY sort_seq ASC, section_seq ASC
+    </select>
+
+    <select id="selectPublishedEventPageBlocks" resultType="com.kcabEvent.dto.event.EventPageBlockDto">
+        SELECT
+             b.block_seq
+            ,b.section_seq
+            ,b.parent_block_seq
+            ,b.block_key
+            ,b.block_type
+            ,b.title
+            ,b.subtitle
+            ,b.summary
+            ,b.body
+            ,b.badge_text
+            ,b.start_at
+            ,b.end_at
+            ,b.venue_name
+            ,b.speaker_names
+            ,b.organization_name
+            ,b.button_label
+            ,b.link_url
+            ,b.link_target
+            ,b.image_file_seq
+            ,b.attachment_file_seq
+            ,b.featured_yn
+            ,b.sort_seq
+            ,b.use_yn
+            ,b.style_json::text AS style_json
+            ,b.content_json::text AS content_json
+        FROM event.event_page_blocks b
+        INNER JOIN event.event_page_sections s
+            ON s.section_seq = b.section_seq
+           AND s.deleted_at IS NULL
+           AND s.use_yn = 'Y'
+        WHERE s.event_page_seq = #{eventPageSeq}
+          AND b.deleted_at IS NULL
+          AND b.use_yn = 'Y'
+        ORDER BY s.sort_seq ASC, b.parent_block_seq NULLS FIRST, b.sort_seq ASC, b.block_seq ASC
+    </select>
+
+    <select id="selectEventPageBuilderSections" resultType="com.kcabEvent.dto.event.EventPageSectionDto">
+        SELECT
+             section_seq
+            ,event_page_seq
+            ,component_template_seq
+            ,section_key
+            ,section_type
+            ,title
+            ,eyebrow
+            ,subtitle
+            ,body
+            ,anchor_id
+            ,nav_label
+            ,show_in_nav_yn
+            ,layout_type
+            ,column_count
+            ,sort_seq
+            ,use_yn
+            ,settings_json::text AS settings_json
+        FROM event.event_page_sections
+        WHERE event_page_seq = #{eventPageSeq}
+          AND deleted_at IS NULL
+        ORDER BY sort_seq ASC, section_seq ASC
+    </select>
+
+    <select id="selectEventPageBuilderBlocks" resultType="com.kcabEvent.dto.event.EventPageBlockDto">
+        SELECT
+             b.block_seq
+            ,b.section_seq
+            ,b.parent_block_seq
+            ,b.block_key
+            ,b.block_type
+            ,b.title
+            ,b.subtitle
+            ,b.summary
+            ,b.body
+            ,b.badge_text
+            ,b.start_at
+            ,b.end_at
+            ,b.venue_name
+            ,b.speaker_names
+            ,b.organization_name
+            ,b.button_label
+            ,b.link_url
+            ,b.link_target
+            ,b.image_file_seq
+            ,b.attachment_file_seq
+            ,b.featured_yn
+            ,b.sort_seq
+            ,b.use_yn
+            ,b.style_json::text AS style_json
+            ,b.content_json::text AS content_json
+        FROM event.event_page_blocks b
+        INNER JOIN event.event_page_sections s
+            ON s.section_seq = b.section_seq
+           AND s.deleted_at IS NULL
+        WHERE s.event_page_seq = #{eventPageSeq}
+          AND b.deleted_at IS NULL
+        ORDER BY s.sort_seq ASC, b.parent_block_seq NULLS FIRST, b.sort_seq ASC, b.block_seq ASC
+    </select>
+
+    <select id="selectEventPageComponentCategories" resultType="com.kcabEvent.dto.event.EventPageComponentCategoryDto">
+        SELECT
+             component_category_seq
+            ,category_code
+            ,category_name
+            ,description
+            ,sort_seq
+        FROM event.event_page_component_categories
+        WHERE deleted_at IS NULL
+          AND use_yn = 'Y'
+        ORDER BY sort_seq ASC, component_category_seq ASC
+    </select>
+
+    <select id="selectEventPageComponentTemplates" resultType="com.kcabEvent.dto.event.EventPageComponentTemplateDto">
+        SELECT
+             component_template_seq
+            ,component_category_seq
+            ,component_scope
+            ,template_code
+            ,component_type
+            ,template_name
+            ,description
+            ,icon_name
+            ,preview_file_seq
+            ,default_title
+            ,default_subtitle
+            ,form_schema_json::text AS form_schema_json
+            ,default_settings_json::text AS default_settings_json
+            ,default_content_json::text AS default_content_json
+            ,allowed_child_types::text AS allowed_child_types
+            ,sort_seq
+        FROM event.event_page_component_templates
+        WHERE deleted_at IS NULL
+          AND use_yn = 'Y'
+        ORDER BY component_scope DESC, component_category_seq ASC, sort_seq ASC, component_template_seq ASC
+    </select>
+
+    <insert id="insertEventPage" parameterType="com.kcabEvent.dto.event.PublicEventPageDto" useGeneratedKeys="true" keyProperty="eventPageSeq">
+        INSERT INTO event.event_pages (
+             event_seq
+            ,language_code
+            ,page_status
+            ,page_title
+            ,page_subtitle
+            ,hero_title
+            ,hero_subtitle
+            ,hero_file_seq
+            ,theme_code
+            ,theme_json
+            ,settings_json
+            ,published_at
+            ,use_yn
+        ) VALUES (
+             #{eventSeq}
+            ,COALESCE(NULLIF(#{languageCode}, ''), 'en')
+            ,COALESCE(NULLIF(#{pageStatus}, ''), 'draft')
+            ,#{pageTitle}
+            ,#{pageSubtitle}
+            ,#{heroTitle}
+            ,#{heroSubtitle}
+            ,#{heroFileSeq}
+            ,COALESCE(NULLIF(#{themeCode}, ''), 'kcab')
+            ,COALESCE(NULLIF(#{themeJson}, '')::jsonb, '{}'::jsonb)
+            ,COALESCE(NULLIF(#{settingsJson}, '')::jsonb, '{}'::jsonb)
+            ,CASE WHEN #{pageStatus} = 'published' THEN COALESCE(#{publishedAt}, CURRENT_TIMESTAMP) ELSE #{publishedAt} END
+            ,'Y'
+        )
+    </insert>
+
+    <update id="updateEventPage" parameterType="com.kcabEvent.dto.event.PublicEventPageDto">
+        UPDATE event.event_pages
+        SET  language_code    = COALESCE(NULLIF(#{languageCode}, ''), language_code)
+            ,page_status      = COALESCE(NULLIF(#{pageStatus}, ''), page_status)
+            ,page_title       = #{pageTitle}
+            ,page_subtitle    = #{pageSubtitle}
+            ,hero_title       = #{heroTitle}
+            ,hero_subtitle    = #{heroSubtitle}
+            ,hero_file_seq    = #{heroFileSeq}
+            ,theme_code       = COALESCE(NULLIF(#{themeCode}, ''), theme_code)
+            ,theme_json       = COALESCE(NULLIF(#{themeJson}, '')::jsonb, '{}'::jsonb)
+            ,settings_json    = COALESCE(NULLIF(#{settingsJson}, '')::jsonb, '{}'::jsonb)
+            ,published_at     = CASE
+                                  WHEN #{pageStatus} = 'published' THEN COALESCE(published_at, CURRENT_TIMESTAMP)
+                                  ELSE published_at
+                                END
+            ,updated_at       = CURRENT_TIMESTAMP
+        WHERE event_page_seq = #{eventPageSeq}
+          AND deleted_at IS NULL
+    </update>
+
+    <update id="softDeleteEventPageBlocksByPageSeq">
+        UPDATE event.event_page_blocks b
+        SET deleted_at = COALESCE(b.deleted_at, CURRENT_TIMESTAMP)
+           ,updated_by = #{userSeq}
+           ,updated_at = CURRENT_TIMESTAMP
+        FROM event.event_page_sections s
+        WHERE s.section_seq = b.section_seq
+          AND s.event_page_seq = #{eventPageSeq}
+          AND b.deleted_at IS NULL
+    </update>
+
+    <update id="softDeleteEventPageSectionsByPageSeq">
+        UPDATE event.event_page_sections
+        SET deleted_at = COALESCE(deleted_at, CURRENT_TIMESTAMP)
+           ,updated_by = #{userSeq}
+           ,updated_at = CURRENT_TIMESTAMP
+        WHERE event_page_seq = #{eventPageSeq}
+          AND deleted_at IS NULL
+    </update>
+
+    <insert id="insertEventPageSection" parameterType="com.kcabEvent.dto.event.EventPageSectionDto" useGeneratedKeys="true" keyProperty="sectionSeq">
+        INSERT INTO event.event_page_sections (
+             event_page_seq
+            ,component_template_seq
+            ,section_key
+            ,section_type
+            ,title
+            ,eyebrow
+            ,subtitle
+            ,body
+            ,anchor_id
+            ,nav_label
+            ,show_in_nav_yn
+            ,layout_type
+            ,column_count
+            ,sort_seq
+            ,use_yn
+            ,settings_json
+        ) VALUES (
+             #{eventPageSeq}
+            ,#{componentTemplateSeq}
+            ,#{sectionKey}
+            ,#{sectionType}
+            ,#{title}
+            ,#{eyebrow}
+            ,#{subtitle}
+            ,#{body}
+            ,#{anchorId}
+            ,#{navLabel}
+            ,COALESCE(NULLIF(#{showInNavYn}, ''), 'Y')
+            ,COALESCE(NULLIF(#{layoutType}, ''), 'standard')
+            ,COALESCE(#{columnCount}, 1)
+            ,COALESCE(#{sortSeq}, 0)
+            ,COALESCE(NULLIF(#{useYn}, ''), 'Y')
+            ,COALESCE(NULLIF(#{settingsJson}, '')::jsonb, '{}'::jsonb)
+        )
+    </insert>
+
+    <insert id="insertEventPageBlock" parameterType="com.kcabEvent.dto.event.EventPageBlockDto" useGeneratedKeys="true" keyProperty="blockSeq">
+        INSERT INTO event.event_page_blocks (
+             section_seq
+            ,parent_block_seq
+            ,component_template_seq
+            ,block_key
+            ,block_type
+            ,title
+            ,subtitle
+            ,summary
+            ,body
+            ,badge_text
+            ,start_at
+            ,end_at
+            ,venue_name
+            ,speaker_names
+            ,organization_name
+            ,button_label
+            ,link_url
+            ,link_target
+            ,image_file_seq
+            ,attachment_file_seq
+            ,featured_yn
+            ,sort_seq
+            ,use_yn
+            ,style_json
+            ,content_json
+        ) VALUES (
+             #{sectionSeq}
+            ,#{parentBlockSeq}
+            ,#{componentTemplateSeq}
+            ,#{blockKey}
+            ,#{blockType}
+            ,#{title}
+            ,#{subtitle}
+            ,#{summary}
+            ,#{body}
+            ,#{badgeText}
+            ,#{startAt}
+            ,#{endAt}
+            ,#{venueName}
+            ,#{speakerNames}
+            ,#{organizationName}
+            ,#{buttonLabel}
+            ,#{linkUrl}
+            ,COALESCE(NULLIF(#{linkTarget}, ''), '_self')
+            ,#{imageFileSeq}
+            ,#{attachmentFileSeq}
+            ,COALESCE(NULLIF(#{featuredYn}, ''), 'N')
+            ,COALESCE(#{sortSeq}, 0)
+            ,COALESCE(NULLIF(#{useYn}, ''), 'Y')
+            ,COALESCE(NULLIF(#{styleJson}, '')::jsonb, '{}'::jsonb)
+            ,COALESCE(NULLIF(#{contentJson}, '')::jsonb, '{}'::jsonb)
+        )
+    </insert>
 
     <select id="selectEventNotificationRecipient" resultType="com.kcabEvent.dto.event.EventNotificationRecipientDto">
         SELECT
@@ -174,7 +576,7 @@
             registration_type, registration_url,
             status, created_by, updated_by
         ) VALUES (
-            'event-' || substr(md5(random()::text || clock_timestamp()::text), 1, 12),
+            COALESCE(NULLIF(#{slug}, ''), 'event-' || substr(md5(random()::text || clock_timestamp()::text), 1, 12)),
             #{title}, COALESCE(#{description}, #{content}),
             COALESCE(NULLIF(#{eventType}, ''), 'main'),
             COALESCE(#{isPaid}, false),
@@ -189,7 +591,8 @@
 
     <update id="updateEvent" parameterType="com.kcabEvent.domain.Event">
         UPDATE event.events
-        SET  title             = #{title}
+        SET  slug              = COALESCE(NULLIF(#{slug}, ''), slug)
+            ,title             = #{title}
             ,description       = COALESCE(#{description}, #{content})
             ,event_type        = COALESCE(NULLIF(#{eventType}, ''), event_type)
             ,is_paid           = COALESCE(#{isPaid}, is_paid)

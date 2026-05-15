@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 @Setter
 public class EventListDto {
     private Long eventSeq;
+    private String slug;
     private String title;
     private String summary;
     private LocalDateTime eventStartDt;

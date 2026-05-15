@@ -7,6 +7,7 @@ import Footer from '@layout/Footer';
 import PublicNotice from '@page/public/PublicNotice';
 import PublicFaq from '@page/public/PublicFaq';
 import PublicEvents from '@page/public/PublicEvents';
+import PublicEventPage from '@page/public/PublicEventPage';
 import SafSignup from '@page/saf/SafSignup';
 import { getUserLoginInfo } from '@api/CommonApi';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
@@ -148,6 +149,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     if (currentPath === '/notice') return <PublicNotice />;
     if (currentPath === '/faq') return <PublicFaq />;
     if (currentPath === '/events') return <PublicEvents />;
+    if (currentPath.startsWith('/event/')) {
+      const urlSlug = decodeURIComponent(currentPath.replace(/^\/event\//, '').split('/')[0] ?? '');
+      return <PublicEventPage urlSlug={urlSlug} />;
+    }
     if (currentPath === '/saf/signup') return <SafSignup />;
     // 알 수 없는 공개 경로는 홈으로 fallback
     return <>{children}</>;

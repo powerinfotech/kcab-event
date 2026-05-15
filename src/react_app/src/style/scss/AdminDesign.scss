@@ -2478,6 +2478,10 @@
   grid-template-columns: minmax(0, 5fr) minmax(0, 4fr);
   gap: 16px;
   align-items: stretch;
+
+  &.is-single {
+    grid-template-columns: 1fr;
+  }
 }
 
 .saf-event-participants-panel {
@@ -2486,6 +2490,322 @@
 
 .saf-event-pricing-panel {
   margin-top: 16px;
+}
+
+.saf-page-builder {
+  margin-top: 16px;
+}
+
+.saf-builder-empty {
+  min-height: 120px;
+  display: grid;
+  place-items: center;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 800;
+
+  &.is-small {
+    min-height: 74px;
+  }
+}
+
+.saf-builder-settings {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+
+  label {
+    display: grid;
+    gap: 6px;
+
+    &.is-wide {
+      grid-column: 1 / -1;
+    }
+  }
+
+  span {
+    color: #475569;
+    font-size: 12px;
+    font-weight: 900;
+  }
+
+  input,
+  select,
+  textarea {
+    width: 100%;
+    min-height: 40px;
+    border: 1px solid #d7dee8;
+    border-radius: 6px;
+    padding: 0 10px;
+    background: #fff;
+    color: #111827;
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  textarea {
+    min-height: 78px;
+    padding: 10px;
+    resize: vertical;
+  }
+}
+
+.saf-builder-layout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.saf-builder-palette,
+.saf-builder-sections,
+.saf-builder-editor,
+.saf-builder-block-editor {
+  border: 1px solid #e3e8ef;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.saf-builder-palette {
+  display: grid;
+  gap: 14px;
+  padding: 14px;
+}
+
+.saf-builder-palette-group {
+  display: grid;
+  gap: 10px;
+
+  h3 {
+    color: #111827;
+    font-size: 14px;
+    font-weight: 900;
+  }
+}
+
+.saf-builder-template-group {
+  display: grid;
+  gap: 6px;
+
+  > span {
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+
+  button {
+    min-height: 38px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid #d7dee8;
+    border-radius: 6px;
+    padding: 0 10px;
+    background: #f8fafc;
+    color: #334155;
+    font-size: 12px;
+    font-weight: 900;
+    text-align: left;
+
+    &:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+    }
+
+    svg {
+      color: #1f5b95;
+    }
+  }
+}
+
+.saf-builder-sections {
+  min-width: 0;
+  padding: 14px;
+}
+
+.saf-builder-section-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.saf-builder-section-tab {
+  min-width: 150px;
+  min-height: 48px;
+  border: 1px solid #d7dee8;
+  border-radius: 6px;
+  padding: 8px 10px;
+  background: #f8fafc;
+  color: #334155;
+  text-align: left;
+
+  strong,
+  span {
+    display: block;
+  }
+
+  strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 13px;
+    font-weight: 900;
+  }
+
+  span {
+    margin-top: 2px;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 800;
+  }
+
+  &.is-active {
+    border-color: #1f5b95;
+    background: #102033;
+    color: #fff;
+
+    span {
+      color: rgba(255, 255, 255, .72);
+    }
+  }
+}
+
+.saf-builder-editor {
+  padding: 14px;
+}
+
+.saf-builder-editor-actions,
+.saf-builder-block-head {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-bottom: 12px;
+
+  button {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    background: #eef3f8;
+    color: #334155;
+
+    &:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.saf-builder-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+
+  &.is-compact {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  label {
+    display: grid;
+    gap: 6px;
+
+    &.is-wide {
+      grid-column: 1 / -1;
+    }
+  }
+
+  span {
+    color: #475569;
+    font-size: 12px;
+    font-weight: 900;
+  }
+
+  input,
+  select,
+  textarea {
+    width: 100%;
+    min-height: 38px;
+    border: 1px solid #d7dee8;
+    border-radius: 6px;
+    padding: 0 10px;
+    background: #fff;
+    color: #111827;
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  textarea {
+    min-height: 84px;
+    padding: 10px;
+    resize: vertical;
+  }
+}
+
+.saf-builder-blocks {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.saf-builder-subtitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  h3 {
+    color: #111827;
+    font-size: 15px;
+    font-weight: 900;
+  }
+
+  span {
+    min-width: 28px;
+    height: 24px;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    background: #eef3f8;
+    color: #1f5b95;
+    font-size: 12px;
+    font-weight: 900;
+  }
+}
+
+.saf-builder-block-editor {
+  padding: 12px;
+}
+
+.saf-builder-block-head {
+  justify-content: space-between;
+
+  strong,
+  span {
+    display: block;
+  }
+
+  strong {
+    color: #111827;
+    font-size: 14px;
+    font-weight: 900;
+  }
+
+  span {
+    margin-top: 2px;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 800;
+  }
+
+  div:last-child {
+    display: flex;
+    gap: 6px;
+  }
 }
 
 .saf-pricing-block {
@@ -2900,10 +3220,17 @@
   .saf-dashboard-grid,
   .saf-editor-layout,
   .saf-event-detail-grid,
+  .saf-builder-layout,
   .saf-email-layout,
   .saf-settings-layout,
   .saf-pay-test-layout,
   .saf-card-list {
+    grid-template-columns: 1fr;
+  }
+
+  .saf-builder-settings,
+  .saf-builder-form,
+  .saf-builder-form.is-compact {
     grid-template-columns: 1fr;
   }
 }

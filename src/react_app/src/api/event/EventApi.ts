@@ -1,6 +1,13 @@
 import axios from 'axios';
 import { ApiResponse } from '@interface/common';
-import { EventListItem, EventDetail, EventListSearchParam, EventSaveRequest } from '@interface/event/EventManagement';
+import {
+  EventListItem,
+  EventDetail,
+  EventListSearchParam,
+  EventPageComponentCatalog,
+  EventSaveRequest,
+  PublicEventPage,
+} from '@interface/event/EventManagement';
 
 export const callGetEventList = async (param: EventListSearchParam = {}) => {
   const { data } = await axios.get<ApiResponse<EventListItem[]>>('/api/event/list', {
@@ -56,6 +63,23 @@ export const callDeleteEvent = async (eventSeq: number) => {
   return data;
 };
 
+export const callGetEventPageBuilderCatalog = async () => {
+  const { data } = await axios.get<ApiResponse<EventPageComponentCatalog>>('/api/event/page-builder/catalog');
+  return data;
+};
+
+export const callGetEventPageBuilder = async (eventSeq: number) => {
+  const { data } = await axios.get<ApiResponse<PublicEventPage>>('/api/event/page-builder', {
+    params: { eventSeq },
+  });
+  return data;
+};
+
+export const callSaveEventPageBuilder = async (saveDto: PublicEventPage) => {
+  const { data } = await axios.post<ApiResponse<PublicEventPage>>('/api/event/page-builder/save', saveDto);
+  return data;
+};
+
 export const callGetPublicEventList = async (status?: string) => {
   const { data } = await axios.get<ApiResponse<EventListItem[]>>('/api/public/event/list', {
     params: { status },
@@ -67,6 +91,14 @@ export const callGetPublicEventList = async (status?: string) => {
 export const callGetPublicEventDetail = async (eventSeq: number) => {
   const { data } = await axios.get<ApiResponse<EventDetail>>('/api/public/event/detail', {
     params: { eventSeq },
+    headers: { showLoading: false },
+  });
+  return data;
+};
+
+export const callGetPublicEventPage = async (urlSlug: string) => {
+  const { data } = await axios.get<ApiResponse<PublicEventPage>>('/api/public/event/page', {
+    params: { urlSlug },
     headers: { showLoading: false },
   });
   return data;

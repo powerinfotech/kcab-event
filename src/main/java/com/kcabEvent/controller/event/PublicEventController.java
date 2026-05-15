@@ -3,6 +3,7 @@ package com.kcabEvent.controller.event;
 import com.kcabEvent.domain.Event;
 import com.kcabEvent.dto.common.ApiResponse;
 import com.kcabEvent.dto.event.EventListDto;
+import com.kcabEvent.dto.event.PublicEventPageDto;
 import com.kcabEvent.service.event.EventService;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,5 +37,13 @@ public class PublicEventController {
     @GetMapping("/detail")
     public ApiResponse<Event> selectEventDetail(@RequestParam Long eventSeq) {
         return ApiResponse.ok(eventService.selectEventBySeq(eventSeq));
+    }
+
+    /**
+     * Public page builder event detail lookup for /event/{slug}.
+     */
+    @GetMapping("/page")
+    public ApiResponse<PublicEventPageDto> selectEventPage(@RequestParam String urlSlug) {
+        return ApiResponse.ok(eventService.selectPublishedEventPageBySlug(urlSlug));
     }
 }

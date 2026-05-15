@@ -4,7 +4,12 @@ import com.kcabEvent.domain.Event;
 import com.kcabEvent.dto.event.EventDiscountCodeDto;
 import com.kcabEvent.dto.event.EventListDto;
 import com.kcabEvent.dto.event.EventNotificationRecipientDto;
+import com.kcabEvent.dto.event.EventPageBlockDto;
+import com.kcabEvent.dto.event.EventPageComponentCategoryDto;
+import com.kcabEvent.dto.event.EventPageComponentTemplateDto;
+import com.kcabEvent.dto.event.EventPageSectionDto;
 import com.kcabEvent.dto.event.EventPricingDto;
+import com.kcabEvent.dto.event.PublicEventPageDto;
 import org.apache.ibatis.annotations.Param;
 import org.egovframe.rte.psl.dataaccess.mapper.EgovMapper;
 
@@ -19,6 +24,37 @@ public interface EventDao {
                                        @Param("organizationSeq") Long organizationSeq);
 
     Event selectEventBySeq(@Param("eventSeq") Long eventSeq);
+
+    PublicEventPageDto selectPublishedEventPageBySlug(@Param("urlSlug") String urlSlug);
+
+    PublicEventPageDto selectEventPageBuilderByEventSeq(@Param("eventSeq") Long eventSeq,
+                                                        @Param("languageCode") String languageCode);
+
+    List<EventPageSectionDto> selectPublishedEventPageSections(@Param("eventPageSeq") Long eventPageSeq);
+
+    List<EventPageBlockDto> selectPublishedEventPageBlocks(@Param("eventPageSeq") Long eventPageSeq);
+
+    List<EventPageSectionDto> selectEventPageBuilderSections(@Param("eventPageSeq") Long eventPageSeq);
+
+    List<EventPageBlockDto> selectEventPageBuilderBlocks(@Param("eventPageSeq") Long eventPageSeq);
+
+    List<EventPageComponentCategoryDto> selectEventPageComponentCategories();
+
+    List<EventPageComponentTemplateDto> selectEventPageComponentTemplates();
+
+    void insertEventPage(PublicEventPageDto page);
+
+    void updateEventPage(PublicEventPageDto page);
+
+    void softDeleteEventPageBlocksByPageSeq(@Param("eventPageSeq") Long eventPageSeq,
+                                            @Param("userSeq") Long userSeq);
+
+    void softDeleteEventPageSectionsByPageSeq(@Param("eventPageSeq") Long eventPageSeq,
+                                              @Param("userSeq") Long userSeq);
+
+    void insertEventPageSection(EventPageSectionDto section);
+
+    void insertEventPageBlock(EventPageBlockDto block);
 
     EventNotificationRecipientDto selectEventNotificationRecipient(@Param("eventSeq") Long eventSeq);
 

@@ -4,9 +4,11 @@ import com.kcabEvent.annotation.KcabEventSession;
 import com.kcabEvent.domain.Event;
 import com.kcabEvent.dto.common.ApiResponse;
 import com.kcabEvent.dto.common.LoginUser;
+import com.kcabEvent.dto.event.EventPageComponentCatalogDto;
 import com.kcabEvent.dto.event.EventListDto;
 import com.kcabEvent.dto.event.EventReviewRequestDto;
 import com.kcabEvent.dto.event.EventSaveDto;
+import com.kcabEvent.dto.event.PublicEventPageDto;
 import com.kcabEvent.service.event.EventService;
 import org.springframework.web.bind.annotation.*;
 
@@ -59,6 +61,26 @@ public class EventController {
     /**
      * 기관 사용자가 임시저장한 이벤트의 승인 신청을 요청한다.
      */
+    @GetMapping("/page-builder/catalog")
+    public ApiResponse<EventPageComponentCatalogDto> selectPageBuilderCatalog(
+            @KcabEventSession LoginUser loginUser) {
+        return ApiResponse.ok(eventService.selectEventPageComponentCatalog());
+    }
+
+    @GetMapping("/page-builder")
+    public ApiResponse<PublicEventPageDto> selectPageBuilder(
+            @KcabEventSession LoginUser loginUser,
+            @RequestParam Long eventSeq) {
+        return ApiResponse.ok(eventService.selectEventPageBuilder(eventSeq, loginUser));
+    }
+
+    @PostMapping("/page-builder/save")
+    public ApiResponse<PublicEventPageDto> savePageBuilder(
+            @KcabEventSession LoginUser loginUser,
+            @RequestBody PublicEventPageDto saveDto) {
+        return ApiResponse.ok(eventService.saveEventPageBuilder(saveDto, loginUser));
+    }
+
     @PostMapping("/request-approval")
     public ApiResponse<Void> requestApproval(
             @KcabEventSession LoginUser loginUser,

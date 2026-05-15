@@ -2,8 +2,10 @@ package com.kcabEvent.service.event;
 
 import com.kcabEvent.domain.Event;
 import com.kcabEvent.dto.common.LoginUser;
+import com.kcabEvent.dto.event.EventPageComponentCatalogDto;
 import com.kcabEvent.dto.event.EventListDto;
 import com.kcabEvent.dto.event.EventSaveDto;
+import com.kcabEvent.dto.event.PublicEventPageDto;
 
 import java.util.List;
 
@@ -25,6 +27,17 @@ public interface EventService {
      * 이벤트 순번으로 이벤트를 조회한다.
      */
     Event selectEventBySeq(Long eventSeq);
+
+    /**
+     * Public event page lookup by URL slug for /event/{slug}.
+     */
+    PublicEventPageDto selectPublishedEventPageBySlug(String urlSlug);
+
+    EventPageComponentCatalogDto selectEventPageComponentCatalog();
+
+    PublicEventPageDto selectEventPageBuilder(Long eventSeq, LoginUser loginUser);
+
+    PublicEventPageDto saveEventPageBuilder(PublicEventPageDto saveDto, LoginUser loginUser);
 
     /**
      * 관리자 화면에서 세션 권한을 반영해 이벤트를 조회한다.
