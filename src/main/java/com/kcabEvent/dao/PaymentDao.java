@@ -30,6 +30,10 @@ public interface PaymentDao {
                                     @Param("cancelReason") String cancelReason,
                                     @Param("updatedBy") Long updatedBy);
 
+    int updateEventParticipantOnCancel(@Param("eventParticipantSeq") Long eventParticipantSeq,
+                                        @Param("cancelledAt") LocalDateTime cancelledAt,
+                                        @Param("cancelReason") String cancelReason);
+
     int updatePaymentMemo(@Param("paymentSeq") Long paymentSeq,
                           @Param("adminMemo") String adminMemo,
                           @Param("updatedBy") Long updatedBy);

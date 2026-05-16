@@ -262,6 +262,14 @@
         WHERE payment_seq   = #{paymentSeq}
     </update>
 
+    <update id="updateEventParticipantOnCancel">
+        UPDATE event.event_participants
+        SET status        = 'cancelled'
+           ,cancelled_at  = COALESCE(cancelled_at, #{cancelledAt})
+           ,cancel_reason = COALESCE(NULLIF(cancel_reason, ''), #{cancelReason})
+        WHERE event_participant_seq = #{eventParticipantSeq}
+    </update>
+
     <update id="updatePaymentMemo">
         UPDATE event.payments
         SET admin_memo = #{adminMemo}

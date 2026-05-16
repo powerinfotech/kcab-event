@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { App, Select } from 'antd';
 import {
   CreditCardOutlined,
@@ -118,8 +118,10 @@ export default function PayTest() {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PayTestPaymentMethodCode>(DEFAULT_PAYMENT_METHOD);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [verifyingPayment, setVerifyingPayment] = useState(false);
   const [latestOrderId, setLatestOrderId] = useState('');
   const [result, setResult] = useState<PayTestResult | null>(null);
+  const verificationRunRef = useRef(0);
 
   const selectedEvent = useMemo(
     () => events.find((event) => event.eventSeq === selectedEventSeq),
@@ -176,14 +178,51 @@ export default function PayTest() {
   }, [selectedEvent, selectedPricingSeq]);
 
   const refreshResult = useCallback(async (orderId: string, silent = false) => {
-    if (!orderId) return;
+    if (!orderId) return null;
     try {
       const res = await callGetPayTestResult(orderId);
-      setResult(res?.item ?? null);
+      const payment = res?.item ?? null;
+      setResult(payment);
+      return payment;
     } catch {
       if (!silent) message.error('Failed to load payment test result.');
+      return null;
     }
   }, [message]);
+
+  const verifyPaymentInPayments = useCallback(async (orderId: string) => {
+    if (!orderId) return;
+
+    const runId = verificationRunRef.current + 1;
+    verificationRunRef.current = runId;
+    setVerifyingPayment(true);
+
+    const wait = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
+    for (let attempt = 0; attempt < 12; attempt += 1) {
+      if (attempt > 0) {
+        await wait(2500);
+      }
+      if (verificationRunRef.current !== runId) return;
+
+      const payment = await refreshResult(orderId, true);
+      const status = payment?.status?.toLowerCase();
+      if (status === 'paid' && payment?.paymentSeq) {
+        setVerifyingPayment(false);
+        message.success('Payment was confirmed in payments.');
+        return;
+      }
+      if (status === 'failed' || status === 'cancelled') {
+        setVerifyingPayment(false);
+        message.error(payment?.failedReason || 'Payment was not completed.');
+        return;
+      }
+    }
+
+    if (verificationRunRef.current === runId) {
+      setVerifyingPayment(false);
+      message.warning('Payment window closed, but payments is not confirmed yet. Please check again.');
+    }
+  }, [message, refreshResult]);
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -192,13 +231,11 @@ export default function PayTest() {
       const orderId = data.orderId || latestOrderId;
       if (!orderId) return;
       setLatestOrderId(orderId);
-      refreshResult(orderId, true);
-      window.setTimeout(() => refreshResult(orderId, true), 2500);
-      window.setTimeout(() => refreshResult(orderId, true), 6000);
+      verifyPaymentInPayments(orderId);
     };
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [latestOrderId, refreshResult]);
+  }, [latestOrderId, verifyPaymentInPayments]);
 
   const updateParticipant = (key: keyof PayTestParticipantRequest, value: string) => {
     setParticipant((prev) => ({ ...prev, [key]: value }));
@@ -396,7 +433,7 @@ export default function PayTest() {
             type="button"
             className="saf-pay-test-submit"
             onClick={startPayment}
-            disabled={submitting || !selectedPricing}
+            disabled={submitting || verifyingPayment || !selectedPricing}
           >
             {submitting ? <ReloadOutlined /> : <SendOutlined />}
             Start Payment
@@ -412,6 +449,10 @@ export default function PayTest() {
               {result ? statusBadge(result.status) : <strong>-</strong>}
             </div>
             <div>
+              <span>Payment Seq</span>
+              <strong>{result?.paymentSeq || '-'}</strong>
+            </div>
+            <div>
               <span>Amount</span>
               <strong>{result ? formatMoney(result.amount, result.currency) : '-'}</strong>
             </div>
@@ -419,11 +460,17 @@ export default function PayTest() {
               <span>Transaction</span>
               <strong>{result?.pgTransactionId || '-'}</strong>
             </div>
+            {verifyingPayment && <p className="saf-pay-test-note">Checking whether the payment was saved in payments...</p>}
             {result?.failedReason && <p className="saf-pay-test-error">{result.failedReason}</p>}
             {latestOrderId && (
-              <button type="button" className="saf-action-btn is-secondary" onClick={() => refreshResult(latestOrderId)}>
-                <CreditCardOutlined />
-                Check Result
+              <button
+                type="button"
+                className="saf-action-btn is-secondary"
+                onClick={() => verifyPaymentInPayments(latestOrderId)}
+                disabled={verifyingPayment}
+              >
+                {verifyingPayment ? <ReloadOutlined /> : <CreditCardOutlined />}
+                {verifyingPayment ? 'Checking payments' : 'Check Result'}
               </button>
             )}
           </div>

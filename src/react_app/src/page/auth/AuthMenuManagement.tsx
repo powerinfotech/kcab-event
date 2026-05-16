@@ -170,7 +170,7 @@ const AuthMenuManagement = ({handlersRef}: {
     // ──────────────────────────── 저장 ────────────────────────────
     const handleSave = async () => {
         if (selectedAuthRowIndex < 0) {
-            message.info('선택한 권한이 없습니다.');
+            message.info('Please select a permission first.');
             return;
         }
 

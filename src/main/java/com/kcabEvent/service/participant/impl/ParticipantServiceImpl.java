@@ -62,7 +62,16 @@ public class ParticipantServiceImpl extends EgovAbstractServiceImpl implements P
             event.setEventTitle(row.getEventTitle());
             event.setEventType(row.getEventType());
             event.setPaymentName(row.getPaymentName());
+            event.setPaymentSeq(row.getPaymentSeq());
             event.setPaymentStatus(row.getPaymentStatus());
+            event.setPaymentAmount(row.getPaymentAmount());
+            event.setPaymentCurrency(row.getPaymentCurrency());
+            event.setPaymentMethod(row.getPaymentMethod());
+            event.setPaymentOrderId(row.getPaymentOrderId());
+            event.setPaymentTransactionId(row.getPaymentTransactionId());
+            event.setPaymentRefundedAmount(row.getPaymentRefundedAmount());
+            event.setPaymentPaidAt(row.getPaymentPaidAt());
+            event.setPaymentCancelledAt(row.getPaymentCancelledAt());
             event.setStatus(row.getParticipationStatus());
             event.setRegisteredAt(row.getRegisteredAt());
             event.setCancelledAt(row.getCancelledAt());

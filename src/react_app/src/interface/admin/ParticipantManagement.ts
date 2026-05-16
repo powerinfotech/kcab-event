@@ -4,7 +4,16 @@ export interface ParticipantEventItem {
   eventTitle: string;
   eventType: string;
   paymentName?: string | null;
+  paymentSeq?: number | null;
   paymentStatus?: string | null;
+  paymentAmount?: string | number | null;
+  paymentCurrency?: string | null;
+  paymentMethod?: string | null;
+  paymentOrderId?: string | null;
+  paymentTransactionId?: string | null;
+  paymentRefundedAmount?: string | number | null;
+  paymentPaidAt?: string | null;
+  paymentCancelledAt?: string | null;
   status: string;
   registeredAt: string | null;
   cancelledAt: string | null;

@@ -16,7 +16,16 @@
             ,e.title AS event_title
             ,e.event_type
             ,COALESCE(NULLIF(pay.price_name, ''), NULLIF(pay.price_type, '')) AS payment_name
+            ,pay.payment_seq
             ,pay.status AS payment_status
+            ,pay.amount AS payment_amount
+            ,pay.currency AS payment_currency
+            ,pay.payment_method
+            ,pay.pg_order_id AS payment_order_id
+            ,pay.pg_transaction_id AS payment_transaction_id
+            ,pay.refunded_amount AS payment_refunded_amount
+            ,pay.paid_at AS payment_paid_at
+            ,pay.cancelled_at AS payment_cancelled_at
             ,ep.status AS participation_status
             ,ep.registered_at
             ,ep.cancelled_at
@@ -32,7 +41,16 @@
             SELECT
                  pr.price_name
                 ,pr.price_type
+                ,pmt.payment_seq
                 ,pmt.status
+                ,pmt.amount
+                ,pmt.currency
+                ,pmt.payment_method
+                ,pmt.pg_order_id
+                ,pmt.pg_transaction_id
+                ,pmt.refunded_amount
+                ,pmt.paid_at
+                ,pmt.cancelled_at
             FROM event.payments pmt
             LEFT JOIN event.event_pricing pr
                 ON pr.event_pricing_seq = pmt.event_pricing_seq

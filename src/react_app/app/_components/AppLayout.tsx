@@ -125,7 +125,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
     redirectingRef.current = true;
     try {
-      sessionStorage.setItem(AUTH_MESSAGE_STORAGE_KEY, '권한이 없습니다.');
+      sessionStorage.setItem(AUTH_MESSAGE_STORAGE_KEY, 'You do not have permission.');
       sessionStorage.removeItem('tabList');
       sessionStorage.removeItem('activeTabKey');
     } catch {
@@ -179,7 +179,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   if (isLogin === false) {
     try {
-      sessionStorage.setItem(AUTH_MESSAGE_STORAGE_KEY, '권한이 없습니다.');
+      sessionStorage.setItem(AUTH_MESSAGE_STORAGE_KEY, 'You do not have permission.');
     } catch {
       // sessionStorage may be unavailable in private browsing modes.
     }

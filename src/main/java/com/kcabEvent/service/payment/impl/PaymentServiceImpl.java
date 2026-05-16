@@ -200,6 +200,13 @@ public class PaymentServiceImpl extends EgovAbstractServiceImpl implements Payme
                 request.getReason(),
                 userSeq
         );
+        if (payment.getEventParticipantSeq() != null) {
+            paymentDao.updateEventParticipantOnCancel(
+                    payment.getEventParticipantSeq(),
+                    now,
+                    request.getReason()
+            );
+        }
 
         return selectPaymentDetail(paymentSeq, loginUser);
     }
