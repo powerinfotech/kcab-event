@@ -3,6 +3,8 @@ package com.kcabEvent.dto.paymenttest;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 public class PayTestPrepareRequestDto {
@@ -10,6 +12,7 @@ public class PayTestPrepareRequestDto {
     private Long eventPricingSeq;
     private PayTestParticipantRequestDto participant;
     private String paymentMethod;
+    private List<String> paymentMethods;
     private String lang;
     private String callbackBaseUrl;
 }

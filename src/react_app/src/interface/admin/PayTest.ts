@@ -30,17 +30,20 @@ export interface PayTestParticipantRequest {
   country?: string;
 }
 
+export type PayTestPaymentMethodCode = 'P000' | 'P001' | 'P302' | 'P015';
+
 export interface PayTestPrepareRequest {
   eventSeq: number;
   eventPricingSeq: number;
   participant: PayTestParticipantRequest;
-  paymentMethod: 'P000';
+  paymentMethod?: string;
+  paymentMethods: PayTestPaymentMethodCode[];
   lang: string;
   callbackBaseUrl: string;
 }
 
 export interface PayTestResult {
-  paymentSeq: number;
+  paymentSeq?: number | null;
   orderId: string;
   status: string;
   amount: number;
@@ -56,7 +59,7 @@ export interface PayTestResult {
 }
 
 export interface PayTestPrepareResponse {
-  paymentSeq: number;
+  paymentSeq?: number | null;
   orderId: string;
   sdkUrl: string;
   eximbayRequest: Record<string, unknown>;

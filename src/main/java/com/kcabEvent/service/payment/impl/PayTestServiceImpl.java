@@ -2,6 +2,7 @@ package com.kcabEvent.service.payment.impl;
 
 import com.kcabEvent.dao.PayTestDao;
 import com.kcabEvent.domain.Payment;
+import com.kcabEvent.domain.PaymentIntent;
 import com.kcabEvent.dto.common.LoginUser;
 import com.kcabEvent.dto.paymenttest.PayTestEventOptionDto;
 import com.kcabEvent.dto.paymenttest.PayTestParticipantRequestDto;
@@ -24,11 +25,15 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Service("payTestService")
@@ -36,6 +41,14 @@ public class PayTestServiceImpl extends EgovAbstractServiceImpl implements PayTe
 
     private static final DateTimeFormatter ORDER_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
     private static final DateTimeFormatter EXIMBAY_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+    private static final Set<String> ALLOWED_PAYMENT_METHODS = Set.of("P000", "P001", "P302", "P015");
+    private static final Set<String> KOREAN_LOCAL_PAYMENT_METHODS = Set.of("P302", "P015");
+    private static final Set<String> CARD_PAYMENT_METHODS = Set.of(
+            "P000", "P101", "P102", "P103", "P104", "P106", "P107", "P108", "P109",
+            "P110", "P111", "P112", "P113", "P114", "P115", "P116", "P117", "P119",
+            "P120", "P121", "P122", "P123", "P124", "P125", "P126", "P127", "P128",
+            "P129", "P130"
+    );
 
     @Resource(name = "payTestDao")
     private PayTestDao payTestDao;
@@ -72,15 +85,13 @@ public class PayTestServiceImpl extends EgovAbstractServiceImpl implements PayTe
 
         PayTestParticipantRequestDto participant = request.getParticipant();
         participant.setEmail(participant.getEmail().toLowerCase(Locale.ROOT));
-        Long participantSeq = payTestDao.upsertParticipant(participant);
-        Long eventParticipantSeq = payTestDao.upsertEventParticipant(request.getEventSeq(), participantSeq);
 
         String orderId = buildOrderId();
         String callbackBaseUrl = normalizeCallbackBaseUrl(request.getCallbackBaseUrl());
         String statusUrl = callbackBaseUrl + "/api/public/pay-test/eximbay/status";
         String returnUrl = callbackBaseUrl + "/api/public/pay-test/eximbay/return?merchant_order_id=" + orderId;
         String lang = normalizeLang(request.getLang());
-        String paymentMethod = normalizePaymentMethod(request.getPaymentMethod());
+        List<String> paymentMethods = normalizePaymentMethods(request);
         String payerName = fullName(participant);
         Long userSeq = loginUser.getUserSeq() != null ? loginUser.getUserSeq().longValue() : null;
 
@@ -92,44 +103,47 @@ public class PayTestServiceImpl extends EgovAbstractServiceImpl implements PayTe
                 statusUrl,
                 returnUrl,
                 lang,
-                paymentMethod
+                paymentMethods
         );
         Map<String, Object> readyResponse = eximbayPaymentClient.ready(eximbayRequest);
         requireSuccess(readyResponse, "Failed to prepare Eximbay payment.");
         eximbayRequest.put("fgkey", readyResponse.get("fgkey"));
 
-        Payment payment = new Payment();
-        payment.setPgProvider("eximbay");
-        payment.setPgMid(eximbayPaymentClient.getMid());
-        payment.setPgOrderId(orderId);
-        payment.setAmount(pricing.getAmount());
-        payment.setCurrency(pricing.getCurrencyCode());
-        payment.setPaymentMethod("card");
-        payment.setStatus("pending");
-        payment.setRawResponse(eximbayPaymentClient.toJson(Map.of(
+        PaymentIntent intent = new PaymentIntent();
+        intent.setPgProvider("eximbay");
+        intent.setPgMid(eximbayPaymentClient.getMid());
+        intent.setPgOrderId(orderId);
+        intent.setAmount(pricing.getAmount());
+        intent.setCurrency(pricing.getCurrencyCode());
+        intent.setPaymentMethod(requestedPaymentMethodLabel(paymentMethods));
+        intent.setStatus("ready");
+        intent.setRawResponse(eximbayPaymentClient.toJson(Map.of(
                 "readyRequest", eximbayRequest,
                 "readyResponse", readyResponse
         )));
-        payment.setEventSeq(pricing.getEventSeq());
-        payment.setEventParticipantSeq(eventParticipantSeq);
-        payment.setParticipantSeq(participantSeq);
-        payment.setPayerName(payerName);
-        payment.setPayerEmail(participant.getEmail());
-        payment.setPayerCountry(participant.getCountry());
-        payment.setEventPricingSeq(pricing.getEventPricingSeq());
-        payment.setOriginalAmount(pricing.getAmount());
-        payment.setDiscountAmount(BigDecimal.ZERO);
-        payment.setRefundedAmount(BigDecimal.ZERO);
-        payment.setCreatedBy(userSeq);
-        payment.setUpdatedBy(userSeq);
-        payTestDao.insertPendingPayment(payment);
+        intent.setEventSeq(pricing.getEventSeq());
+        intent.setEventPricingSeq(pricing.getEventPricingSeq());
+        intent.setOriginalAmount(pricing.getAmount());
+        intent.setDiscountAmount(BigDecimal.ZERO);
+        intent.setRefundedAmount(BigDecimal.ZERO);
+        intent.setPayerName(payerName);
+        intent.setPayerEmail(participant.getEmail());
+        intent.setPayerCountry(participant.getCountry());
+        intent.setFirstName(participant.getFirstName());
+        intent.setMiddleName(participant.getMiddleName());
+        intent.setLastName(participant.getLastName());
+        intent.setOrganizationName(participant.getOrganizationName());
+        intent.setPosition(participant.getPosition());
+        intent.setCreatedBy(userSeq);
+        intent.setUpdatedBy(userSeq);
+        payTestDao.insertPaymentIntent(intent);
 
         PayTestPrepareResponseDto response = new PayTestPrepareResponseDto();
-        response.setPaymentSeq(payment.getPaymentSeq());
+        response.setPaymentSeq(null);
         response.setOrderId(orderId);
         response.setSdkUrl(eximbayPaymentClient.getSdkUrl());
         response.setEximbayRequest(eximbayRequest);
-        response.setPayment(payTestDao.selectPayTestResultByOrderId(orderId));
+        response.setPayment(payTestDao.selectPayTestIntentResultByOrderId(orderId));
         return response;
     }
 
@@ -139,7 +153,11 @@ public class PayTestServiceImpl extends EgovAbstractServiceImpl implements PayTe
         if (!StringUtils.hasText(orderId)) {
             throw new BusinessException("Order ID is required.");
         }
-        PayTestResultDto result = payTestDao.selectPayTestResultByOrderId(orderId.trim());
+        String trimmedOrderId = orderId.trim();
+        PayTestResultDto result = payTestDao.selectPayTestResultByOrderId(trimmedOrderId);
+        if (result == null) {
+            result = payTestDao.selectPayTestIntentResultByOrderId(trimmedOrderId);
+        }
         if (result == null) {
             throw new BusinessException("Payment test order was not found.");
         }
@@ -156,7 +174,8 @@ public class PayTestServiceImpl extends EgovAbstractServiceImpl implements PayTe
         }
 
         Payment current = payTestDao.selectPaymentByOrderIdForUpdate(orderId);
-        if (current == null) {
+        PaymentIntent intent = current == null ? payTestDao.selectPaymentIntentByOrderIdForUpdate(orderId) : null;
+        if (current == null && intent == null) {
             return "UNKNOWN_ORDER";
         }
 
@@ -164,34 +183,138 @@ public class PayTestServiceImpl extends EgovAbstractServiceImpl implements PayTe
         Map<String, Object> verifyResponse = eximbayPaymentClient.verify(data);
         boolean verified = "0000".equals(String.valueOf(verifyResponse.get("rescode")));
         boolean callbackSuccess = "0000".equals(params.get("rescode"));
+        boolean success = verified && callbackSuccess;
 
+        if (current != null) {
+            Payment update = buildPaymentUpdateFromCallback(current, params, verifyResponse, success);
+            payTestDao.updatePaymentFromCallback(update);
+            return "OK";
+        }
+
+        if (!success) {
+            PaymentIntent failedIntent = buildPaymentIntentStatusUpdate(intent, null, params, verifyResponse, "failed");
+            payTestDao.updatePaymentIntentStatus(failedIntent);
+            return "OK";
+        }
+
+        PayTestParticipantRequestDto participant = buildParticipantRequest(intent);
+        Long participantSeq = payTestDao.upsertParticipant(participant);
+        Long eventParticipantSeq = payTestDao.upsertEventParticipant(intent.getEventSeq(), participantSeq);
+        Payment payment = buildPaymentFromIntent(intent, eventParticipantSeq, participantSeq, params, verifyResponse);
+        Payment existingPayment = payTestDao.selectPaymentByRegistrationForUpdate(
+                payment.getEventSeq(),
+                payment.getEventPricingSeq(),
+                payment.getParticipantSeq()
+        );
+        if (existingPayment == null) {
+            payTestDao.insertPayment(payment);
+        } else {
+            payment.setPaymentSeq(existingPayment.getPaymentSeq());
+            payTestDao.updatePaymentFromCallbackBySeq(payment);
+        }
+
+        PaymentIntent paidIntent = buildPaymentIntentStatusUpdate(intent, payment.getPaymentSeq(), params, verifyResponse, "paid");
+        payTestDao.updatePaymentIntentStatus(paidIntent);
+        return "OK";
+    }
+
+    private Payment buildPaymentUpdateFromCallback(Payment current,
+                                                   Map<String, String> params,
+                                                   Map<String, Object> verifyResponse,
+                                                   boolean success) {
         Payment update = new Payment();
-        update.setPgOrderId(orderId);
-        update.setPgTransactionId(params.get("transaction_id"));
-        update.setAmount(parseAmount(params.get("amount"), current.getAmount()));
-        update.setCurrency(defaultText(params.get("currency"), current.getCurrency()));
-        update.setPaymentMethod("card");
-        update.setCardCompany(cardCompany(params.get("payment_method")));
-        update.setCardLast4(params.get("card_number4"));
-        update.setStatus(verified && callbackSuccess ? "paid" : "failed");
-        update.setPaidAt(verified && callbackSuccess ? parseEximbayDate(params.get("transaction_date")) : null);
-        update.setFailedReason(verified && callbackSuccess ? null : defaultText(params.get("resmsg"), String.valueOf(verifyResponse.get("resmsg"))));
-        update.setPgResponseCode(params.get("rescode"));
-        update.setPgResponseMessage(params.get("resmsg"));
-        update.setVerifiedAt(verified ? LocalDateTime.now() : null);
-        update.setWebhookReceivedAt(LocalDateTime.now());
-        update.setSettleAmount(parseAmount(params.get("base_amount"), null));
-        update.setSettleCurrency(params.get("base_currency"));
-        update.setFxRate(parseAmount(params.get("base_rate"), null));
-        update.setApprovalNo(params.get("auth_code"));
-        update.setInstallmentMonths(parseInteger(params.get("installment_months")));
+        update.setPgOrderId(current.getPgOrderId());
+        applyCallbackFields(update, current.getAmount(), current.getCurrency(), current.getPaymentMethod(), params, verifyResponse, success);
         update.setUpdatedBy(current.getUpdatedBy());
+        return update;
+    }
+
+    private PaymentIntent buildPaymentIntentStatusUpdate(PaymentIntent current,
+                                                         Long paymentSeq,
+                                                         Map<String, String> params,
+                                                         Map<String, Object> verifyResponse,
+                                                         String status) {
+        PaymentIntent update = new PaymentIntent();
+        update.setPaymentIntentSeq(current.getPaymentIntentSeq());
+        update.setStatus(status);
+        update.setFailedReason("paid".equals(status) ? null : defaultText(params.get("resmsg"), responseText(verifyResponse, "resmsg")));
         update.setRawResponse(eximbayPaymentClient.toJson(Map.of(
                 "callback", params,
                 "verifyResponse", verifyResponse
         )));
-        payTestDao.updatePaymentFromCallback(update);
-        return "OK";
+        update.setCompletedAt(LocalDateTime.now());
+        update.setPaymentSeq(paymentSeq);
+        update.setUpdatedBy(current.getUpdatedBy());
+        return update;
+    }
+
+    private PayTestParticipantRequestDto buildParticipantRequest(PaymentIntent intent) {
+        PayTestParticipantRequestDto participant = new PayTestParticipantRequestDto();
+        participant.setEmail(intent.getPayerEmail().toLowerCase(Locale.ROOT));
+        participant.setFirstName(intent.getFirstName());
+        participant.setMiddleName(intent.getMiddleName());
+        participant.setLastName(intent.getLastName());
+        participant.setOrganizationName(intent.getOrganizationName());
+        participant.setPosition(intent.getPosition());
+        participant.setCountry(intent.getPayerCountry());
+        return participant;
+    }
+
+    private Payment buildPaymentFromIntent(PaymentIntent intent,
+                                           Long eventParticipantSeq,
+                                           Long participantSeq,
+                                           Map<String, String> params,
+                                           Map<String, Object> verifyResponse) {
+        Payment payment = new Payment();
+        payment.setPgProvider(intent.getPgProvider());
+        payment.setPgMid(intent.getPgMid());
+        payment.setPgOrderId(intent.getPgOrderId());
+        payment.setEventSeq(intent.getEventSeq());
+        payment.setEventParticipantSeq(eventParticipantSeq);
+        payment.setParticipantSeq(participantSeq);
+        payment.setPayerName(intent.getPayerName());
+        payment.setPayerEmail(intent.getPayerEmail());
+        payment.setPayerCountry(intent.getPayerCountry());
+        payment.setEventPricingSeq(intent.getEventPricingSeq());
+        payment.setOriginalAmount(intent.getOriginalAmount() != null ? intent.getOriginalAmount() : intent.getAmount());
+        payment.setDiscountAmount(intent.getDiscountAmount() != null ? intent.getDiscountAmount() : BigDecimal.ZERO);
+        payment.setRefundedAmount(intent.getRefundedAmount() != null ? intent.getRefundedAmount() : BigDecimal.ZERO);
+        payment.setCreatedBy(intent.getCreatedBy());
+        payment.setUpdatedBy(intent.getUpdatedBy());
+        applyCallbackFields(payment, intent.getAmount(), intent.getCurrency(), intent.getPaymentMethod(), params, verifyResponse, true);
+        return payment;
+    }
+
+    private void applyCallbackFields(Payment payment,
+                                     BigDecimal defaultAmount,
+                                     String defaultCurrency,
+                                     String defaultPaymentMethod,
+                                     Map<String, String> params,
+                                     Map<String, Object> verifyResponse,
+                                     boolean success) {
+        String callbackPaymentMethod = params.get("payment_method");
+        payment.setPgTransactionId(params.get("transaction_id"));
+        payment.setAmount(parseAmount(params.get("amount"), defaultAmount));
+        payment.setCurrency(defaultText(params.get("currency"), defaultCurrency));
+        payment.setPaymentMethod(actualPaymentMethodLabel(callbackPaymentMethod, defaultPaymentMethod));
+        payment.setCardCompany(isCardPaymentMethod(callbackPaymentMethod) ? cardCompany(callbackPaymentMethod) : null);
+        payment.setCardLast4(isCardPaymentMethod(callbackPaymentMethod) ? params.get("card_number4") : null);
+        payment.setStatus(success ? "paid" : "failed");
+        payment.setPaidAt(success ? parseEximbayDate(params.get("transaction_date")) : null);
+        payment.setFailedReason(success ? null : defaultText(params.get("resmsg"), String.valueOf(verifyResponse.get("resmsg"))));
+        payment.setPgResponseCode(params.get("rescode"));
+        payment.setPgResponseMessage(params.get("resmsg"));
+        payment.setVerifiedAt("0000".equals(String.valueOf(verifyResponse.get("rescode"))) ? LocalDateTime.now() : null);
+        payment.setWebhookReceivedAt(LocalDateTime.now());
+        payment.setSettleAmount(parseAmount(params.get("base_amount"), null));
+        payment.setSettleCurrency(params.get("base_currency"));
+        payment.setFxRate(parseAmount(params.get("base_rate"), null));
+        payment.setApprovalNo(params.get("auth_code"));
+        payment.setInstallmentMonths(parseInteger(params.get("installment_months")));
+        payment.setRawResponse(eximbayPaymentClient.toJson(Map.of(
+                "callback", params,
+                "verifyResponse", verifyResponse
+        )));
     }
 
     private void validatePrepareRequest(PayTestPrepareRequestDto request) {
@@ -224,14 +347,21 @@ public class PayTestServiceImpl extends EgovAbstractServiceImpl implements PayTe
                                                     String statusUrl,
                                                     String returnUrl,
                                                     String lang,
-                                                    String paymentMethod) {
+                                                    List<String> paymentMethods) {
         Map<String, Object> payment = new LinkedHashMap<>();
         payment.put("transaction_type", "PAYMENT");
         payment.put("order_id", orderId);
         payment.put("currency", pricing.getCurrencyCode());
         payment.put("amount", eximbayPaymentClient.formatAmount(pricing.getAmount()));
         payment.put("lang", lang);
-        payment.put("payment_method", paymentMethod);
+        if (paymentMethods.size() == 1) {
+            payment.put("payment_method", paymentMethods.get(0));
+        } else {
+            payment.put("multi_payment_method", String.join("-", paymentMethods));
+        }
+        if (paymentMethods.stream().anyMatch(KOREAN_LOCAL_PAYMENT_METHODS::contains)) {
+            payment.put("issuer_country", "KR");
+        }
 
         Map<String, Object> merchant = new LinkedHashMap<>();
         merchant.put("mid", eximbayPaymentClient.getMid());
@@ -286,12 +416,60 @@ public class PayTestServiceImpl extends EgovAbstractServiceImpl implements PayTe
         return value.length() > 2 ? value.substring(0, 2) : value;
     }
 
-    private String normalizePaymentMethod(String paymentMethod) {
+    private List<String> normalizePaymentMethods(PayTestPrepareRequestDto request) {
+        LinkedHashSet<String> methods = new LinkedHashSet<>();
+        if (request.getPaymentMethods() != null) {
+            for (String method : request.getPaymentMethods()) {
+                addPaymentMethod(methods, method);
+            }
+        }
+        if (methods.isEmpty() && StringUtils.hasText(request.getPaymentMethod())) {
+            Arrays.stream(request.getPaymentMethod().split("[-,]"))
+                    .forEach(method -> addPaymentMethod(methods, method));
+        }
+        if (methods.isEmpty()) {
+            methods.add("P000");
+        }
+        return new ArrayList<>(methods);
+    }
+
+    private void addPaymentMethod(Set<String> methods, String method) {
+        if (!StringUtils.hasText(method)) {
+            return;
+        }
+        String value = method.trim().toUpperCase(Locale.ROOT);
+        if (!ALLOWED_PAYMENT_METHODS.contains(value)) {
+            throw new BusinessException("Unsupported Eximbay payment method: " + value);
+        }
+        methods.add(value);
+    }
+
+    private String requestedPaymentMethodLabel(List<String> methods) {
+        if (methods.size() == 1) {
+            return actualPaymentMethodLabel(methods.get(0), "card");
+        }
+        return "multiple";
+    }
+
+    private String actualPaymentMethodLabel(String paymentMethod, String fallback) {
         if (!StringUtils.hasText(paymentMethod)) {
-            return "P000";
+            return fallback;
         }
         String value = paymentMethod.trim().toUpperCase(Locale.ROOT);
-        return "P000".equals(value) ? value : "P000";
+        if (isCardPaymentMethod(value)) {
+            return "card";
+        }
+        return switch (value) {
+            case "P001" -> "paypal";
+            case "P302" -> "kakaopay";
+            case "P015", "P307", "P308" -> "naverpay";
+            default -> fallback;
+        };
+    }
+
+    private boolean isCardPaymentMethod(String paymentMethod) {
+        return StringUtils.hasText(paymentMethod)
+                && CARD_PAYMENT_METHODS.contains(paymentMethod.trim().toUpperCase(Locale.ROOT));
     }
 
     private String fullName(PayTestParticipantRequestDto participant) {
@@ -365,7 +543,9 @@ public class PayTestServiceImpl extends EgovAbstractServiceImpl implements PayTe
         if (!StringUtils.hasText(paymentMethod)) {
             return "Eximbay";
         }
-        return switch (paymentMethod) {
+        String value = paymentMethod.trim().toUpperCase(Locale.ROOT);
+        return switch (value) {
+            case "P000" -> "Credit Card";
             case "P101" -> "VISA";
             case "P102" -> "MasterCard";
             case "P103" -> "AMEX";
@@ -373,12 +553,27 @@ public class PayTestServiceImpl extends EgovAbstractServiceImpl implements PayTe
             case "P106" -> "Diners";
             case "P107" -> "Discover";
             case "P109" -> "UnionPay";
+            case "P110" -> "BC Card";
+            case "P111" -> "KB Card";
+            case "P112" -> "Hana Card";
+            case "P113" -> "Samsung Card";
+            case "P114" -> "Shinhan Card";
+            case "P115" -> "Hyundai Card";
+            case "P116" -> "Lotte Card";
+            case "P117" -> "Nonghyup Card";
+            case "P119" -> "Citibank Card";
+            case "P120" -> "Woori Card";
             default -> "Eximbay";
         };
     }
 
     private String defaultText(String value, String defaultValue) {
         return StringUtils.hasText(value) ? value : defaultValue;
+    }
+
+    private String responseText(Map<String, Object> response, String key) {
+        Object value = response.get(key);
+        return value == null ? null : String.valueOf(value);
     }
 
     private void assertAdmin(LoginUser loginUser) {

@@ -125,8 +125,8 @@
         RETURNING event_participant_seq
     </select>
 
-    <insert id="insertPendingPayment" parameterType="com.kcabEvent.domain.Payment" useGeneratedKeys="true" keyProperty="paymentSeq" keyColumn="payment_seq">
-        INSERT INTO event.payments (
+    <insert id="insertPaymentIntent" parameterType="com.kcabEvent.domain.PaymentIntent" useGeneratedKeys="true" keyProperty="paymentIntentSeq" keyColumn="payment_intent_seq">
+        INSERT INTO event.payment_intents (
              pg_provider
             ,pg_mid
             ,pg_order_id
@@ -136,15 +136,18 @@
             ,status
             ,raw_response
             ,event_seq
-            ,event_participant_seq
-            ,participant_seq
-            ,payer_name
-            ,payer_email
-            ,payer_country
             ,event_pricing_seq
             ,original_amount
             ,discount_amount
             ,refunded_amount
+            ,payer_name
+            ,payer_email
+            ,payer_country
+            ,first_name
+            ,middle_name
+            ,last_name
+            ,organization_name
+            ,position
             ,created_by
             ,updated_by
         ) VALUES (
@@ -157,11 +160,138 @@
             ,#{status}
             ,CAST(#{rawResponse,jdbcType=VARCHAR} AS JSONB)
             ,#{eventSeq}
+            ,#{eventPricingSeq}
+            ,#{originalAmount}
+            ,COALESCE(#{discountAmount,jdbcType=NUMERIC}, 0)
+            ,COALESCE(#{refundedAmount,jdbcType=NUMERIC}, 0)
+            ,#{payerName}
+            ,#{payerEmail}
+            ,#{payerCountry,jdbcType=VARCHAR}
+            ,#{firstName}
+            ,NULLIF(#{middleName,jdbcType=VARCHAR}, '')
+            ,#{lastName}
+            ,NULLIF(#{organizationName,jdbcType=VARCHAR}, '')
+            ,NULLIF(#{position,jdbcType=VARCHAR}, '')
+            ,#{createdBy}
+            ,#{updatedBy}
+        )
+    </insert>
+
+    <select id="selectPaymentIntentByOrderIdForUpdate" resultType="com.kcabEvent.domain.PaymentIntent">
+        SELECT
+             payment_intent_seq
+            ,pg_provider
+            ,pg_mid
+            ,pg_order_id
+            ,amount
+            ,currency
+            ,payment_method
+            ,status
+            ,raw_response
+            ,event_seq
+            ,event_pricing_seq
+            ,original_amount
+            ,discount_amount
+            ,refunded_amount
+            ,payer_name
+            ,payer_email
+            ,payer_country
+            ,first_name
+            ,middle_name
+            ,last_name
+            ,organization_name
+            ,position
+            ,failed_reason
+            ,completed_at
+            ,payment_seq
+            ,created_by
+            ,created_at
+            ,updated_by
+            ,updated_at
+        FROM event.payment_intents
+        WHERE pg_order_id = #{orderId}
+        FOR UPDATE
+    </select>
+
+    <update id="updatePaymentIntentStatus" parameterType="com.kcabEvent.domain.PaymentIntent">
+        UPDATE event.payment_intents
+        SET  status        = #{status}
+            ,failed_reason = #{failedReason,jdbcType=VARCHAR}
+            ,raw_response  = CAST(#{rawResponse,jdbcType=VARCHAR} AS JSONB)
+            ,completed_at  = #{completedAt,jdbcType=TIMESTAMP}
+            ,payment_seq   = #{paymentSeq,jdbcType=BIGINT}
+            ,updated_by    = #{updatedBy,jdbcType=BIGINT}
+            ,updated_at    = now()
+        WHERE payment_intent_seq = #{paymentIntentSeq}
+    </update>
+
+    <insert id="insertPayment" parameterType="com.kcabEvent.domain.Payment" useGeneratedKeys="true" keyProperty="paymentSeq" keyColumn="payment_seq">
+        INSERT INTO event.payments (
+             pg_provider
+            ,pg_mid
+            ,pg_order_id
+            ,pg_transaction_id
+            ,amount
+            ,currency
+            ,payment_method
+            ,card_company
+            ,card_last4
+            ,status
+            ,paid_at
+            ,failed_reason
+            ,receipt_url
+            ,raw_response
+            ,pg_response_code
+            ,pg_response_message
+            ,verified_at
+            ,webhook_received_at
+            ,event_seq
+            ,event_participant_seq
+            ,participant_seq
+            ,payer_name
+            ,payer_email
+            ,payer_country
+            ,settle_amount
+            ,settle_currency
+            ,fx_rate
+            ,approval_no
+            ,installment_months
+            ,event_pricing_seq
+            ,original_amount
+            ,discount_amount
+            ,refunded_amount
+            ,created_by
+            ,updated_by
+        ) VALUES (
+             #{pgProvider}
+            ,#{pgMid}
+            ,#{pgOrderId}
+            ,#{pgTransactionId,jdbcType=VARCHAR}
+            ,#{amount}
+            ,#{currency}
+            ,#{paymentMethod}
+            ,#{cardCompany,jdbcType=VARCHAR}
+            ,#{cardLast4,jdbcType=VARCHAR}
+            ,#{status}
+            ,#{paidAt,jdbcType=TIMESTAMP}
+            ,#{failedReason,jdbcType=VARCHAR}
+            ,#{receiptUrl,jdbcType=VARCHAR}
+            ,CAST(#{rawResponse,jdbcType=VARCHAR} AS JSONB)
+            ,#{pgResponseCode,jdbcType=VARCHAR}
+            ,#{pgResponseMessage,jdbcType=VARCHAR}
+            ,#{verifiedAt,jdbcType=TIMESTAMP}
+            ,COALESCE(#{webhookReceivedAt,jdbcType=TIMESTAMP}, now())
+            ,#{eventSeq}
             ,#{eventParticipantSeq}
             ,#{participantSeq}
             ,#{payerName}
             ,#{payerEmail}
             ,#{payerCountry,jdbcType=VARCHAR}
+            ,#{settleAmount,jdbcType=NUMERIC}
+            ,#{settleCurrency,jdbcType=VARCHAR}
+            ,#{fxRate,jdbcType=NUMERIC}
+            ,#{approvalNo,jdbcType=VARCHAR}
+            ,#{installmentMonths,jdbcType=INTEGER}
             ,#{eventPricingSeq}
             ,#{originalAmount}
             ,COALESCE(#{discountAmount,jdbcType=NUMERIC}, 0)
@@ -170,6 +300,122 @@
             ,#{updatedBy}
         )
     </insert>
+
+    <select id="selectPaymentByRegistrationForUpdate" resultType="com.kcabEvent.domain.Payment">
+        SELECT
+             payment_seq
+            ,pg_provider
+            ,pg_mid
+            ,pg_transaction_id
+            ,pg_order_id
+            ,amount
+            ,currency
+            ,payment_method
+            ,status
+            ,paid_at
+            ,failed_reason
+            ,event_seq
+            ,event_participant_seq
+            ,participant_seq
+            ,payer_name
+            ,payer_email
+            ,payer_country
+            ,event_pricing_seq
+            ,original_amount
+            ,discount_amount
+            ,refunded_amount
+            ,created_by
+            ,updated_by
+        FROM event.payments
+        WHERE event_seq = #{eventSeq}
+          AND event_pricing_seq = #{eventPricingSeq}
+          AND participant_seq = #{participantSeq}
+        ORDER BY payment_seq DESC
+        LIMIT 1
+        FOR UPDATE
+    </select>
+
+    <update id="updatePaymentForRetry" parameterType="com.kcabEvent.domain.Payment">
+        UPDATE event.payments
+        SET  pg_provider            = #{pgProvider}
+            ,pg_mid                 = #{pgMid}
+            ,pg_order_id            = #{pgOrderId}
+            ,pg_transaction_id      = NULL
+            ,amount                 = #{amount}
+            ,currency               = #{currency}
+            ,payment_method         = #{paymentMethod}
+            ,card_company           = NULL
+            ,card_last4             = NULL
+            ,status                 = 'pending'
+            ,paid_at                = NULL
+            ,failed_reason          = NULL
+            ,receipt_url            = NULL
+            ,raw_response           = CAST(#{rawResponse,jdbcType=VARCHAR} AS JSONB)
+            ,pg_response_code       = NULL
+            ,pg_response_message    = NULL
+            ,verified_at            = NULL
+            ,webhook_received_at    = NULL
+            ,settle_amount          = NULL
+            ,settle_currency        = NULL
+            ,fx_rate                = NULL
+            ,approval_no            = NULL
+            ,installment_months     = NULL
+            ,event_seq              = #{eventSeq}
+            ,event_participant_seq  = #{eventParticipantSeq}
+            ,participant_seq        = #{participantSeq}
+            ,payer_name             = #{payerName}
+            ,payer_email            = #{payerEmail}
+            ,payer_country          = #{payerCountry,jdbcType=VARCHAR}
+            ,event_pricing_seq      = #{eventPricingSeq}
+            ,original_amount        = #{originalAmount}
+            ,discount_amount        = COALESCE(#{discountAmount,jdbcType=NUMERIC}, 0)
+            ,refunded_amount        = COALESCE(#{refundedAmount,jdbcType=NUMERIC}, 0)
+            ,cancelled_at           = NULL
+            ,cancel_reason          = NULL
+            ,updated_by             = #{updatedBy,jdbcType=BIGINT}
+            ,updated_at             = now()
+        WHERE payment_seq = #{paymentSeq}
+    </update>
+
+    <update id="updatePaymentFromCallbackBySeq" parameterType="com.kcabEvent.domain.Payment">
+        UPDATE event.payments
+        SET  pg_provider            = #{pgProvider}
+            ,pg_mid                 = #{pgMid}
+            ,pg_order_id            = #{pgOrderId}
+            ,pg_transaction_id      = COALESCE(NULLIF(#{pgTransactionId,jdbcType=VARCHAR}, ''), pg_transaction_id)
+            ,amount                 = COALESCE(#{amount,jdbcType=NUMERIC}, amount)
+            ,currency               = COALESCE(NULLIF(#{currency,jdbcType=VARCHAR}, ''), currency)
+            ,payment_method         = COALESCE(NULLIF(#{paymentMethod,jdbcType=VARCHAR}, ''), payment_method)
+            ,card_company           = NULLIF(#{cardCompany,jdbcType=VARCHAR}, '')
+            ,card_last4             = NULLIF(#{cardLast4,jdbcType=VARCHAR}, '')
+            ,status                 = #{status}
+            ,paid_at                = CASE WHEN #{paidAt,jdbcType=TIMESTAMP} IS NULL THEN paid_at ELSE #{paidAt,jdbcType=TIMESTAMP} END
+            ,failed_reason          = #{failedReason,jdbcType=VARCHAR}
+            ,receipt_url            = #{receiptUrl,jdbcType=VARCHAR}
+            ,raw_response           = CAST(#{rawResponse,jdbcType=VARCHAR} AS JSONB)
+            ,pg_response_code       = #{pgResponseCode,jdbcType=VARCHAR}
+            ,pg_response_message    = #{pgResponseMessage,jdbcType=VARCHAR}
+            ,verified_at            = #{verifiedAt,jdbcType=TIMESTAMP}
+            ,webhook_received_at    = COALESCE(#{webhookReceivedAt,jdbcType=TIMESTAMP}, now())
+            ,settle_amount          = COALESCE(#{settleAmount,jdbcType=NUMERIC}, settle_amount)
+            ,settle_currency        = COALESCE(NULLIF(#{settleCurrency,jdbcType=VARCHAR}, ''), settle_currency)
+            ,fx_rate                = COALESCE(#{fxRate,jdbcType=NUMERIC}, fx_rate)
+            ,approval_no            = NULLIF(#{approvalNo,jdbcType=VARCHAR}, '')
+            ,installment_months     = COALESCE(#{installmentMonths,jdbcType=INTEGER}, installment_months)
+            ,event_seq              = #{eventSeq}
+            ,event_participant_seq  = #{eventParticipantSeq}
+            ,participant_seq        = #{participantSeq}
+            ,payer_name             = #{payerName}
+            ,payer_email            = #{payerEmail}
+            ,payer_country          = #{payerCountry,jdbcType=VARCHAR}
+            ,event_pricing_seq      = #{eventPricingSeq}
+            ,original_amount        = #{originalAmount}
+            ,discount_amount        = COALESCE(#{discountAmount,jdbcType=NUMERIC}, 0)
+            ,refunded_amount        = COALESCE(#{refundedAmount,jdbcType=NUMERIC}, 0)
+            ,updated_by             = #{updatedBy,jdbcType=BIGINT}
+            ,updated_at             = now()
+        WHERE payment_seq = #{paymentSeq}
+    </update>
 
     <select id="selectPaymentByOrderIdForUpdate" resultType="com.kcabEvent.domain.Payment">
         SELECT
@@ -279,4 +525,28 @@
             ON pr.event_pricing_seq = p.event_pricing_seq
         WHERE p.pg_order_id = #{orderId}
     </select>
+
+    <select id="selectPayTestIntentResultByOrderId" resultType="com.kcabEvent.dto.paymenttest.PayTestResultDto">
+        SELECT
+             pi.payment_seq
+            ,pi.pg_order_id AS order_id
+            ,pi.status
+            ,pi.amount
+            ,pi.currency
+            ,e.title        AS event_title
+            ,pr.price_name
+            ,NULL           AS pg_transaction_id
+            ,NULL           AS pg_response_code
+            ,NULL           AS pg_response_message
+            ,pi.failed_reason
+            ,NULL           AS paid_at
+            ,pi.created_at
+        FROM event.payment_intents pi
+        LEFT JOIN event.events e
+            ON e.event_seq = pi.event_seq
+        LEFT JOIN event.event_pricing pr
+            ON pr.event_pricing_seq = pi.event_pricing_seq
+        WHERE pi.pg_order_id = #{orderId}
+    </select>
+
 </mapper>

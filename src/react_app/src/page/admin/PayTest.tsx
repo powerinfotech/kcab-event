@@ -15,6 +15,7 @@ import {
 import {
   PayTestEventOption,
   PayTestParticipantRequest,
+  PayTestPaymentMethodCode,
   PayTestPricingOption,
   PayTestResult,
 } from '@interface/admin/PayTest';
@@ -37,6 +38,21 @@ const EMPTY_PARTICIPANT: PayTestParticipantRequest = {
   position: '',
   country: '',
 };
+
+const PAYMENT_METHOD_OPTIONS: Array<{
+  value: PayTestPaymentMethodCode;
+  label: string;
+  brand: string;
+  tone: string;
+  description: string;
+}> = [
+  { value: 'P000', label: 'Credit Card', brand: 'CARD', tone: 'card', description: 'Visa, Mastercard, JCB' },
+  { value: 'P001', label: 'PayPal', brand: 'PayPal', tone: 'paypal', description: 'Pay with PayPal' },
+  { value: 'P302', label: 'KakaoPay', brand: 'kakao pay', tone: 'kakao', description: 'KakaoPay easy payment' },
+  { value: 'P015', label: 'NaverPay', brand: 'N Pay', tone: 'naver', description: 'NaverPay card & point' },
+];
+
+const DEFAULT_PAYMENT_METHOD = PAYMENT_METHOD_OPTIONS[0].value;
 
 function formatMoney(amount?: number | string | null, currency?: string | null) {
   const n = Number(amount ?? 0);
@@ -99,6 +115,7 @@ export default function PayTest() {
   const [selectedPricingSeq, setSelectedPricingSeq] = useState<number | undefined>();
   const [participant, setParticipant] = useState<PayTestParticipantRequest>(EMPTY_PARTICIPANT);
   const [callbackBaseUrl, setCallbackBaseUrl] = useState('');
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PayTestPaymentMethodCode>(DEFAULT_PAYMENT_METHOD);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [latestOrderId, setLatestOrderId] = useState('');
@@ -207,7 +224,8 @@ export default function PayTest() {
         eventSeq: selectedEvent.eventSeq,
         eventPricingSeq: selectedPricing.eventPricingSeq,
         participant,
-        paymentMethod: 'P000',
+        paymentMethod: selectedPaymentMethod,
+        paymentMethods: [selectedPaymentMethod],
         lang: 'EN',
         callbackBaseUrl: callbackBaseUrl.trim(),
       });
@@ -330,7 +348,11 @@ export default function PayTest() {
             </label>
             <label className="saf-form-field is-wide">
               <span>Country</span>
-              <input value={participant.country} onChange={(e) => updateParticipant('country', e.target.value)} />
+              <input
+                value={participant.country}
+                maxLength={100}
+                onChange={(e) => updateParticipant('country', e.target.value)}
+              />
             </label>
           </div>
         </section>
@@ -342,9 +364,26 @@ export default function PayTest() {
           </div>
           <label className="saf-form-field">
             <span>Payment Method</span>
-            <select value="P000" disabled>
-              <option value="P000">Eximbay Credit Card</option>
-            </select>
+            <div className="saf-pay-method-grid" role="radiogroup" aria-label="Payment method">
+              {PAYMENT_METHOD_OPTIONS.map((option) => {
+                const selected = selectedPaymentMethod === option.value;
+                return (
+                  <button
+                    type="button"
+                    key={option.value}
+                    className={`saf-pay-method-button is-${option.tone}${selected ? ' is-selected' : ''}`}
+                    aria-pressed={selected}
+                    onClick={() => setSelectedPaymentMethod(option.value)}
+                  >
+                    <span className="saf-pay-method-brand">{option.brand}</span>
+                    <span className="saf-pay-method-copy">
+                      <strong>{option.label}</strong>
+                      <small>{option.description}</small>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </label>
           <label className="saf-form-field">
             <span>Callback Base URL</span>

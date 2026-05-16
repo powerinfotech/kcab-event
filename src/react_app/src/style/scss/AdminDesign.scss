@@ -938,6 +938,99 @@
   font-weight: 800;
 }
 
+.saf-pay-method-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.saf-pay-method-button {
+  width: 100%;
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid #dbe4ef;
+  border-radius: 6px;
+  background: #fff;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    border-color: #8aa5c4;
+    background: #f8fbff;
+  }
+
+  &.is-selected {
+    border-color: #153e6f;
+    background: #f0f6ff;
+    box-shadow: inset 0 0 0 1px #153e6f;
+
+    &::after {
+      content: "Selected";
+      margin-left: auto;
+      color: #153e6f;
+      font-size: 11px;
+      font-weight: 900;
+    }
+  }
+
+  &.is-paypal .saf-pay-method-brand {
+    background: #ffc439;
+    color: #003087;
+  }
+
+  &.is-kakao .saf-pay-method-brand {
+    background: #ffeb00;
+    color: #191919;
+  }
+
+  &.is-naver .saf-pay-method-brand {
+    background: #03c75a;
+    color: #fff;
+  }
+
+  &.is-card .saf-pay-method-brand {
+    background: #13243a;
+    color: #fff;
+  }
+}
+
+.saf-pay-method-brand {
+  width: 96px;
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 96px;
+  border-radius: 4px;
+  font-size: 13px;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.saf-pay-method-copy {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+
+  strong {
+    color: #13243a;
+    font-size: 13px;
+    line-height: 1.2;
+    font-weight: 900;
+  }
+
+  small {
+    color: #64748b;
+    font-size: 11px;
+    line-height: 1.2;
+    font-weight: 700;
+  }
+}
+
 .saf-pay-test-submit {
   width: 100%;
   min-height: 48px;
