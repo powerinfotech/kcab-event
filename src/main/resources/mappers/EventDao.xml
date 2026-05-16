@@ -95,6 +95,14 @@
             ,ep.hero_title
             ,ep.hero_subtitle
             ,ep.hero_file_seq
+            ,(
+                SELECT '/api/public/file-image/' || d.file_dtl_seq
+                FROM event.tb_file_dtl d
+                WHERE d.file_seq = ep.hero_file_seq
+                  AND d.del_yn = 'N'
+                ORDER BY d.sort_seq ASC, d.file_dtl_seq ASC
+                LIMIT 1
+            ) AS hero_image_url
             ,ep.theme_code
             ,ep.theme_json::text AS theme_json
             ,ep.settings_json::text AS settings_json
@@ -131,6 +139,14 @@
             ,ep.hero_title
             ,ep.hero_subtitle
             ,ep.hero_file_seq
+            ,(
+                SELECT '/api/public/file-image/' || d.file_dtl_seq
+                FROM event.tb_file_dtl d
+                WHERE d.file_seq = ep.hero_file_seq
+                  AND d.del_yn = 'N'
+                ORDER BY d.sort_seq ASC, d.file_dtl_seq ASC
+                LIMIT 1
+            ) AS hero_image_url
             ,ep.theme_code
             ,ep.theme_json::text AS theme_json
             ,ep.settings_json::text AS settings_json
@@ -201,6 +217,10 @@
             ,b.link_url
             ,b.link_target
             ,b.image_file_seq
+            ,CASE
+                WHEN img.file_dtl_seq IS NOT NULL THEN '/api/public/file-image/' || img.file_dtl_seq
+                ELSE NULL
+             END AS image_url
             ,b.attachment_file_seq
             ,b.featured_yn
             ,b.sort_seq
@@ -212,6 +232,14 @@
             ON s.section_seq = b.section_seq
            AND s.deleted_at IS NULL
            AND s.use_yn = 'Y'
+        LEFT JOIN LATERAL (
+            SELECT d.file_dtl_seq
+            FROM event.tb_file_dtl d
+            WHERE d.file_seq = b.image_file_seq
+              AND d.del_yn = 'N'
+            ORDER BY d.sort_seq ASC, d.file_dtl_seq ASC
+            LIMIT 1
+        ) img ON TRUE
         WHERE s.event_page_seq = #{eventPageSeq}
           AND b.deleted_at IS NULL
           AND b.use_yn = 'Y'
@@ -264,6 +292,10 @@
             ,b.link_url
             ,b.link_target
             ,b.image_file_seq
+            ,CASE
+                WHEN img.file_dtl_seq IS NOT NULL THEN '/api/public/file-image/' || img.file_dtl_seq
+                ELSE NULL
+             END AS image_url
             ,b.attachment_file_seq
             ,b.featured_yn
             ,b.sort_seq
@@ -274,6 +306,14 @@
         INNER JOIN event.event_page_sections s
             ON s.section_seq = b.section_seq
            AND s.deleted_at IS NULL
+        LEFT JOIN LATERAL (
+            SELECT d.file_dtl_seq
+            FROM event.tb_file_dtl d
+            WHERE d.file_seq = b.image_file_seq
+              AND d.del_yn = 'N'
+            ORDER BY d.sort_seq ASC, d.file_dtl_seq ASC
+            LIMIT 1
+        ) img ON TRUE
         WHERE s.event_page_seq = #{eventPageSeq}
           AND b.deleted_at IS NULL
         ORDER BY s.sort_seq ASC, b.parent_block_seq NULLS FIRST, b.sort_seq ASC, b.block_seq ASC

@@ -20,6 +20,7 @@ public class PublicEventPageDto {
     private String heroTitle;
     private String heroSubtitle;
     private Long heroFileSeq;
+    private String heroImageUrl;
     private String themeCode;
     private String themeJson;
     private String settingsJson;

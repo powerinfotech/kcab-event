@@ -27,6 +27,7 @@ public class EventPageBlockDto {
     private String linkUrl;
     private String linkTarget;
     private Long imageFileSeq;
+    private String imageUrl;
     private Long attachmentFileSeq;
     private String featuredYn;
     private Integer sortSeq;

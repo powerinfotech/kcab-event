@@ -46,6 +46,13 @@ interface PageTheme {
   heroBackgroundColor: string;
 }
 
+interface SectionSettings {
+  backgroundStyle?: 'white' | 'soft' | 'navy' | 'gold';
+  width?: 'normal' | 'wide';
+  spacing?: 'compact' | 'normal' | 'spacious';
+  [key: string]: unknown;
+}
+
 const EMPTY_CATALOG: EventPageComponentCatalog = { categories: [], templates: [] };
 const DEFAULT_THEME: PageTheme = {
   heroBackgroundType: 'color',
@@ -55,65 +62,104 @@ const DEFAULT_THEME: PageTheme = {
 };
 
 const THEME_COLOR_OPTIONS = [
-  { value: 'navy', label: 'KCAB Navy', color: '#102033' },
-  { value: 'blue', label: 'Conference Blue', color: '#1f5b95' },
-  { value: 'gold', label: 'Gold Accent', color: '#b88900' },
-  { value: 'gray', label: 'Quiet Gray', color: '#475569' },
+  { value: 'navy', label: '남색', color: '#102033' },
+  { value: 'blue', label: '파란색', color: '#1f5b95' },
+  { value: 'gold', label: '골드', color: '#b88900' },
+  { value: 'gray', label: '회색', color: '#475569' },
 ];
 
 const HERO_COLOR_OPTIONS = [
-  { value: '#102033', label: 'Deep Navy' },
-  { value: '#1f5b95', label: 'Conference Blue' },
-  { value: '#263238', label: 'Charcoal' },
-  { value: '#f4f6f9', label: 'Light Gray' },
+  { value: '#102033', label: '짙은 남색' },
+  { value: '#1f5b95', label: '회의 파란색' },
+  { value: '#263238', label: '차분한 검정' },
+  { value: '#f4f6f9', label: '밝은 회색' },
 ];
+
+const SECTION_BACKGROUND_OPTIONS = [
+  { value: 'white', label: '흰색' },
+  { value: 'soft', label: '연한 회색' },
+  { value: 'navy', label: '짙은 남색' },
+  { value: 'gold', label: '골드 포인트' },
+] as const;
+
+const SECTION_WIDTH_OPTIONS = [
+  { value: 'normal', label: '기본' },
+  { value: 'wide', label: '넓게' },
+] as const;
+
+const SECTION_SPACING_OPTIONS = [
+  { value: 'compact', label: '좁게' },
+  { value: 'normal', label: '보통' },
+  { value: 'spacious', label: '넓게' },
+] as const;
+
+const PROGRAM_TRACK_OPTIONS = [
+  'Main Schedule',
+  'Open Session',
+  'Institutions Session',
+  'Break',
+  'Reception',
+] as const;
+
+const ORGANIZATION_GROUP_OPTIONS = [
+  { value: 'Organizers', label: '주최기관' },
+  { value: 'Supporters', label: '후원기관' },
+] as const;
 
 const SECTION_PRESETS: SectionPreset[] = [
   {
     sectionType: 'about',
-    label: 'Event Overview',
-    description: 'Purpose, audience, and key messages',
+    label: '행사 소개',
+    description: '행사의 목적과 주요 안내 문구',
     defaultTitle: 'About',
   },
   {
     sectionType: 'program',
-    label: 'Program',
-    description: 'Agenda sessions and schedule',
+    label: '프로그램',
+    description: '시간표와 세션 정보',
     defaultTitle: 'Program',
     blockType: 'agenda_session',
-    addLabel: 'Add Session',
+    addLabel: '세션 추가',
   },
   {
     sectionType: 'speakers',
-    label: 'Speakers',
-    description: 'Speaker names, roles, and organizations',
+    label: '연사',
+    description: '연사 사진, 직책, 소속 정보',
     defaultTitle: 'Speakers',
     blockType: 'speaker_card',
-    addLabel: 'Add Speaker',
+    addLabel: '연사 추가',
   },
   {
     sectionType: 'supporting_organizations',
-    label: 'Organizations',
-    description: 'Supporting organizations and partners',
+    label: '주최/후원기관',
+    description: '주최기관과 후원기관 로고',
     defaultTitle: 'Supporting Organizations',
     blockType: 'organization_logo',
-    addLabel: 'Add Organization',
+    addLabel: '기관 추가',
   },
   {
     sectionType: 'venue',
-    label: 'Venue',
-    description: 'Venue, room, and access information',
+    label: '장소',
+    description: '행사장, 회의실, 오시는 길',
     defaultTitle: 'Venue',
     blockType: 'card',
-    addLabel: 'Add Venue Info',
+    addLabel: '장소 안내 추가',
+  },
+  {
+    sectionType: 'visit_seoul',
+    label: '서울 방문',
+    description: '파트너 호텔과 방문 안내',
+    defaultTitle: 'Visit Seoul',
+    blockType: 'card',
+    addLabel: '호텔 추가',
   },
   {
     sectionType: 'notice',
-    label: 'Notice',
-    description: 'Important notices for participants',
+    label: '공지',
+    description: '참가자에게 필요한 안내 사항',
     defaultTitle: 'Notice',
     blockType: 'notice_item',
-    addLabel: 'Add Notice',
+    addLabel: '공지 추가',
   },
 ];
 
@@ -290,9 +336,9 @@ const OfficialEventPageBuilder: React.FC<OfficialEventPageBuilderProps> = ({ eve
       setHeroFiles(nextImages.heroFiles);
       setBlockImageFiles(nextImages.blockImageFiles);
       setActiveSectionSeq(nextPage.sections[0]?.sectionSeq ?? null);
-      message.success('Official event homepage has been saved.');
+      message.success('행사 페이지가 저장되었습니다.');
     } catch (err: any) {
-      message.error(err?.response?.data?.message ?? 'Failed to save official event homepage.');
+      message.error(err?.response?.data?.message ?? '행사 페이지 저장에 실패했습니다.');
     } finally {
       setSaving(false);
     }
@@ -308,7 +354,7 @@ const OfficialEventPageBuilder: React.FC<OfficialEventPageBuilderProps> = ({ eve
           onSave={() => undefined}
           onPreview={() => undefined}
         />
-        <div className="saf-builder-empty">Save the official event first, then fill in its homepage.</div>
+        <div className="saf-builder-empty">먼저 행사를 저장한 뒤 페이지 내용을 입력해주세요.</div>
       </section>
     );
   }
@@ -324,46 +370,46 @@ const OfficialEventPageBuilder: React.FC<OfficialEventPageBuilderProps> = ({ eve
       />
 
       {loading || !page ? (
-        <div className="saf-builder-empty">Loading official event homepage...</div>
+        <div className="saf-builder-empty">행사 페이지를 불러오는 중입니다...</div>
       ) : (
         <>
           <div className="saf-simple-basics">
             <label>
-              <span>Page Status</span>
+              <span>공개 상태</span>
               <select
                 value={page.pageStatus || 'draft'}
                 disabled={!canEdit}
                 onChange={(e) => updatePage({ pageStatus: e.target.value })}
               >
-                <option value="draft">Draft</option>
-                <option value="published">Published</option>
+                <option value="draft">임시저장</option>
+                <option value="published">공개</option>
               </select>
             </label>
             <label>
-              <span>Page Title</span>
+              <span>페이지 제목</span>
               <input
                 value={page.pageTitle ?? ''}
                 disabled={!canEdit}
                 onChange={(e) => updatePage({ pageTitle: e.target.value })}
-                placeholder="Event homepage title"
+                placeholder="행사 페이지 제목"
               />
             </label>
             <label>
-              <span>Main Heading</span>
+              <span>상단 큰 제목</span>
               <input
                 value={page.heroTitle ?? ''}
                 disabled={!canEdit}
                 onChange={(e) => updatePage({ heroTitle: e.target.value })}
-                placeholder="Main headline shown at the top"
+                placeholder="상단에 크게 보이는 제목"
               />
             </label>
             <label className="is-wide">
-              <span>Top Summary</span>
+              <span>상단 소개 문구</span>
               <textarea
                 value={page.heroSubtitle ?? ''}
                 disabled={!canEdit}
                 onChange={(e) => updatePage({ heroSubtitle: e.target.value })}
-                placeholder="One or two sentences introducing the event"
+                placeholder="행사를 소개하는 짧은 문구"
               />
             </label>
           </div>
@@ -371,36 +417,36 @@ const OfficialEventPageBuilder: React.FC<OfficialEventPageBuilderProps> = ({ eve
           <div className="saf-visual-settings">
             <div className="saf-simple-editor-title">
               <div>
-                <h3>Visual Style</h3>
-                <p>Choose the event mood without editing code.</p>
+                <h3>상단 화면 꾸미기</h3>
+                <p>대표 이미지와 색상을 선택하면 화면에 자동으로 반영됩니다.</p>
               </div>
             </div>
             <div className="saf-simple-form">
               <label>
-                <span>Top Background</span>
+                <span>상단 배경</span>
                 <select
                   value={theme.heroBackgroundType}
                   disabled={!canEdit}
                   onChange={(e) => updateTheme({ heroBackgroundType: e.target.value as PageTheme['heroBackgroundType'] })}
                 >
-                  <option value="color">Color</option>
-                  <option value="image">Image</option>
+                  <option value="color">색상</option>
+                  <option value="image">이미지</option>
                 </select>
               </label>
               <label>
-                <span>Image Overlay</span>
+                <span>이미지 밝기</span>
                 <select
                   value={theme.heroOverlay}
                   disabled={!canEdit}
                   onChange={(e) => updateTheme({ heroOverlay: e.target.value as PageTheme['heroOverlay'] })}
                 >
-                  <option value="dark">Dark</option>
-                  <option value="light">Light</option>
-                  <option value="none">None</option>
+                  <option value="dark">어둡게</option>
+                  <option value="light">밝게</option>
+                  <option value="none">그대로</option>
                 </select>
               </label>
               <label>
-                <span>Theme Color</span>
+                <span>포인트 색상</span>
                 <select
                   value={theme.themeColor}
                   disabled={!canEdit}
@@ -412,7 +458,7 @@ const OfficialEventPageBuilder: React.FC<OfficialEventPageBuilderProps> = ({ eve
                 </select>
               </label>
               <label>
-                <span>Background Color</span>
+                <span>배경 색상</span>
                 <select
                   value={theme.heroBackgroundColor}
                   disabled={!canEdit}
@@ -424,7 +470,7 @@ const OfficialEventPageBuilder: React.FC<OfficialEventPageBuilderProps> = ({ eve
                 </select>
               </label>
               <div className="saf-simple-file-field is-wide">
-                <span>Background Image</span>
+                <span>대표 이미지</span>
                 <CustomFile
                   fileList={heroFiles}
                   onFileListChange={setHeroFiles}
@@ -438,8 +484,8 @@ const OfficialEventPageBuilder: React.FC<OfficialEventPageBuilderProps> = ({ eve
 
           <div className="saf-simple-builder">
             <aside className="saf-simple-section-list">
-              <h3>Homepage Sections</h3>
-              <p>Turn sections on or off, reorder them, then fill in the selected section.</p>
+              <h3>화면 구성</h3>
+              <p>필요한 항목만 켜고, 내용을 입력하면 화면은 자동으로 정리됩니다.</p>
               {page.sections.map((section) => {
                 const preset = getPreset(section);
                 const isActive = section.sectionSeq === activeSectionSeq;
@@ -468,12 +514,12 @@ const OfficialEventPageBuilder: React.FC<OfficialEventPageBuilderProps> = ({ eve
                             showInNavYn: e.target.checked ? (section.showInNavYn || 'Y') : section.showInNavYn,
                           })}
                         />
-                        <span>Show</span>
+                        <span>사용</span>
                       </label>
-                      <button type="button" disabled={!canEdit} onClick={() => moveSection(section.sectionSeq, -1)} title="Move up">
+                      <button type="button" disabled={!canEdit} onClick={() => moveSection(section.sectionSeq, -1)} title="위로 이동">
                         <ArrowUpOutlined />
                       </button>
-                      <button type="button" disabled={!canEdit} onClick={() => moveSection(section.sectionSeq, 1)} title="Move down">
+                      <button type="button" disabled={!canEdit} onClick={() => moveSection(section.sectionSeq, 1)} title="아래로 이동">
                         <ArrowDownOutlined />
                       </button>
                     </div>
@@ -497,7 +543,7 @@ const OfficialEventPageBuilder: React.FC<OfficialEventPageBuilderProps> = ({ eve
                   onBlockImageFilesChange={(blockSeq, files) => setBlockImageFiles((prev) => ({ ...prev, [blockSeq]: files }))}
                 />
               ) : (
-                <div className="saf-builder-empty">Select a section to edit.</div>
+                <div className="saf-builder-empty">수정할 항목을 선택해주세요.</div>
               )}
             </div>
           </div>
@@ -505,7 +551,7 @@ const OfficialEventPageBuilder: React.FC<OfficialEventPageBuilderProps> = ({ eve
       )}
 
       <Modal
-        title="Homepage Preview"
+        title="미리보기"
         open={previewOpen}
         footer={null}
         width={1120}
@@ -535,21 +581,21 @@ const BuilderHeader: React.FC<{
 }> = ({ canEdit, canPreview, saving, onSave, onPreview }) => (
   <div className="saf-panel-title-row">
     <div className="saf-panel-title">
-      <h2>Official Event Homepage</h2>
-      <p>Fill in each homepage section. Technical page settings are handled automatically.</p>
+      <h2>공식 행사 페이지 만들기</h2>
+      <p>행사 정보를 입력하면 Glue Up 스타일 화면으로 자동 구성됩니다.</p>
     </div>
     {(canEdit || canPreview) && (
       <div className="saf-builder-header-actions">
         {canPreview && (
           <button type="button" className="saf-action-btn is-secondary" onClick={onPreview} disabled={saving}>
             <EyeOutlined />
-            <span>Preview</span>
+            <span>미리보기</span>
           </button>
         )}
         {canEdit && (
           <button type="button" className="saf-action-btn is-primary" onClick={onSave} disabled={saving}>
             <SaveOutlined />
-            <span>{saving ? 'Saving' : 'Save'}</span>
+            <span>{saving ? '저장 중' : '저장'}</span>
           </button>
         )}
       </div>
@@ -581,6 +627,10 @@ const SectionEditor: React.FC<{
   onBlockImageFilesChange,
 }) => {
   const visibleItems = section.blocks ?? [];
+  const sectionSettings = parseSectionSettings(section.settingsJson);
+  const updateSectionSettings = (patch: Partial<SectionSettings>) => {
+    onUpdate({ settingsJson: JSON.stringify({ ...sectionSettings, ...patch }) });
+  };
 
   return (
     <>
@@ -596,13 +646,13 @@ const SectionEditor: React.FC<{
             disabled={!canEdit}
             onChange={(e) => onUpdate({ useYn: e.target.checked ? 'Y' : 'N' })}
           />
-          <span>Show on homepage</span>
+          <span>화면에 보이기</span>
         </label>
       </div>
 
       <div className="saf-simple-form">
         <label>
-          <span>Menu Name</span>
+          <span>메뉴 이름</span>
           <input
             value={section.navLabel ?? ''}
             disabled={!canEdit}
@@ -611,7 +661,7 @@ const SectionEditor: React.FC<{
           />
         </label>
         <label>
-          <span>Section Title</span>
+          <span>화면 제목</span>
           <input
             value={section.title ?? ''}
             disabled={!canEdit}
@@ -619,23 +669,59 @@ const SectionEditor: React.FC<{
             placeholder={preset.defaultTitle}
           />
         </label>
+        <label>
+          <span>배경</span>
+          <select
+            value={sectionSettings.backgroundStyle || 'white'}
+            disabled={!canEdit}
+            onChange={(e) => updateSectionSettings({ backgroundStyle: e.target.value as SectionSettings['backgroundStyle'] })}
+          >
+            {SECTION_BACKGROUND_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>{option.label}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          <span>가로폭</span>
+          <select
+            value={sectionSettings.width || 'normal'}
+            disabled={!canEdit}
+            onChange={(e) => updateSectionSettings({ width: e.target.value as SectionSettings['width'] })}
+          >
+            {SECTION_WIDTH_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>{option.label}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          <span>여백</span>
+          <select
+            value={sectionSettings.spacing || 'normal'}
+            disabled={!canEdit}
+            onChange={(e) => updateSectionSettings({ spacing: e.target.value as SectionSettings['spacing'] })}
+          >
+            {SECTION_SPACING_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>{option.label}</option>
+            ))}
+          </select>
+        </label>
         <label className="is-wide">
-          <span>Intro Text</span>
+          <span>소개 문구</span>
           <textarea
             value={section.subtitle ?? ''}
             disabled={!canEdit}
             onChange={(e) => onUpdate({ subtitle: e.target.value })}
-            placeholder="Short text shown below the section title"
+            placeholder="제목 아래에 보이는 짧은 문구"
           />
         </label>
         {(preset.sectionType === 'about' || preset.sectionType === 'venue') && (
           <label className="is-wide">
-            <span>Main Content</span>
+            <span>상세 설명</span>
             <textarea
               value={section.body ?? ''}
               disabled={!canEdit}
               onChange={(e) => onUpdate({ body: e.target.value })}
-              placeholder="Write the content for this section"
+              placeholder="이 항목에 들어갈 내용을 입력해주세요"
             />
           </label>
         )}
@@ -646,7 +732,7 @@ const SectionEditor: React.FC<{
           <div className="saf-simple-items-head">
             <div>
               <h4>{preset.addLabel?.replace('Add ', '') ?? 'Items'}</h4>
-              <p>Add and edit the rows shown in this section.</p>
+              <p>아래 정보를 입력하면 공개 화면에 자동으로 정리되어 보입니다.</p>
             </div>
             {canEdit && (
               <button type="button" className="saf-action-btn is-secondary" onClick={onAddItem}>
@@ -669,7 +755,7 @@ const SectionEditor: React.FC<{
             />
           ))}
           {!visibleItems.length && (
-            <div className="saf-builder-empty is-small">No items yet.</div>
+            <div className="saf-builder-empty is-small">아직 입력된 내용이 없습니다.</div>
           )}
         </div>
       )}
@@ -691,13 +777,13 @@ const SectionItemEditor: React.FC<{
     <div className="saf-simple-item-head">
       <strong>{getItemHeading(preset, block)}</strong>
       <div>
-        <button type="button" disabled={!canEdit} onClick={() => onMove(-1)} title="Move up">
+        <button type="button" disabled={!canEdit} onClick={() => onMove(-1)} title="위로 이동">
           <ArrowUpOutlined />
         </button>
-        <button type="button" disabled={!canEdit} onClick={() => onMove(1)} title="Move down">
+        <button type="button" disabled={!canEdit} onClick={() => onMove(1)} title="아래로 이동">
           <ArrowDownOutlined />
         </button>
-        <button type="button" disabled={!canEdit} onClick={onRemove} title="Delete">
+        <button type="button" disabled={!canEdit} onClick={onRemove} title="삭제">
           <DeleteOutlined />
         </button>
       </div>
@@ -715,30 +801,62 @@ function renderItemFields(
   onImageFilesChange: (files: FileDetailType[]) => void,
 ) {
   if (preset.sectionType === 'program') {
+    const programContent = parseBlockContent(block.contentJson);
+    const currentTrack = getProgramTrack(block);
+    const updateProgramTrack = (track: string) => {
+      onUpdate({
+        subtitle: track,
+        contentJson: JSON.stringify({ ...programContent, track }),
+      });
+    };
+
     return (
       <div className="saf-simple-form is-compact">
         <label>
-          <span>Start</span>
+          <span>프로그램 구분</span>
+          <select
+            value={currentTrack}
+            disabled={!canEdit}
+            onChange={(e) => updateProgramTrack(e.target.value)}
+          >
+            {!PROGRAM_TRACK_OPTIONS.some((track) => track === currentTrack) && (
+              <option value={currentTrack}>{currentTrack}</option>
+            )}
+            {PROGRAM_TRACK_OPTIONS.map((track) => (
+              <option key={track} value={track}>{track}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          <span>시작 시간</span>
           <input type="datetime-local" value={toDatetimeInput(block.startAt)} disabled={!canEdit} onChange={(e) => onUpdate({ startAt: e.target.value || null })} />
         </label>
         <label>
-          <span>End</span>
+          <span>종료 시간</span>
           <input type="datetime-local" value={toDatetimeInput(block.endAt)} disabled={!canEdit} onChange={(e) => onUpdate({ endAt: e.target.value || null })} />
         </label>
         <label>
-          <span>Session Title</span>
+          <span>세션 제목</span>
           <input value={block.title ?? ''} disabled={!canEdit} onChange={(e) => onUpdate({ title: e.target.value })} />
         </label>
         <label>
-          <span>Room</span>
+          <span>장소</span>
           <input value={block.venueName ?? ''} disabled={!canEdit} onChange={(e) => onUpdate({ venueName: e.target.value })} />
         </label>
         <label className="is-wide">
-          <span>Speakers</span>
+          <span>상세 링크(선택)</span>
+          <input
+            value={block.linkUrl ?? ''}
+            disabled={!canEdit}
+            onChange={(e) => onUpdate({ linkUrl: e.target.value, linkTarget: '_blank' })}
+          />
+        </label>
+        <label className="is-wide">
+          <span>발표자</span>
           <input value={block.speakerNames ?? ''} disabled={!canEdit} onChange={(e) => onUpdate({ speakerNames: e.target.value })} />
         </label>
         <label className="is-wide">
-          <span>Description</span>
+          <span>설명</span>
           <textarea value={block.body ?? ''} disabled={!canEdit} onChange={(e) => onUpdate({ body: e.target.value })} />
         </label>
       </div>
@@ -746,10 +864,16 @@ function renderItemFields(
   }
 
   if (preset.sectionType === 'speakers') {
+    const speakerContent = parseBlockContent(block.contentJson);
+    const speakerImageUrl = typeof speakerContent.imageUrl === 'string' ? speakerContent.imageUrl : '';
+    const updateSpeakerContent = (patch: Record<string, unknown>) => {
+      onUpdate({ contentJson: JSON.stringify({ ...speakerContent, ...patch }) });
+    };
+
     return (
       <div className="saf-simple-form is-compact">
         <div className="saf-simple-file-field is-wide">
-          <span>Photo</span>
+          <span>사진</span>
           <CustomFile
             fileList={imageFiles}
             onFileListChange={onImageFilesChange}
@@ -758,20 +882,32 @@ function renderItemFields(
             accept="image/*"
           />
         </div>
+        <label className="is-wide">
+          <span>사진 이미지 주소(선택)</span>
+          <input value={speakerImageUrl} disabled={!canEdit} onChange={(e) => updateSpeakerContent({ imageUrl: e.target.value })} />
+        </label>
         <label>
-          <span>Name</span>
+          <span>이름</span>
           <input value={block.title ?? ''} disabled={!canEdit} onChange={(e) => onUpdate({ title: e.target.value })} />
         </label>
         <label>
-          <span>Role / Title</span>
+          <span>직책</span>
           <input value={block.subtitle ?? ''} disabled={!canEdit} onChange={(e) => onUpdate({ subtitle: e.target.value })} />
         </label>
         <label className="is-wide">
-          <span>Organization</span>
+          <span>소속</span>
           <input value={block.organizationName ?? ''} disabled={!canEdit} onChange={(e) => onUpdate({ organizationName: e.target.value })} />
         </label>
         <label className="is-wide">
-          <span>Bio</span>
+          <span>프로필/상세 링크(선택)</span>
+          <input
+            value={block.linkUrl ?? ''}
+            disabled={!canEdit}
+            onChange={(e) => onUpdate({ linkUrl: e.target.value, linkTarget: '_blank' })}
+          />
+        </label>
+        <label className="is-wide">
+          <span>소개</span>
           <textarea value={block.body ?? ''} disabled={!canEdit} onChange={(e) => onUpdate({ body: e.target.value })} />
         </label>
       </div>
@@ -779,10 +915,35 @@ function renderItemFields(
   }
 
   if (preset.sectionType === 'supporting_organizations') {
+    const organizationContent = parseBlockContent(block.contentJson);
+    const currentGroup = getOrganizationGroup(block);
+    const logoImageUrl = typeof organizationContent.imageUrl === 'string' ? organizationContent.imageUrl : '';
+    const updateOrganizationGroup = (group: string) => {
+      onUpdate({
+        badgeText: group,
+        contentJson: JSON.stringify({ ...organizationContent, category: group }),
+      });
+    };
+    const updateOrganizationContent = (patch: Record<string, unknown>) => {
+      onUpdate({ contentJson: JSON.stringify({ ...organizationContent, ...patch }) });
+    };
+
     return (
       <div className="saf-simple-form is-compact">
+        <label className="is-wide">
+          <span>기관 구분</span>
+          <select
+            value={currentGroup}
+            disabled={!canEdit}
+            onChange={(e) => updateOrganizationGroup(e.target.value)}
+          >
+            {ORGANIZATION_GROUP_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>{option.label}</option>
+            ))}
+          </select>
+        </label>
         <div className="saf-simple-file-field is-wide">
-          <span>Logo</span>
+          <span>로고</span>
           <CustomFile
             fileList={imageFiles}
             onFileListChange={onImageFilesChange}
@@ -792,12 +953,53 @@ function renderItemFields(
           />
         </div>
         <label className="is-wide">
-          <span>Organization Name</span>
+          <span>로고 이미지 주소(선택)</span>
+          <input value={logoImageUrl} disabled={!canEdit} onChange={(e) => updateOrganizationContent({ imageUrl: e.target.value })} />
+        </label>
+        <label className="is-wide">
+          <span>기관명</span>
           <input value={block.organizationName ?? block.title ?? ''} disabled={!canEdit} onChange={(e) => onUpdate({ organizationName: e.target.value, title: e.target.value })} />
         </label>
         <label className="is-wide">
-          <span>Website Link</span>
+          <span>홈페이지 주소</span>
           <input value={block.linkUrl ?? ''} disabled={!canEdit} onChange={(e) => onUpdate({ linkUrl: e.target.value })} />
+        </label>
+      </div>
+    );
+  }
+
+  if (preset.sectionType === 'visit_seoul') {
+    const hotelContent = parseBlockContent(block.contentJson);
+    const roomRates = typeof hotelContent.roomRates === 'string' ? hotelContent.roomRates : '';
+    const updateHotelContent = (patch: Record<string, unknown>) => {
+      onUpdate({ contentJson: JSON.stringify({ ...hotelContent, ...patch }) });
+    };
+
+    return (
+      <div className="saf-simple-form is-compact">
+        <label>
+          <span>호텔명</span>
+          <input value={block.title ?? ''} disabled={!canEdit} onChange={(e) => onUpdate({ title: e.target.value })} />
+        </label>
+        <label>
+          <span>웹사이트</span>
+          <input value={block.linkUrl ?? ''} disabled={!canEdit} onChange={(e) => onUpdate({ linkUrl: e.target.value })} />
+        </label>
+        <label className="is-wide">
+          <span>주소 / 행사장까지 이동 시간</span>
+          <textarea value={block.summary ?? ''} disabled={!canEdit} onChange={(e) => onUpdate({ summary: e.target.value })} />
+        </label>
+        <label className="is-wide">
+          <span>연락처</span>
+          <input value={block.subtitle ?? ''} disabled={!canEdit} onChange={(e) => onUpdate({ subtitle: e.target.value })} />
+        </label>
+        <label className="is-wide">
+          <span>예약 안내</span>
+          <textarea value={block.body ?? ''} disabled={!canEdit} onChange={(e) => onUpdate({ body: e.target.value })} />
+        </label>
+        <label className="is-wide">
+          <span>객실 요금 안내(선택)</span>
+          <textarea value={roomRates} disabled={!canEdit} onChange={(e) => updateHotelContent({ roomRates: e.target.value })} />
         </label>
       </div>
     );
@@ -807,19 +1009,19 @@ function renderItemFields(
     return (
       <div className="saf-simple-form is-compact">
         <label>
-          <span>Notice Title</span>
+          <span>공지 제목</span>
           <input value={block.title ?? ''} disabled={!canEdit} onChange={(e) => onUpdate({ title: e.target.value })} />
         </label>
         <label>
-          <span>Link</span>
+          <span>링크</span>
           <input value={block.linkUrl ?? ''} disabled={!canEdit} onChange={(e) => onUpdate({ linkUrl: e.target.value })} />
         </label>
         <label className="is-wide">
-          <span>Short Summary</span>
+          <span>짧은 설명</span>
           <textarea value={block.summary ?? ''} disabled={!canEdit} onChange={(e) => onUpdate({ summary: e.target.value })} />
         </label>
         <label className="is-wide">
-          <span>Details</span>
+          <span>상세 내용</span>
           <textarea value={block.body ?? ''} disabled={!canEdit} onChange={(e) => onUpdate({ body: e.target.value })} />
         </label>
       </div>
@@ -829,19 +1031,19 @@ function renderItemFields(
   return (
     <div className="saf-simple-form is-compact">
       <label>
-        <span>Title</span>
+        <span>제목</span>
         <input value={block.title ?? ''} disabled={!canEdit} onChange={(e) => onUpdate({ title: e.target.value })} />
       </label>
       <label>
-        <span>Link</span>
+        <span>링크</span>
         <input value={block.linkUrl ?? ''} disabled={!canEdit} onChange={(e) => onUpdate({ linkUrl: e.target.value })} />
       </label>
       <label className="is-wide">
-        <span>Summary</span>
+        <span>짧은 설명</span>
         <textarea value={block.summary ?? ''} disabled={!canEdit} onChange={(e) => onUpdate({ summary: e.target.value })} />
       </label>
       <label className="is-wide">
-        <span>Details</span>
+        <span>상세 내용</span>
         <textarea value={block.body ?? ''} disabled={!canEdit} onChange={(e) => onUpdate({ body: e.target.value })} />
       </label>
     </div>
@@ -888,7 +1090,7 @@ const OfficialPagePreview: React.FC<{
           <PreviewSection key={section.sectionSeq} section={section} blockImageFiles={blockImageFiles} />
         ))}
         {!sections.length && (
-          <div className="saf-builder-empty is-small">No active sections to preview.</div>
+          <div className="saf-builder-empty is-small">미리볼 수 있는 항목이 없습니다.</div>
         )}
       </div>
     </div>
@@ -900,29 +1102,34 @@ const PreviewSection: React.FC<{
   blockImageFiles: Record<number, FileDetailType[]>;
 }> = ({ section, blockImageFiles }) => {
   const blocks = (section.blocks ?? []).filter((block) => block.useYn !== 'N');
+  const sectionSettings = parseSectionSettings(section.settingsJson);
+  const sectionClassName = [
+    'saf-builder-preview-section',
+    `is-bg-${sectionSettings.backgroundStyle || 'white'}`,
+    `is-width-${sectionSettings.width || 'normal'}`,
+    `is-spacing-${sectionSettings.spacing || 'normal'}`,
+  ].join(' ');
 
   if (section.sectionType === 'program') {
     return (
-      <section id={`preview-${section.sectionSeq}`} className="saf-builder-preview-section">
+      <section id={`preview-${section.sectionSeq}`} className={sectionClassName}>
         <PreviewSectionTitle section={section} />
-        <div className="saf-builder-preview-program">
-          {blocks.map((block) => <PreviewProgramSession key={block.blockSeq} block={block} />)}
-        </div>
+        <PreviewProgramGroups blocks={blocks} />
       </section>
     );
   }
 
   if (section.sectionType === 'speakers') {
     return (
-      <section id={`preview-${section.sectionSeq}`} className="saf-builder-preview-section">
+      <section id={`preview-${section.sectionSeq}`} className={sectionClassName}>
         <PreviewSectionTitle section={section} />
         <div className="saf-builder-preview-speakers">
           {blocks.map((block) => (
             <article key={block.blockSeq}>
-              {getFilePreviewUrl(blockImageFiles[block.blockSeq]) ? (
+              {getBlockPreviewImageUrl(block, blockImageFiles) ? (
                 <img
                   className="saf-builder-preview-speaker-photo"
-                  src={getFilePreviewUrl(blockImageFiles[block.blockSeq])}
+                  src={getBlockPreviewImageUrl(block, blockImageFiles)}
                   alt={block.title || 'Speaker'}
                 />
               ) : (
@@ -940,31 +1147,40 @@ const PreviewSection: React.FC<{
 
   if (section.sectionType === 'supporting_organizations') {
     return (
-      <section id={`preview-${section.sectionSeq}`} className="saf-builder-preview-section">
+      <section id={`preview-${section.sectionSeq}`} className={sectionClassName}>
         <PreviewSectionTitle section={section} />
-        <div className="saf-builder-preview-logo-grid">
-          {blocks.map((block) => (
-            <article key={block.blockSeq}>
-              {getFilePreviewUrl(blockImageFiles[block.blockSeq]) ? (
-                <img src={getFilePreviewUrl(blockImageFiles[block.blockSeq])} alt={block.organizationName || block.title || 'Organization'} />
-              ) : (
-                block.organizationName || block.title || 'Organization'
-              )}
-            </article>
-          ))}
-        </div>
+        <PreviewOrganizationGroups blocks={blocks} blockImageFiles={blockImageFiles} />
+      </section>
+    );
+  }
+
+  if (section.sectionType === 'visit_seoul') {
+    return (
+      <section id={`preview-${section.sectionSeq}`} className={sectionClassName}>
+        <PreviewSectionTitle section={section} />
+        {section.body && <div className="saf-builder-preview-copy" dangerouslySetInnerHTML={{ __html: section.body }} />}
+        {blocks.length > 0 && (
+          <>
+            <h3 className="saf-builder-preview-subtitle">Partner Hotels</h3>
+            <div className="saf-builder-preview-card-grid">
+              {blocks.map((block) => (
+                <PreviewCard key={block.blockSeq} block={block} imageUrl={getBlockPreviewImageUrl(block, blockImageFiles)} />
+              ))}
+            </div>
+          </>
+        )}
       </section>
     );
   }
 
   return (
-    <section id={`preview-${section.sectionSeq}`} className="saf-builder-preview-section">
+    <section id={`preview-${section.sectionSeq}`} className={sectionClassName}>
       <PreviewSectionTitle section={section} />
-      {section.body && <div className="saf-builder-preview-copy">{section.body}</div>}
+      {section.body && <div className="saf-builder-preview-copy" dangerouslySetInnerHTML={{ __html: section.body }} />}
       {blocks.length > 0 && (
         <div className="saf-builder-preview-card-grid">
           {blocks.map((block) => (
-            <PreviewCard key={block.blockSeq} block={block} imageUrl={getFilePreviewUrl(blockImageFiles[block.blockSeq])} />
+            <PreviewCard key={block.blockSeq} block={block} imageUrl={getBlockPreviewImageUrl(block, blockImageFiles)} />
           ))}
         </div>
       )}
@@ -980,17 +1196,81 @@ const PreviewSectionTitle: React.FC<{ section: EventPageSection }> = ({ section 
   </header>
 );
 
-const PreviewCard: React.FC<{ block: EventPageBlock; imageUrl?: string }> = ({ block, imageUrl }) => (
-  <article className="saf-builder-preview-card">
-    {imageUrl && <img src={imageUrl} alt={block.title || block.organizationName || 'Event item'} />}
-    {block.badgeText && <span>{block.badgeText}</span>}
-    <h4>{block.title || block.organizationName || block.buttonLabel || block.blockType}</h4>
-    {block.subtitle && <p className="saf-builder-preview-card-subtitle">{block.subtitle}</p>}
-    {block.summary && <p>{block.summary}</p>}
-    {block.body && <div className="saf-builder-preview-copy">{block.body}</div>}
-    {block.buttonLabel && <em>{block.buttonLabel}</em>}
+const PreviewCard: React.FC<{ block: EventPageBlock; imageUrl?: string }> = ({ block, imageUrl }) => {
+  const content = parseBlockContent(block.contentJson);
+  const roomRates = typeof content.roomRates === 'string' ? content.roomRates : '';
+
+  return (
+    <article className="saf-builder-preview-card">
+      {imageUrl && <img src={imageUrl} alt={block.title || block.organizationName || 'Event item'} />}
+      {block.badgeText && <span>{block.badgeText}</span>}
+      <h4>{block.title || block.organizationName || block.buttonLabel || block.blockType}</h4>
+      {block.subtitle && <p className="saf-builder-preview-card-subtitle">{block.subtitle}</p>}
+      {block.summary && <p>{block.summary}</p>}
+      {block.body && <div className="saf-builder-preview-copy">{block.body}</div>}
+      {roomRates && <p><strong>Room Rates</strong><br />{roomRates}</p>}
+      {block.buttonLabel && <em>{block.buttonLabel}</em>}
+    </article>
+  );
+};
+
+const PreviewOrganizationGroups: React.FC<{
+  blocks: EventPageBlock[];
+  blockImageFiles: Record<number, FileDetailType[]>;
+}> = ({ blocks, blockImageFiles }) => {
+  const organizers = blocks.filter((block) => getOrganizationGroup(block) === 'Organizers');
+  const supporters = blocks.filter((block) => getOrganizationGroup(block) !== 'Organizers');
+
+  return (
+    <div className="saf-builder-preview-org-wrap">
+      {organizers.length > 0 && (
+        <div className="saf-builder-preview-org-group">
+          <h3>Organizers</h3>
+          <div className="saf-builder-preview-logo-grid is-large">
+            {organizers.map((block) => (
+              <PreviewOrganizationLogo key={block.blockSeq} block={block} imageUrl={getBlockPreviewImageUrl(block, blockImageFiles)} />
+            ))}
+          </div>
+        </div>
+      )}
+      {supporters.length > 0 && (
+        <div className="saf-builder-preview-org-group">
+          <h3>Supporters</h3>
+          <div className="saf-builder-preview-logo-grid">
+            {supporters.map((block) => (
+              <PreviewOrganizationLogo key={block.blockSeq} block={block} imageUrl={getBlockPreviewImageUrl(block, blockImageFiles)} />
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const PreviewOrganizationLogo: React.FC<{ block: EventPageBlock; imageUrl?: string }> = ({ block, imageUrl }) => (
+  <article>
+    {imageUrl ? (
+      <img src={imageUrl} alt={block.organizationName || block.title || 'Organization'} />
+    ) : (
+      block.organizationName || block.title || getOrganizationGroupLabel(block)
+    )}
   </article>
 );
+
+const PreviewProgramGroups: React.FC<{ blocks: EventPageBlock[] }> = ({ blocks }) => {
+  const groups = groupProgramBlocks(blocks);
+
+  return (
+    <div className="saf-builder-preview-program">
+      {groups.map(([track, sessions]) => (
+        <div key={track} className="saf-builder-preview-program-track">
+          <h3>{track}</h3>
+          {sessions.map((block) => <PreviewProgramSession key={block.blockSeq} block={block} />)}
+        </div>
+      ))}
+    </div>
+  );
+};
 
 const PreviewProgramSession: React.FC<{ block: EventPageBlock }> = ({ block }) => (
   <article className="saf-builder-preview-session">
@@ -1191,7 +1471,7 @@ function createBlock(
     sortSeq,
     useYn: 'Y',
     styleJson: '{}',
-    contentJson: '{}',
+    contentJson: getDefaultBlockContentJson(preset),
   };
 }
 
@@ -1217,7 +1497,7 @@ function prepareSectionsForSave(sections: EventPageSection[]) {
     showInNavYn: section.useYn === 'N' ? 'N' : (section.showInNavYn || 'Y'),
     layoutType: section.layoutType || 'standard',
     useYn: section.useYn || 'Y',
-    settingsJson: section.settingsJson || '{}',
+    settingsJson: JSON.stringify(normalizeSectionSettingsForSave(section.settingsJson)),
     blocks: resequenceBlocks(section.blocks ?? []).map((block) => ({
       ...block,
       sectionSeq: section.sectionSeq,
@@ -1252,11 +1532,11 @@ function getPreset(section?: EventPageSection | null): SectionPreset {
   if (!section) return SECTION_PRESETS[0];
   return SECTION_PRESETS.find((preset) => preset.sectionType === section.sectionType) ?? {
     sectionType: section.sectionType || 'custom',
-    label: section.title || 'Additional Section',
-    description: 'Optional custom content',
-    defaultTitle: section.title || 'Additional Section',
+    label: section.title || '추가 항목',
+    description: '추가로 입력하는 내용',
+    defaultTitle: section.title || '추가 항목',
     blockType: 'card',
-    addLabel: 'Add Item',
+    addLabel: '항목 추가',
   };
 }
 
@@ -1267,22 +1547,41 @@ function findTemplateSeq(catalog: EventPageComponentCatalog, scope: 'section' | 
 }
 
 function getNewItemTitle(preset: SectionPreset, index: number) {
-  if (preset.sectionType === 'program') return `Session ${index}`;
-  if (preset.sectionType === 'speakers') return `Speaker ${index}`;
-  if (preset.sectionType === 'supporting_organizations') return `Organization ${index}`;
-  if (preset.sectionType === 'notice') return `Notice ${index}`;
-  return `Item ${index}`;
+  if (preset.sectionType === 'program') return `세션 ${index}`;
+  if (preset.sectionType === 'speakers') return `연사 ${index}`;
+  if (preset.sectionType === 'supporting_organizations') return `기관 ${index}`;
+  if (preset.sectionType === 'visit_seoul') return `호텔 ${index}`;
+  if (preset.sectionType === 'notice') return `공지 ${index}`;
+  return `항목 ${index}`;
 }
 
 function getItemHeading(preset: SectionPreset, block: EventPageBlock) {
   if (preset.sectionType === 'supporting_organizations') {
-    return block.organizationName || block.title || 'Organization';
+    return block.organizationName || block.title || `${getOrganizationGroupLabel(block)} 로고 ${block.sortSeq || ''}`.trim();
   }
+  if (preset.sectionType === 'visit_seoul') return block.title || `호텔 ${block.sortSeq || ''}`.trim();
   return block.title || getNewItemTitle(preset, block.sortSeq || 1);
 }
 
-function parseTheme(themeJson?: string | null): PageTheme {
+function getDefaultBlockContentJson(preset: SectionPreset) {
+  if (preset.sectionType === 'supporting_organizations') {
+    return JSON.stringify({ category: 'Supporters' });
+  }
+  if (preset.sectionType === 'visit_seoul') {
+    return JSON.stringify({ groupTitle: 'Partner Hotels' });
+  }
+  return '{}';
+}
+
+function parseTheme(themeJson?: unknown): PageTheme {
   if (!themeJson) return DEFAULT_THEME;
+  if (typeof themeJson === 'object' && !Array.isArray(themeJson)) {
+    return {
+      ...DEFAULT_THEME,
+      ...(themeJson as Partial<PageTheme>),
+    };
+  }
+  if (typeof themeJson !== 'string') return DEFAULT_THEME;
   try {
     return {
       ...DEFAULT_THEME,
@@ -1291,6 +1590,67 @@ function parseTheme(themeJson?: string | null): PageTheme {
   } catch {
     return DEFAULT_THEME;
   }
+}
+
+function parseSectionSettings(settingsJson?: unknown): SectionSettings {
+  if (!settingsJson) return {};
+  if (typeof settingsJson === 'object' && !Array.isArray(settingsJson)) {
+    return settingsJson as SectionSettings;
+  }
+  if (typeof settingsJson !== 'string') return {};
+  try {
+    return JSON.parse(settingsJson);
+  } catch {
+    return {};
+  }
+}
+
+function normalizeSectionSettingsForSave(settingsJson?: unknown): SectionSettings {
+  return parseSectionSettings(settingsJson);
+}
+
+function parseBlockContent(contentJson?: unknown): Record<string, unknown> {
+  if (!contentJson) return {};
+  if (typeof contentJson === 'object' && !Array.isArray(contentJson)) {
+    return contentJson as Record<string, unknown>;
+  }
+  if (typeof contentJson !== 'string') return {};
+  try {
+    return JSON.parse(contentJson);
+  } catch {
+    return {};
+  }
+}
+
+function getProgramTrack(block: EventPageBlock) {
+  const content = parseBlockContent(block.contentJson);
+  const track = typeof content.track === 'string' ? content.track : '';
+  return track || block.subtitle || 'Main Schedule';
+}
+
+function getOrganizationGroup(block: EventPageBlock) {
+  const content = parseBlockContent(block.contentJson);
+  const category = typeof content.category === 'string' ? content.category : block.badgeText || '';
+  return category.toLowerCase().includes('organizer') ? 'Organizers' : 'Supporters';
+}
+
+function getOrganizationGroupLabel(block: EventPageBlock) {
+  const value = getOrganizationGroup(block);
+  return ORGANIZATION_GROUP_OPTIONS.find((option) => option.value === value)?.label || '후원기관';
+}
+
+function groupProgramBlocks(blocks: EventPageBlock[]) {
+  const orderedTracks: string[] = [];
+  const grouped = blocks.reduce<Record<string, EventPageBlock[]>>((acc, block) => {
+    const track = getProgramTrack(block);
+    if (!acc[track]) {
+      acc[track] = [];
+      orderedTracks.push(track);
+    }
+    acc[track].push(block);
+    return acc;
+  }, {});
+  return orderedTracks.map((track) => [track, grouped[track]] as const);
 }
 
 function getThemeColor(themeColor: string) {
@@ -1329,6 +1689,13 @@ function getVisibleFiles(files?: FileDetailType[]) {
 function getFilePreviewUrl(files?: FileDetailType[]) {
   const file = getVisibleFiles(files)[0];
   return file?.fileUrl || file?.filePath || '';
+}
+
+function getBlockPreviewImageUrl(block: EventPageBlock, blockImageFiles: Record<number, FileDetailType[]>) {
+  const uploadedImageUrl = getFilePreviewUrl(blockImageFiles[block.blockSeq]);
+  if (uploadedImageUrl) return uploadedImageUrl;
+  const content = parseBlockContent(block.contentJson);
+  return typeof content.imageUrl === 'string' ? content.imageUrl : '';
 }
 
 function toDatetimeInput(value?: string | null) {

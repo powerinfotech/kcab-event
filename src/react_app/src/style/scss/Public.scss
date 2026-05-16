@@ -1398,13 +1398,170 @@ $pub-header-height-mobile: 60px;
   }
 }
 
+.pub-event-builder-section {
+  --pub-event-accent: #294DC7;
+
+  &.pub-event-spacing-compact {
+    padding-top: 42px;
+    padding-bottom: 42px;
+  }
+
+  &.pub-event-spacing-spacious {
+    padding-top: 92px;
+    padding-bottom: 92px;
+  }
+
+  &.pub-event-width-wide {
+    .pub-section-inner {
+      max-width: min(1320px, calc(100vw - 48px));
+    }
+  }
+}
+
+.pub-event-bg-soft {
+  background: #f6f8fb;
+}
+
+.pub-event-bg-navy {
+  background: #102033;
+  color: #fff;
+
+  .text-title,
+  .card-list-title,
+  .speaker-title,
+  .pub-event-section-subtitle,
+  .text-content {
+    color: #fff;
+  }
+
+  .text-content {
+    opacity: .9;
+  }
+}
+
+.pub-event-bg-gold {
+  background: linear-gradient(180deg, rgba(184, 137, 0, .13), rgba(255, 255, 255, .96));
+}
+
+.pub-event-builder-hero {
+  background-position: center;
+  background-size: cover;
+}
+
+.speaker-photo-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--pub-event-accent) 16%, #eef3f8);
+  color: var(--pub-event-accent);
+  font-size: 42px;
+  font-weight: 800;
+}
+
+.pub-event-builder-program {
+  overflow: hidden;
+}
+
+.pub-event-speaker-link,
+.pub-event-program-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.pub-event-speaker-link:hover .speaker-name,
+.pub-event-program-link:hover {
+  color: var(--pub-event-accent);
+}
+
+.pub-event-page-card-image {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  margin: -22px -22px 18px;
+  max-width: calc(100% + 44px);
+  object-fit: cover;
+  border-radius: 8px 8px 0 0;
+  background: $pub-bg-light;
+}
+
 .pub-event-logo-card {
   min-width: 180px;
   min-height: 88px;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 10px;
   text-align: center;
+
+  h4 {
+    margin: 0;
+    font-size: 14px;
+  }
+}
+
+.pub-event-org-wrap {
+  display: grid;
+  gap: 42px;
+  margin-top: 32px;
+}
+
+.pub-event-org-group {
+  display: grid;
+  gap: 18px;
+
+  > h4 {
+    margin: 0;
+    color: $pub-text-dark;
+    font-size: 22px;
+    font-weight: 800;
+    text-align: center;
+  }
+
+  &.is-organizers {
+    .pub-event-org-grid {
+      grid-template-columns: repeat(2, minmax(220px, 1fr));
+      max-width: 760px;
+      margin: 0 auto;
+
+      @media (max-width: 640px) {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .pub-event-logo-card {
+      min-height: 132px;
+      padding: 24px;
+    }
+
+    .pub-event-logo-image {
+      width: min(100%, 320px);
+      max-height: 110px;
+    }
+  }
+}
+
+.pub-event-org-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(160px, 1fr));
+  gap: 16px;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(3, minmax(150px, 1fr));
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.pub-event-logo-image {
+  display: block;
+  width: min(100%, 220px);
+  max-height: 86px;
+  object-fit: contain;
+  border-radius: 6px;
+  background: $pub-bg-white;
 }
 
 .pub-event-page-badge {
@@ -1432,10 +1589,69 @@ $pub-header-height-mobile: 60px;
   font-weight: 700;
 }
 
-.pub-event-program-list {
+.pub-event-subsection {
   display: grid;
   gap: 18px;
+  margin-top: 42px;
+
+  > h4 {
+    margin: 0;
+    color: $pub-text-dark;
+    font-size: 24px;
+    font-weight: 800;
+    text-align: center;
+  }
+}
+
+.pub-event-hotel-grid {
+  margin-top: 0;
+}
+
+.pub-event-hotel-card {
+  h4 {
+    color: $pub-primary;
+  }
+}
+
+.pub-event-program-list {
+  display: grid;
+  gap: 30px;
   margin-top: 30px;
+}
+
+.pub-event-program-track {
+  display: grid;
+  gap: 14px;
+}
+
+.pub-event-program-track-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  &::after {
+    content: '';
+    height: 1px;
+    flex: 1;
+    background: color-mix(in srgb, var(--pub-event-accent) 28%, #d8e0ea);
+  }
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 34px;
+    border-radius: 999px;
+    padding: 0 16px;
+    background: var(--pub-event-accent);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 800;
+  }
+}
+
+.pub-event-program-track-sessions {
+  display: grid;
+  gap: 12px;
 }
 
 .pub-event-program-day {
@@ -1461,6 +1677,7 @@ $pub-header-height-mobile: 60px;
   border: 1px solid $pub-border;
   border-radius: 8px;
   background: $pub-bg-white;
+  box-shadow: 0 12px 28px rgba(16, 32, 51, 0.06);
 
   @media (max-width: 640px) {
     grid-template-columns: 1fr;
@@ -1476,7 +1693,7 @@ $pub-header-height-mobile: 60px;
 }
 
 .pub-event-program-time {
-  color: $pub-primary;
+  color: var(--pub-event-accent);
   font-size: 13px;
   font-weight: 700;
 }

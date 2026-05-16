@@ -97,6 +97,7 @@ export interface EventPageBlock {
   linkUrl?: string | null;
   linkTarget?: '_self' | '_blank' | string;
   imageFileSeq?: number | null;
+  imageUrl?: string | null;
   attachmentFileSeq?: number | null;
   featuredYn?: string | null;
   sortSeq?: number | null;
@@ -137,6 +138,7 @@ export interface PublicEventPage {
   heroTitle?: string | null;
   heroSubtitle?: string | null;
   heroFileSeq?: number | null;
+  heroImageUrl?: string | null;
   themeCode?: string | null;
   themeJson?: string | null;
   settingsJson?: string | null;

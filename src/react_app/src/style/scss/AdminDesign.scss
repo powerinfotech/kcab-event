@@ -3220,6 +3220,43 @@
 .saf-builder-preview-section {
   padding: 46px 64px;
   border-bottom: 1px solid #edf1f5;
+
+  &.is-width-wide {
+    padding-left: 42px;
+    padding-right: 42px;
+  }
+
+  &.is-spacing-compact {
+    padding-top: 30px;
+    padding-bottom: 30px;
+  }
+
+  &.is-spacing-spacious {
+    padding-top: 64px;
+    padding-bottom: 64px;
+  }
+
+  &.is-bg-soft {
+    background: #f6f8fb;
+  }
+
+  &.is-bg-navy {
+    background: #102033;
+    color: #fff;
+
+    .saf-builder-preview-section-title h2,
+    .saf-builder-preview-copy {
+      color: #fff;
+    }
+
+    .saf-builder-preview-section-title p {
+      color: rgba(255, 255, 255, .74);
+    }
+  }
+
+  &.is-bg-gold {
+    background: linear-gradient(180deg, rgba(184, 137, 0, .12), #fff);
+  }
 }
 
 .saf-builder-preview-section-title {
@@ -3259,6 +3296,48 @@
   p {
     margin: 0 0 10px;
   }
+
+  &.is-rich {
+    h1,
+    h2,
+    h3 {
+      margin: 18px 0 8px;
+      color: inherit;
+      font-weight: 900;
+      line-height: 1.25;
+    }
+
+    ul,
+    ol {
+      padding-left: 22px;
+    }
+
+    img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0;
+      background: #fff;
+      color: #334155;
+    }
+
+    th,
+    td {
+      border: 1px solid #e3e8ef;
+      padding: 9px;
+      text-align: left;
+    }
+
+    th {
+      background: #f8fafc;
+      font-weight: 900;
+    }
+  }
 }
 
 .saf-builder-preview-card-grid,
@@ -3268,6 +3347,36 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
   margin-top: 18px;
+}
+
+.saf-builder-preview-subtitle,
+.saf-builder-preview-org-group > h3 {
+  margin: 18px 0 0;
+  color: #111827;
+  font-size: 18px;
+  font-weight: 900;
+  text-align: center;
+}
+
+.saf-builder-preview-org-wrap {
+  display: grid;
+  gap: 28px;
+}
+
+.saf-builder-preview-logo-grid.is-large {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  max-width: 620px;
+  margin-left: auto;
+  margin-right: auto;
+
+  article {
+    min-height: 150px;
+
+    img {
+      max-width: 260px;
+      max-height: 110px;
+    }
+  }
 }
 
 .saf-builder-preview-card,
@@ -3327,7 +3436,22 @@
 
 .saf-builder-preview-program {
   display: grid;
-  gap: 14px;
+  gap: 18px;
+}
+
+.saf-builder-preview-program-track {
+  display: grid;
+  gap: 10px;
+
+  > h3 {
+    margin: 0;
+    border-left: 4px solid var(--preview-accent);
+    padding: 10px 14px;
+    background: #fff;
+    color: #111827;
+    font-size: 15px;
+    font-weight: 900;
+  }
 }
 
 .saf-builder-preview-day {
