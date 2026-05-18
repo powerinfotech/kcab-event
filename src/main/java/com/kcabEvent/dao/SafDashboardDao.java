@@ -4,8 +4,10 @@ import com.kcabEvent.dto.saf.SafDashboardMetricsDto;
 import com.kcabEvent.dto.saf.SafDashboardPendingEventDto;
 import com.kcabEvent.dto.saf.SafDashboardRecentActivityDto;
 import com.kcabEvent.dto.saf.SafDashboardUpcomingEventDto;
+import com.kcabEvent.dto.saf.SafOrgDashboardActionItemDto;
 import com.kcabEvent.dto.saf.SafOrgDashboardEventDto;
 import com.kcabEvent.dto.saf.SafOrgDashboardMetricsDto;
+import com.kcabEvent.dto.saf.SafOrgDashboardRecentParticipantDto;
 import org.apache.ibatis.annotations.Param;
 import org.egovframe.rte.psl.dataaccess.mapper.EgovMapper;
 
@@ -29,4 +31,8 @@ public interface SafDashboardDao {
 
     /** 특정 organization 행사 카드 목록 (최근/임박 순) */
     List<SafOrgDashboardEventDto> selectOrgEvents(@Param("organizationSeq") Long organizationSeq);
+
+    List<SafOrgDashboardActionItemDto> selectOrgActionItems(@Param("organizationSeq") Long organizationSeq);
+
+    List<SafOrgDashboardRecentParticipantDto> selectOrgRecentParticipants(@Param("organizationSeq") Long organizationSeq);
 }

@@ -169,6 +169,7 @@ const Login = () => {
       userId: ret.item.userId,
       userName: ret.item.userName,
       admYn: ret.item.admYn ?? 'N',
+      organizationName: ret.item.organizationName ?? '',
     });
     setMenuInfo(getFixedAdminMenuInfo(ret.item.admYn));
     sessionStorage.removeItem('tabList');

@@ -149,6 +149,18 @@
                  WHERE e.deleted_at IS NULL
                    AND e.status = 'pending_approval'
              ) AS pending_approval_count
+            ,COUNT(*) FILTER (
+                 WHERE e.deleted_at IS NULL
+                   AND e.status = 'published'
+             ) AS published_event_count
+            ,COUNT(*) FILTER (
+                 WHERE e.deleted_at IS NULL
+                   AND e.status = 'draft'
+             ) AS draft_event_count
+            ,COUNT(*) FILTER (
+                 WHERE e.deleted_at IS NULL
+                   AND e.status = 'rejected'
+             ) AS rejected_event_count
             ,(
                 SELECT COUNT(*)
                   FROM event.event_participants ep
@@ -157,6 +169,10 @@
                    AND ev.deleted_at IS NULL
                    AND ep.status = 'registered'
              ) AS total_applicant_count
+            ,COALESCE(SUM(e.max_participants) FILTER (
+                 WHERE e.deleted_at IS NULL
+                   AND e.max_participants IS NOT NULL
+             ), 0) AS total_capacity_count
         FROM event.events e
         WHERE e.organization_seq = #{organizationSeq}
     </select>
@@ -165,13 +181,25 @@
     <select id="selectOrgEvents" resultType="com.kcabEvent.dto.saf.SafOrgDashboardEventDto">
         SELECT
              e.event_seq
+            ,e.slug
             ,e.title
             ,e.event_type
             ,e.status
             ,e.start_at AS start_at
+            ,e.end_at AS end_at
+            ,e.registration_start_at AS registration_start_at
+            ,e.registration_end_at AS registration_end_at
             ,e.venue_name
             ,e.max_participants
             ,COALESCE(rc.registration_count, 0) AS registration_count
+            ,CASE WHEN EXISTS (
+                SELECT 1
+                  FROM event.event_pages epg
+                 WHERE epg.event_seq = e.event_seq
+                   AND epg.deleted_at IS NULL
+                   AND epg.use_yn = 'Y'
+                   AND epg.page_status = 'published'
+            ) THEN 'Y' ELSE 'N' END AS page_published_yn
         FROM event.events e
         LEFT JOIN (
             SELECT event_seq, COUNT(*) AS registration_count
@@ -183,6 +211,122 @@
           AND e.deleted_at IS NULL
         ORDER BY e.start_at DESC NULLS LAST, e.event_seq DESC
         LIMIT 10
+    </select>
+
+    <select id="selectOrgActionItems" resultType="com.kcabEvent.dto.saf.SafOrgDashboardActionItemDto">
+        SELECT action_type, severity, event_seq, title, description, due_at
+        FROM (
+            SELECT
+                 'approval_pending' AS action_type
+                ,'warning' AS severity
+                ,e.event_seq
+                ,e.title
+                ,'Waiting for KCAB review.' AS description
+                ,e.created_at AS due_at
+                ,1 AS sort_order
+            FROM event.events e
+            WHERE e.organization_seq = #{organizationSeq}
+              AND e.deleted_at IS NULL
+              AND e.status = 'pending_approval'
+
+            UNION ALL
+
+            SELECT
+                 'rejected' AS action_type
+                ,'danger' AS severity
+                ,e.event_seq
+                ,e.title
+                ,COALESCE(NULLIF(e.rejection_reason, ''), 'Review the rejection reason and resubmit.') AS description
+                ,e.updated_at AS due_at
+                ,2 AS sort_order
+            FROM event.events e
+            WHERE e.organization_seq = #{organizationSeq}
+              AND e.deleted_at IS NULL
+              AND e.status = 'rejected'
+
+            UNION ALL
+
+            SELECT
+                 'event_soon' AS action_type
+                ,'info' AS severity
+                ,e.event_seq
+                ,e.title
+                ,'Event starts soon. Check participants and venue details.' AS description
+                ,e.start_at AS due_at
+                ,3 AS sort_order
+            FROM event.events e
+            WHERE e.organization_seq = #{organizationSeq}
+              AND e.deleted_at IS NULL
+              AND e.status = 'published'
+              AND e.start_at IS NOT NULL
+              AND e.start_at::date BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '7 days'
+
+            UNION ALL
+
+            SELECT
+                 'registration_closed' AS action_type
+                ,'info' AS severity
+                ,e.event_seq
+                ,e.title
+                ,'Registration has closed. Review the final participant list.' AS description
+                ,e.registration_end_at AS due_at
+                ,4 AS sort_order
+            FROM event.events e
+            WHERE e.organization_seq = #{organizationSeq}
+              AND e.deleted_at IS NULL
+              AND e.status = 'published'
+              AND e.registration_end_at IS NOT NULL
+              AND e.registration_end_at::date &lt; CURRENT_DATE
+              AND (e.start_at IS NULL OR e.start_at::date &gt;= CURRENT_DATE)
+
+            UNION ALL
+
+            SELECT
+                 'capacity_near_full' AS action_type
+                ,'warning' AS severity
+                ,e.event_seq
+                ,e.title
+                ,'Capacity is over 80%. Monitor registrations closely.' AS description
+                ,NULL::timestamptz AS due_at
+                ,5 AS sort_order
+            FROM event.events e
+            LEFT JOIN (
+                SELECT event_seq, COUNT(*) AS registration_count
+                  FROM event.event_participants
+                 WHERE status = 'registered'
+                 GROUP BY event_seq
+            ) rc ON rc.event_seq = e.event_seq
+            WHERE e.organization_seq = #{organizationSeq}
+              AND e.deleted_at IS NULL
+              AND e.status = 'published'
+              AND e.max_participants IS NOT NULL
+              AND e.max_participants &gt; 0
+              AND COALESCE(rc.registration_count, 0)::numeric / e.max_participants &gt;= 0.8
+        ) action_items
+        ORDER BY sort_order ASC, due_at ASC NULLS LAST, event_seq DESC
+        LIMIT 6
+    </select>
+
+    <select id="selectOrgRecentParticipants" resultType="com.kcabEvent.dto.saf.SafOrgDashboardRecentParticipantDto">
+        SELECT
+             p.participant_seq
+            ,ep.event_seq
+            ,e.title AS event_title
+            ,COALESCE(NULLIF(TRIM(CONCAT_WS(' ', p.first_name, NULLIF(p.middle_name, ''), p.last_name)), ''), p.email) AS full_name
+            ,p.email
+            ,p.organization_name
+            ,p.position
+            ,ep.registered_at AS registered_at
+        FROM event.event_participants ep
+        JOIN event.events e
+          ON e.event_seq = ep.event_seq
+         AND e.deleted_at IS NULL
+        JOIN event.participants p
+          ON p.participant_seq = ep.participant_seq
+        WHERE e.organization_seq = #{organizationSeq}
+          AND ep.status = 'registered'
+        ORDER BY ep.registered_at DESC NULLS LAST, ep.event_participant_seq DESC
+        LIMIT 5
     </select>
 
 </mapper>

@@ -64,7 +64,7 @@ const PublicFaq: React.FC = () => {
                   {openIdx === idx && (
                     <div className="pub-faq-answer">
                       <span className="pub-faq-a-mark">A</span>
-                      <div className="pub-faq-a-text" dangerouslySetInnerHTML={{ __html: faq.answer }} />
+                      <div className="pub-faq-a-text">{faq.answer}</div>
                     </div>
                   )}
                 </div>

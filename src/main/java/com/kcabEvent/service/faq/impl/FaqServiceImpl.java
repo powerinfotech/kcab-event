@@ -5,6 +5,7 @@ import com.kcabEvent.domain.Faq;
 import com.kcabEvent.dto.common.LoginUser;
 import com.kcabEvent.dto.faq.FaqListDto;
 import com.kcabEvent.dto.faq.FaqSaveDto;
+import com.kcabEvent.exception.custom.BusinessException;
 import com.kcabEvent.service.faq.FaqService;
 import lombok.extern.slf4j.Slf4j;
 import org.egovframe.rte.fdl.cmmn.EgovAbstractServiceImpl;
@@ -21,27 +22,34 @@ import java.util.List;
 @Service("faqService")
 public class FaqServiceImpl extends EgovAbstractServiceImpl implements FaqService {
 
+    private static final String AUDIENCE_PUBLIC = "public";
+    private static final String AUDIENCE_ORGANIZATION = "organization";
+
     @Resource(name = "faqDao")
     private FaqDao faqDao;
 
     @Override
-    public List<FaqListDto> selectFaqList(String category) {
-        return faqDao.selectFaqList(category);
+    public List<FaqListDto> selectFaqList(String category, String audience, Boolean activeOnly) {
+        return faqDao.selectFaqList(category, normalizeAudience(audience), activeOnly);
     }
 
     @Override
     @Transactional("transactionManager")
     public void saveFaq(FaqSaveDto saveDto, LoginUser loginUser) {
         if (saveDto.getFaqList() == null) return;
+        if (loginUser == null || !"Y".equals(loginUser.getAdmYn())) {
+            throw new BusinessException("Only administrators can manage FAQ.");
+        }
         Long userSeq = Long.valueOf(loginUser.getUserSeq());
 
         for (FaqListDto item : saveDto.getFaqList()) {
             if (item.getIudType() == null) continue;
 
             Faq faq = new Faq();
+            faq.setAudience(normalizeAudienceForSave(item.getAudience()));
             faq.setCategory(item.getCategory());
             faq.setQuestion(item.getQuestion());
-            faq.setAnswer(item.getAnswer());
+            faq.setAnswer(stripHtmlTags(item.getAnswer()));
             faq.setSortSeq(item.getSortSeq());
             faq.setUseYn(item.getUseYn() != null ? item.getUseYn() : "Y");
 
@@ -63,5 +71,31 @@ public class FaqServiceImpl extends EgovAbstractServiceImpl implements FaqServic
                     break;
             }
         }
+    }
+
+    private String normalizeAudience(String audience) {
+        if (AUDIENCE_ORGANIZATION.equals(audience)) {
+            return AUDIENCE_ORGANIZATION;
+        }
+        if (AUDIENCE_PUBLIC.equals(audience)) {
+            return AUDIENCE_PUBLIC;
+        }
+        return null;
+    }
+
+    private String normalizeAudienceForSave(String audience) {
+        String normalized = normalizeAudience(audience);
+        return normalized != null ? normalized : AUDIENCE_PUBLIC;
+    }
+
+    private String stripHtmlTags(String value) {
+        if (value == null) {
+            return null;
+        }
+        return value
+                .replaceAll("(?i)<br\\s*/?>", "\n")
+                .replaceAll("(?i)</p\\s*>", "\n")
+                .replaceAll("<[^>]*>", "")
+                .trim();
     }
 }

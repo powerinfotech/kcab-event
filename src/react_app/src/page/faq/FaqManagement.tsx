@@ -49,6 +49,7 @@ const FaqManagement = () => {
 
   const handleAdd = () => {
     setFaqList((prev) => [...prev, {
+      audience: 'public',
       category: '',
       question: '',
       answer: '',

@@ -24,6 +24,6 @@ public class PublicFaqController {
     @GetMapping("/list")
     public ApiResponse<List<FaqListDto>> selectFaqList(
             @RequestParam(required = false) String category) {
-        return ApiResponse.ok(faqService.selectFaqList(category));
+        return ApiResponse.ok(faqService.selectFaqList(category, "public", true));
     }
 }

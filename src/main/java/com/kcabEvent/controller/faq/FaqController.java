@@ -28,8 +28,10 @@ public class FaqController {
     @GetMapping("/list")
     public ApiResponse<List<FaqListDto>> selectFaqList(
             @KcabEventSession LoginUser loginUser,
-            @RequestParam(required = false) String category) {
-        return ApiResponse.ok(faqService.selectFaqList(category));
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String audience,
+            @RequestParam(required = false) Boolean activeOnly) {
+        return ApiResponse.ok(faqService.selectFaqList(category, audience, activeOnly));
     }
 
     /**

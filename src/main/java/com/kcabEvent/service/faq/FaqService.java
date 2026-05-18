@@ -13,7 +13,7 @@ public interface FaqService {
     /**
      * 카테고리 조건에 따라 FAQ 목록을 조회한다.
      */
-    List<FaqListDto> selectFaqList(String category);
+    List<FaqListDto> selectFaqList(String category, String audience, Boolean activeOnly);
 
     /**
      * 생성, 수정, 삭제된 FAQ 행을 저장한다.

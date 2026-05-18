@@ -2,6 +2,7 @@ package com.kcabEvent.service.common.impl;
 
 import com.kcabEvent.dao.UserDao;
 import com.kcabEvent.domain.User;
+import com.kcabEvent.dao.SafOrganizationDao;
 import com.kcabEvent.dao.SafUserDao;
 import com.kcabEvent.domain.saf.SafUser;
 import com.kcabEvent.dto.common.LoginUser;
@@ -23,6 +24,9 @@ public class ConvenienceLoginServiceImpl extends EgovAbstractServiceImpl impleme
 
     @Resource(name = "safUserDao")
     private SafUserDao safUserDao;
+
+    @Resource(name = "safOrganizationDao")
+    private SafOrganizationDao safOrganizationDao;
 
     private final HttpSession httpSession;
 
@@ -49,6 +53,8 @@ public class ConvenienceLoginServiceImpl extends EgovAbstractServiceImpl impleme
         if (safUser == null) {
             throw new BusinessException("User information does not exist.");
         }
-        httpSession.setAttribute("user", LoginUser.convert(safUser));
+        LoginUser loginUser = LoginUser.convert(safUser);
+        loginUser.setOrganizationName(safOrganizationDao.selectOrganizationNameByUserSeq(safUser.getUserSeq()));
+        httpSession.setAttribute("user", loginUser);
     }
 }

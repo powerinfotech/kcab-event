@@ -10,7 +10,9 @@ import java.util.List;
 @EgovMapper("faqDao")
 public interface FaqDao {
 
-    List<FaqListDto> selectFaqList(@Param("category") String category);
+    List<FaqListDto> selectFaqList(@Param("category") String category,
+                                   @Param("audience") String audience,
+                                   @Param("activeOnly") Boolean activeOnly);
 
     void insertFaq(Faq faq);
 

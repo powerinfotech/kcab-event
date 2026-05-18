@@ -127,6 +127,7 @@ body,
     display: flex;
     align-items: center;
     gap: 8px;
+    min-width: 0;
 }
 
 .app_topbar_thumb {
@@ -140,10 +141,34 @@ body,
     flex-shrink: 0;
 }
 
+.app_topbar_identity {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    max-width: 360px;
+    min-width: 0;
+}
+
+.app_topbar_scope {
+    flex-shrink: 0;
+    font-size: 12px;
+    font-weight: 800;
+    color: #1f5b95;
+    white-space: nowrap;
+
+    &.is-organization {
+        color: #14784f;
+    }
+}
+
 .app_topbar_name {
     font-size: 13px;
     font-weight: 600;
     color: $gray20;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .app_topbar_logout {

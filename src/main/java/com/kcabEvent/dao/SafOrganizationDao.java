@@ -18,4 +18,6 @@ public interface SafOrganizationDao {
     int approveOrganizationByUserSeq(@Param("userSeq") Long userSeq, @Param("approvedBy") Long approvedBy);
 
     Long selectOrganizationSeqByUserSeq(@Param("userSeq") Long userSeq);
+
+    String selectOrganizationNameByUserSeq(@Param("userSeq") Long userSeq);
 }

@@ -1,10 +1,16 @@
 import axios from 'axios';
 import { ApiResponse } from '@interface/common';
-import { FaqItem, FaqSaveRequest } from '@interface/faq/FaqManagement';
+import { FaqAudience, FaqItem, FaqSaveRequest } from '@interface/faq/FaqManagement';
 
-export const callGetFaqList = async (category?: string) => {
+export interface FaqListSearchParam {
+  category?: string;
+  audience?: FaqAudience;
+  activeOnly?: boolean;
+}
+
+export const callGetFaqList = async (param: FaqListSearchParam = {}) => {
   const { data } = await axios.get<ApiResponse<FaqItem[]>>('/api/faq/list', {
-    params: { category },
+    params: param,
   });
   return data;
 };
@@ -17,6 +23,14 @@ export const callSaveFaq = async (saveDto: FaqSaveRequest) => {
 export const callGetPublicFaqList = async (category?: string) => {
   const { data } = await axios.get<ApiResponse<FaqItem[]>>('/api/public/faq/list', {
     params: { category },
+    headers: { showLoading: false },
+  });
+  return data;
+};
+
+export const callGetOrganizationFaqList = async (category?: string) => {
+  const { data } = await axios.get<ApiResponse<FaqItem[]>>('/api/faq/list', {
+    params: { category, audience: 'organization', activeOnly: true },
     headers: { showLoading: false },
   });
   return data;

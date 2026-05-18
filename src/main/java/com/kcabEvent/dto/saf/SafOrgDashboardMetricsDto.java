@@ -16,8 +16,14 @@ public class SafOrgDashboardMetricsDto {
     private Long myEventCount;
     /** 승인 대기 중인 내 부대행사 개수 */
     private Long pendingApprovalCount;
+    private Long publishedEventCount;
+    private Long draftEventCount;
+    private Long rejectedEventCount;
     /** 내 행사들의 전체 참가신청자 수 (cancelled/refunded 제외) */
     private Long totalApplicantCount;
+    private Long totalCapacityCount;
     /** 내 행사 카드 목록 (최근/임박 순) */
     private List<SafOrgDashboardEventDto> myEvents = List.of();
+    private List<SafOrgDashboardActionItemDto> actionItems = List.of();
+    private List<SafOrgDashboardRecentParticipantDto> recentParticipants = List.of();
 }

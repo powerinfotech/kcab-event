@@ -69,6 +69,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           userId: res.item.userId,
           userName: res.item.userName,
           admYn: res.item.admYn ?? 'N',
+          organizationName: res.item.organizationName ?? '',
         });
         setMenuInfo(getFixedAdminMenuInfo(res.item.admYn));
       } else {

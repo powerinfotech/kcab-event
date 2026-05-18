@@ -1,6 +1,7 @@
 package com.kcabEvent.service.common.impl;
 
 import com.kcabEvent.dao.LoginLogDao;
+import com.kcabEvent.dao.SafOrganizationDao;
 import com.kcabEvent.dao.SafUserDao;
 import com.kcabEvent.dao.UserDao;
 import com.kcabEvent.domain.LoginLog;
@@ -37,6 +38,9 @@ public class LoginServiceImpl extends EgovAbstractServiceImpl implements LoginSe
 
     @Resource(name = "safUserDao")
     private SafUserDao safUserDao;
+
+    @Resource(name = "safOrganizationDao")
+    private SafOrganizationDao safOrganizationDao;
 
     private final HttpSession httpSession;
 
@@ -100,7 +104,9 @@ public class LoginServiceImpl extends EgovAbstractServiceImpl implements LoginSe
             throw new BusinessException("The password does not match.");
         }
 
-        httpSession.setAttribute("user", LoginUser.convert(safUser));
+        LoginUser loginUser = LoginUser.convert(safUser);
+        loginUser.setOrganizationName(safOrganizationDao.selectOrganizationNameByUserSeq(safUser.getUserSeq()));
+        httpSession.setAttribute("user", loginUser);
     }
 
     @Override

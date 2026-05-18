@@ -49,6 +49,8 @@ public class LoginUser {
     private String useYn;
     /** 관리자 여부 (tb_user.adm_yn — {@code "Y"} / {@code "N"}) */
     private String admYn;
+    /** SAF organization name for organization users. */
+    private String organizationName;
 
     /**
      * {@link User} 엔티티를 {@link LoginUser} 세션 DTO로 변환한다.

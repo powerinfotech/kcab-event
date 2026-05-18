@@ -1,24 +1,28 @@
 import React, { useEffect, useState } from 'react';
 import PublicHeader from './components/PublicHeader';
 import PublicFooter from './components/PublicFooter';
-import { callGetPublicNoticeList, callGetPublicNoticeDetail } from '@api/notice/NoticeApi';
-import { NoticeListItem, NoticeDetail } from '@interface/notice/NoticeManagement';
+import { callGetPublicNoticeNewsList, callGetPublicNoticeNewsDetail } from '@api/noticenews/PublicNoticeNewsApi';
+import {
+  NOTICE_NEWS_POST_TYPE_LABEL,
+  NoticeNewsDetail,
+  NoticeNewsListItem,
+} from '@interface/admin/NoticeNews';
 
 const PublicNotice: React.FC = () => {
-  const [noticeList, setNoticeList] = useState<NoticeListItem[]>([]);
-  const [selected, setSelected] = useState<NoticeDetail | null>(null);
+  const [noticeList, setNoticeList] = useState<NoticeNewsListItem[]>([]);
+  const [selected, setSelected] = useState<NoticeNewsDetail | null>(null);
   const [searchText, setSearchText] = useState('');
 
   useEffect(() => {
-    callGetPublicNoticeList().then((r) => { if (r?.item) setNoticeList(r.item); });
+    callGetPublicNoticeNewsList().then((r) => { if (r?.item) setNoticeList(r.item); });
   }, []);
 
   const handleSearch = () => {
-    callGetPublicNoticeList(searchText).then((r) => { if (r?.item) setNoticeList(r.item); });
+    callGetPublicNoticeNewsList({ keyword: searchText }).then((r) => { if (r?.item) setNoticeList(r.item); });
   };
 
   const handleSelect = async (seq: number) => {
-    const res = await callGetPublicNoticeDetail(seq);
+    const res = await callGetPublicNoticeNewsDetail(seq);
     if (res?.item) setSelected(res.item);
   };
 
@@ -43,7 +47,8 @@ const PublicNotice: React.FC = () => {
               </div>
               <h3 className="text-title" style={{ paddingLeft: 0 }}>{selected.title}</h3>
               <div style={{ fontSize: 13, color: '#999', marginBottom: 24, display: 'flex', gap: 16 }}>
-                <span>{selected.rgstDateTime?.substring(0, 10)}</span>
+                <span>{selected.postDate?.substring(0, 10)}</span>
+                <span>{NOTICE_NEWS_POST_TYPE_LABEL[selected.postType]}</span>
                 <span>Views {selected.viewCount}</span>
               </div>
               <div className="text-content" dangerouslySetInnerHTML={{ __html: selected.content ?? '' }} />
@@ -82,19 +87,19 @@ const PublicNotice: React.FC = () => {
             </div>
 
             <div className="pub-notice-list">
-              {noticeList.filter((n) => n.useYn === 'Y').map((notice) => (
+              {noticeList.map((notice) => (
                 <div
-                  key={notice.noticeSeq}
+                  key={notice.noticeNewsSeq}
                   className={`pub-notice-item ${notice.topYn === 'Y' ? 'is-top' : ''}`}
-                  onClick={() => handleSelect(notice.noticeSeq)}
+                  onClick={() => handleSelect(notice.noticeNewsSeq)}
                 >
-                  {notice.topYn === 'Y' && <span className="pub-notice-badge">Notice</span>}
+                  <span className="pub-notice-badge">{NOTICE_NEWS_POST_TYPE_LABEL[notice.postType]}</span>
                   <span className="pub-notice-title">{notice.title}</span>
-                  <span className="pub-notice-date">{notice.rgstDateTime?.substring(0, 10)}</span>
+                  <span className="pub-notice-date">{notice.postDate?.substring(0, 10)}</span>
                   <span className="pub-notice-views">Views {notice.viewCount}</span>
                 </div>
               ))}
-              {noticeList.filter((n) => n.useYn === 'Y').length === 0 && (
+              {noticeList.length === 0 && (
                 <div style={{ padding: '40px 0', textAlign: 'center', color: '#999' }}>
                   No notices found.
                 </div>

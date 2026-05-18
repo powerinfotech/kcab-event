@@ -34,6 +34,7 @@ export interface SessionUserInfo  {
     userName: string;
     /** tb_user adm_yn (Y/N) */
     admYn: string;
+    organizationName?: string;
 }
 
 export interface CommonCode {

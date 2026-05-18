@@ -2,6 +2,7 @@ package com.kcabEvent.controller.common;
 
 import com.kcabEvent.annotation.KcabEventSession;
 import com.kcabEvent.domain.User;
+import com.kcabEvent.dao.SafOrganizationDao;
 import com.kcabEvent.dto.auth.MenuListDto;
 import com.kcabEvent.dto.common.ApiResponse;
 import com.kcabEvent.dto.common.LoginUser;
@@ -31,6 +32,9 @@ public class CommonController {
     @Resource(name = "userManagementService")
     private UserManagementService userManagementService;
 
+    @Resource(name = "safOrganizationDao")
+    private SafOrganizationDao safOrganizationDao;
+
     /**
      * 현재 세션 사용자를 조회하고 가능하면 최신 사용자 정보로 보강한다.
      */
@@ -45,11 +49,23 @@ public class CommonController {
     private LoginUser resolveLoginInfoResponse(LoginUser loginUser) {
         try {
             User user = userManagementService.selectUserInfo(loginUser.getUserId());
-            return user != null ? LoginUser.convert(user) : loginUser;
+            return enrichOrganizationName(user != null ? LoginUser.convert(user) : loginUser);
         } catch (DataAccessException e) {
             log.warn("Legacy user lookup failed; using session user info: {}", e.getMessage());
+            return enrichOrganizationName(loginUser);
+        }
+    }
+
+    private LoginUser enrichOrganizationName(LoginUser loginUser) {
+        if (loginUser == null || "Y".equals(loginUser.getAdmYn()) || loginUser.getUserSeq() == null) {
             return loginUser;
         }
+        try {
+            loginUser.setOrganizationName(safOrganizationDao.selectOrganizationNameByUserSeq(loginUser.getUserSeq().longValue()));
+        } catch (DataAccessException e) {
+            log.warn("Organization lookup failed for user {}: {}", loginUser.getUserSeq(), e.getMessage());
+        }
+        return loginUser;
     }
 
     /**
@@ -77,15 +93,19 @@ public class CommonController {
             menus.add(fixedMenu(150, "Email CMS", "/email-cms/registration-confirm", "admin/EmailCms", 7, 1));
             menus.add(fixedMenu(155, "Email History", "/email-logs", "admin/EmailLogHistory", 8, 1));
             menus.add(fixedMenu(156, "Law Firm / Organization Management", "/organizations", "admin/OrganizationManagementMock", 9, 1));
-            menus.add(fixedMenu(160, "User Management", "/users", "admin/UserManagementMock", 10, 1));
+            menus.add(fixedMenu(158, "Notice & News", "/notice-news", "admin/NoticeNews", 10, 1));
+            menus.add(fixedMenu(159, "Gallery", "/gallery", "admin/Gallery", 11, 1));
+            menus.add(fixedMenu(160, "User Management", "/users", "admin/UserManagementMock", 12, 1));
+            menus.add(fixedMenu(165, "FAQ Management", "/faq", "admin/FaqManagement", 13, 1));
             menus.add(fixedMenu(170, "Settings", "/settings", "admin/Settings", 99, 1));
             return menus;
         }
 
         menus.add(fixedMenu(200, "Dashboard", "/", "DashBoard", 1, 1));
         menus.add(fixedMenu(210, "Event Management", "/events", "admin/SuperEventList", 2, 1));
-        menus.add(fixedMenu(220, "Participants", "/participants", "admin/Participants", 4, 1));
-        menus.add(fixedMenu(230, "Organization Profile", "/profile", "admin/OrgProfile", 5, 1));
+        menus.add(fixedMenu(220, "Participants", "/participants", "admin/Participants", 3, 1));
+        menus.add(fixedMenu(240, "FAQ", "/faq", "admin/OrganizationFaq", 4, 1));
+        menus.add(fixedMenu(230, "Organization Profile", "/profile", "admin/OrgProfile", 99, 1));
         return menus;
     }
 

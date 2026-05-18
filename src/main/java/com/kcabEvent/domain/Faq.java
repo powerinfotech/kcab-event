@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 @Setter
 public class Faq {
     private Long faqSeq;
+    private String audience;
     private String category;
     private String question;
     private String answer;

@@ -61,4 +61,14 @@
         LIMIT 1
     </select>
 
+    <select id="selectOrganizationNameByUserSeq" resultType="java.lang.String">
+        SELECT o.name
+        FROM event.organization_members om
+        JOIN event.organizations o
+          ON o.organization_seq = om.organization_seq
+        WHERE om.user_seq = #{userSeq}
+        ORDER BY CASE WHEN om.role = 'owner' THEN 0 ELSE 1 END, om.created_at ASC NULLS LAST
+        LIMIT 1
+    </select>
+
 </mapper>

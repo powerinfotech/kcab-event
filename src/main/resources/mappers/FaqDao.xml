@@ -5,6 +5,7 @@
     <select id="selectFaqList" resultType="com.kcabEvent.dto.faq.FaqListDto">
         SELECT
              faq_seq
+            ,audience
             ,category
             ,question
             ,answer
@@ -13,21 +14,28 @@
             ,rgst_date_time
         FROM event.faq
         <where>
+            <if test="audience != null and audience != ''">
+                AND audience = #{audience}
+            </if>
             <if test="category != null and category != ''">
                 AND category = #{category}
             </if>
+            <if test="activeOnly != null and activeOnly">
+                AND use_yn = 'Y'
+            </if>
         </where>
-        ORDER BY sort_seq, faq_seq
+        ORDER BY audience, sort_seq, faq_seq
     </select>
 
     <insert id="insertFaq" parameterType="com.kcabEvent.domain.Faq" useGeneratedKeys="true" keyProperty="faqSeq">
-        INSERT INTO event.faq (category, question, answer, sort_seq, use_yn, rgst_user_seq, upt_user_seq)
-        VALUES (#{category}, #{question}, #{answer}, #{sortSeq}, #{useYn}, #{rgstUserSeq}, #{uptUserSeq})
+        INSERT INTO event.faq (audience, category, question, answer, sort_seq, use_yn, rgst_user_seq, upt_user_seq)
+        VALUES (#{audience}, #{category}, #{question}, #{answer}, #{sortSeq}, #{useYn}, #{rgstUserSeq}, #{uptUserSeq})
     </insert>
 
     <update id="updateFaq" parameterType="com.kcabEvent.domain.Faq">
         UPDATE event.faq
-        SET  category       = #{category}
+        SET  audience       = #{audience}
+            ,category       = #{category}
             ,question       = #{question}
             ,answer         = #{answer}
             ,sort_seq       = #{sortSeq}

@@ -264,7 +264,7 @@ export function SuperDashboard() {
           {dashboardMetrics?.recentActivities?.length ? (
             <ol className="saf-activity-list">
               {dashboardMetrics.recentActivities.slice(0, 6).map((activity, idx) => (
-                <li key={`${activity.activityType}-${activity.referenceSeq ?? idx}-${activity.activityAt}`}>
+                <li key={`${activity.activityType}-${activity.referenceSeq ?? 'none'}-${activity.activityAt}-${activity.actorName ?? 'unknown'}-${idx}`}>
                   <strong>{formatActivityText(activity)}</strong>
                   <span>{formatActivityTimeAgo(activity.activityAt)}</span>
                 </li>
@@ -434,51 +434,104 @@ export function OrgDashboard() {
   }, []);
 
   const welcomeName = sessionInfo?.userName || 'Organization';
-  const myEvents = metrics?.myEvents ?? [];
+  const organizationName = sessionInfo?.organizationName || 'Organization';
+  const actionItems = metrics?.actionItems ?? [];
+  const recentParticipants = metrics?.recentParticipants ?? [];
+
+  const openEventDetail = (eventSeq: number) => {
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.setItem(DASHBOARD_EVENT_DETAIL_KEY, String(eventSeq));
+    }
+    move('/admin/events');
+  };
 
   return (
-    <div className="saf-screen">
-      <ScreenHeader
-        title={`Welcome, ${welcomeName}`}
-        actions={<ActionButton icon={<PlusOutlined />} variant="primary" onClick={() => move('/admin/events')}>Apply for Side Event</ActionButton>}
-      />
-      <MetricGrid metrics={buildOrgMetrics(metrics)} />
-      <section className="saf-card-list">
-        {loading && <p className="saf-empty">Loading...</p>}
-        {!loading && myEvents.length === 0 && (
-          <p className="saf-empty">No events yet. Click "Apply for Side Event" to create one.</p>
-        )}
-        {myEvents.map((event) => (
-          <OrgEventCard
-            key={event.eventSeq}
-            title={event.title}
-            meta={formatOrgEventMeta(event)}
-            status={
-              <Status tone={EVENT_STATUS_TONE[event.status] ?? 'gray'}>
-                {EVENT_STATUS_LABELS[event.status] ?? event.status}
-              </Status>
-            }
-            caption={formatOrgEventParticipants(event)}
-          />
-        ))}
+    <div className="saf-screen saf-org-dashboard-screen">
+      <section className="saf-org-dashboard-hero">
+        <div>
+          <span>Organization Console</span>
+          <h1>{organizationName}</h1>
+          <p>Welcome, {welcomeName}. Review your event status, participant activity, and next actions.</p>
+        </div>
+        <div className="saf-org-dashboard-hero-actions">
+          <ActionButton icon={<PlusOutlined />} variant="primary" onClick={() => move('/admin/events')}>Apply for Side Event</ActionButton>
+          <ActionButton icon={<TeamOutlined />} onClick={() => move('/admin/participants')}>View Participants</ActionButton>
+          <ActionButton icon={<FileTextOutlined />} onClick={() => move('/admin/faq')}>FAQ</ActionButton>
+        </div>
       </section>
+
+      <MetricGrid metrics={buildOrgMetrics(metrics)} />
+
+      <div className="saf-org-dashboard-layout">
+        <section className="saf-panel saf-org-action-panel">
+          <PanelTitle title="Action Required" subtitle="Items that may need your attention." />
+          {loading && <p className="saf-empty">Loading...</p>}
+          {!loading && !actionItems.length && (
+            <div className="saf-org-empty-state">
+              <CheckCircleOutlined />
+              <strong>No urgent action</strong>
+              <span>Your submitted events are currently in good order.</span>
+            </div>
+          )}
+          <div className="saf-org-action-list">
+            {actionItems.map((item) => (
+              <button
+                type="button"
+                className={`saf-org-action-item ${getOrgActionTone(item.severity)}`}
+                key={`${item.actionType}-${item.eventSeq}`}
+                onClick={() => openEventDetail(item.eventSeq)}
+              >
+                <span>{getOrgActionLabel(item.actionType)}</span>
+                <strong>{item.title}</strong>
+                <em>{item.description}</em>
+                {item.dueAt && <small>{formatDashboardDate(item.dueAt)}</small>}
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <section className="saf-panel saf-org-recent-panel">
+          <div className="saf-panel-title-row">
+            <PanelTitle title="Recent Participants" subtitle="Latest registrations across your events." />
+            <button type="button" className="saf-text-btn" onClick={() => move('/admin/participants')}>View all</button>
+          </div>
+          {loading && <p className="saf-empty">Loading...</p>}
+          {!loading && !recentParticipants.length && <p className="saf-empty">No participants yet.</p>}
+          <ul className="saf-org-participant-list">
+            {recentParticipants.map((participant) => (
+              <li key={`${participant.participantSeq}-${participant.eventSeq}`}>
+                <div>
+                  <strong>{participant.fullName || participant.email}</strong>
+                  <span>{participant.organizationName || participant.position || participant.email}</span>
+                </div>
+                <p>{participant.eventTitle}</p>
+                <time>{formatDashboardDate(participant.registeredAt)}</time>
+              </li>
+            ))}
+          </ul>
+        </section>
+      </div>
     </div>
   );
 }
 
 function buildOrgMetrics(metrics: OrgDashboardMetrics | null): Metric[] {
+  const totalApplicants = metrics?.totalApplicantCount ?? 0;
   return [
-    { label: 'My Events', value: formatCount(metrics?.myEventCount ?? 0), tone: 'blue' },
+    { label: 'My Events', value: formatCount(metrics?.myEventCount ?? 0), help: `${formatCount(metrics?.publishedEventCount ?? 0)} published`, tone: 'blue' },
+    { label: 'Published', value: formatCount(metrics?.publishedEventCount ?? 0), help: `${formatCount(metrics?.draftEventCount ?? 0)} draft`, tone: 'green' },
     { label: 'Pending Approval', value: formatCount(metrics?.pendingApprovalCount ?? 0), tone: 'yellow' },
-    { label: 'Total Applicants', value: formatCount(metrics?.totalApplicantCount ?? 0), tone: 'green' },
+    { label: 'Total Participants', value: formatCount(totalApplicants), tone: 'green' },
   ];
 }
 
 function formatOrgEventMeta(event: OrgDashboardEvent): string {
   const parts: string[] = [];
-  if (event.startAt) parts.push(formatMonthDay(event.startAt));
+  if (event.startAt) parts.push(formatDashboardDate(event.startAt));
   if (event.venueName) parts.push(event.venueName);
   if (event.maxParticipants != null) parts.push(`Capacity ${event.maxParticipants}`);
+  const eventMeta = parts.join(' / ');
+  if (eventMeta) return eventMeta;
   return parts.join(' · ') || '-';
 }
 
@@ -490,6 +543,76 @@ function formatOrgEventParticipants(event: OrgDashboardEvent): string | undefine
     return `Participants: ${event.registrationCount}`;
   }
   return undefined;
+}
+
+function DashboardOrgEventCard({
+  event,
+  onEdit,
+  onParticipants,
+  onView,
+}: {
+  event: OrgDashboardEvent;
+  onEdit: () => void;
+  onParticipants: () => void;
+  onView: () => void;
+}) {
+  const statusTone = EVENT_STATUS_TONE[event.status] ?? 'gray';
+  const statusLabel = EVENT_STATUS_LABELS[event.status] ?? event.status;
+  const maxParticipants = event.maxParticipants ?? 0;
+  const registrationCount = event.registrationCount ?? 0;
+  const usage = maxParticipants > 0 ? Math.min(100, Math.round((registrationCount / maxParticipants) * 100)) : 0;
+  const canViewPublicPage = !!event.slug && event.pagePublishedYn === 'Y';
+
+  return (
+    <article className="saf-org-dashboard-event-card">
+      <div className="saf-org-event-calendar">
+        <CalendarOutlined />
+        <strong>{event.startAt ? formatMonthDay(event.startAt) : '--.--'}</strong>
+      </div>
+      <div className="saf-org-event-content">
+        <div className="saf-org-event-title-row">
+          <h2>{event.title}</h2>
+          <Status tone={statusTone}>{statusLabel}</Status>
+        </div>
+        <p>{formatOrgEventMeta(event)}</p>
+        {event.registrationEndAt && <span>Registration closes {formatDashboardDate(event.registrationEndAt)}</span>}
+        <div className="saf-org-event-progress">
+          <div><i style={{ width: `${usage}%` }} /></div>
+          <strong>{formatOrgEventParticipants(event) ?? 'No participants yet'}</strong>
+        </div>
+      </div>
+      <footer>
+        <button type="button" onClick={onEdit}><EditOutlined /> Edit</button>
+        <button type="button" onClick={onParticipants}><TeamOutlined /> Participants</button>
+        <button type="button" onClick={onView} disabled={!canViewPublicPage}><EyeOutlined /> View Page</button>
+      </footer>
+    </article>
+  );
+}
+
+function getOrgActionLabel(actionType: string): string {
+  const labels: Record<string, string> = {
+    approval_pending: 'Approval Pending',
+    rejected: 'Revision Required',
+    event_soon: 'Event Soon',
+    registration_closed: 'Registration Closed',
+    capacity_near_full: 'Capacity Alert',
+  };
+  return labels[actionType] ?? actionType.replace(/_/g, ' ');
+}
+
+function getOrgActionTone(severity: string): string {
+  if (severity === 'danger') return 'is-danger';
+  if (severity === 'warning') return 'is-warning';
+  return 'is-info';
+}
+
+function formatDashboardDate(value?: string | null): string {
+  if (!value) return '-';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}.${pad(date.getMonth() + 1)}.${pad(date.getDate())}`;
 }
 
 export function DashboardByRole() {

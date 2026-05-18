@@ -14,6 +14,8 @@ public interface NoticeNewsService {
 
     NoticeNewsDetailDto selectNoticeNewsDetail(Long noticeNewsSeq);
 
+    NoticeNewsDetailDto selectPublicNoticeNewsDetail(Long noticeNewsSeq);
+
     Long saveNoticeNews(NoticeNewsSaveDto saveDto, LoginUser loginUser);
 
     void deleteNoticeNews(Long noticeNewsSeq, LoginUser loginUser);

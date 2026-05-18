@@ -5,6 +5,7 @@ const defaultUserInfo: SessionUserInfo = {
     userId: '',
     userName: '',
     admYn: 'N',
+    organizationName: '',
 };
 
 export const sessionInfoAtom = atom<SessionUserInfo>(defaultUserInfo);

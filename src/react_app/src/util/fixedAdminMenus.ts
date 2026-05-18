@@ -47,6 +47,7 @@ export function getFixedAdminMenuInfo(admYn?: string): MenuInfo[] {
       menu(158, 'Notice & News', '/notice-news', 'admin/NoticeNews', 9),
       menu(159, 'Gallery', '/gallery', 'admin/Gallery', 10),
       menu(160, 'User Management', '/users', 'admin/UserManagementMock', 11),
+      menu(165, 'FAQ Management', '/faq', 'admin/FaqManagement', 12),
       menu(170, 'Settings', '/settings', 'admin/Settings', 99),
     ];
   }
@@ -54,7 +55,8 @@ export function getFixedAdminMenuInfo(admYn?: string): MenuInfo[] {
   return [
     menu(200, 'Dashboard', '/', 'DashBoard', 1),
     menu(210, 'Event Management', '/events', 'admin/SuperEventList', 2),
-    menu(220, 'Participants', '/participants', 'admin/Participants', 4),
-    menu(230, 'Organization Profile', '/profile', 'admin/OrgProfile', 5),
+    menu(220, 'Participants', '/participants', 'admin/Participants', 3),
+    menu(240, 'FAQ', '/faq', 'admin/OrganizationFaq', 4),
+    menu(230, 'Organization Profile', '/profile', 'admin/OrgProfile', 99),
   ];
 }

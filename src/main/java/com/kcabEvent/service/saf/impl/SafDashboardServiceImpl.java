@@ -36,8 +36,14 @@ public class SafDashboardServiceImpl extends EgovAbstractServiceImpl implements 
         SafOrgDashboardMetricsDto empty = new SafOrgDashboardMetricsDto();
         empty.setMyEventCount(0L);
         empty.setPendingApprovalCount(0L);
+        empty.setPublishedEventCount(0L);
+        empty.setDraftEventCount(0L);
+        empty.setRejectedEventCount(0L);
         empty.setTotalApplicantCount(0L);
+        empty.setTotalCapacityCount(0L);
         empty.setMyEvents(List.of());
+        empty.setActionItems(List.of());
+        empty.setRecentParticipants(List.of());
         if (userSeq == null) return empty;
 
         Long organizationSeq = safDashboardDao.selectOrganizationSeqByUserSeq(userSeq);
@@ -46,6 +52,8 @@ public class SafDashboardServiceImpl extends EgovAbstractServiceImpl implements 
         SafOrgDashboardMetricsDto metrics = safDashboardDao.selectOrgDashboardMetrics(organizationSeq);
         if (metrics == null) metrics = empty;
         metrics.setMyEvents(safDashboardDao.selectOrgEvents(organizationSeq));
+        metrics.setActionItems(safDashboardDao.selectOrgActionItems(organizationSeq));
+        metrics.setRecentParticipants(safDashboardDao.selectOrgRecentParticipants(organizationSeq));
         return metrics;
     }
 }

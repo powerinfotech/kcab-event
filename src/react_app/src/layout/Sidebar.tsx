@@ -8,6 +8,7 @@ import {
   HistoryOutlined,
   MailOutlined,
   PictureOutlined,
+  QuestionCircleOutlined,
   ReadOutlined,
   SettingOutlined,
   TeamOutlined,
@@ -34,6 +35,7 @@ const iconByUrl: Record<string, React.ReactNode> = {
   '/notice-news': <ReadOutlined />,
   '/gallery': <PictureOutlined />,
   '/users': <UserOutlined />,
+  '/faq': <QuestionCircleOutlined />,
   '/settings': <SettingOutlined />,
   '/profile': <ProfileOutlined />,
 };

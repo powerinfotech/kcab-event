@@ -52,6 +52,18 @@ public class NoticeNewsServiceImpl extends EgovAbstractServiceImpl implements No
 
     @Override
     @Transactional("transactionManager")
+    public NoticeNewsDetailDto selectPublicNoticeNewsDetail(Long noticeNewsSeq) {
+        NoticeNewsDetailDto detail = selectNoticeNewsDetail(noticeNewsSeq);
+        if (!"Y".equals(detail.getUseYn())) {
+            throw new BusinessException("Notice/News was not found.");
+        }
+        noticeNewsDao.incrementViewCount(noticeNewsSeq);
+        detail.setViewCount((detail.getViewCount() == null ? 0 : detail.getViewCount()) + 1);
+        return detail;
+    }
+
+    @Override
+    @Transactional("transactionManager")
     public Long saveNoticeNews(NoticeNewsSaveDto saveDto, LoginUser loginUser) {
         if (saveDto == null) {
             throw new BusinessException("Request body is required.");
