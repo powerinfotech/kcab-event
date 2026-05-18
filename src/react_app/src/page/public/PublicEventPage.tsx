@@ -15,6 +15,15 @@ interface PageTheme {
   heroBackgroundColor: string;
 }
 
+interface PageSettings {
+  registrationStatusLabel?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  organizerName?: string;
+  infoNote?: string;
+  [key: string]: unknown;
+}
+
 interface SectionSettings {
   backgroundStyle?: 'white' | 'soft' | 'navy' | 'gold';
   width?: 'normal' | 'wide';
@@ -61,6 +70,7 @@ const PublicEventPage: React.FC<PublicEventPageProps> = ({ urlSlug }) => {
     [page],
   );
   const theme = useMemo(() => parseTheme(page?.themeJson), [page?.themeJson]);
+  const pageSettings = useMemo(() => parsePageSettings(page?.settingsJson), [page?.settingsJson]);
   const accentColor = getThemeColor(theme.themeColor);
 
   const handleNavigate = (url: string) => { window.location.href = url; };
@@ -104,15 +114,11 @@ const PublicEventPage: React.FC<PublicEventPageProps> = ({ urlSlug }) => {
       <PublicHeader currentUrl="/events" onNavigate={handleNavigate} />
       <main className="pub-page-content">
         <section className="pub-section section-hero size-medium pub-event-builder-hero" style={buildHeroStyle(theme, page.heroImageUrl)}>
-          <div className="hero-content">
+          <div className="hero-content pub-event-hero-content">
             <h2 className="hero-title">{heroTitle}</h2>
             {heroSubtitle && <p className="hero-subtitle">{heroSubtitle}</p>}
-            {page.registrationUrl && (
-              <a className="pub-event-register-link" href={page.registrationUrl} target="_blank" rel="noopener noreferrer" style={{ marginTop: 24 }}>
-                Register
-              </a>
-            )}
           </div>
+          <EventHeroInfoCard page={page} settings={pageSettings} />
         </section>
 
         {navSections.length > 0 && (
@@ -133,6 +139,37 @@ const PublicEventPage: React.FC<PublicEventPageProps> = ({ urlSlug }) => {
     </div>
   );
 };
+
+const EventHeroInfoCard: React.FC<{ page: PublicEventPageModel; settings: PageSettings }> = ({ page, settings }) => {
+  const contact = [settings.contactEmail, settings.contactPhone].filter(Boolean).join(' / ');
+  const registrationStatus = settings.registrationStatusLabel || formatStatusLabel(page.eventStatus);
+
+  return (
+    <aside className="pub-event-hero-info-card">
+      {renderHeroInfoRow('Date', formatBlockDateRange(page.eventStartDt, page.eventEndDt))}
+      {renderHeroInfoRow('Venue', page.location)}
+      {renderHeroInfoRow('Registration', registrationStatus)}
+      {renderHeroInfoRow('Organizer', settings.organizerName)}
+      {renderHeroInfoRow('Contact', contact)}
+      {settings.infoNote && <p className="pub-event-hero-note">{settings.infoNote}</p>}
+      {page.registrationUrl && (
+        <a className="pub-event-register-link" href={page.registrationUrl} target="_blank" rel="noopener noreferrer">
+          Register
+        </a>
+      )}
+    </aside>
+  );
+};
+
+function renderHeroInfoRow(label: string, value?: string | null) {
+  if (!value) return null;
+  return (
+    <dl className="pub-event-hero-info-row">
+      <dt>{label}</dt>
+      <dd>{value}</dd>
+    </dl>
+  );
+}
 
 const EventPageSectionRenderer: React.FC<{ section: EventPageSection; accentColor: string }> = ({ section, accentColor }) => {
   const anchor = section.anchorId || section.sectionKey;
@@ -252,10 +289,19 @@ function renderProgramBlocks(blocks: EventPageBlock[]) {
 }
 
 function renderProgramSession(block: EventPageBlock) {
+  const content = parseBlockContent(block.contentJson);
+  const sessionType = getProgramSessionType(content);
+  const moderator = typeof content.moderator === 'string' ? content.moderator : '';
+  const dayLabel = typeof content.dayLabel === 'string' ? content.dayLabel : '';
+
   return (
-    <article className="pub-event-program-session" key={block.blockSeq}>
-      <div className="pub-event-program-time">{formatBlockTime(block)}</div>
+    <article className={`pub-event-program-session is-${sessionType}`} key={block.blockSeq}>
+      <div className="pub-event-program-time">
+        {dayLabel && <span>{dayLabel}</span>}
+        {formatBlockTime(block)}
+      </div>
       <div>
+        <span className="pub-event-program-type">{getProgramSessionTypeLabel(sessionType)}</span>
         {block.linkUrl ? (
           <h5>
             <a className="pub-event-program-link" href={block.linkUrl} target={block.linkTarget || '_self'} rel="noopener noreferrer">
@@ -266,6 +312,7 @@ function renderProgramSession(block: EventPageBlock) {
           <h5>{block.title}</h5>
         )}
         {block.speakerNames && <p className="pub-event-program-speakers">{block.speakerNames}</p>}
+        {moderator && <p className="pub-event-program-speakers">Moderator: {moderator}</p>}
         {block.venueName && <p className="pub-event-program-venue">{block.venueName}</p>}
         {block.body && <div className="text-content" dangerouslySetInnerHTML={{ __html: block.body }} />}
       </div>
@@ -274,6 +321,9 @@ function renderProgramSession(block: EventPageBlock) {
 }
 
 function renderSpeakerCard(block: EventPageBlock) {
+  const contentJson = parseBlockContent(block.contentJson);
+  const linkedInUrl = typeof contentJson.linkedInUrl === 'string' ? contentJson.linkedInUrl : '';
+  const profileUrl = block.linkUrl || linkedInUrl;
   const content = (
     <>
       {getBlockImageUrl(block) ? (
@@ -284,12 +334,14 @@ function renderSpeakerCard(block: EventPageBlock) {
       <h4 className="speaker-name">{block.title}</h4>
       {block.subtitle && <p className="speaker-role">{block.subtitle}</p>}
       {block.organizationName && <p className="speaker-org">{block.organizationName}</p>}
+      {block.body && <p className="pub-event-speaker-bio">{stripHtml(block.body)}</p>}
+      {profileUrl && <span className="pub-event-speaker-profile">View Profile</span>}
     </>
   );
 
-  if (block.linkUrl) {
+  if (profileUrl) {
     return (
-      <a key={block.blockSeq} className="speaker-item pub-event-speaker-link" href={block.linkUrl} target={block.linkTarget || '_self'} rel="noopener noreferrer">
+      <a key={block.blockSeq} className="speaker-item pub-event-speaker-link" href={profileUrl} target={block.linkTarget || '_blank'} rel="noopener noreferrer">
         {content}
       </a>
     );
@@ -300,27 +352,18 @@ function renderSpeakerCard(block: EventPageBlock) {
 
 function renderSupportingOrganizations(blocks: EventPageBlock[]) {
   const shownBlocks = blocks.filter((block) => block.useYn !== 'N');
-  const organizers = shownBlocks.filter((block) => getOrganizationGroup(block) === 'Organizers');
-  const supporters = shownBlocks.filter((block) => getOrganizationGroup(block) !== 'Organizers');
+  const groups = groupOrganizationBlocks(shownBlocks);
 
   return (
     <div className="pub-event-org-wrap">
-      {organizers.length > 0 && (
-        <div className="pub-event-org-group is-organizers">
-          <h4>Organizers</h4>
+      {groups.map(([group, groupBlocks]) => (
+        <div key={group} className={`pub-event-org-group${isOrganizerGroup(group) ? ' is-organizers' : ' is-supporters'}`}>
+          <h4>{group}</h4>
           <div className="pub-event-org-grid">
-            {organizers.map((block) => renderLinkedBlock(block, 'pub-event-logo-card is-large'))}
+            {groupBlocks.map((block) => renderLinkedBlock(block, `pub-event-logo-card${isOrganizerGroup(group) ? ' is-large' : ''}`))}
           </div>
         </div>
-      )}
-      {supporters.length > 0 && (
-        <div className="pub-event-org-group is-supporters">
-          <h4>Supporters</h4>
-          <div className="pub-event-org-grid">
-            {supporters.map((block) => renderLinkedBlock(block, 'pub-event-logo-card'))}
-          </div>
-        </div>
-      )}
+      ))}
     </div>
   );
 }
@@ -329,6 +372,9 @@ function renderLinkedBlock(block: EventPageBlock, className: string) {
   const imageUrl = getBlockImageUrl(block);
   const extraContent = parseBlockContent(block.contentJson);
   const roomRates = typeof extraContent.roomRates === 'string' ? extraContent.roomRates : '';
+  const mapUrl = typeof extraContent.mapUrl === 'string' ? extraContent.mapUrl : '';
+  const bookingDeadline = typeof extraContent.bookingDeadline === 'string' ? extraContent.bookingDeadline : '';
+  const isLogoCard = className.includes('pub-event-logo-card');
   const content = (
     <>
       {imageUrl && (
@@ -346,11 +392,25 @@ function renderLinkedBlock(block: EventPageBlock, className: string) {
       {block.summary && <p>{block.summary}</p>}
       {block.body && <div className="text-content" dangerouslySetInnerHTML={{ __html: block.body }} />}
       {roomRates && <div className="text-content"><strong>Room Rates</strong><br />{roomRates}</div>}
-      {block.buttonLabel && <span className="pub-event-page-button">{block.buttonLabel}</span>}
+      {bookingDeadline && <p><strong>Booking Deadline</strong><br />{bookingDeadline}</p>}
+      {!isLogoCard && (block.linkUrl || mapUrl) && (
+        <div className="pub-event-page-actions">
+          {block.linkUrl && (
+            <a href={block.linkUrl} target={block.linkTarget || '_blank'} rel="noopener noreferrer">
+              {block.buttonLabel || 'View Details'}
+            </a>
+          )}
+          {mapUrl && (
+            <a href={mapUrl} target="_blank" rel="noopener noreferrer">
+              Map
+            </a>
+          )}
+        </div>
+      )}
     </>
   );
 
-  if (block.linkUrl) {
+  if (isLogoCard && block.linkUrl) {
     return (
       <a key={block.blockSeq} className={className} href={block.linkUrl} target={block.linkTarget || '_self'} rel="noopener noreferrer">
         {content}
@@ -371,11 +431,15 @@ function formatDate(value?: string | null) {
   return value.replace('T', ' ').slice(0, 16);
 }
 
+function formatBlockDateRange(start?: string | null, end?: string | null) {
+  const startText = formatDate(start);
+  const endText = formatDate(end);
+  if (startText && endText) return `${startText} - ${endText}`;
+  return startText || endText;
+}
+
 function formatBlockTime(block: EventPageBlock) {
-  const start = formatDate(block.startAt);
-  const end = formatDate(block.endAt);
-  if (start && end) return `${start} - ${end}`;
-  return start || end || '';
+  return formatBlockDateRange(block.startAt, block.endAt);
 }
 
 function parseTheme(themeJson?: unknown): PageTheme {
@@ -394,6 +458,19 @@ function parseTheme(themeJson?: unknown): PageTheme {
     };
   } catch {
     return DEFAULT_THEME;
+  }
+}
+
+function parsePageSettings(settingsJson?: unknown): PageSettings {
+  if (!settingsJson) return {};
+  if (typeof settingsJson === 'object' && !Array.isArray(settingsJson)) {
+    return settingsJson as PageSettings;
+  }
+  if (typeof settingsJson !== 'string') return {};
+  try {
+    return JSON.parse(settingsJson);
+  } catch {
+    return {};
   }
 }
 
@@ -438,7 +515,49 @@ function getBlockImageUrl(block: EventPageBlock) {
 function getOrganizationGroup(block: EventPageBlock) {
   const content = parseBlockContent(block.contentJson);
   const category = typeof content.category === 'string' ? content.category : block.badgeText || '';
-  return category.toLowerCase().includes('organizer') ? 'Organizers' : 'Supporters';
+  return category || 'Supporters';
+}
+
+function groupOrganizationBlocks(blocks: EventPageBlock[]) {
+  const orderedGroups: string[] = [];
+  const grouped = blocks.reduce<Record<string, EventPageBlock[]>>((acc, block) => {
+    const group = getOrganizationGroup(block);
+    if (!acc[group]) {
+      acc[group] = [];
+      orderedGroups.push(group);
+    }
+    acc[group].push(block);
+    return acc;
+  }, {});
+  return orderedGroups.map((group) => [group, grouped[group]] as const);
+}
+
+function isOrganizerGroup(group: string) {
+  return group.toLowerCase().includes('organizer') || group.includes('주최');
+}
+
+function getProgramSessionType(content: Record<string, unknown>) {
+  const value = typeof content.sessionType === 'string' ? content.sessionType : 'session';
+  return ['session', 'opening', 'keynote', 'panel', 'break', 'networking'].includes(value) ? value : 'session';
+}
+
+function getProgramSessionTypeLabel(type: string) {
+  const labels: Record<string, string> = {
+    session: 'Session',
+    opening: 'Opening',
+    keynote: 'Keynote',
+    panel: 'Panel',
+    break: 'Break',
+    networking: 'Networking',
+  };
+  return labels[type] || labels.session;
+}
+
+function formatStatusLabel(status?: string | null) {
+  if (!status) return '';
+  return status
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
 function groupProgramBlocks(blocks: EventPageBlock[]) {
@@ -483,6 +602,10 @@ function getOverlayGradient(overlay: PageTheme['heroOverlay']) {
     return 'linear-gradient(135deg, rgba(0,0,0,0), rgba(0,0,0,0))';
   }
   return 'linear-gradient(135deg, rgba(16,32,51,.84), rgba(16,32,51,.48))';
+}
+
+function stripHtml(value: string) {
+  return value.replace(/<[^>]*>/g, '').slice(0, 160);
 }
 
 export default PublicEventPage;

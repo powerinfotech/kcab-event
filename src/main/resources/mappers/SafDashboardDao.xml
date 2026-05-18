@@ -77,6 +77,60 @@
         LIMIT 3
     </select>
 
+    <!-- Recent admin activity feed: side event submissions, participant registrations, org sign-ups -->
+    <select id="selectRecentActivities" resultType="com.kcabEvent.dto.saf.SafDashboardRecentActivityDto">
+        SELECT activity_type, actor_name, target_title, activity_at, reference_seq
+          FROM (
+            SELECT
+                 'side_event_submitted' AS activity_type
+                ,COALESCE(o.name, 'Unknown Organization') AS actor_name
+                ,e.title AS target_title
+                ,e.created_at AS activity_at
+                ,e.event_seq AS reference_seq
+            FROM event.events e
+            LEFT JOIN event.organizations o ON o.organization_seq = e.organization_seq
+            WHERE e.deleted_at IS NULL
+              AND e.event_type = 'side'
+              AND e.created_at IS NOT NULL
+
+            UNION ALL
+
+            SELECT
+                 'participant_registered' AS activity_type
+                ,COALESCE(
+                    NULLIF(TRIM(CONCAT_WS(' ', p.first_name, NULLIF(p.middle_name, ''), p.last_name)), ''),
+                    'Anonymous'
+                 ) AS actor_name
+                ,ev.title AS target_title
+                ,ep.registered_at AS activity_at
+                ,ev.event_seq AS reference_seq
+            FROM event.event_participants ep
+            JOIN event.participants p ON p.participant_seq = ep.participant_seq
+            JOIN event.events ev ON ev.event_seq = ep.event_seq
+            WHERE ep.status = 'registered'
+              AND ev.deleted_at IS NULL
+              AND ep.registered_at IS NOT NULL
+
+            UNION ALL
+
+            SELECT
+                 'org_signup_pending' AS activity_type
+                ,COALESCE(o.name, u.name, 'Pending Organization') AS actor_name
+                ,NULL AS target_title
+                ,u.created_at AS activity_at
+                ,u.user_seq AS reference_seq
+            FROM event.users u
+            LEFT JOIN event.organization_members om ON om.user_seq = u.user_seq
+            LEFT JOIN event.organizations o ON o.organization_seq = om.organization_seq
+            WHERE u.deleted_at IS NULL
+              AND u.user_type = 'organization'
+              AND u.status = 'pending'
+              AND u.created_at IS NOT NULL
+          ) AS activities
+         ORDER BY activity_at DESC NULLS LAST
+         LIMIT 10
+    </select>
+
     <!-- Organization for the logged-in user -->
     <select id="selectOrganizationSeqByUserSeq" resultType="java.lang.Long">
         SELECT organization_seq

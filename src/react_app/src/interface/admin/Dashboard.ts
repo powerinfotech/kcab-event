@@ -17,6 +17,19 @@ export interface AdminDashboardPendingEvent {
   submittedAt: string | null;
 }
 
+export type AdminDashboardActivityType =
+  | 'side_event_submitted'
+  | 'participant_registered'
+  | 'org_signup_pending';
+
+export interface AdminDashboardRecentActivity {
+  activityType: AdminDashboardActivityType;
+  actorName: string;
+  targetTitle: string | null;
+  activityAt: string;
+  referenceSeq: number | null;
+}
+
 export interface AdminDashboardMetrics {
   pendingEventApprovalCount: number;
   registeredEventCount: number;
@@ -27,4 +40,5 @@ export interface AdminDashboardMetrics {
   pendingOrganizationApprovalCount: number;
   upcomingEvents: AdminDashboardUpcomingEvent[];
   pendingSideEvents: AdminDashboardPendingEvent[];
+  recentActivities: AdminDashboardRecentActivity[];
 }

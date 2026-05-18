@@ -2,6 +2,7 @@ package com.kcabEvent.dao;
 
 import com.kcabEvent.dto.saf.SafDashboardMetricsDto;
 import com.kcabEvent.dto.saf.SafDashboardPendingEventDto;
+import com.kcabEvent.dto.saf.SafDashboardRecentActivityDto;
 import com.kcabEvent.dto.saf.SafDashboardUpcomingEventDto;
 import com.kcabEvent.dto.saf.SafOrgDashboardEventDto;
 import com.kcabEvent.dto.saf.SafOrgDashboardMetricsDto;
@@ -17,6 +18,8 @@ public interface SafDashboardDao {
     List<SafDashboardUpcomingEventDto> selectUpcomingEvents();
 
     List<SafDashboardPendingEventDto> selectPendingSideEvents();
+
+    List<SafDashboardRecentActivityDto> selectRecentActivities();
 
     /** 로그인 user_seq로 소속 organization_seq 조회 (없으면 null) */
     Long selectOrganizationSeqByUserSeq(@Param("userSeq") Long userSeq);

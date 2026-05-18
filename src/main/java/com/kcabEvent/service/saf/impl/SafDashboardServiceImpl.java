@@ -26,6 +26,7 @@ public class SafDashboardServiceImpl extends EgovAbstractServiceImpl implements 
         }
         metrics.setUpcomingEvents(safDashboardDao.selectUpcomingEvents());
         metrics.setPendingSideEvents(safDashboardDao.selectPendingSideEvents());
+        metrics.setRecentActivities(safDashboardDao.selectRecentActivities());
         return metrics;
     }
 

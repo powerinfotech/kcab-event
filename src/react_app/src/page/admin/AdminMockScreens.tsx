@@ -4,15 +4,18 @@ import React, { useEffect, useState } from 'react';
 import {
   CalendarOutlined,
   CheckCircleOutlined,
+  CreditCardOutlined,
   DownloadOutlined,
   EditOutlined,
   EyeOutlined,
+  FileTextOutlined,
   MailOutlined,
   MoreOutlined,
   PlusOutlined,
   SaveOutlined,
   SearchOutlined,
   SendOutlined,
+  TeamOutlined,
   UploadOutlined,
 } from '@ant-design/icons';
 import { useAtomValue, useSetAtom } from 'jotai';
@@ -20,7 +23,7 @@ import { sessionInfoAtom } from '@atom/sessionInfoAtom';
 import { currentPathAtom, pushPath } from '@atom/currentPathAtom';
 import { getAdminRole } from '@util/fixedAdminMenus';
 import { callGetAdminDashboardMetrics, callGetOrgDashboardMetrics } from '@api/admin/DashboardApi';
-import type { AdminDashboardMetrics } from '@interface/admin/Dashboard';
+import type { AdminDashboardMetrics, AdminDashboardRecentActivity } from '@interface/admin/Dashboard';
 import type { OrgDashboardEvent, OrgDashboardMetrics } from '@interface/admin/OrgDashboard';
 import { EVENT_STATUS_LABELS, EVENT_STATUS_TONE } from '@interface/event/EventManagement';
 import AdminGridPagination, { useClientGridPagination } from './AdminGridPagination';
@@ -258,15 +261,78 @@ export function SuperDashboard() {
         </section>
         <section className="saf-panel">
           <PanelTitle title="Recent Activity" />
-          <ol className="saf-activity-list">
-            <li><strong>ABC Law submitted a side event</strong><span>10 minutes ago</span></li>
-            <li><strong>XYZ Law sign-up is awaiting approval</strong><span>2 hours ago</span></li>
-            <li><strong>Official event 'ADR Reception' was updated</strong><span>Yesterday</span></li>
-          </ol>
+          {dashboardMetrics?.recentActivities?.length ? (
+            <ol className="saf-activity-list">
+              {dashboardMetrics.recentActivities.slice(0, 6).map((activity, idx) => (
+                <li key={`${activity.activityType}-${activity.referenceSeq ?? idx}-${activity.activityAt}`}>
+                  <strong>{formatActivityText(activity)}</strong>
+                  <span>{formatActivityTimeAgo(activity.activityAt)}</span>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <p className="saf-empty">No recent activity.</p>
+          )}
+        </section>
+        <section className="saf-panel">
+          <PanelTitle title="Quick Actions" />
+          <div className="saf-quick-actions">
+            <button type="button" onClick={() => move('/admin/events/new')}>
+              <PlusOutlined />
+              <span>Create Event</span>
+            </button>
+            <button type="button" onClick={() => move('/admin/notice-news')}>
+              <FileTextOutlined />
+              <span>Notice &amp; News</span>
+            </button>
+            <button type="button" onClick={() => move('/admin/participants')}>
+              <TeamOutlined />
+              <span>Participants</span>
+            </button>
+            <button type="button" onClick={() => move('/admin/payments')}>
+              <CreditCardOutlined />
+              <span>Payments</span>
+            </button>
+          </div>
         </section>
       </div>
     </div>
   );
+}
+
+function formatActivityText(activity: AdminDashboardRecentActivity): string {
+  const target = activity.targetTitle ? `'${activity.targetTitle}'` : '';
+  switch (activity.activityType) {
+    case 'side_event_submitted':
+      return target
+        ? `${activity.actorName} submitted a side event ${target}`
+        : `${activity.actorName} submitted a side event`;
+    case 'participant_registered':
+      return target
+        ? `${activity.actorName} registered for ${target}`
+        : `${activity.actorName} registered for an event`;
+    case 'org_signup_pending':
+      return `${activity.actorName} sign-up is awaiting approval`;
+    default:
+      return activity.actorName;
+  }
+}
+
+function formatActivityTimeAgo(value: string): string {
+  if (!value) return '';
+  const past = new Date(value);
+  if (Number.isNaN(past.getTime())) return '';
+  const diffMs = Date.now() - past.getTime();
+  const minutes = Math.max(0, Math.floor(diffMs / 60000));
+  if (minutes < 1) return 'Just now';
+  if (minutes < 60) return `${minutes} minute${minutes === 1 ? '' : 's'} ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} hour${hours === 1 ? '' : 's'} ago`;
+  const days = Math.floor(hours / 24);
+  if (days === 1) return 'Yesterday';
+  if (days < 30) return `${days} day${days === 1 ? '' : 's'} ago`;
+  const months = Math.floor(days / 30);
+  return `${months} month${months === 1 ? '' : 's'} ago`;
 }
 
 function buildSuperMetrics(metrics: AdminDashboardMetrics | null): Metric[] {
@@ -280,9 +346,9 @@ function buildSuperMetrics(metrics: AdminDashboardMetrics | null): Metric[] {
 
   return [
     { label: 'Pending Approval (Events)', value: formatCount(pendingEvents), help: 'Side events awaiting review', tone: 'yellow' },
+    { label: 'Pending Approval (Organizations)', value: formatCount(pendingOrganizations), help: 'Organization sign-ups awaiting review', tone: 'yellow' },
     { label: 'Registered Events', value: formatCount(registeredEvents), help: `${formatCount(officialEvents)} official · ${formatCount(sideEvents)} side events`, tone: 'blue' },
     { label: 'Total Participants', value: formatCount(totalParticipants), help: `+${formatCount(recentParticipants)} in the last 7 days`, tone: 'green' },
-    { label: 'Pending Approval (Organizations)', value: formatCount(pendingOrganizations), help: 'Organization sign-ups awaiting review', tone: 'yellow' },
   ];
 }
 

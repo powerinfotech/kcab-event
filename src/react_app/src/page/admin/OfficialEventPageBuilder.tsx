@@ -46,6 +46,15 @@ interface PageTheme {
   heroBackgroundColor: string;
 }
 
+interface PageSettings {
+  registrationStatusLabel?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  organizerName?: string;
+  infoNote?: string;
+  [key: string]: unknown;
+}
+
 interface SectionSettings {
   backgroundStyle?: 'white' | 'soft' | 'navy' | 'gold';
   width?: 'normal' | 'wide';
@@ -101,9 +110,30 @@ const PROGRAM_TRACK_OPTIONS = [
   'Reception',
 ] as const;
 
+const PROGRAM_SESSION_TYPE_OPTIONS = [
+  { value: 'session', label: '일반 세션' },
+  { value: 'opening', label: '개회/환영사' },
+  { value: 'keynote', label: '키노트' },
+  { value: 'panel', label: '패널 토론' },
+  { value: 'break', label: '휴식/점심' },
+  { value: 'networking', label: '네트워킹' },
+] as const;
+
 const ORGANIZATION_GROUP_OPTIONS = [
   { value: 'Organizers', label: '주최기관' },
+  { value: 'Supporting Organizations', label: '지원기관' },
   { value: 'Supporters', label: '후원기관' },
+  { value: 'Sponsors', label: '스폰서' },
+  { value: 'Media Partners', label: '미디어 파트너' },
+  { value: 'Partners', label: '파트너' },
+] as const;
+
+const REGISTRATION_STATUS_OPTIONS = [
+  'Registration Open',
+  'Registration is now closed',
+  'Coming Soon',
+  'Waitlist Open',
+  'Invite Only',
 ] as const;
 
 const SECTION_PRESETS: SectionPreset[] = [
@@ -161,6 +191,14 @@ const SECTION_PRESETS: SectionPreset[] = [
     blockType: 'notice_item',
     addLabel: '공지 추가',
   },
+  {
+    sectionType: 'contact',
+    label: '문의',
+    description: '담당 부서, 이메일, 연락처',
+    defaultTitle: 'Contact',
+    blockType: 'card',
+    addLabel: '문의처 추가',
+  },
 ];
 
 const OfficialEventPageBuilder: React.FC<OfficialEventPageBuilderProps> = ({ eventSeq, canEdit }) => {
@@ -181,6 +219,7 @@ const OfficialEventPageBuilder: React.FC<OfficialEventPageBuilderProps> = ({ eve
   );
   const activePreset = useMemo(() => getPreset(activeSection), [activeSection]);
   const theme = useMemo(() => parseTheme(page?.themeJson), [page?.themeJson]);
+  const pageSettings = useMemo(() => parsePageSettings(page?.settingsJson), [page?.settingsJson]);
 
   const nextTempSeq = () => {
     const value = tempSeqRef.current;
@@ -236,6 +275,11 @@ const OfficialEventPageBuilder: React.FC<OfficialEventPageBuilderProps> = ({ eve
   const updateTheme = (patch: Partial<PageTheme>) => {
     const nextTheme = { ...theme, ...patch };
     updatePage({ themeJson: JSON.stringify(nextTheme) });
+  };
+
+  const updatePageSettings = (patch: Partial<PageSettings>) => {
+    const nextSettings = { ...pageSettings, ...patch };
+    updatePage({ settingsJson: JSON.stringify(nextSettings) });
   };
 
   const updateSection = (sectionSeq: number, patch: Partial<EventPageSection>) => {
@@ -417,6 +461,66 @@ const OfficialEventPageBuilder: React.FC<OfficialEventPageBuilderProps> = ({ eve
           <div className="saf-visual-settings">
             <div className="saf-simple-editor-title">
               <div>
+                <h3>행사 정보 카드</h3>
+                <p>공개 화면 상단에 날짜, 장소, 등록 상태, 문의처가 함께 표시됩니다.</p>
+              </div>
+            </div>
+            <div className="saf-simple-form">
+              <label>
+                <span>등록 상태</span>
+                <select
+                  value={pageSettings.registrationStatusLabel || ''}
+                  disabled={!canEdit}
+                  onChange={(e) => updatePageSettings({ registrationStatusLabel: e.target.value })}
+                >
+                  <option value="">자동/미표시</option>
+                  {REGISTRATION_STATUS_OPTIONS.map((status) => (
+                    <option key={status} value={status}>{status}</option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                <span>주최/담당 기관</span>
+                <input
+                  value={pageSettings.organizerName || ''}
+                  disabled={!canEdit}
+                  onChange={(e) => updatePageSettings({ organizerName: e.target.value })}
+                  placeholder="KCAB International"
+                />
+              </label>
+              <label>
+                <span>문의 이메일</span>
+                <input
+                  value={pageSettings.contactEmail || ''}
+                  disabled={!canEdit}
+                  onChange={(e) => updatePageSettings({ contactEmail: e.target.value })}
+                  placeholder="event@kcab.or.kr"
+                />
+              </label>
+              <label>
+                <span>문의 전화</span>
+                <input
+                  value={pageSettings.contactPhone || ''}
+                  disabled={!canEdit}
+                  onChange={(e) => updatePageSettings({ contactPhone: e.target.value })}
+                  placeholder="+82-2-0000-0000"
+                />
+              </label>
+              <label className="is-wide">
+                <span>상단 안내 메모</span>
+                <textarea
+                  value={pageSettings.infoNote || ''}
+                  disabled={!canEdit}
+                  onChange={(e) => updatePageSettings({ infoNote: e.target.value })}
+                  placeholder="예: Registration closes when seats are full."
+                />
+              </label>
+            </div>
+          </div>
+
+          <div className="saf-visual-settings">
+            <div className="saf-simple-editor-title">
+              <div>
                 <h3>상단 화면 꾸미기</h3>
                 <p>대표 이미지와 색상을 선택하면 화면에 자동으로 반영됩니다.</p>
               </div>
@@ -582,7 +686,7 @@ const BuilderHeader: React.FC<{
   <div className="saf-panel-title-row">
     <div className="saf-panel-title">
       <h2>공식 행사 페이지 만들기</h2>
-      <p>행사 정보를 입력하면 Glue Up 스타일 화면으로 자동 구성됩니다.</p>
+      <p>행사 정보를 입력하면 공식 행사 안내 화면으로 자동 구성됩니다.</p>
     </div>
     {(canEdit || canPreview) && (
       <div className="saf-builder-header-actions">
@@ -714,7 +818,7 @@ const SectionEditor: React.FC<{
             placeholder="제목 아래에 보이는 짧은 문구"
           />
         </label>
-        {(preset.sectionType === 'about' || preset.sectionType === 'venue') && (
+        {(preset.sectionType === 'about' || preset.sectionType === 'venue' || preset.sectionType === 'contact') && (
           <label className="is-wide">
             <span>상세 설명</span>
             <textarea
@@ -803,15 +907,33 @@ function renderItemFields(
   if (preset.sectionType === 'program') {
     const programContent = parseBlockContent(block.contentJson);
     const currentTrack = getProgramTrack(block);
+    const sessionType = typeof programContent.sessionType === 'string' ? programContent.sessionType : 'session';
+    const moderator = typeof programContent.moderator === 'string' ? programContent.moderator : '';
+    const dayLabel = typeof programContent.dayLabel === 'string' ? programContent.dayLabel : '';
     const updateProgramTrack = (track: string) => {
       onUpdate({
         subtitle: track,
         contentJson: JSON.stringify({ ...programContent, track }),
       });
     };
+    const updateProgramContent = (patch: Record<string, unknown>) => {
+      onUpdate({ contentJson: JSON.stringify({ ...programContent, ...patch }) });
+    };
 
     return (
       <div className="saf-simple-form is-compact">
+        <label>
+          <span>세션 형태</span>
+          <select
+            value={sessionType}
+            disabled={!canEdit}
+            onChange={(e) => updateProgramContent({ sessionType: e.target.value })}
+          >
+            {PROGRAM_SESSION_TYPE_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>{option.label}</option>
+            ))}
+          </select>
+        </label>
         <label>
           <span>프로그램 구분</span>
           <select
@@ -826,6 +948,15 @@ function renderItemFields(
               <option key={track} value={track}>{track}</option>
             ))}
           </select>
+        </label>
+        <label>
+          <span>날짜/일차 표시</span>
+          <input
+            value={dayLabel}
+            disabled={!canEdit}
+            onChange={(e) => updateProgramContent({ dayLabel: e.target.value })}
+            placeholder="Day 1 또는 2025.10.28"
+          />
         </label>
         <label>
           <span>시작 시간</span>
@@ -856,6 +987,10 @@ function renderItemFields(
           <input value={block.speakerNames ?? ''} disabled={!canEdit} onChange={(e) => onUpdate({ speakerNames: e.target.value })} />
         </label>
         <label className="is-wide">
+          <span>좌장/모더레이터</span>
+          <input value={moderator} disabled={!canEdit} onChange={(e) => updateProgramContent({ moderator: e.target.value })} />
+        </label>
+        <label className="is-wide">
           <span>설명</span>
           <textarea value={block.body ?? ''} disabled={!canEdit} onChange={(e) => onUpdate({ body: e.target.value })} />
         </label>
@@ -866,6 +1001,7 @@ function renderItemFields(
   if (preset.sectionType === 'speakers') {
     const speakerContent = parseBlockContent(block.contentJson);
     const speakerImageUrl = typeof speakerContent.imageUrl === 'string' ? speakerContent.imageUrl : '';
+    const linkedInUrl = typeof speakerContent.linkedInUrl === 'string' ? speakerContent.linkedInUrl : '';
     const updateSpeakerContent = (patch: Record<string, unknown>) => {
       onUpdate({ contentJson: JSON.stringify({ ...speakerContent, ...patch }) });
     };
@@ -907,7 +1043,15 @@ function renderItemFields(
           />
         </label>
         <label className="is-wide">
-          <span>소개</span>
+          <span>LinkedIn / SNS 링크(선택)</span>
+          <input
+            value={linkedInUrl}
+            disabled={!canEdit}
+            onChange={(e) => updateSpeakerContent({ linkedInUrl: e.target.value })}
+          />
+        </label>
+        <label className="is-wide">
+          <span>약력</span>
           <textarea value={block.body ?? ''} disabled={!canEdit} onChange={(e) => onUpdate({ body: e.target.value })} />
         </label>
       </div>
@@ -937,10 +1081,22 @@ function renderItemFields(
             disabled={!canEdit}
             onChange={(e) => updateOrganizationGroup(e.target.value)}
           >
+            {!ORGANIZATION_GROUP_OPTIONS.some((option) => option.value === currentGroup) && (
+              <option value={currentGroup}>{currentGroup}</option>
+            )}
             {ORGANIZATION_GROUP_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>{option.label}</option>
             ))}
           </select>
+        </label>
+        <label className="is-wide">
+          <span>기관 구분 직접 입력</span>
+          <input
+            value={currentGroup}
+            disabled={!canEdit}
+            onChange={(e) => updateOrganizationGroup(e.target.value)}
+            placeholder="예: Knowledge Partners"
+          />
         </label>
         <div className="saf-simple-file-field is-wide">
           <span>로고</span>
@@ -971,6 +1127,8 @@ function renderItemFields(
   if (preset.sectionType === 'visit_seoul') {
     const hotelContent = parseBlockContent(block.contentJson);
     const roomRates = typeof hotelContent.roomRates === 'string' ? hotelContent.roomRates : '';
+    const mapUrl = typeof hotelContent.mapUrl === 'string' ? hotelContent.mapUrl : '';
+    const bookingDeadline = typeof hotelContent.bookingDeadline === 'string' ? hotelContent.bookingDeadline : '';
     const updateHotelContent = (patch: Record<string, unknown>) => {
       onUpdate({ contentJson: JSON.stringify({ ...hotelContent, ...patch }) });
     };
@@ -984,6 +1142,19 @@ function renderItemFields(
         <label>
           <span>웹사이트</span>
           <input value={block.linkUrl ?? ''} disabled={!canEdit} onChange={(e) => onUpdate({ linkUrl: e.target.value })} />
+        </label>
+        <label>
+          <span>버튼 문구</span>
+          <input
+            value={block.buttonLabel ?? ''}
+            disabled={!canEdit}
+            onChange={(e) => onUpdate({ buttonLabel: e.target.value })}
+            placeholder="Book / View Hotel"
+          />
+        </label>
+        <label>
+          <span>지도 링크</span>
+          <input value={mapUrl} disabled={!canEdit} onChange={(e) => updateHotelContent({ mapUrl: e.target.value })} />
         </label>
         <label className="is-wide">
           <span>주소 / 행사장까지 이동 시간</span>
@@ -1001,6 +1172,10 @@ function renderItemFields(
           <span>객실 요금 안내(선택)</span>
           <textarea value={roomRates} disabled={!canEdit} onChange={(e) => updateHotelContent({ roomRates: e.target.value })} />
         </label>
+        <label className="is-wide">
+          <span>예약 마감일/조건(선택)</span>
+          <input value={bookingDeadline} disabled={!canEdit} onChange={(e) => updateHotelContent({ bookingDeadline: e.target.value })} />
+        </label>
       </div>
     );
   }
@@ -1013,8 +1188,17 @@ function renderItemFields(
           <input value={block.title ?? ''} disabled={!canEdit} onChange={(e) => onUpdate({ title: e.target.value })} />
         </label>
         <label>
-          <span>링크</span>
+          <span>첨부/안내 링크</span>
           <input value={block.linkUrl ?? ''} disabled={!canEdit} onChange={(e) => onUpdate({ linkUrl: e.target.value })} />
+        </label>
+        <label>
+          <span>버튼 문구</span>
+          <input
+            value={block.buttonLabel ?? ''}
+            disabled={!canEdit}
+            onChange={(e) => onUpdate({ buttonLabel: e.target.value })}
+            placeholder="Download / View Notice"
+          />
         </label>
         <label className="is-wide">
           <span>짧은 설명</span>
@@ -1038,6 +1222,10 @@ function renderItemFields(
         <span>링크</span>
         <input value={block.linkUrl ?? ''} disabled={!canEdit} onChange={(e) => onUpdate({ linkUrl: e.target.value })} />
       </label>
+      <label>
+        <span>버튼 문구</span>
+        <input value={block.buttonLabel ?? ''} disabled={!canEdit} onChange={(e) => onUpdate({ buttonLabel: e.target.value })} />
+      </label>
       <label className="is-wide">
         <span>짧은 설명</span>
         <textarea value={block.summary ?? ''} disabled={!canEdit} onChange={(e) => onUpdate({ summary: e.target.value })} />
@@ -1060,18 +1248,26 @@ const OfficialPagePreview: React.FC<{
   const navSections = sections.filter((section) => section.showInNavYn !== 'N' && (section.navLabel || section.title));
   const accentColor = getThemeColor(theme.themeColor);
   const heroStyle = buildHeroStyle(theme, heroImageUrl);
+  const pageSettings = parsePageSettings(page.settingsJson);
 
   return (
     <div className="saf-builder-preview" style={{ '--preview-accent': accentColor } as React.CSSProperties}>
       <section className="saf-builder-preview-hero" style={heroStyle}>
-        <span style={{ color: accentColor }}>KCAB International</span>
-        <h1>{page.heroTitle || page.pageTitle || page.eventTitle || 'Official Event'}</h1>
-        {(page.heroSubtitle || page.pageSubtitle || page.location) && (
-          <p>{page.heroSubtitle || page.pageSubtitle || page.location}</p>
-        )}
-        <div className="saf-builder-preview-meta">
-          {formatPreviewDate(page.eventStartDt) && <strong>{formatPreviewDate(page.eventStartDt)}</strong>}
-          {page.location && <strong>{page.location}</strong>}
+        <div className="saf-builder-preview-hero-copy">
+          <span style={{ color: accentColor }}>KCAB International</span>
+          <h1>{page.heroTitle || page.pageTitle || page.eventTitle || 'Official Event'}</h1>
+          {(page.heroSubtitle || page.pageSubtitle || page.location) && (
+            <p>{page.heroSubtitle || page.pageSubtitle || page.location}</p>
+          )}
+        </div>
+        <div className="saf-builder-preview-info-card">
+          {renderPreviewInfoRow('Date', formatPreviewRange(page.eventStartDt, page.eventEndDt))}
+          {renderPreviewInfoRow('Venue', page.location)}
+          {renderPreviewInfoRow('Registration', pageSettings.registrationStatusLabel)}
+          {renderPreviewInfoRow('Organizer', pageSettings.organizerName)}
+          {renderPreviewInfoRow('Contact', [pageSettings.contactEmail, pageSettings.contactPhone].filter(Boolean).join(' / '))}
+          {pageSettings.infoNote && <p>{pageSettings.infoNote}</p>}
+          {page.registrationUrl && <em>Register</em>}
         </div>
       </section>
 
@@ -1138,6 +1334,8 @@ const PreviewSection: React.FC<{
               <h4>{block.title || 'Speaker'}</h4>
               {block.subtitle && <p>{block.subtitle}</p>}
               {block.organizationName && <span>{block.organizationName}</span>}
+              {block.body && <small>{stripHtml(block.body)}</small>}
+              {block.linkUrl && <em>Profile</em>}
             </article>
           ))}
         </div>
@@ -1196,9 +1394,20 @@ const PreviewSectionTitle: React.FC<{ section: EventPageSection }> = ({ section 
   </header>
 );
 
+function renderPreviewInfoRow(label: string, value?: string | null) {
+  if (!value) return null;
+  return (
+    <dl>
+      <dt>{label}</dt>
+      <dd>{value}</dd>
+    </dl>
+  );
+}
+
 const PreviewCard: React.FC<{ block: EventPageBlock; imageUrl?: string }> = ({ block, imageUrl }) => {
   const content = parseBlockContent(block.contentJson);
   const roomRates = typeof content.roomRates === 'string' ? content.roomRates : '';
+  const bookingDeadline = typeof content.bookingDeadline === 'string' ? content.bookingDeadline : '';
 
   return (
     <article className="saf-builder-preview-card">
@@ -1209,6 +1418,7 @@ const PreviewCard: React.FC<{ block: EventPageBlock; imageUrl?: string }> = ({ b
       {block.summary && <p>{block.summary}</p>}
       {block.body && <div className="saf-builder-preview-copy">{block.body}</div>}
       {roomRates && <p><strong>Room Rates</strong><br />{roomRates}</p>}
+      {bookingDeadline && <p><strong>Booking Deadline</strong><br />{bookingDeadline}</p>}
       {block.buttonLabel && <em>{block.buttonLabel}</em>}
     </article>
   );
@@ -1218,31 +1428,20 @@ const PreviewOrganizationGroups: React.FC<{
   blocks: EventPageBlock[];
   blockImageFiles: Record<number, FileDetailType[]>;
 }> = ({ blocks, blockImageFiles }) => {
-  const organizers = blocks.filter((block) => getOrganizationGroup(block) === 'Organizers');
-  const supporters = blocks.filter((block) => getOrganizationGroup(block) !== 'Organizers');
+  const groups = groupOrganizationBlocks(blocks);
 
   return (
     <div className="saf-builder-preview-org-wrap">
-      {organizers.length > 0 && (
-        <div className="saf-builder-preview-org-group">
-          <h3>Organizers</h3>
-          <div className="saf-builder-preview-logo-grid is-large">
-            {organizers.map((block) => (
+      {groups.map(([group, groupBlocks]) => (
+        <div key={group} className="saf-builder-preview-org-group">
+          <h3>{group}</h3>
+          <div className={`saf-builder-preview-logo-grid${isOrganizerGroup(group) ? ' is-large' : ''}`}>
+            {groupBlocks.map((block) => (
               <PreviewOrganizationLogo key={block.blockSeq} block={block} imageUrl={getBlockPreviewImageUrl(block, blockImageFiles)} />
             ))}
           </div>
         </div>
-      )}
-      {supporters.length > 0 && (
-        <div className="saf-builder-preview-org-group">
-          <h3>Supporters</h3>
-          <div className="saf-builder-preview-logo-grid">
-            {supporters.map((block) => (
-              <PreviewOrganizationLogo key={block.blockSeq} block={block} imageUrl={getBlockPreviewImageUrl(block, blockImageFiles)} />
-            ))}
-          </div>
-        </div>
-      )}
+      ))}
     </div>
   );
 };
@@ -1272,17 +1471,29 @@ const PreviewProgramGroups: React.FC<{ blocks: EventPageBlock[] }> = ({ blocks }
   );
 };
 
-const PreviewProgramSession: React.FC<{ block: EventPageBlock }> = ({ block }) => (
-  <article className="saf-builder-preview-session">
-    <time>{formatPreviewRange(block.startAt, block.endAt) || 'TBD'}</time>
-    <div>
-      <h4>{block.title || 'Session'}</h4>
-      {block.speakerNames && <p>{block.speakerNames}</p>}
-      {block.venueName && <span>{block.venueName}</span>}
-      {block.body && <div className="saf-builder-preview-copy">{block.body}</div>}
-    </div>
-  </article>
-);
+const PreviewProgramSession: React.FC<{ block: EventPageBlock }> = ({ block }) => {
+  const content = parseBlockContent(block.contentJson);
+  const sessionType = getProgramSessionTypeLabel(content);
+  const moderator = typeof content.moderator === 'string' ? content.moderator : '';
+  const dayLabel = typeof content.dayLabel === 'string' ? content.dayLabel : '';
+
+  return (
+    <article className={`saf-builder-preview-session is-${getProgramSessionTypeValue(content)}`}>
+      <time>
+        {dayLabel && <span>{dayLabel}</span>}
+        {formatPreviewRange(block.startAt, block.endAt) || 'TBD'}
+      </time>
+      <div>
+        {sessionType && <em>{sessionType}</em>}
+        <h4>{block.title || 'Session'}</h4>
+        {block.speakerNames && <p>{block.speakerNames}</p>}
+        {moderator && <p>Moderator: {moderator}</p>}
+        {block.venueName && <span>{block.venueName}</span>}
+        {block.body && <div className="saf-builder-preview-copy">{block.body}</div>}
+      </div>
+    </article>
+  );
+};
 
 async function loadPageImageFiles(page: PublicEventPage) {
   const heroFiles = page.heroFileSeq ? await loadFiles(page.heroFileSeq) : [];
@@ -1592,6 +1803,19 @@ function parseTheme(themeJson?: unknown): PageTheme {
   }
 }
 
+function parsePageSettings(settingsJson?: unknown): PageSettings {
+  if (!settingsJson) return {};
+  if (typeof settingsJson === 'object' && !Array.isArray(settingsJson)) {
+    return settingsJson as PageSettings;
+  }
+  if (typeof settingsJson !== 'string') return {};
+  try {
+    return JSON.parse(settingsJson);
+  } catch {
+    return {};
+  }
+}
+
 function parseSectionSettings(settingsJson?: unknown): SectionSettings {
   if (!settingsJson) return {};
   if (typeof settingsJson === 'object' && !Array.isArray(settingsJson)) {
@@ -1631,12 +1855,40 @@ function getProgramTrack(block: EventPageBlock) {
 function getOrganizationGroup(block: EventPageBlock) {
   const content = parseBlockContent(block.contentJson);
   const category = typeof content.category === 'string' ? content.category : block.badgeText || '';
-  return category.toLowerCase().includes('organizer') ? 'Organizers' : 'Supporters';
+  return category || 'Supporters';
 }
 
 function getOrganizationGroupLabel(block: EventPageBlock) {
   const value = getOrganizationGroup(block);
-  return ORGANIZATION_GROUP_OPTIONS.find((option) => option.value === value)?.label || '후원기관';
+  return ORGANIZATION_GROUP_OPTIONS.find((option) => option.value === value)?.label || value || '후원기관';
+}
+
+function groupOrganizationBlocks(blocks: EventPageBlock[]) {
+  const orderedGroups: string[] = [];
+  const grouped = blocks.reduce<Record<string, EventPageBlock[]>>((acc, block) => {
+    const group = getOrganizationGroup(block);
+    if (!acc[group]) {
+      acc[group] = [];
+      orderedGroups.push(group);
+    }
+    acc[group].push(block);
+    return acc;
+  }, {});
+  return orderedGroups.map((group) => [group, grouped[group]] as const);
+}
+
+function isOrganizerGroup(group: string) {
+  return group.toLowerCase().includes('organizer') || group.includes('주최');
+}
+
+function getProgramSessionTypeValue(content: Record<string, unknown>) {
+  const value = typeof content.sessionType === 'string' ? content.sessionType : 'session';
+  return PROGRAM_SESSION_TYPE_OPTIONS.some((option) => option.value === value) ? value : 'session';
+}
+
+function getProgramSessionTypeLabel(content: Record<string, unknown>) {
+  const value = getProgramSessionTypeValue(content);
+  return PROGRAM_SESSION_TYPE_OPTIONS.find((option) => option.value === value)?.label || '';
 }
 
 function groupProgramBlocks(blocks: EventPageBlock[]) {
@@ -1713,6 +1965,10 @@ function formatPreviewRange(start?: string | null, end?: string | null) {
   const endText = formatPreviewDate(end);
   if (startText && endText) return `${startText} - ${endText}`;
   return startText || endText;
+}
+
+function stripHtml(value: string) {
+  return value.replace(/<[^>]*>/g, '').slice(0, 140);
 }
 
 export default OfficialEventPageBuilder;
