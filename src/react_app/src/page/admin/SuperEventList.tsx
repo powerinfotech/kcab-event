@@ -32,6 +32,7 @@ import {
   callGetEventList,
   callRejectEvent,
   callRequestEventApproval,
+  callReviseRejectedEvent,
   callSaveEvent,
 } from '@api/event/EventApi';
 import { sessionInfoAtom } from '@atom/sessionInfoAtom';
@@ -311,6 +312,7 @@ export default function SuperEventList() {
   const getPricingAmountKey = (pricing: EventPricingItem, index: number) => `${pricing.eventPricingSeq ?? 'new'}-${index}`;
   const canReviewApproval = !isOrganizationRole && !isNew && form.status === 'pending_approval';
   const canCancelApproval = isOrganizationRole && !isNew && form.status === 'pending_approval';
+  const canReviseRejected = isOrganizationRole && !isNew && form.status === 'rejected';
   const canOrganizationEdit = form.status === 'draft' || form.status === 'published';
   const isLockedByApproval = !isNew && (
     (isOrganizationRole && !canOrganizationEdit)
@@ -893,6 +895,30 @@ export default function SuperEventList() {
     });
   };
 
+  const handleReviseRejected = () => {
+    if (selectedSeq === null) return;
+    modal.confirm({
+      title: 'Revise Event',
+      content: 'Do you want to move this rejected event back to Draft? You can edit it and request approval again.',
+      okText: 'Move to Draft',
+      cancelText: 'Close',
+      centered: true,
+      onOk: async () => {
+        setSaving(true);
+        try {
+          await callReviseRejectedEvent(selectedSeq);
+          message.success('Event has been moved to Draft.');
+          await fetchEvents();
+          await fetchDetail(selectedSeq);
+        } catch (err: any) {
+          message.error(err?.response?.data?.message ?? 'Failed to move event to Draft.');
+        } finally {
+          setSaving(false);
+        }
+      },
+    });
+  };
+
   const handleReviewApproval = (approved: boolean) => {
     if (selectedSeq === null) return;
     const actionLabel = approved ? 'Approve' : 'Reject';
@@ -1025,6 +1051,7 @@ export default function SuperEventList() {
   if (mode === 'detail') {
     const detailStatusLabel = EVENT_STATUS_LABELS[form.status] ?? form.status ?? 'Published';
     const detailStatusTone = EVENT_STATUS_TONE[form.status] ?? 'green';
+    const rejectionReason = form.rejectionReason?.trim();
     const discountPriceTypeOptions = PRICE_TYPE_OPTIONS.filter((option) => (
       (form.pricingList ?? []).some((pricing) => pricing.priceType === option.value)
     ));
@@ -1064,6 +1091,12 @@ export default function SuperEventList() {
                 <span>Move to Draft</span>
               </button>
             )}
+            {canReviseRejected && (
+              <button type="button" className="saf-action-btn is-secondary" onClick={handleReviseRejected} disabled={saving}>
+                <RollbackOutlined />
+                <span>Revise</span>
+              </button>
+            )}
             {canReviewApproval && (
               <>
                 <button type="button" className="saf-action-btn is-approve" onClick={() => handleReviewApproval(true)} disabled={saving}>
@@ -1084,6 +1117,13 @@ export default function SuperEventList() {
             )}
           </div>
         </header>
+
+        {form.status === 'rejected' && (
+          <section className="saf-event-rejection-notice">
+            <span className="saf-status is-red">Rejected</span>
+            <p>{rejectionReason || 'No rejection reason was provided.'}</p>
+          </section>
+        )}
 
         <div className={`saf-event-detail-grid${isOfficialEvent ? ' is-single' : ''}`}>
           <section className="saf-panel">
@@ -1121,11 +1161,6 @@ export default function SuperEventList() {
                   <span className={`saf-status is-${detailStatusTone}`}>{detailStatusLabel}</span>
                 </div>
               </Field>
-              {form.status === 'rejected' && (
-                <Field label="Rejection Reason" wide>
-                  <textarea value={form.rejectionReason ?? ''} disabled />
-                </Field>
-              )}
               <Field label="Start Date *" invalid={isRequiredEmpty(form.eventStartDt) || isDateRangeInvalid}>
                 <DatePicker
                   showTime={{ format: 'HH:mm' }}

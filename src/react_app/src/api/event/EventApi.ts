@@ -42,6 +42,13 @@ export const callCancelEventApproval = async (eventSeq: number) => {
   return data;
 };
 
+export const callReviseRejectedEvent = async (eventSeq: number) => {
+  const { data } = await axios.post<ApiResponse<void>>('/api/event/revise-rejected', null, {
+    params: { eventSeq },
+  });
+  return data;
+};
+
 export const callApproveEvent = async (eventSeq: number) => {
   const { data } = await axios.post<ApiResponse<void>>('/api/event/approve', null, {
     params: { eventSeq },

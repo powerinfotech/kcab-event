@@ -101,6 +101,17 @@ public class EventController {
     }
 
     /**
+     * 기관 사용자가 반려된 이벤트를 재작성하기 위해 draft 상태로 되돌린다.
+     */
+    @PostMapping("/revise-rejected")
+    public ApiResponse<Void> reviseRejectedEvent(
+            @KcabEventSession LoginUser loginUser,
+            @RequestParam Long eventSeq) {
+        eventService.reviseRejectedEvent(eventSeq, loginUser);
+        return ApiResponse.ok();
+    }
+
+    /**
      * 관리자가 승인 대기 이벤트를 승인한다.
      */
     @PostMapping("/approve")

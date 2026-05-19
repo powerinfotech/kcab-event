@@ -282,6 +282,20 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
 
     @Override
     @Transactional("transactionManager")
+    public void reviseRejectedEvent(Long eventSeq, LoginUser loginUser) {
+        if (isAdmin(loginUser)) {
+            throw new BusinessException("Only organization accounts can revise rejected events.");
+        }
+        Event event = eventDao.selectEventBySeq(eventSeq);
+        assertEventAccessible(event, loginUser);
+        if (!STATUS_REJECTED.equals(event.getStatus())) {
+            throw new BusinessException("Only rejected events can be revised.");
+        }
+        eventDao.updateEventStatus(eventSeq, STATUS_DRAFT, getLoginUserSeq(loginUser), null);
+    }
+
+    @Override
+    @Transactional("transactionManager")
     public void approveEvent(Long eventSeq, LoginUser loginUser) {
         Event event = reviewPendingEvent(eventSeq, loginUser, STATUS_PUBLISHED, null);
         try {

@@ -60,6 +60,11 @@ public interface EventService {
     void cancelApproval(Long eventSeq, LoginUser loginUser);
 
     /**
+     * 기관 사용자가 반려된 이벤트를 재작성할 수 있도록 draft 상태로 되돌린다.
+     */
+    void reviseRejectedEvent(Long eventSeq, LoginUser loginUser);
+
+    /**
      * 관리자가 승인 대기 이벤트를 승인한다.
      */
     void approveEvent(Long eventSeq, LoginUser loginUser);
