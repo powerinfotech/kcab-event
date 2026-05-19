@@ -2099,7 +2099,7 @@
   th:nth-child(7) { width: 58px; }
 
   td {
-    vertical-align: top;
+    vertical-align: middle;
   }
 }
 
@@ -2270,7 +2270,8 @@
   display: grid;
   grid-template-columns: 34px minmax(0, 1fr);
   gap: 12px;
-  padding: 0 18px 18px;
+  align-items: center;
+  padding: 18px;
   color: #475569;
   line-height: 1.65;
 

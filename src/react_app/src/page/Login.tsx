@@ -255,7 +255,7 @@ const Login = () => {
     <main className="saf-login-page">
       <section className="saf-login-card" aria-label="Admin login">
         <div className="saf-login-brand">
-          <span>KCAB International Arbitration</span>
+          <span>KCAB International</span>
           <strong>Admin Console</strong>
           <p>Access is limited to approved admins and organizations.</p>
         </div>
