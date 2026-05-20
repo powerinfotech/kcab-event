@@ -1,14 +1,18 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { App } from 'antd';
+import { App, Modal, Upload } from 'antd';
+import type { UploadFile, UploadProps } from 'antd';
 import {
+  DeleteOutlined,
   EyeInvisibleOutlined,
   EyeOutlined,
+  PlusOutlined,
   ReloadOutlined,
   SaveOutlined,
 } from '@ant-design/icons';
-import { getUserLoginInfo } from '@api/CommonApi';
+import type { RcFile } from 'antd/es/upload/interface';
+import { callGetFileList, callSaveFiles, getUserLoginInfo } from '@api/CommonApi';
 import {
   callGetAdminUserDetail,
   callUpdateAdminUser,
@@ -23,8 +27,10 @@ import {
   AdminUserStatus,
   AdminUserType,
 } from '@interface/admin/AdminUserManagement';
+import { IudType } from '@interface/common';
 import { ORG_TYPE_OPTIONS } from '@interface/saf/SafAuth';
 import { EMAIL_REGEXP } from '@util/validationPatterns';
+import { FileDetailType } from '@component/upload/CustomFile';
 
 const USER_TYPE_LABEL: Record<AdminUserType, string> = {
   admin: 'Admin',
@@ -39,6 +45,8 @@ const USER_STATUS_LABEL: Record<AdminUserStatus, string> = {
 };
 
 const EMAIL_VERIFY_SECONDS = 10 * 60;
+const EMAIL_VERIFY_PURPOSE_PROFILE = 'profile-email';
+const EMAIL_VERIFY_PURPOSE_CONTACT = 'contact-email';
 
 const normalizeEmail = (email?: string) => (email ?? '').trim().toLowerCase();
 
@@ -62,6 +70,7 @@ const emptyDetail: AdminUserDetail = {
   contactEmail: '',
   contactPhone: '',
   website: '',
+  imageFileSeq: null,
 };
 
 export default function OrgProfile() {
@@ -80,6 +89,15 @@ export default function OrgProfile() {
   const [emailCodeVerifying, setEmailCodeVerifying] = useState(false);
   const [emailExpiresAt, setEmailExpiresAt] = useState<number | null>(null);
   const [emailRemainingSec, setEmailRemainingSec] = useState(0);
+  const [originalContactEmail, setOriginalContactEmail] = useState('');
+  const [contactEmailVerified, setContactEmailVerified] = useState(true);
+  const [contactEmailCodeSending, setContactEmailCodeSending] = useState(false);
+  const [contactEmailVerifyOpen, setContactEmailVerifyOpen] = useState(false);
+  const [contactEmailCodeInput, setContactEmailCodeInput] = useState('');
+  const [contactEmailCodeVerifying, setContactEmailCodeVerifying] = useState(false);
+  const [contactEmailExpiresAt, setContactEmailExpiresAt] = useState<number | null>(null);
+  const [contactEmailRemainingSec, setContactEmailRemainingSec] = useState(0);
+  const [organizationImageFiles, setOrganizationImageFiles] = useState<FileDetailType[]>([]);
 
   const isOrganization = form.userType === 'organization';
   const emailValue = form.email.trim();
@@ -96,6 +114,18 @@ export default function OrgProfile() {
         ? 'Verify Email'
         : 'Verified';
   const contactEmailValue = form.contactEmail?.trim() ?? '';
+  const normalizedContactEmailValue = normalizeEmail(form.contactEmail);
+  const contactEmailChanged = isOrganization && !!form.userSeq && normalizedContactEmailValue !== originalContactEmail;
+  const isVerifiedChangedContactEmail = contactEmailChanged && contactEmailVerified;
+  const contactEmailFieldLocked = contactEmailVerifyOpen || isVerifiedChangedContactEmail;
+  const contactEmailActionButtonDisabled = contactEmailCodeSending || (!contactEmailChanged && !contactEmailVerifyOpen);
+  const contactEmailActionButtonLabel = contactEmailCodeSending
+    ? 'Sending...'
+    : contactEmailVerifyOpen || isVerifiedChangedContactEmail
+      ? 'Change Email'
+      : contactEmailChanged
+        ? 'Verify Email'
+        : 'Verified';
   const isRequiredEmpty = (value?: string) => submitAttempted && !value?.trim();
   const isEmailRuleInvalid = submitAttempted && !!emailValue && !EMAIL_REGEXP.value.test(emailValue);
   const isEmailVerificationInvalid = submitAttempted && emailChanged && !emailVerified;
@@ -103,6 +133,7 @@ export default function OrgProfile() {
     && isOrganization
     && !!contactEmailValue
     && !EMAIL_REGEXP.value.test(contactEmailValue);
+  const isContactEmailVerificationInvalid = submitAttempted && contactEmailChanged && !contactEmailVerified;
 
   const updateForm = <K extends keyof AdminUserDetail>(key: K, value: AdminUserDetail[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -116,9 +147,22 @@ export default function OrgProfile() {
     setEmailCodeInput('');
   };
 
+  const resetContactEmailVerification = (verified = false) => {
+    setContactEmailVerified(verified);
+    setContactEmailVerifyOpen(false);
+    setContactEmailExpiresAt(null);
+    setContactEmailRemainingSec(0);
+    setContactEmailCodeInput('');
+  };
+
   const handleEmailChange = (value: string) => {
     setForm((prev) => ({ ...prev, email: value }));
     resetEmailVerification(normalizeEmail(value) === originalEmail);
+  };
+
+  const handleContactEmailChange = (value: string) => {
+    setForm((prev) => ({ ...prev, contactEmail: value }));
+    resetContactEmailVerification(normalizeEmail(value) === originalContactEmail);
   };
 
   const fetchProfile = async () => {
@@ -134,7 +178,19 @@ export default function OrgProfile() {
       const nextForm = { ...emptyDetail, ...detailRes.item };
       setForm(nextForm);
       setOriginalEmail(normalizeEmail(nextForm.email));
+      setOriginalContactEmail(normalizeEmail(nextForm.contactEmail));
       resetEmailVerification(true);
+      resetContactEmailVerification(true);
+      if (nextForm.imageFileSeq) {
+        try {
+          const fileRes = await callGetFileList(nextForm.imageFileSeq);
+          setOrganizationImageFiles((fileRes?.item as FileDetailType[]) ?? []);
+        } catch {
+          setOrganizationImageFiles([]);
+        }
+      } else {
+        setOrganizationImageFiles([]);
+      }
       setPassword('');
       setShowPassword(false);
       setSubmitAttempted(false);
@@ -166,7 +222,24 @@ export default function OrgProfile() {
     return () => window.clearInterval(intervalId);
   }, [emailVerifyOpen, emailExpiresAt, isVerifiedChangedEmail, message]);
 
-  const buildSaveParam = (): AdminUserSaveParam => ({
+  useEffect(() => {
+    if (!contactEmailExpiresAt || (!contactEmailVerifyOpen && !isVerifiedChangedContactEmail)) return;
+
+    const tick = () => {
+      const remaining = Math.max(0, Math.ceil((contactEmailExpiresAt - Date.now()) / 1000));
+      setContactEmailRemainingSec(remaining);
+      if (remaining <= 0) {
+        resetContactEmailVerification(false);
+        message.warning('Contact email verification has expired. Please request a new code.');
+      }
+    };
+
+    tick();
+    const intervalId = window.setInterval(tick, 1000);
+    return () => window.clearInterval(intervalId);
+  }, [contactEmailVerifyOpen, contactEmailExpiresAt, isVerifiedChangedContactEmail, message]);
+
+  const buildSaveParam = (imageFileSeq: number | null = form.imageFileSeq ?? null): AdminUserSaveParam => ({
     userId: form.userId?.trim(),
     email: emailValue,
     password: password || undefined,
@@ -180,6 +253,7 @@ export default function OrgProfile() {
     contactEmail: contactEmailValue,
     contactPhone: form.contactPhone,
     website: form.website,
+    imageFileSeq,
   });
 
   const validateForm = () => {
@@ -205,6 +279,11 @@ export default function OrgProfile() {
 
     if (isOrganization && !EMAIL_REGEXP.value.test(contactEmailValue)) {
       message.warning('Please enter a valid contact email address.');
+      return false;
+    }
+
+    if (contactEmailChanged && !contactEmailVerified) {
+      message.warning('Please verify the new contact email before saving.');
       return false;
     }
 
@@ -234,7 +313,7 @@ export default function OrgProfile() {
 
     setEmailCodeSending(true);
     try {
-      const res = await callSendEmailCode(emailValue);
+      const res = await callSendEmailCode(emailValue, EMAIL_VERIFY_PURPOSE_PROFILE);
       if (res?.code === 200) {
         setEmailVerifyOpen(true);
         setEmailExpiresAt(Date.now() + EMAIL_VERIFY_SECONDS * 1000);
@@ -257,7 +336,7 @@ export default function OrgProfile() {
 
     setEmailCodeVerifying(true);
     try {
-      const res = await callVerifyEmailCode(emailValue, code);
+      const res = await callVerifyEmailCode(emailValue, code, EMAIL_VERIFY_PURPOSE_PROFILE);
       if (res?.code === 200) {
         message.success('Email verified. This email is locked until you choose Change Email.');
         setEmailVerified(true);
@@ -269,10 +348,78 @@ export default function OrgProfile() {
     }
   };
 
+  const handleContactEmailButtonClick = async () => {
+    if (contactEmailVerifyOpen || (contactEmailChanged && contactEmailVerified)) {
+      resetContactEmailVerification(false);
+      return;
+    }
+
+    if (!contactEmailChanged) {
+      message.info('Change the contact email first.');
+      return;
+    }
+
+    if (!contactEmailValue) {
+      message.warning('Please enter a contact email first.');
+      return;
+    }
+
+    if (!EMAIL_REGEXP.value.test(contactEmailValue)) {
+      message.warning('Please enter a valid contact email address.');
+      return;
+    }
+
+    setContactEmailCodeSending(true);
+    try {
+      const res = await callSendEmailCode(contactEmailValue, EMAIL_VERIFY_PURPOSE_CONTACT);
+      if (res?.code === 200) {
+        setContactEmailVerifyOpen(true);
+        setContactEmailExpiresAt(Date.now() + EMAIL_VERIFY_SECONDS * 1000);
+        setContactEmailRemainingSec(EMAIL_VERIFY_SECONDS);
+        setContactEmailCodeInput('');
+        message.success('Verification code sent. Please enter it within 10 minutes.');
+      }
+    } finally {
+      setContactEmailCodeSending(false);
+    }
+  };
+
+  const handleVerifyContactEmailCode = async () => {
+    const code = contactEmailCodeInput.trim();
+
+    if (!/^\d{6}$/.test(code)) {
+      message.warning('Please enter the 6-digit verification code.');
+      return;
+    }
+
+    setContactEmailCodeVerifying(true);
+    try {
+      const res = await callVerifyEmailCode(contactEmailValue, code, EMAIL_VERIFY_PURPOSE_CONTACT);
+      if (res?.code === 200) {
+        message.success('Contact email verified. This email is locked until you choose Change Email.');
+        setContactEmailVerified(true);
+        setContactEmailVerifyOpen(false);
+        setContactEmailCodeInput('');
+      }
+    } finally {
+      setContactEmailCodeVerifying(false);
+    }
+  };
+
   const saveProfile = async () => {
     setSaving(true);
     try {
-      await callUpdateAdminUser(form.userSeq, buildSaveParam());
+      let resolvedImageFileSeq: number | null = form.imageFileSeq ?? null;
+      if (organizationImageFiles.some((file) => file.iudType)) {
+        const fileRes = await callSaveFiles(resolvedImageFileSeq, 0, organizationImageFiles);
+        const newSeq = fileRes?.item?.fileSeq;
+        if (newSeq) resolvedImageFileSeq = Number(newSeq);
+        if (fileRes?.item?.fileList) {
+          setOrganizationImageFiles(fileRes.item.fileList as FileDetailType[]);
+        }
+      }
+
+      await callUpdateAdminUser(form.userSeq, buildSaveParam(resolvedImageFileSeq));
       message.success('Profile information has been saved.');
       await fetchProfile();
     } catch (error) {
@@ -419,13 +566,59 @@ export default function OrgProfile() {
                   ))}
                 </select>
               </Field>
-              <Field label="Contact Email *" invalid={isRequiredEmpty(form.contactEmail) || isContactEmailRuleInvalid}>
-                <input
-                  value={form.contactEmail ?? ''}
-                  type="email"
-                  onChange={(event) => updateForm('contactEmail', event.target.value)}
-                />
+              <Field label="Contact Email *" invalid={isRequiredEmpty(form.contactEmail) || isContactEmailRuleInvalid || isContactEmailVerificationInvalid}>
+                <div className="saf-input-action">
+                  <input
+                    value={form.contactEmail ?? ''}
+                    type="email"
+                    disabled={contactEmailFieldLocked}
+                    onChange={(event) => handleContactEmailChange(event.target.value)}
+                  />
+                  <button
+                    type="button"
+                    className={`saf-check-btn${contactEmailVerifyOpen || isVerifiedChangedContactEmail || !contactEmailChanged ? ' is-checked' : ''}`}
+                    onClick={handleContactEmailButtonClick}
+                    disabled={contactEmailActionButtonDisabled}
+                  >
+                    {contactEmailActionButtonLabel}
+                  </button>
+                </div>
+                {contactEmailChanged && !contactEmailVerifyOpen && !contactEmailVerified && (
+                  <p className="saf-verify-hint">Please verify this contact email before saving.</p>
+                )}
+                {isVerifiedChangedContactEmail && (
+                  <p className="saf-verify-hint">
+                    Contact email verified. Save is available for {formatRemaining(contactEmailRemainingSec)}.
+                  </p>
+                )}
               </Field>
+              {contactEmailVerifyOpen && (
+                <div className="saf-verify-form is-wide">
+                  <div className="saf-verify-row">
+                    <input
+                      value={contactEmailCodeInput}
+                      onChange={(event) => setContactEmailCodeInput(event.target.value.replace(/\D/g, '').slice(0, 6))}
+                      placeholder="6-digit code"
+                      inputMode="numeric"
+                      maxLength={6}
+                    />
+                    <span className={`saf-verify-timer${contactEmailRemainingSec <= 0 ? ' is-expired' : ''}`}>
+                      {formatRemaining(contactEmailRemainingSec)}
+                    </span>
+                    <button
+                      type="button"
+                      className="saf-verify-btn"
+                      onClick={handleVerifyContactEmailCode}
+                      disabled={contactEmailCodeVerifying || contactEmailRemainingSec <= 0}
+                    >
+                      {contactEmailCodeVerifying ? 'Verifying...' : 'Verify'}
+                    </button>
+                  </div>
+                  <p className="saf-verify-hint">
+                    A verification code has been sent to your contact email. Please enter it within 10 minutes.
+                  </p>
+                </div>
+              )}
               <Field label="Contact Phone">
                 <input
                   value={form.contactPhone ?? ''}
@@ -438,11 +631,223 @@ export default function OrgProfile() {
                   onChange={(event) => updateForm('website', event.target.value)}
                 />
               </Field>
+              <Field label="Organization Image" wide>
+                <div className="saf-thumbnail-uploader">
+                  <OrganizationImageUpload
+                    fileList={organizationImageFiles}
+                    onChange={setOrganizationImageFiles}
+                    disabled={loading || saving}
+                  />
+                  <p className="saf-hint-inline">1 organization image only (JPG/PNG/GIF/WebP) · max 30MB.</p>
+                </div>
+              </Field>
             </div>
           </section>
         )}
       </div>
     </div>
+  );
+}
+
+type OrganizationImageUploadFile = UploadFile & {
+  fileSeq?: number;
+  fileDtlSeq?: number;
+  filePath?: string;
+  fileUrl?: string;
+  sortSeq: number;
+  iudType?: IudType;
+};
+
+const IMAGE_MAX_SIZE = 30 * 1024 * 1024;
+
+const getFileUid = (file: FileDetailType) => (
+  file.fileDtlSeq ? String(file.fileDtlSeq) : file.uid ?? `${file.fileNm}-${file.sortSeq}`
+);
+
+const isBrowserReadableUrl = (url?: string): boolean => {
+  if (!url) return false;
+  return /^(https?:|data:|blob:|\/api\/|\/_next\/|\/images\/|\/uploads?\/)/i.test(url);
+};
+
+const getImagePreviewUrl = (file: Partial<FileDetailType & OrganizationImageUploadFile>): string | undefined => {
+  const directUrl = file.fileUrl ?? file.url ?? file.filePath;
+  if (!directUrl) return undefined;
+  if (isBrowserReadableUrl(directUrl)) return directUrl;
+  if (file.filePath) return `/api/download-file?filePath=${encodeURIComponent(file.filePath)}`;
+  return undefined;
+};
+
+const getBase64 = (file: File): Promise<string> => (
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+  })
+);
+
+const revokeLocalPreview = (file: FileDetailType) => {
+  const previewUrl = file.fileUrl ?? file.filePath;
+  if (previewUrl?.startsWith('blob:')) URL.revokeObjectURL(previewUrl);
+};
+
+const reindexImageFiles = (files: FileDetailType[]) => {
+  let nextSortSeq = 1;
+  return files.map((file) => {
+    if (file.iudType === IudType.D) return { ...file, sortSeq: 0 };
+    return { ...file, sortSeq: nextSortSeq++ };
+  });
+};
+
+const fileDtoToUploadFile = (file: FileDetailType): OrganizationImageUploadFile => {
+  const imageUrl = getImagePreviewUrl(file);
+  return {
+    uid: getFileUid(file),
+    name: file.fileNm || 'Organization image',
+    status: 'done',
+    url: imageUrl,
+    thumbUrl: imageUrl,
+    fileSeq: file.fileSeq,
+    fileDtlSeq: file.fileDtlSeq,
+    filePath: file.filePath,
+    fileUrl: file.fileUrl,
+    sortSeq: file.sortSeq,
+    iudType: file.iudType,
+    originFileObj: file.originFileObj,
+  };
+};
+
+function OrganizationImageUpload({
+  fileList,
+  onChange,
+  disabled,
+}: {
+  fileList: FileDetailType[];
+  onChange: (files: FileDetailType[]) => void;
+  disabled?: boolean;
+}) {
+  const { message } = App.useApp();
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewImage, setPreviewImage] = useState('');
+  const visibleFiles = fileList.filter((file) => file.iudType !== IudType.D);
+  const displayFileList = visibleFiles.map(fileDtoToUploadFile);
+
+  const createImageFileDetail = (uploadFile: UploadFile): FileDetailType | null => {
+    const rcFile = (uploadFile.originFileObj ?? uploadFile) as RcFile;
+    if (!rcFile.type?.startsWith('image/')) {
+      message.error('이미지 파일만 업로드 가능합니다.');
+      return null;
+    }
+
+    if (rcFile.size > IMAGE_MAX_SIZE) {
+      message.error('Only images up to 30MB can be uploaded.');
+      return null;
+    }
+
+    const previewUrl = URL.createObjectURL(rcFile);
+    return {
+      uid: uploadFile.uid,
+      fileNm: uploadFile.name,
+      filePath: previewUrl,
+      fileUrl: previewUrl,
+      sortSeq: 1,
+      originFileObj: rcFile,
+      iudType: IudType.I,
+    };
+  };
+
+  const handleChange: UploadProps['onChange'] = ({ file: changedFile }) => {
+    if (changedFile.status === 'removed') {
+      const target = fileList.find((file) => getFileUid(file) === changedFile.uid);
+      if (!target) return;
+
+      const nextFiles = fileList.flatMap((file) => {
+        if (getFileUid(file) !== changedFile.uid) return [file];
+        if (file.iudType === IudType.I) {
+          revokeLocalPreview(file);
+          return [];
+        }
+        return [{ ...file, iudType: IudType.D }];
+      });
+
+      onChange(reindexImageFiles(nextFiles));
+      return;
+    }
+
+    if (fileList.some((file) => getFileUid(file) === changedFile.uid)) return;
+
+    const nextImage = createImageFileDetail(changedFile);
+    if (!nextImage) return;
+
+    const retainedFiles = fileList.flatMap((file) => {
+      if (file.iudType === IudType.D) return [file];
+      if (file.iudType === IudType.I) {
+        revokeLocalPreview(file);
+        return [];
+      }
+      return [{ ...file, iudType: IudType.D }];
+    });
+
+    onChange(reindexImageFiles([...retainedFiles, nextImage]));
+  };
+
+  const handlePreview: UploadProps['onPreview'] = async (file) => {
+    const imageUrl = getImagePreviewUrl(file as OrganizationImageUploadFile);
+    if (imageUrl) {
+      setPreviewImage(imageUrl);
+      setPreviewOpen(true);
+      return;
+    }
+
+    if (file.originFileObj) {
+      setPreviewImage(await getBase64(file.originFileObj as File));
+      setPreviewOpen(true);
+    }
+  };
+
+  return (
+    <>
+      <Upload
+        listType="picture-card"
+        fileList={displayFileList}
+        onPreview={handlePreview}
+        onChange={handleChange}
+        beforeUpload={(file: RcFile) => {
+          if (!file.type.startsWith('image/')) {
+            message.error('이미지 파일만 업로드 가능합니다.');
+            return Upload.LIST_IGNORE;
+          }
+          if (file.size > IMAGE_MAX_SIZE) {
+            message.error('Only images up to 30MB can be uploaded.');
+            return Upload.LIST_IGNORE;
+          }
+          return false;
+        }}
+        disabled={disabled}
+        maxCount={1}
+        accept="image/*"
+        showUploadList={{
+          showDownloadIcon: false,
+          showRemoveIcon: !disabled,
+          removeIcon: <DeleteOutlined />,
+        }}
+      >
+        {visibleFiles.length >= 1 || disabled ? null : (
+          <div>
+            <PlusOutlined />
+            <div className="mt8">업로드</div>
+          </div>
+        )}
+      </Upload>
+      <Modal
+        open={previewOpen}
+        title="Organization Image"
+        footer={null}
+        onCancel={() => setPreviewOpen(false)}
+      >
+        <img alt="Organization preview" src={previewImage} style={{ width: '100%' }} />
+      </Modal>
+    </>
   );
 }
 

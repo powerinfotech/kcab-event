@@ -96,6 +96,7 @@
             ,o.contact_email
             ,o.contact_phone
             ,o.website
+            ,o.image_file_seq
             ,o.grade
 
 

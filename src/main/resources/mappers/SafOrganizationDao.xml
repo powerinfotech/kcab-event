@@ -9,6 +9,7 @@
             ,contact_email
             ,contact_phone
             ,website
+            ,image_file_seq
             ,grade
             ,created_by
         ) VALUES (
@@ -17,6 +18,7 @@
             ,#{contactEmail}
             ,#{contactPhone}
             ,#{website}
+            ,#{imageFileSeq}
             ,COALESCE(NULLIF(#{grade,jdbcType=VARCHAR}, ''), 'C')
             ,#{createdBy}
         )
@@ -35,6 +37,7 @@
             ,contact_email = #{contactEmail}
             ,contact_phone = #{contactPhone}
             ,website = #{website}
+            ,image_file_seq = COALESCE(#{imageFileSeq,jdbcType=BIGINT}, image_file_seq)
             ,grade = COALESCE(NULLIF(#{grade,jdbcType=VARCHAR}, ''), grade)
             ,updated_by = #{updatedBy}
             ,updated_at = NOW()

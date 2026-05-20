@@ -4857,6 +4857,16 @@
   border-radius: 6px;
   background: #f8fafc;
 
+  .ant-upload-list-picture-card {
+    .ant-upload-list-item-name {
+      display: none;
+    }
+
+    .ant-upload-list-item-thumbnail img {
+      object-fit: cover;
+    }
+  }
+
   .saf-hint-inline {
     margin: 8px 0 0;
     color: #64748b;

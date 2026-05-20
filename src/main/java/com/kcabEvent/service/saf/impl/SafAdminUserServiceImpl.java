@@ -46,6 +46,8 @@ public class SafAdminUserServiceImpl extends EgovAbstractServiceImpl implements 
 
     private static final String SIGNUP_APPROVAL_TEMPLATE_CODE = "signup_approval";
     private static final String DEFAULT_ORGANIZATION_NAME = "KCAB International";
+    private static final String EMAIL_VERIFY_PURPOSE_PROFILE = "profile-email";
+    private static final String EMAIL_VERIFY_PURPOSE_CONTACT = "contact-email";
 
     @Resource(name = "safUserDao")
     private SafUserDao safUserDao;
@@ -108,6 +110,7 @@ public class SafAdminUserServiceImpl extends EgovAbstractServiceImpl implements 
             org.setContactEmail(saveDto.getContactEmail());
             org.setContactPhone(saveDto.getContactPhone());
             org.setWebsite(saveDto.getWebsite());
+            org.setImageFileSeq(saveDto.getImageFileSeq());
             // 관리자가 새 조직 등록 시: 폼에 등급 입력값이 있으면 사용, 없으면 'C'
             org.setGrade(saveDto.getGrade() != null && !saveDto.getGrade().isBlank() ? saveDto.getGrade() : "C");
             org.setCreatedBy(user.getUserSeq());
@@ -141,7 +144,11 @@ public class SafAdminUserServiceImpl extends EgovAbstractServiceImpl implements 
         SafAdminUserDetailDto detail = selectUserDetail(userSeq);
         String requestedEmail = normalizeEmail(saveDto.getEmail());
         String currentEmail = normalizeEmail(detail.getEmail());
+        String requestedContactEmail = normalizeEmail(saveDto.getContactEmail());
+        String currentContactEmail = normalizeEmail(detail.getContactEmail());
         boolean emailChanged = !requestedEmail.equals(currentEmail);
+        boolean contactEmailChanged = detail.getOrganizationSeq() != null
+                && !requestedContactEmail.equals(currentContactEmail);
 
         if (!StringUtils.hasText(requestedEmail)) {
             throw new BusinessException("Email is required.");
@@ -153,13 +160,23 @@ public class SafAdminUserServiceImpl extends EgovAbstractServiceImpl implements 
                 throw new BusinessException("This email is already registered.");
             }
             if (isSelfProfileUpdate(userSeq, loginUser)
-                    && !safEmailVerificationService.isVerifiedForEmail(requestedEmail, session)) {
+                    && !safEmailVerificationService.isVerifiedForEmail(requestedEmail, session, EMAIL_VERIFY_PURPOSE_PROFILE)) {
                 throw new BusinessException("Please verify the new account email before saving.");
+            }
+        }
+
+        if (contactEmailChanged && isSelfProfileUpdate(userSeq, loginUser)) {
+            if (!StringUtils.hasText(requestedContactEmail)) {
+                throw new BusinessException("Contact email is required.");
+            }
+            if (!safEmailVerificationService.isVerifiedForEmail(requestedContactEmail, session, EMAIL_VERIFY_PURPOSE_CONTACT)) {
+                throw new BusinessException("Please verify the new contact email before saving.");
             }
         }
 
         saveDto.setUserSeq(userSeq);
         saveDto.setEmail(requestedEmail);
+        saveDto.setContactEmail(requestedContactEmail);
         saveDto.setOrganizationSeq(detail.getOrganizationSeq());
         saveDto.setUpdatedBy(getLoginUserSeq(loginUser));
 
@@ -177,7 +194,10 @@ public class SafAdminUserServiceImpl extends EgovAbstractServiceImpl implements 
         }
 
         if (emailChanged && isSelfProfileUpdate(userSeq, loginUser)) {
-            safEmailVerificationService.clear(session);
+            safEmailVerificationService.clear(session, EMAIL_VERIFY_PURPOSE_PROFILE);
+        }
+        if (contactEmailChanged && isSelfProfileUpdate(userSeq, loginUser)) {
+            safEmailVerificationService.clear(session, EMAIL_VERIFY_PURPOSE_CONTACT);
         }
     }
 

@@ -11,4 +11,6 @@ public class SafEmailVerificationSendRequestDto {
     @NotBlank
     @Email
     private String email;
+
+    private String purpose;
 }

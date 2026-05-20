@@ -141,7 +141,6 @@ const emptyDetail: EventDetail = {
   status: 'published',
   rejectionReason: '',
   useYn: 'Y',
-  fileSeq: null,
   attachmentFileSeq: null,
   eventType: 'main',
   organizationSeq: null,
@@ -258,7 +257,6 @@ export default function SuperEventList() {
   const [mode, setMode] = useState<'list' | 'detail'>('list');
   const [selectedSeq, setSelectedSeq] = useState<number | null>(null);
   const [form, setForm] = useState<EventDetail>(emptyDetail);
-  const [thumbnailFiles, setThumbnailFiles] = useState<FileDetailType[]>([]);
   const [attachmentFiles, setAttachmentFiles] = useState<FileDetailType[]>([]);
   const [eventParticipants, setEventParticipants] = useState<ParticipantListItem[]>([]);
   const [eventParticipantKeyword, setEventParticipantKeyword] = useState('');
@@ -389,19 +387,6 @@ export default function SuperEventList() {
       setEventParticipantKeyword('');
       setMode('detail');
       fetchEventParticipants(eventSeq);
-
-      // 썸네일 파일 로드
-      const fileSeq = detail?.fileSeq ?? null;
-      if (fileSeq) {
-        try {
-          const fileRes = await callGetFileList(fileSeq);
-          setThumbnailFiles(fileRes?.item ?? []);
-        } catch {
-          setThumbnailFiles([]);
-        }
-      } else {
-        setThumbnailFiles([]);
-      }
 
       // 일반 첨부파일 로드
       const attSeq = detail?.attachmentFileSeq ?? null;
@@ -758,7 +743,7 @@ export default function SuperEventList() {
     }));
   };
 
-  const buildSaveParam = (fileSeq: number | null, attachmentFileSeq: number | null): EventSaveRequest => ({
+  const buildSaveParam = (attachmentFileSeq: number | null): EventSaveRequest => ({
     eventSeq: isNew ? undefined : selectedSeq!,
     slug: slugValue,
     title: titleValue,
@@ -774,7 +759,6 @@ export default function SuperEventList() {
     registrationUrl: isExternalRegistration ? registrationUrlValue : '',
     status: isOrganizationRole ? (form.status || 'draft') : 'published',
     useYn: form.useYn || 'Y',
-    fileSeq,
     attachmentFileSeq,
     eventType: form.eventType || 'main',
     organizationSeq: form.organizationSeq ?? null,
@@ -787,18 +771,7 @@ export default function SuperEventList() {
   const persist = async () => {
     setSaving(true);
     try {
-      // 1) 썸네일 파일 변경 사항 저장 → fileSeq 확보
-      let resolvedFileSeq: number | null = form.fileSeq ?? null;
-      if (thumbnailFiles.some((f) => f.iudType)) {
-        const fileRes = await callSaveFiles(resolvedFileSeq, 0, thumbnailFiles);
-        const newSeq = fileRes?.item?.fileSeq;
-        if (newSeq) resolvedFileSeq = Number(newSeq);
-        if (fileRes?.item?.fileList) {
-          setThumbnailFiles(fileRes.item.fileList as FileDetailType[]);
-        }
-      }
-
-      // 2) 일반 첨부파일 변경 사항 저장 → attachmentFileSeq 확보
+      // 1) 일반 첨부파일 변경 사항 저장 → attachmentFileSeq 확보
       let resolvedAttSeq: number | null = form.attachmentFileSeq ?? null;
       if (attachmentFiles.some((f) => f.iudType)) {
         const attRes = await callSaveFiles(resolvedAttSeq, 0, attachmentFiles);
@@ -809,8 +782,8 @@ export default function SuperEventList() {
         }
       }
 
-      // 3) 행사 저장
-      const eventRes = await callSaveEvent(buildSaveParam(resolvedFileSeq, resolvedAttSeq));
+      // 2) 행사 저장
+      const eventRes = await callSaveEvent(buildSaveParam(resolvedAttSeq));
       message.success(isNew ? 'Event has been registered.' : 'Event information has been saved.');
       await fetchEvents();
       if (isNew) {
@@ -1038,7 +1011,6 @@ export default function SuperEventList() {
       status: isOrganizationRole ? 'draft' : 'published',
       eventType: isOrganizationRole ? 'side' : 'main',
     });
-    setThumbnailFiles([]);
     setAttachmentFiles([]);
     setEventParticipants([]);
     setEventParticipantKeyword('');
@@ -1275,18 +1247,6 @@ export default function SuperEventList() {
                   onChange={(e) => updateForm('location', e.target.value)}
                   placeholder="e.g., Conrad Seoul · 511 Yeongdong-daero, Gangnam-gu, Seoul"
                 />
-              </Field>
-              <Field label="Thumbnail" wide>
-                <div className="saf-thumbnail-uploader">
-                  <CustomFile
-                    fileList={thumbnailFiles}
-                    onFileListChange={setThumbnailFiles}
-                    isEditable={canEdit}
-                    maxCount={1}
-                    accept="image/*"
-                  />
-                  <p className="saf-hint-inline">1 thumbnail image only (JPG/PNG/GIF/WebP) · max 30MB.</p>
-                </div>
               </Field>
               <Field label="Attachments" wide>
                 <div className="saf-thumbnail-uploader">

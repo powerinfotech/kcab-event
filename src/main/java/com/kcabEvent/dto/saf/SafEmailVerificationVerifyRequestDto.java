@@ -16,4 +16,6 @@ public class SafEmailVerificationVerifyRequestDto {
     @NotBlank
     @Pattern(regexp = "\\d{6}")
     private String code;
+
+    private String purpose;
 }
