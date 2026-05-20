@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
-import { callUploadEditorImage } from '@api/CommonApi';
+import { callUploadEditorImage, type UploadContext } from '@api/CommonApi';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
@@ -56,8 +56,9 @@ interface Props {
   placeholder?: string;
   /** 글자수 제한. 0 또는 미지정이면 제한 없음 */
   maxLength?: number;
-  /** 이미지 드래그/붙여넣기 시 호출. 반환된 URL이 본문에 삽입됨. 미지정 시 base64로 임베드 */
+  /** 이미지 드래그/붙여넣기 시 호출. 반환된 URL이 본문에 삽입됨. 미지정 시 공통 업로드 API 사용 */
   onImageUpload?: (file: File) => Promise<string>;
+  uploadContext?: UploadContext;
   /** 메일 템플릿 등에서 삽입할 수 있는 변수 목록 */
   variables?: RichEditorVariableOption[];
   /** 툴바에 노출할 텍스트 색상 옵션. 미지정 시 기본 팔레트 사용 */
@@ -144,8 +145,8 @@ function ToolbarButton({
   );
 }
 
-async function defaultUploadImage(file: File): Promise<string> {
-  const res = await callUploadEditorImage(file);
+async function defaultUploadImage(file: File, uploadContext?: UploadContext): Promise<string> {
+  const res = await callUploadEditorImage(file, uploadContext);
   return res.url;
 }
 
@@ -158,6 +159,7 @@ const CustomRichEditor = ({
   placeholder = '내용을 입력하세요',
   maxLength,
   onImageUpload,
+  uploadContext,
   variables = [],
   textColorOptions = DEFAULT_TEXT_COLOR_OPTIONS,
 }: Props) => {
@@ -176,8 +178,9 @@ const CustomRichEditor = ({
       if (!file.type.startsWith('image/')) continue;
       let src: string;
       try {
-        const uploader = uploaderRef.current ?? defaultUploadImage;
-        src = await uploader(file);
+        src = uploaderRef.current
+          ? await uploaderRef.current(file)
+          : await defaultUploadImage(file, uploadContext);
       } catch (err) {
         // eslint-disable-next-line no-console
         console.warn('Image upload failed:', err);

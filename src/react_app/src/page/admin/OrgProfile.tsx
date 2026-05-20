@@ -11,7 +11,7 @@ import {
   SaveOutlined,
 } from '@ant-design/icons';
 import type { RcFile } from 'antd/es/upload/interface';
-import { callGetFileList, callSaveFiles, getUserLoginInfo } from '@api/CommonApi';
+import { callGetFileList, callSaveFiles, getUserLoginInfo, UPLOAD_CONTEXT } from '@api/CommonApi';
 import {
   callGetAdminUserDetail,
   callUpdateAdminUser,
@@ -410,7 +410,7 @@ export default function OrgProfile() {
     try {
       let resolvedImageFileSeq: number | null = form.imageFileSeq ?? null;
       if (organizationImageFiles.some((file) => file.iudType)) {
-        const fileRes = await callSaveFiles(resolvedImageFileSeq, 0, organizationImageFiles);
+        const fileRes = await callSaveFiles(resolvedImageFileSeq, 0, organizationImageFiles, UPLOAD_CONTEXT.ORGANIZATION_IMAGE);
         const newSeq = fileRes?.item?.fileSeq;
         if (newSeq) resolvedImageFileSeq = Number(newSeq);
         if (fileRes?.item?.fileList) {

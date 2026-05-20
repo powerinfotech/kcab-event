@@ -15,7 +15,7 @@ import {
   callGetEventPageBuilderCatalog,
   callSaveEventPageBuilder,
 } from '@api/event/EventApi';
-import { callGetFileList, callSaveFiles } from '@api/CommonApi';
+import { callGetFileList, callSaveFiles, UPLOAD_CONTEXT, type UploadContext } from '@api/CommonApi';
 import CustomFile, { FileDetailType } from '@component/upload/CustomFile';
 import {
   EventPageBlock,
@@ -1525,7 +1525,7 @@ async function resolveImageFileSeqs(
   heroFiles: FileDetailType[],
   blockImageFiles: Record<number, FileDetailType[]>,
 ) {
-  const heroFileSeq = await resolveFileSeq(page.heroFileSeq ?? null, heroFiles);
+  const heroFileSeq = await resolveFileSeq(page.heroFileSeq ?? null, heroFiles, UPLOAD_CONTEXT.EVENT_PAGE_HERO);
   const sections: EventPageSection[] = [];
 
   for (const section of page.sections) {
@@ -1534,7 +1534,7 @@ async function resolveImageFileSeqs(
       const files = blockImageFiles[block.blockSeq];
       const imageFileSeq = files === undefined
         ? (block.imageFileSeq ?? null)
-        : await resolveFileSeq(block.imageFileSeq ?? null, files);
+        : await resolveFileSeq(block.imageFileSeq ?? null, files, UPLOAD_CONTEXT.EVENT_PAGE_BLOCK_IMAGE);
       blocks.push({ ...block, imageFileSeq });
     }
     sections.push({ ...section, blocks });
@@ -1549,10 +1549,10 @@ async function resolveImageFileSeqs(
   };
 }
 
-async function resolveFileSeq(currentFileSeq: number | null, files: FileDetailType[]) {
+async function resolveFileSeq(currentFileSeq: number | null, files: FileDetailType[], uploadContext: UploadContext) {
   const visibleFiles = getVisibleFiles(files);
   if (files.some((file) => !!file.iudType)) {
-    const res = await callSaveFiles(currentFileSeq, 0, files);
+    const res = await callSaveFiles(currentFileSeq, 0, files, uploadContext);
     const nextFileSeq = Number(res?.item?.fileSeq || currentFileSeq || 0) || null;
     return visibleFiles.length ? nextFileSeq : null;
   }

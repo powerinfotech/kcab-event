@@ -22,8 +22,10 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -32,7 +34,7 @@ import java.util.UUID;
  *
  * <p>파일 처리 흐름:</p>
  * <ul>
- *   <li><b>업로드</b>: UUID 파일명으로 {@code ${file.path.dir}} 하위에 저장 → DB 등록</li>
+ *   <li><b>업로드</b>: UUID 파일명으로 {@code ${file.path.dir}} 하위 업무별 폴더에 저장 → DB 등록</li>
  *   <li><b>다운로드</b>: 경로 탈출({@code ..}) 방지 후 {@link org.springframework.core.io.UrlResource}로 스트리밍</li>
  *   <li><b>삭제</b>: 파일 서버에서 실제 삭제하지 않고 DB에서만 논리 삭제 (파일 보존 정책)</li>
  * </ul>
@@ -67,7 +69,7 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public Integer addFile(LoginUser loginUser, String insertFileMetaListJson, List<MultipartFile> insertFiles) {
+    public Integer addFile(LoginUser loginUser, String insertFileMetaListJson, List<MultipartFile> insertFiles, String uploadContext) {
         if(insertFiles == null) return null;
 
         List<FileDetailDto> insertFileMetaList;
@@ -83,19 +85,20 @@ public class FileServiceImpl implements FileService {
         List<FileDetailDto> insertFileDtlList = new ArrayList<>();
 
         insertFiles.forEach((file) -> {
-            String originalFileName = file.getOriginalFilename();
+            String originalFileName = Objects.requireNonNullElse(file.getOriginalFilename(), "file");
             String extension = "";
 
-            if (originalFileName != null && originalFileName.contains(".")) {
+            if (originalFileName.contains(".")) {
                 extension = originalFileName.substring(originalFileName.lastIndexOf(".") + 1);
             }
 
-            String savedFileName = UUID.randomUUID().toString() + "_" + originalFileName;
+            String savedFileName = UUID.randomUUID() + "_" + sanitizeFileName(originalFileName);
 
-            String filePath = uploadDir + File.separator + savedFileName;
+            Path destinationPath = buildDestinationPath(uploadContext, savedFileName, false);
+            String filePath = destinationPath.toString();
             try {
                 // 폴더 없을시 폴더 생성
-                File destinationFile = new File(filePath);
+                File destinationFile = destinationPath.toFile();
                 File parentDir = destinationFile.getParentFile();
                 if (!parentDir.exists()) {
                     boolean created = parentDir.mkdirs();
@@ -227,7 +230,7 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public FileDetailDto uploadInlineImage(LoginUser loginUser, MultipartFile file) {
+    public FileDetailDto uploadInlineImage(LoginUser loginUser, MultipartFile file, String uploadContext) {
         if (file == null || file.isEmpty()) {
             throw new com.kcabEvent.exception.custom.BusinessException("업로드할 이미지가 없습니다.");
         }
@@ -241,11 +244,12 @@ public class FileServiceImpl implements FileService {
         if (originalFileName.contains(".")) {
             extension = originalFileName.substring(originalFileName.lastIndexOf('.') + 1);
         }
-        String savedFileName = UUID.randomUUID() + "_" + originalFileName;
-        String filePath = uploadDir + File.separator + savedFileName;
+        String savedFileName = UUID.randomUUID() + "_" + sanitizeFileName(originalFileName);
+        Path destinationPath = buildDestinationPath(uploadContext, savedFileName, true);
+        String filePath = destinationPath.toString();
 
         try {
-            File destination = new File(filePath);
+            File destination = destinationPath.toFile();
             File parent = destination.getParentFile();
             if (parent != null && !parent.exists() && !parent.mkdirs()) {
                 throw new IOException("업로드 디렉토리 생성 실패: " + parent.getAbsolutePath());
@@ -344,6 +348,49 @@ public class FileServiceImpl implements FileService {
             normalizedPrefix = normalizedPrefix.substring(0, normalizedPrefix.length() - 1);
         }
         return normalizedPrefix + "/" + fileDtlSeq;
+    }
+
+    private Path buildDestinationPath(String uploadContext, String savedFileName, boolean inlineImage) {
+        Path uploadDirPath = Paths.get(uploadDir).toAbsolutePath().normalize();
+        Path destinationPath = uploadDirPath
+                .resolve(resolveUploadSubDirectory(uploadContext, inlineImage))
+                .resolve(savedFileName)
+                .normalize();
+        if (!destinationPath.startsWith(uploadDirPath)) {
+            throw new com.kcabEvent.exception.custom.BusinessException("잘못된 업로드 경로입니다.");
+        }
+        return destinationPath;
+    }
+
+    private String resolveUploadSubDirectory(String uploadContext, boolean inlineImage) {
+        String context = uploadContext == null
+                ? ""
+                : uploadContext.trim().toUpperCase(Locale.ROOT).replace('-', '_');
+        String baseFolder = switch (context) {
+            case "EVENT_EMAIL_HEADER" -> "events/email-header";
+            case "EVENT_ATTACHMENT" -> "events/attachments";
+            case "EVENT_PAGE_HERO" -> "event-pages/hero";
+            case "EVENT_PAGE_BLOCK_IMAGE" -> "event-pages/blocks/images";
+            case "EVENT_PAGE_BLOCK_ATTACHMENT" -> "event-pages/blocks/attachments";
+            case "NOTICE_NEWS_ATTACHMENT" -> "notice-news/attachments";
+            case "GALLERY_IMAGE" -> "gallery";
+            case "ORGANIZATION_IMAGE" -> "organizations/images";
+            case "EDITOR_EVENT" -> "editor/events";
+            case "EDITOR_NOTICE_NEWS" -> "editor/notice-news";
+            case "EDITOR_EMAIL_CMS" -> "editor/email-cms";
+            case "EDITOR_GUIDE" -> "editor/guide";
+            case "GUIDE_FILE" -> "guide/files";
+            default -> inlineImage ? "editor/common" : "common/files";
+        };
+        LocalDate today = LocalDate.now();
+        return baseFolder
+                + File.separator + today.getYear()
+                + File.separator + String.format("%02d", today.getMonthValue());
+    }
+
+    private String sanitizeFileName(String fileName) {
+        String fallback = fileName == null || fileName.isBlank() ? "file" : fileName;
+        return fallback.replaceAll("[\\\\/:*?\"<>|]", "_");
     }
 
     @Override

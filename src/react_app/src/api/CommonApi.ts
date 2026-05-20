@@ -71,9 +71,30 @@ export interface EditorImageUploadResponse {
     url: string;
 }
 
-export const callUploadEditorImage = async (file: File): Promise<EditorImageUploadResponse> => {
+export const UPLOAD_CONTEXT = {
+    EVENT_EMAIL_HEADER: 'EVENT_EMAIL_HEADER',
+    EVENT_ATTACHMENT: 'EVENT_ATTACHMENT',
+    EVENT_PAGE_HERO: 'EVENT_PAGE_HERO',
+    EVENT_PAGE_BLOCK_IMAGE: 'EVENT_PAGE_BLOCK_IMAGE',
+    EVENT_PAGE_BLOCK_ATTACHMENT: 'EVENT_PAGE_BLOCK_ATTACHMENT',
+    NOTICE_NEWS_ATTACHMENT: 'NOTICE_NEWS_ATTACHMENT',
+    GALLERY_IMAGE: 'GALLERY_IMAGE',
+    ORGANIZATION_IMAGE: 'ORGANIZATION_IMAGE',
+    EDITOR_EVENT: 'EDITOR_EVENT',
+    EDITOR_NOTICE_NEWS: 'EDITOR_NOTICE_NEWS',
+    EDITOR_EMAIL_CMS: 'EDITOR_EMAIL_CMS',
+    EDITOR_GUIDE: 'EDITOR_GUIDE',
+    GUIDE_FILE: 'GUIDE_FILE',
+} as const;
+
+export type UploadContext = typeof UPLOAD_CONTEXT[keyof typeof UPLOAD_CONTEXT];
+
+export const callUploadEditorImage = async (file: File, uploadContext?: UploadContext): Promise<EditorImageUploadResponse> => {
     const formData = new FormData();
     formData.append('file', file);
+    if (uploadContext) {
+        formData.append('uploadContext', uploadContext);
+    }
     const { data } = await axios.post<ApiResponse<EditorImageUploadResponse>>(
         '/api/editor/upload-image',
         formData,
@@ -82,7 +103,12 @@ export const callUploadEditorImage = async (file: File): Promise<EditorImageUplo
     return data.item;
 };
 
-export const callSaveFiles = async (fileSeq : number|null, menuSeq : number, fileList : FileDetailType[]) => {
+export const callSaveFiles = async (
+    fileSeq : number|null,
+    menuSeq : number,
+    fileList : FileDetailType[],
+    uploadContext?: UploadContext,
+) => {
     const insertFileList = fileList.filter((fileData) => fileData.iudType === IudType.I);
     const updateFileList = fileList.filter((fileData) => fileData.iudType === IudType.U);
     const deleteFileList = fileList.filter((fileData) => fileData.iudType === IudType.D);
@@ -118,6 +144,9 @@ export const callSaveFiles = async (fileSeq : number|null, menuSeq : number, fil
 
     if (fileSeq) {
         formData.append("fileSeq", fileSeq.toString());
+    }
+    if (uploadContext) {
+        formData.append("uploadContext", uploadContext);
     }
 
     formData.append("insertFileMetaList", JSON.stringify(insertFileMetaList));

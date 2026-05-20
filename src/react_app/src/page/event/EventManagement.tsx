@@ -10,7 +10,7 @@ import MenuButtonBar from '@component/special/MenuButtonBar';
 import { MenuBtnDetail, PageButtonHandlers } from '@interface/common';
 import { EventListItem, EventDetail, EventSaveRequest, EVENT_STATUS_LABELS } from '@interface/event/EventManagement';
 import { callGetEventList, callGetEventDetail, callSaveEvent, callDeleteEvent } from '@api/event/EventApi';
-import { callGetMenuBtnList } from '@api/CommonApi';
+import { callGetMenuBtnList, UPLOAD_CONTEXT } from '@api/CommonApi';
 import { HttpStatusCode } from 'axios';
 import { useMessage } from '@hook/useMessage';
 import dayjs from 'dayjs';
@@ -212,7 +212,13 @@ const EventManagement = () => {
         </div>
         <div>
           <label style={{ fontSize: 13, fontWeight: 500, marginBottom: 4, display: 'block' }}>내용</label>
-          <CustomRichEditor value={content} isEditable={true} onChange={setContent} height={300} />
+          <CustomRichEditor
+            value={content}
+            isEditable={true}
+            onChange={setContent}
+            height={300}
+            uploadContext={UPLOAD_CONTEXT.EDITOR_EVENT}
+          />
         </div>
       </div>
     </div>

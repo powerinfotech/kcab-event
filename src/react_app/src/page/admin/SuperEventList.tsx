@@ -23,7 +23,7 @@ import {
 } from '@ant-design/icons';
 import CustomRichEditor, { RichEditorTextColorOption } from '@component/special/CustomRichEditor';
 import CustomFile, { FileDetailType } from '@component/upload/CustomFile';
-import { callGetFileList, callSaveFiles } from '@api/CommonApi';
+import { callGetFileList, callSaveFiles, UPLOAD_CONTEXT } from '@api/CommonApi';
 import { callExcelDownload, type ExcelColumnDef } from '@api/CommonExcelApi';
 import { callGetParticipantList } from '@api/admin/ParticipantManagementApi';
 import {
@@ -828,7 +828,12 @@ export default function SuperEventList() {
       // 1) 이메일 상단 이미지 저장 → emailHeaderImageFileSeq 확보
       let resolvedEmailHeaderImageSeq: number | null = form.emailHeaderImageFileSeq ?? null;
       if (emailHeaderImageFiles.some((f) => f.iudType)) {
-        const imageRes = await callSaveFiles(resolvedEmailHeaderImageSeq, 0, emailHeaderImageFiles);
+        const imageRes = await callSaveFiles(
+          resolvedEmailHeaderImageSeq,
+          0,
+          emailHeaderImageFiles,
+          UPLOAD_CONTEXT.EVENT_EMAIL_HEADER,
+        );
         const newImageSeq = imageRes?.item?.fileSeq;
         if (newImageSeq) resolvedEmailHeaderImageSeq = Number(newImageSeq);
         if (imageRes?.item?.fileList) {
@@ -839,7 +844,7 @@ export default function SuperEventList() {
       // 2) 일반 첨부파일 변경 사항 저장 → attachmentFileSeq 확보
       let resolvedAttSeq: number | null = form.attachmentFileSeq ?? null;
       if (attachmentFiles.some((f) => f.iudType)) {
-        const attRes = await callSaveFiles(resolvedAttSeq, 0, attachmentFiles);
+        const attRes = await callSaveFiles(resolvedAttSeq, 0, attachmentFiles, UPLOAD_CONTEXT.EVENT_ATTACHMENT);
         const newSeq = attRes?.item?.fileSeq;
         if (newSeq) resolvedAttSeq = Number(newSeq);
         if (attRes?.item?.fileList) {
@@ -1348,6 +1353,7 @@ export default function SuperEventList() {
                   placeholder="Event overview, topics, target audience, agenda, speakers, etc."
                   height={480}
                   textColorOptions={EVENT_EDITOR_TEXT_COLOR_OPTIONS}
+                  uploadContext={UPLOAD_CONTEXT.EDITOR_EVENT}
                 />
               </div>
             </section>

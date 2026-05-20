@@ -9,6 +9,7 @@ import {
   SendOutlined,
 } from '@ant-design/icons';
 import CustomRichEditor from '@component/special/CustomRichEditor';
+import { UPLOAD_CONTEXT } from '@api/CommonApi';
 import {
   callGetEmailTemplateDetail,
   callGetEmailTemplates,
@@ -243,6 +244,7 @@ export default function EmailCms() {
               height={360}
               placeholder="Write email body content in English."
               variables={variables}
+              uploadContext={UPLOAD_CONTEXT.EDITOR_EMAIL_CMS}
             />
           </div>
 
