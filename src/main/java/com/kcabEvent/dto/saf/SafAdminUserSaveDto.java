@@ -27,6 +27,7 @@ public class SafAdminUserSaveDto {
     private String contactEmail;
     private String contactPhone;
     private String website;
+    private Long imageFileSeq;
     /** 조직 등급: S/A/B/C */
     private String grade;
     private Long updatedBy;

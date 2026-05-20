@@ -15,5 +15,9 @@ public interface SafEmailVerificationService {
 
     boolean isVerifiedForEmail(String email, HttpSession session);
 
+    boolean isVerifiedForEmail(String email, HttpSession session, String purpose);
+
     void clear(HttpSession session);
+
+    void clear(HttpSession session, String purpose);
 }

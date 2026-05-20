@@ -18,12 +18,12 @@ export const callCheckEmail = async (email: string) => {
   return res.data;
 };
 
-export const callSendEmailCode = async (email: string) => {
-  const res = await axios.post(`${BASE}/send-email-code`, { email });
+export const callSendEmailCode = async (email: string, purpose?: string) => {
+  const res = await axios.post(`${BASE}/send-email-code`, { email, purpose });
   return res.data;
 };
 
-export const callVerifyEmailCode = async (email: string, code: string) => {
-  const res = await axios.post(`${BASE}/verify-email-code`, { email, code });
+export const callVerifyEmailCode = async (email: string, code: string, purpose?: string) => {
+  const res = await axios.post(`${BASE}/verify-email-code`, { email, code, purpose });
   return res.data;
 };

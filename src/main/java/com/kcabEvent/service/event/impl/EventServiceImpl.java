@@ -240,7 +240,6 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
         }
         event.setStatus(resolveSaveStatus(admin, savedEvent));
         event.setUseYn(saveDto.getUseYn() != null ? saveDto.getUseYn() : "Y");
-        event.setFileSeq(saveDto.getFileSeq());
         event.setAttachmentFileSeq(saveDto.getAttachmentFileSeq());
         String resolvedEventType = admin ? (saveDto.getEventType() != null ? saveDto.getEventType() : "main") : EVENT_TYPE_SIDE;
         event.setEventType(resolvedEventType);

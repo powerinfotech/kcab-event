@@ -32,6 +32,7 @@ export interface AdminUserDetail extends AdminUserListItem {
   contactEmail?: string;
   contactPhone?: string;
   website?: string;
+  imageFileSeq?: number | null;
   /** 조직 등급: S/A/B/C */
   grade?: OrganizationGrade;
   approvedAt?: string;
@@ -63,6 +64,7 @@ export interface AdminUserSaveParam {
   contactEmail?: string;
   contactPhone?: string;
   website?: string;
+  imageFileSeq?: number | null;
   /** 조직 등급: S/A/B/C (생략 시 백엔드가 'C' 강제) */
   grade?: OrganizationGrade;
 }

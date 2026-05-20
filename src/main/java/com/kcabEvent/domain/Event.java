@@ -36,8 +36,6 @@ public class Event {
     private String status;
     private String rejectionReason;
     private String useYn;
-    /** 썸네일 파일 그룹 (tb_file.file_seq) */
-    private Long fileSeq;
     /** 일반 첨부파일 그룹 (tb_file.file_seq) */
     private Long attachmentFileSeq;
     private String eventType;

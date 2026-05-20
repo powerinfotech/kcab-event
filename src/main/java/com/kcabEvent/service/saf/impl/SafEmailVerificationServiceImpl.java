@@ -26,6 +26,8 @@ public class SafEmailVerificationServiceImpl implements SafEmailVerificationServ
     private static final String SESSION_CODE = "safSignupEmailVerifyCode";
     private static final String SESSION_EXPIRES_AT = "safSignupEmailVerifyExpiresAt";
     private static final String SESSION_VERIFIED = "safSignupEmailVerifyVerified";
+    private static final String PURPOSE_SIGNUP = "signup";
+    private static final String PURPOSE_CONTACT_EMAIL = "contact-email";
     private static final int CODE_EXPIRE_MINUTES = 10;
 
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
@@ -38,18 +40,19 @@ public class SafEmailVerificationServiceImpl implements SafEmailVerificationServ
     @Override
     public void sendCode(SafEmailVerificationSendRequestDto requestDto, HttpSession session) {
         String email = normalize(requestDto.getEmail());
+        String purpose = normalizePurpose(requestDto.getPurpose());
         if (!StringUtils.hasText(email)) {
             throw new BusinessException("Please enter an email address.");
         }
-        if (safSignupService.existsByEmail(email)) {
+        if (shouldCheckDuplicateEmail(purpose) && safSignupService.existsByEmail(email)) {
             throw new BusinessException("This email is already registered.");
         }
 
         String code = createSixDigitCode();
-        session.setAttribute(SESSION_EMAIL, email);
-        session.setAttribute(SESSION_CODE, code);
-        session.setAttribute(SESSION_EXPIRES_AT, OffsetDateTime.now().plusMinutes(CODE_EXPIRE_MINUTES));
-        session.setAttribute(SESSION_VERIFIED, false);
+        session.setAttribute(sessionKey(SESSION_EMAIL, purpose), email);
+        session.setAttribute(sessionKey(SESSION_CODE, purpose), code);
+        session.setAttribute(sessionKey(SESSION_EXPIRES_AT, purpose), OffsetDateTime.now().plusMinutes(CODE_EXPIRE_MINUTES));
+        session.setAttribute(sessionKey(SESSION_VERIFIED, purpose), false);
 
         String subject = "[KCAB International] Email verification code";
         String emailBody = buildEmail(code);
@@ -58,7 +61,7 @@ public class SafEmailVerificationServiceImpl implements SafEmailVerificationServ
         try {
             emailLogService.sendHtmlAndLog(email, null, subject, emailBody, logBody);
         } catch (RuntimeException e) {
-            clear(session);
+            clear(session, purpose);
             throw e;
         }
     }
@@ -66,9 +69,10 @@ public class SafEmailVerificationServiceImpl implements SafEmailVerificationServ
     @Override
     public void verifyCode(SafEmailVerificationVerifyRequestDto requestDto, HttpSession session) {
         String email = normalize(requestDto.getEmail());
-        String savedEmail = (String) session.getAttribute(SESSION_EMAIL);
-        String savedCode = (String) session.getAttribute(SESSION_CODE);
-        OffsetDateTime expiresAt = (OffsetDateTime) session.getAttribute(SESSION_EXPIRES_AT);
+        String purpose = normalizePurpose(requestDto.getPurpose());
+        String savedEmail = (String) session.getAttribute(sessionKey(SESSION_EMAIL, purpose));
+        String savedCode = (String) session.getAttribute(sessionKey(SESSION_CODE, purpose));
+        OffsetDateTime expiresAt = (OffsetDateTime) session.getAttribute(sessionKey(SESSION_EXPIRES_AT, purpose));
 
         if (!StringUtils.hasText(savedCode) || expiresAt == null || !StringUtils.hasText(savedEmail)) {
             throw new BusinessException("Please request a verification code first.");
@@ -77,22 +81,28 @@ public class SafEmailVerificationServiceImpl implements SafEmailVerificationServ
             throw new BusinessException("Email address does not match the one you requested the code for.");
         }
         if (OffsetDateTime.now().isAfter(expiresAt)) {
-            clear(session);
+            clear(session, purpose);
             throw new BusinessException("Verification code has expired. Please request a new code.");
         }
         if (!savedCode.equals(requestDto.getCode())) {
             throw new BusinessException("Verification code does not match.");
         }
 
-        session.setAttribute(SESSION_VERIFIED, true);
+        session.setAttribute(sessionKey(SESSION_VERIFIED, purpose), true);
     }
 
     @Override
     public boolean isVerifiedForEmail(String email, HttpSession session) {
+        return isVerifiedForEmail(email, session, PURPOSE_SIGNUP);
+    }
+
+    @Override
+    public boolean isVerifiedForEmail(String email, HttpSession session, String purpose) {
         String normalized = normalize(email);
-        String savedEmail = (String) session.getAttribute(SESSION_EMAIL);
-        OffsetDateTime expiresAt = (OffsetDateTime) session.getAttribute(SESSION_EXPIRES_AT);
-        Boolean verified = (Boolean) session.getAttribute(SESSION_VERIFIED);
+        String normalizedPurpose = normalizePurpose(purpose);
+        String savedEmail = (String) session.getAttribute(sessionKey(SESSION_EMAIL, normalizedPurpose));
+        OffsetDateTime expiresAt = (OffsetDateTime) session.getAttribute(sessionKey(SESSION_EXPIRES_AT, normalizedPurpose));
+        Boolean verified = (Boolean) session.getAttribute(sessionKey(SESSION_VERIFIED, normalizedPurpose));
 
         return Boolean.TRUE.equals(verified)
                 && StringUtils.hasText(savedEmail)
@@ -103,14 +113,41 @@ public class SafEmailVerificationServiceImpl implements SafEmailVerificationServ
 
     @Override
     public void clear(HttpSession session) {
-        session.removeAttribute(SESSION_EMAIL);
-        session.removeAttribute(SESSION_CODE);
-        session.removeAttribute(SESSION_EXPIRES_AT);
-        session.removeAttribute(SESSION_VERIFIED);
+        clear(session, PURPOSE_SIGNUP);
+        clear(session, "profile-email");
+        clear(session, PURPOSE_CONTACT_EMAIL);
+    }
+
+    @Override
+    public void clear(HttpSession session, String purpose) {
+        String normalizedPurpose = normalizePurpose(purpose);
+        session.removeAttribute(sessionKey(SESSION_EMAIL, normalizedPurpose));
+        session.removeAttribute(sessionKey(SESSION_CODE, normalizedPurpose));
+        session.removeAttribute(sessionKey(SESSION_EXPIRES_AT, normalizedPurpose));
+        session.removeAttribute(sessionKey(SESSION_VERIFIED, normalizedPurpose));
     }
 
     private String normalize(String email) {
         return email == null ? "" : email.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private String normalizePurpose(String purpose) {
+        if (!StringUtils.hasText(purpose)) {
+            return PURPOSE_SIGNUP;
+        }
+        String normalized = purpose.trim().toLowerCase(Locale.ROOT);
+        if (!"profile-email".equals(normalized) && !PURPOSE_CONTACT_EMAIL.equals(normalized)) {
+            return PURPOSE_SIGNUP;
+        }
+        return normalized;
+    }
+
+    private String sessionKey(String baseKey, String purpose) {
+        return PURPOSE_SIGNUP.equals(purpose) ? baseKey : baseKey + ":" + purpose;
+    }
+
+    private boolean shouldCheckDuplicateEmail(String purpose) {
+        return !PURPOSE_CONTACT_EMAIL.equals(purpose);
     }
 
     private String createSixDigitCode() {
