@@ -31,6 +31,8 @@ public class EventSaveDto {
     private String registrationUrl;
     private String status;
     private String useYn;
+    /** 이벤트 관련 이메일 상단 이미지 파일 그룹 */
+    private Long emailHeaderImageFileSeq;
     /** 일반 첨부파일 그룹 */
     private Long attachmentFileSeq;
 

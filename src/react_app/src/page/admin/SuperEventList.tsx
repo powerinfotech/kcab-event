@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { App, DatePicker, Modal, Select } from 'antd';
+import type { RcFile } from 'antd/es/upload';
 import dayjs, { Dayjs } from 'dayjs';
 import { useAtomValue, useSetAtom } from 'jotai';
 import {
@@ -11,6 +12,7 @@ import {
   CloseCircleOutlined,
   DeleteOutlined,
   DownloadOutlined,
+  EyeOutlined,
   PlusOutlined,
   ReloadOutlined,
   RollbackOutlined,
@@ -21,7 +23,7 @@ import {
 } from '@ant-design/icons';
 import CustomRichEditor, { RichEditorTextColorOption } from '@component/special/CustomRichEditor';
 import CustomFile, { FileDetailType } from '@component/upload/CustomFile';
-import { callGetFileList, callSaveFiles } from '@api/CommonApi';
+import { callGetFileList, callSaveFiles, UPLOAD_CONTEXT } from '@api/CommonApi';
 import { callExcelDownload, type ExcelColumnDef } from '@api/CommonExcelApi';
 import { callGetParticipantList } from '@api/admin/ParticipantManagementApi';
 import {
@@ -39,6 +41,7 @@ import {
 import { sessionInfoAtom } from '@atom/sessionInfoAtom';
 import { currentPathAtom, pushPath } from '@atom/currentPathAtom';
 import { getAdminRole } from '@util/fixedAdminMenus';
+import { IudType } from '@interface/common';
 import {
   DiscountCodeUsageItem,
   EVENT_STATUS_LABELS,
@@ -150,6 +153,7 @@ const emptyDetail: EventDetail = {
   status: 'published',
   rejectionReason: '',
   useYn: 'Y',
+  emailHeaderImageFileSeq: null,
   attachmentFileSeq: null,
   eventType: 'main',
   organizationSeq: null,
@@ -266,6 +270,7 @@ export default function SuperEventList() {
   const [mode, setMode] = useState<'list' | 'detail'>('list');
   const [selectedSeq, setSelectedSeq] = useState<number | null>(null);
   const [form, setForm] = useState<EventDetail>(emptyDetail);
+  const [emailHeaderImageFiles, setEmailHeaderImageFiles] = useState<FileDetailType[]>([]);
   const [attachmentFiles, setAttachmentFiles] = useState<FileDetailType[]>([]);
   const [eventParticipants, setEventParticipants] = useState<ParticipantListItem[]>([]);
   const [eventParticipantKeyword, setEventParticipantKeyword] = useState('');
@@ -402,6 +407,19 @@ export default function SuperEventList() {
       setEventParticipantKeyword('');
       setMode('detail');
       fetchEventParticipants(eventSeq);
+
+      // 이메일 상단 이미지 로드
+      const emailHeaderImageSeq = detail?.emailHeaderImageFileSeq ?? null;
+      if (emailHeaderImageSeq) {
+        try {
+          const imageRes = await callGetFileList(emailHeaderImageSeq);
+          setEmailHeaderImageFiles(imageRes?.item ?? []);
+        } catch {
+          setEmailHeaderImageFiles([]);
+        }
+      } else {
+        setEmailHeaderImageFiles([]);
+      }
 
       // 일반 첨부파일 로드
       const attSeq = detail?.attachmentFileSeq ?? null;
@@ -778,7 +796,7 @@ export default function SuperEventList() {
     }));
   };
 
-  const buildSaveParam = (attachmentFileSeq: number | null): EventSaveRequest => ({
+  const buildSaveParam = (emailHeaderImageFileSeq: number | null, attachmentFileSeq: number | null): EventSaveRequest => ({
     eventSeq: isNew ? undefined : selectedSeq!,
     slug: slugValue,
     title: titleValue,
@@ -794,6 +812,7 @@ export default function SuperEventList() {
     registrationUrl: isExternalRegistration ? registrationUrlValue : '',
     status: isOrganizationRole ? (form.status || 'draft') : 'published',
     useYn: form.useYn || 'Y',
+    emailHeaderImageFileSeq,
     attachmentFileSeq,
     eventType: form.eventType || 'main',
     organizationSeq: form.organizationSeq ?? null,
@@ -806,10 +825,26 @@ export default function SuperEventList() {
   const persist = async () => {
     setSaving(true);
     try {
-      // 1) 일반 첨부파일 변경 사항 저장 → attachmentFileSeq 확보
+      // 1) 이메일 상단 이미지 저장 → emailHeaderImageFileSeq 확보
+      let resolvedEmailHeaderImageSeq: number | null = form.emailHeaderImageFileSeq ?? null;
+      if (emailHeaderImageFiles.some((f) => f.iudType)) {
+        const imageRes = await callSaveFiles(
+          resolvedEmailHeaderImageSeq,
+          0,
+          emailHeaderImageFiles,
+          UPLOAD_CONTEXT.EVENT_EMAIL_HEADER,
+        );
+        const newImageSeq = imageRes?.item?.fileSeq;
+        if (newImageSeq) resolvedEmailHeaderImageSeq = Number(newImageSeq);
+        if (imageRes?.item?.fileList) {
+          setEmailHeaderImageFiles(imageRes.item.fileList as FileDetailType[]);
+        }
+      }
+
+      // 2) 일반 첨부파일 변경 사항 저장 → attachmentFileSeq 확보
       let resolvedAttSeq: number | null = form.attachmentFileSeq ?? null;
       if (attachmentFiles.some((f) => f.iudType)) {
-        const attRes = await callSaveFiles(resolvedAttSeq, 0, attachmentFiles);
+        const attRes = await callSaveFiles(resolvedAttSeq, 0, attachmentFiles, UPLOAD_CONTEXT.EVENT_ATTACHMENT);
         const newSeq = attRes?.item?.fileSeq;
         if (newSeq) resolvedAttSeq = Number(newSeq);
         if (attRes?.item?.fileList) {
@@ -817,8 +852,8 @@ export default function SuperEventList() {
         }
       }
 
-      // 2) 행사 저장
-      const eventRes = await callSaveEvent(buildSaveParam(resolvedAttSeq));
+      // 3) 행사 저장
+      const eventRes = await callSaveEvent(buildSaveParam(resolvedEmailHeaderImageSeq, resolvedAttSeq));
       message.success(isNew ? 'Event has been registered.' : 'Event information has been saved.');
       await fetchEvents();
       if (isNew) {
@@ -1283,6 +1318,16 @@ export default function SuperEventList() {
                   placeholder="e.g., Conrad Seoul · 511 Yeongdong-daero, Gangnam-gu, Seoul"
                 />
               </Field>
+              <Field label="Email Top Image" wide>
+                <div className="saf-thumbnail-uploader">
+                  <EventEmailImageUpload
+                    fileList={emailHeaderImageFiles}
+                    onChange={setEmailHeaderImageFiles}
+                    disabled={!canEdit}
+                  />
+                  <p className="saf-hint-inline">1 image only (JPG/PNG/GIF/WebP/SVG) · used at the top of event emails.</p>
+                </div>
+              </Field>
               <Field label="Attachments" wide>
                 <div className="saf-thumbnail-uploader">
                   <CustomFile
@@ -1308,6 +1353,7 @@ export default function SuperEventList() {
                   placeholder="Event overview, topics, target audience, agenda, speakers, etc."
                   height={480}
                   textColorOptions={EVENT_EDITOR_TEXT_COLOR_OPTIONS}
+                  uploadContext={UPLOAD_CONTEXT.EDITOR_EVENT}
                 />
               </div>
             </section>
@@ -1994,6 +2040,179 @@ function GridRequiredHeader({ children }: { children: React.ReactNode }) {
     <>
       {children}
       <span className="saf-grid-required-mark" aria-hidden="true">*</span>
+    </>
+  );
+}
+
+const IMAGE_MAX_SIZE = 30 * 1024 * 1024;
+
+const getFileUid = (file: FileDetailType) => (
+  file.fileDtlSeq ? String(file.fileDtlSeq) : file.uid ?? `${file.fileNm}-${file.sortSeq}`
+);
+
+const isBrowserReadableUrl = (url?: string): boolean => {
+  if (!url) return false;
+  return /^(https?:|data:|blob:|\/api\/|\/_next\/|\/images\/|\/uploads?\/)/i.test(url);
+};
+
+const getImagePreviewUrl = (file: Partial<FileDetailType>): string | undefined => {
+  const directUrl = file.fileUrl ?? file.filePath;
+  if (!directUrl) return undefined;
+  if (isBrowserReadableUrl(directUrl)) return directUrl;
+  if (file.filePath) return `/api/download-file?filePath=${encodeURIComponent(file.filePath)}`;
+  return undefined;
+};
+
+const revokeLocalPreview = (file: FileDetailType) => {
+  const previewUrl = file.fileUrl ?? file.filePath;
+  if (previewUrl?.startsWith('blob:')) URL.revokeObjectURL(previewUrl);
+};
+
+const reindexImageFiles = (files: FileDetailType[]) => {
+  let nextSortSeq = 1;
+  return files.map((file) => {
+    if (file.iudType === IudType.D) return { ...file, sortSeq: 0 };
+    return { ...file, sortSeq: nextSortSeq++ };
+  });
+};
+
+function EventEmailImageUpload({
+  fileList,
+  onChange,
+  disabled,
+}: {
+  fileList: FileDetailType[];
+  onChange: (files: FileDetailType[]) => void;
+  disabled?: boolean;
+}) {
+  const { message } = App.useApp();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewImage, setPreviewImage] = useState('');
+  const visibleFile = fileList.find((file) => file.iudType !== IudType.D);
+  const previewUrl = visibleFile ? getImagePreviewUrl(visibleFile) : undefined;
+
+  const createImageFileDetail = (file: File): FileDetailType | null => {
+    if (!file.type?.startsWith('image/')) {
+      message.error('이미지 파일만 업로드 가능합니다.');
+      return null;
+    }
+    if (file.size > IMAGE_MAX_SIZE) {
+      message.error('Only images up to 30MB can be uploaded.');
+      return null;
+    }
+
+    const uploadFile = file as RcFile;
+    uploadFile.uid = uploadFile.uid ?? `event-email-image-${Date.now()}`;
+    const localPreviewUrl = URL.createObjectURL(uploadFile);
+    return {
+      uid: uploadFile.uid,
+      fileNm: uploadFile.name,
+      filePath: localPreviewUrl,
+      fileUrl: localPreviewUrl,
+      sortSeq: 1,
+      originFileObj: uploadFile,
+      iudType: IudType.I,
+    };
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const nextFile = event.target.files?.[0];
+    event.target.value = '';
+    if (!nextFile) return;
+
+    const nextImage = createImageFileDetail(nextFile);
+    if (!nextImage) return;
+
+    const retainedFiles = fileList.flatMap((file) => {
+      if (file.iudType === IudType.D) return [file];
+      if (file.iudType === IudType.I) {
+        revokeLocalPreview(file);
+        return [];
+      }
+      return [{ ...file, iudType: IudType.D }];
+    });
+
+    onChange(reindexImageFiles([...retainedFiles, nextImage]));
+  };
+
+  const handleRemove = () => {
+    if (!visibleFile) return;
+
+    const nextFiles = fileList.flatMap((file) => {
+      if (getFileUid(file) !== getFileUid(visibleFile)) return [file];
+      if (file.iudType === IudType.I) {
+        revokeLocalPreview(file);
+        return [];
+      }
+      return [{ ...file, iudType: IudType.D }];
+    });
+
+    onChange(reindexImageFiles(nextFiles));
+  };
+
+  const openFileDialog = () => {
+    if (disabled) return;
+    inputRef.current?.click();
+  };
+
+  const handlePreview = () => {
+    if (!previewUrl) return;
+    setPreviewImage(previewUrl);
+    setPreviewOpen(true);
+  };
+
+  useEffect(() => () => {
+    for (const file of fileList) {
+      if (file.iudType === IudType.I) revokeLocalPreview(file);
+    }
+  }, []);
+
+  return (
+    <>
+      <div className="saf-organization-image-upload">
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          disabled={disabled}
+        />
+        {visibleFile && previewUrl ? (
+          <div className="saf-organization-image-card">
+            <img src={previewUrl} alt="Email top" />
+            <div className="saf-organization-image-actions">
+              <button type="button" aria-label="Preview image" onClick={handlePreview}>
+                <EyeOutlined />
+              </button>
+              <button type="button" aria-label="Replace image" onClick={openFileDialog} disabled={disabled}>
+                <PlusOutlined />
+              </button>
+              <button type="button" aria-label="Remove image" onClick={handleRemove} disabled={disabled}>
+                <DeleteOutlined />
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            type="button"
+            className="saf-organization-image-empty"
+            onClick={openFileDialog}
+            disabled={disabled}
+          >
+            <PlusOutlined />
+            <span>Upload</span>
+          </button>
+        )}
+      </div>
+      <Modal
+        open={previewOpen}
+        title="Email Top Image"
+        footer={null}
+        onCancel={() => setPreviewOpen(false)}
+      >
+        <img alt="Email top preview" src={previewImage} style={{ width: '100%' }} />
+      </Modal>
     </>
   );
 }

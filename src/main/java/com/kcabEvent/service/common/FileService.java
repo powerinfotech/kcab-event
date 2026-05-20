@@ -12,7 +12,7 @@ import java.util.List;
  * FileService - 파일 관리 서비스 인터페이스
  *
  * <p>파일 업로드, 다운로드, 수정, 삭제 기능을 제공한다.
- * 파일은 {@code ${file.path.dir}} 경로에 UUID 파일명으로 저장되고, DB에 경로 정보가 기록된다.</p>
+ * 파일은 {@code ${file.path.dir}} 하위 업무별 경로에 UUID 파일명으로 저장되고, DB에 경로 정보가 기록된다.</p>
  *
  * @see com.kcabEvent.service.common.impl.FileServiceImpl
  * @see com.kcabEvent.controller.FileController
@@ -30,9 +30,10 @@ public interface FileService {
      * @param loginUser              현재 로그인 사용자
      * @param insertFileMetaListJson 파일 메타 정보 JSON 문자열 (파일명·정렬 순서 등)
      * @param insertFiles            업로드된 멀티파트 파일 목록
+     * @param uploadContext          업로드 업무 구분값
      * @return 생성된 파일 그룹 순번 ({@code fileSeq})
      */
-    Integer addFile(LoginUser loginUser, String insertFileMetaListJson, List<MultipartFile> insertFiles);
+    Integer addFile(LoginUser loginUser, String insertFileMetaListJson, List<MultipartFile> insertFiles, String uploadContext);
     /**
      * 파일 상세 정보를 수정한다 (삭제 여부, 정렬 순서 등).
      *
@@ -68,9 +69,10 @@ public interface FileService {
      *
      * @param loginUser 현재 로그인 사용자
      * @param file      업로드된 이미지 파일
+     * @param uploadContext 업로드 업무 구분값
      * @return 저장된 파일 상세
      */
-    FileDetailDto uploadInlineImage(LoginUser loginUser, MultipartFile file);
+    FileDetailDto uploadInlineImage(LoginUser loginUser, MultipartFile file, String uploadContext);
 
     /**
      * 파일 상세 단건을 조회한다.

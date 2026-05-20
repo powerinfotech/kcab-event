@@ -22,7 +22,7 @@ import {
   callGetNoticeNewsList,
   callUpdateNoticeNews,
 } from '@api/admin/NoticeNewsApi';
-import { callGetFileList, callSaveFiles } from '@api/CommonApi';
+import { callGetFileList, callSaveFiles, UPLOAD_CONTEXT } from '@api/CommonApi';
 import CustomFile, { FileDetailType } from '@component/upload/CustomFile';
 import CustomRichEditor from '@component/special/CustomRichEditor';
 import {
@@ -257,7 +257,7 @@ export default function NoticeNews() {
     try {
       let resolvedFileSeq: number | null = form.fileSeq;
       if (attachments.some((f) => f.iudType)) {
-        const res = await callSaveFiles(resolvedFileSeq, 0, attachments);
+        const res = await callSaveFiles(resolvedFileSeq, 0, attachments, UPLOAD_CONTEXT.NOTICE_NEWS_ATTACHMENT);
         const newSeq = res?.item?.fileSeq;
         if (newSeq) resolvedFileSeq = Number(newSeq);
         if (res?.item?.fileList) {
@@ -492,6 +492,7 @@ export default function NoticeNews() {
                 onChange={(html) => updateForm('content', html)}
                 placeholder="Write the announcement or news body."
                 height={420}
+                uploadContext={UPLOAD_CONTEXT.EDITOR_NOTICE_NEWS}
               />
             </div>
           </section>

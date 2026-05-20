@@ -4,13 +4,13 @@ import { SaveOutlined } from '@ant-design/icons';
 import CustomFile, { FileDetailType } from '@component/upload/CustomFile';
 import CustomImageUpload from '@component/upload/CustomImageUpload';
 import { GuideSection, GuideDemoBox, GuideStatusRow, GuideStatusItem } from './GuideSection';
-import { callSaveFiles } from '@api/CommonApi';
+import { callSaveFiles, UPLOAD_CONTEXT } from '@api/CommonApi';
 import { HttpStatusCode } from 'axios';
 
 /* ───────── 코드 예제 상수 ───────── */
 
 const FILE_UPLOAD_CODE = `import CustomFile, { FileDetailType } from '@component/upload/CustomFile';
-import { callSaveFiles } from '@api/CommonApi';
+import { callSaveFiles, UPLOAD_CONTEXT } from '@api/CommonApi';
 
 // ① 편집 모드 (업로드 + 드래그앤드롭 정렬)
 const [fileList, setFileList] = useState<FileDetailType[]>([]);
@@ -24,7 +24,7 @@ const [fileSeq, setFileSeq] = useState<number | null>(null);
 
 // ② 파일 저장 API 호출
 const handleSave = async () => {
-  const res = await callSaveFiles(fileSeq, menuSeq, fileList);
+  const res = await callSaveFiles(fileSeq, menuSeq, fileList, UPLOAD_CONTEXT.GUIDE_FILE);
   if (res.code === HttpStatusCode.Ok) {
     setFileSeq(res.item.fileSeq);
     setFileList(res.item.fileList ?? []);
@@ -74,7 +74,7 @@ const FileGuide = ({ menuSeq }: FileGuideProps) => {
     }
 
     try {
-      const res = await callSaveFiles(fileSeq, menuSeq, fileList);
+      const res = await callSaveFiles(fileSeq, menuSeq, fileList, UPLOAD_CONTEXT.GUIDE_FILE);
       if (res.code === HttpStatusCode.Ok) {
         message.success('파일이 저장되었습니다.');
         setFileSeq(res.item.fileSeq);

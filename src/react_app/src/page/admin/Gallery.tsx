@@ -21,7 +21,7 @@ import {
   callUpdateGallery,
 } from '@api/admin/GalleryApi';
 import { buildGalleryImageUrl } from '@api/gallery/GalleryApi';
-import { callGetFileList, callSaveFiles } from '@api/CommonApi';
+import { callGetFileList, callSaveFiles, UPLOAD_CONTEXT } from '@api/CommonApi';
 import { FileDetailType } from '@component/upload/CustomFile';
 import {
   GalleryDetail,
@@ -207,7 +207,7 @@ export default function Gallery() {
     try {
       let resolvedFileSeq: number | null = form.fileSeq;
       if (images.some((f) => f.iudType)) {
-        const res = await callSaveFiles(resolvedFileSeq, 0, images);
+        const res = await callSaveFiles(resolvedFileSeq, 0, images, UPLOAD_CONTEXT.GALLERY_IMAGE);
         const newSeq = res?.item?.fileSeq;
         if (newSeq) resolvedFileSeq = Number(newSeq);
         if (res?.item?.fileList) {

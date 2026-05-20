@@ -66,6 +66,7 @@
             ,e.status
             ,e.rejection_reason
             ,CASE WHEN e.deleted_at IS NULL THEN 'Y' ELSE 'N' END AS use_yn
+            ,e.email_header_image_file_seq
             ,e.attachment_file_seq
             ,e.event_type
             ,e.organization_seq
@@ -653,7 +654,7 @@
             slug, title, description, event_type, is_paid,
             start_at, end_at, registration_start_at, registration_end_at,
             venue_name,
-            max_participants, organization_seq, attachment_file_seq,
+            max_participants, organization_seq, email_header_image_file_seq, attachment_file_seq,
             registration_type, registration_url,
             status, created_by, updated_by
         ) VALUES (
@@ -663,7 +664,7 @@
             COALESCE(#{isPaid}, false),
             #{eventStartDt}, #{eventEndDt}, #{registrationStartDt}, #{registrationEndDt},
             #{location},
-            #{maxParticipants}, #{organizationSeq}, #{attachmentFileSeq},
+            #{maxParticipants}, #{organizationSeq}, #{emailHeaderImageFileSeq}, #{attachmentFileSeq},
             COALESCE(NULLIF(#{registrationType,jdbcType=VARCHAR}, ''), 'direct'),
             #{registrationUrl,jdbcType=VARCHAR},
             COALESCE(NULLIF(#{status}, ''), 'draft'), #{rgstUserSeq}, #{uptUserSeq}
@@ -677,6 +678,7 @@
             ,description       = COALESCE(#{description}, #{content})
             ,event_type        = COALESCE(NULLIF(#{eventType}, ''), event_type)
             ,is_paid           = COALESCE(#{isPaid}, is_paid)
+            ,email_header_image_file_seq = #{emailHeaderImageFileSeq}
             ,attachment_file_seq = #{attachmentFileSeq}
             ,start_at          = #{eventStartDt}
             ,end_at            = #{eventEndDt}

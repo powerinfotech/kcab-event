@@ -34,6 +34,7 @@ export interface EventDetail {
   status: string;
   rejectionReason?: string | null;
   useYn: string;
+  emailHeaderImageFileSeq: number | null;
   attachmentFileSeq: number | null;
   eventType: string;
   organizationSeq: number | null;
@@ -65,6 +66,7 @@ export interface EventSaveRequest {
   registrationUrl: string;
   status: string;
   useYn: string;
+  emailHeaderImageFileSeq?: number | null;
   attachmentFileSeq?: number | null;
   eventType: string;
   organizationSeq?: number | null;

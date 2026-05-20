@@ -38,11 +38,12 @@ public class FileController {
                                                  @RequestParam(value = "fileSeq", required = false) Integer fileSeq,
                                                  @RequestParam(value = "insertFileMetaList", required = false) String insertFileMetaListJson,
                                                  @RequestParam(value = "updateFileList", required = false)  String updateFileListJson,
-                                                 @RequestParam(value = "deleteFileList", required = false) String deleteFileListJson) {
+                                                 @RequestParam(value = "deleteFileList", required = false) String deleteFileListJson,
+                                                 @RequestParam(value = "uploadContext", required = false) String uploadContext) {
 
         Integer resFileSeq = fileSeq;
 
-        Integer newFileSeq = fileService.addFile(loginUser, insertFileMetaListJson, insertFiles);
+        Integer newFileSeq = fileService.addFile(loginUser, insertFileMetaListJson, insertFiles, uploadContext);
         fileService.updateFile(loginUser, updateFileListJson);
         fileService.deleteFile(loginUser, deleteFileListJson);
 
@@ -64,9 +65,10 @@ public class FileController {
     @PostMapping("/editor/upload-image")
     public ApiResponse<EditorImageUploadResponse> uploadEditorImage(
             @KcabEventSession LoginUser loginUser,
-            @RequestPart("file") org.springframework.web.multipart.MultipartFile file
+            @RequestPart("file") org.springframework.web.multipart.MultipartFile file,
+            @RequestParam(value = "uploadContext", required = false) String uploadContext
     ) {
-        com.kcabEvent.dto.common.FileDetailDto detail = fileService.uploadInlineImage(loginUser, file);
+        com.kcabEvent.dto.common.FileDetailDto detail = fileService.uploadInlineImage(loginUser, file, uploadContext);
         EditorImageUploadResponse res = new EditorImageUploadResponse();
         res.setFileDtlSeq(detail.getFileDtlSeq());
         res.setFileNm(detail.getFileNm());

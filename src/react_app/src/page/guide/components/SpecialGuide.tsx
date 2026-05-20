@@ -12,6 +12,7 @@ import { GuideSection, GuideDemoBox, GuideStatusRow, GuideStatusItem } from './G
 import { MenuBtnDetail, PageButtonHandlers } from '@interface/common';
 import { UserSearchResult } from '@interface/auth/AuthManagement';
 import { message } from 'antd';
+import { UPLOAD_CONTEXT } from '@api/CommonApi';
 
 /* ───────── 코드 예제 상수 ───────── */
 
@@ -335,6 +336,7 @@ const SpecialGuide = () => {
           value={editorContent}
           isEditable={isEditable}
           onChange={setEditorContent}
+          uploadContext={UPLOAD_CONTEXT.EDITOR_GUIDE}
         />
         <div className="guide-demo-description">
           isEditable=false이면 배경색 회색, 편집 불가 / toolbar=[] 고정 (툴바 없음) / 높이 200px 고정
