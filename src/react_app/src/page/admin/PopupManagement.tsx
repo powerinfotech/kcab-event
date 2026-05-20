@@ -18,7 +18,7 @@ import { callGetPopupList, callSavePopup } from '@api/popup/PopupApi';
 import { PopupItem, PopupStatus } from '@interface/popup/PopupManagement';
 import { IudType } from '@interface/common';
 import CustomRichEditor from '@component/special/CustomRichEditor';
-import MainPopupOverlay from '@component/popup/MainPopupOverlay';
+import MainPopupWindowLauncher from '@component/popup/MainPopupWindowLauncher';
 import AdminGridPagination from './AdminGridPagination';
 
 function toDayjs(value?: string | null): Dayjs | null {
@@ -83,6 +83,7 @@ export default function PopupManagement() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewKey, setPreviewKey] = useState(0);
 
   const fetchPopupList = useCallback(async () => {
     setLoading(true);
@@ -183,6 +184,7 @@ export default function PopupManagement() {
       message.info('Enter a title to preview.');
       return;
     }
+    setPreviewKey((prev) => prev + 1);
     setPreviewOpen(true);
   };
 
@@ -363,9 +365,10 @@ export default function PopupManagement() {
         </div>
 
         {previewOpen && (
-          <MainPopupOverlay
+          <MainPopupWindowLauncher
+            key={previewKey}
             popups={[detail]}
-            previewMode
+            showDismissToday={false}
             onClose={() => setPreviewOpen(false)}
           />
         )}

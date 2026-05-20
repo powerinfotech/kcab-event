@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import LogoImage from '../assets/images/logo.png';
 import { callGetPublicPopupList } from '@api/popup/PopupApi';
 import { PopupItem } from '@interface/popup/PopupManagement';
-import MainPopupOverlay from '@component/popup/MainPopupOverlay';
+import MainPopupWindowLauncher from '@component/popup/MainPopupWindowLauncher';
 
 const POPUP_DISMISS_COOKIE_PREFIX = 'popup_dismissed_';
 
@@ -112,7 +112,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <MainPopupOverlay
+      <MainPopupWindowLauncher
         popups={popups}
         onClose={handlePopupClose}
         onDismissToday={handlePopupDismissToday}
