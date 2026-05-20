@@ -3,6 +3,8 @@ export interface ParticipantEventItem {
   eventSeq: number;
   eventTitle: string;
   eventType: string;
+  participantTypeCd?: string | null;
+  participantTypeName?: string | null;
   paymentName?: string | null;
   paymentSeq?: number | null;
   paymentStatus?: string | null;
@@ -38,6 +40,17 @@ export interface ParticipantEventOption {
   title: string;
   eventType: string;
   startAt: string | null;
+}
+
+export interface ParticipantTypeOption {
+  value: string;
+  label: string;
+  sortSeq?: number | null;
+}
+
+export interface ParticipantEventTypeSaveItem {
+  eventParticipantSeq: number;
+  participantTypeCd?: string | null;
 }
 
 export interface ParticipantListSearchParam {

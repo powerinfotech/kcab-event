@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="220" height="124" viewBox="0 0 220 124">
+  <rect width="220" height="124" rx="4" fill="#ffffff"/>
+  <g stroke="#73c9d7" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M36 42c18 8 49 11 74 11s56-3 74-11"/>
+    <path d="M48 34c12 8 39 11 62 11s50-3 62-11"/>
+    <path d="M42 39c15 7 43 10 68 10s53-3 68-10"/>
+    <path d="M52 28c4 7 0 10-5 11"/>
+    <path d="M168 28c-4 7 0 10 5 11"/>
+    <path d="M65 33c17 5 73 5 90 0"/>
+    <path d="M39 61h142"/>
+    <path d="M47 57c17 7 43 9 63 9s46-2 63-9"/>
+    <path d="M52 66h116"/>
+    <path d="M61 69h98"/>
+    <path d="M73 52v23M88 53v22M103 54v21M118 54v21M133 53v22M148 52v23"/>
+    <path d="M65 75h90"/>
+    <path d="M59 80h102"/>
+  </g>
+  <text x="110" y="104" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="800" letter-spacing="0.6" fill="#1f78a4">SEOUL ADR FESTIVAL</text>
+</svg>

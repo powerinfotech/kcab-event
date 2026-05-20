@@ -1,9 +1,11 @@
 import axios from 'axios';
 import { ApiResponse } from '@interface/common';
 import {
+  ParticipantEventTypeSaveItem,
   ParticipantEventOption,
   ParticipantListItem,
   ParticipantListSearchParam,
+  ParticipantTypeOption,
 } from '@interface/admin/ParticipantManagement';
 
 function csv<T>(values?: T[]): string | undefined {
@@ -23,5 +25,21 @@ export const callGetParticipantList = async (param: ParticipantListSearchParam =
 
 export const callGetParticipantEventOptions = async () => {
   const { data } = await axios.get<ApiResponse<ParticipantEventOption[]>>('/api/admin/participants/events');
+  return data;
+};
+
+export const callGetParticipantTypeOptions = async () => {
+  const { data } = await axios.get<ApiResponse<ParticipantTypeOption[]>>('/api/admin/participants/participant-types');
+  return data;
+};
+
+export const callSaveParticipantEventTypes = async (
+  participantSeq: number,
+  items: ParticipantEventTypeSaveItem[],
+) => {
+  const { data } = await axios.put<ApiResponse<void>>(
+    `/api/admin/participants/${participantSeq}/event-types`,
+    items,
+  );
   return data;
 };

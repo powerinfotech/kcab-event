@@ -19,7 +19,7 @@ import {
   SendOutlined,
   StopOutlined,
 } from '@ant-design/icons';
-import CustomRichEditor from '@component/special/CustomRichEditor';
+import CustomRichEditor, { RichEditorTextColorOption } from '@component/special/CustomRichEditor';
 import CustomFile, { FileDetailType } from '@component/upload/CustomFile';
 import { callGetFileList, callSaveFiles } from '@api/CommonApi';
 import { callExcelDownload, type ExcelColumnDef } from '@api/CommonExcelApi';
@@ -96,6 +96,13 @@ const CURRENCY_OPTIONS = ['USD', 'KRW'];
 const DISCOUNT_TYPE_OPTIONS: Array<{ value: EventDiscountCodeItem['discountType']; label: string }> = [
   { value: 'percent', label: 'Percent' },
   { value: 'amount', label: 'Amount' },
+];
+
+const EVENT_EDITOR_TEXT_COLOR_OPTIONS: RichEditorTextColorOption[] = [
+  { label: 'Black', value: '#111827' },
+  { label: 'Red', value: '#b91c1c' },
+  { label: 'Blue', value: '#1f5b95' },
+  { label: 'Yellow', value: '#facc15' },
 ];
 
 const EVENT_PARTICIPANT_EXCEL_COLUMNS: ExcelColumnDef[] = [
@@ -1300,6 +1307,7 @@ export default function SuperEventList() {
                   onChange={(html) => setForm((prev) => ({ ...prev, description: html, content: html }))}
                   placeholder="Event overview, topics, target audience, agenda, speakers, etc."
                   height={480}
+                  textColorOptions={EVENT_EDITOR_TEXT_COLOR_OPTIONS}
                 />
               </div>
             </section>

@@ -103,6 +103,64 @@
         ON CONFLICT (com_grp_cd_seq, com_cd) DO NOTHING
     </insert>
 
+    <insert id="insertParticipantTypeCodeGroupIfMissing">
+        INSERT INTO event.com_grp_cd
+            (
+             com_grp_cd
+            ,com_grp_cd_nm
+            ,com_grp_cd_desc
+            ,sort_seq
+            ,use_yn
+            )
+        VALUES
+            (
+             'PARTICIPANT_TYPE'
+            ,'참가자 구분'
+            ,'Participant classification used per event registration.'
+            ,2
+            ,'Y'
+            )
+        ON CONFLICT (com_grp_cd) DO UPDATE
+        SET  com_grp_cd_nm   = EXCLUDED.com_grp_cd_nm
+            ,com_grp_cd_desc = COALESCE(NULLIF(event.com_grp_cd.com_grp_cd_desc, ''), EXCLUDED.com_grp_cd_desc)
+            ,sort_seq        = COALESCE(event.com_grp_cd.sort_seq, EXCLUDED.sort_seq)
+            ,use_yn          = 'Y'
+            ,updated_at      = CURRENT_TIMESTAMP
+    </insert>
+
+    <insert id="insertDefaultParticipantTypeCodesIfMissing">
+        WITH grp AS (
+            SELECT com_grp_cd_seq
+            FROM event.com_grp_cd
+            WHERE com_grp_cd = 'PARTICIPANT_TYPE'
+        )
+        INSERT INTO event.com_cd
+            (
+             com_grp_cd_seq
+            ,com_cd
+            ,com_std_cd
+            ,com_cd_nm
+            ,com_cd_desc
+            ,sort_seq
+            ,use_yn
+            )
+        SELECT
+             grp.com_grp_cd_seq
+            ,'VIP'
+            ,'PARTICIPANT_TYPE_VIP'
+            ,'VIP'
+            ,'VIP participant.'
+            ,1
+            ,'Y'
+        FROM grp
+        ON CONFLICT (com_grp_cd_seq, com_cd) DO UPDATE
+        SET  com_cd_nm    = COALESCE(NULLIF(event.com_cd.com_cd_nm, ''), EXCLUDED.com_cd_nm)
+            ,com_cd_desc  = COALESCE(NULLIF(event.com_cd.com_cd_desc, ''), EXCLUDED.com_cd_desc)
+            ,sort_seq     = COALESCE(event.com_cd.sort_seq, EXCLUDED.sort_seq)
+            ,use_yn       = 'Y'
+            ,updated_at   = CURRENT_TIMESTAMP
+    </insert>
+
     <select id="selectSettingsGroups" resultType="com.kcabEvent.dto.settings.SettingsGroupDto">
         SELECT
              com_grp_cd_seq

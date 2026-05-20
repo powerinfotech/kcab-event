@@ -120,10 +120,23 @@ public class SafSettingsServiceImpl extends EgovAbstractServiceImpl implements S
 
     @Override
     public void ensureOrganizationGradeCodeDefaults() {
-        safSettingsDao.createCommonCodeGroupTableIfMissing();
-        safSettingsDao.createCommonCodeTableIfMissing();
+        ensureCommonCodeTables();
         safSettingsDao.insertOrganizationGradeCodeGroupIfMissing();
         safSettingsDao.insertDefaultOrganizationGradeCodesIfMissing();
+        safSettingsDao.insertParticipantTypeCodeGroupIfMissing();
+        safSettingsDao.insertDefaultParticipantTypeCodesIfMissing();
+    }
+
+    @Override
+    public void ensureParticipantTypeCodeDefaults() {
+        ensureCommonCodeTables();
+        safSettingsDao.insertParticipantTypeCodeGroupIfMissing();
+        safSettingsDao.insertDefaultParticipantTypeCodesIfMissing();
+    }
+
+    private void ensureCommonCodeTables() {
+        safSettingsDao.createCommonCodeGroupTableIfMissing();
+        safSettingsDao.createCommonCodeTableIfMissing();
     }
 
     private String normalizeGroupCode(String comGrpCd) {

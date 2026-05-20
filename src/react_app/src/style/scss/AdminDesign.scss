@@ -2673,23 +2673,43 @@
 }
 
 .saf-participant-events-panel {
-  overflow: hidden;
+  overflow-x: auto;
 }
 
 .saf-participant-detail-table {
   table-layout: fixed;
+  min-width: 880px;
 
-  th:nth-child(1) { width: 32%; }
-  th:nth-child(2) { width: 12%; }
-  th:nth-child(3) { width: 12%; }
-  th:nth-child(4) { width: 16%; }
-  th:nth-child(5) { width: 14%; }
-  th:nth-child(6) { width: 14%; }
+  th:nth-child(1) { width: 27%; }
+  th:nth-child(2) { width: 10%; }
+  th:nth-child(3) { width: 14%; }
+  th:nth-child(4) { width: 11%; }
+  th:nth-child(5) { width: 15%; }
+  th:nth-child(6) { width: 12%; }
+  th:nth-child(7) { width: 11%; }
 
   td:first-child {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+}
+
+.saf-participant-type-select {
+  width: 100%;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid #d7e1ee;
+  border-radius: 6px;
+  background: #fff;
+  color: #111827;
+  font-size: 13px;
+  font-weight: 800;
+
+  &:disabled {
+    color: #94a3b8;
+    background: #f8fafc;
+    cursor: not-allowed;
   }
 }
 

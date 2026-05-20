@@ -2,11 +2,13 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { App, Popover, Select } from 'antd';
-import { ArrowLeftOutlined, CalendarOutlined, CloseOutlined, CreditCardOutlined, DownloadOutlined, ReloadOutlined, SearchOutlined, TeamOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, CalendarOutlined, CloseOutlined, CreditCardOutlined, DownloadOutlined, ReloadOutlined, SaveOutlined, SearchOutlined, TeamOutlined } from '@ant-design/icons';
 import { useSetAtom } from 'jotai';
 import {
   callGetParticipantEventOptions,
   callGetParticipantList,
+  callGetParticipantTypeOptions,
+  callSaveParticipantEventTypes,
 } from '@api/admin/ParticipantManagementApi';
 import { callExcelDownload, ExcelColumnDef } from '@api/CommonExcelApi';
 import { currentPathAtom, pushPath } from '@atom/currentPathAtom';
@@ -14,6 +16,7 @@ import {
   ParticipantEventItem,
   ParticipantEventOption,
   ParticipantListItem,
+  ParticipantTypeOption,
 } from '@interface/admin/ParticipantManagement';
 import {
   PAYMENT_STATUS_LABELS,
@@ -144,15 +147,18 @@ function readParticipantReturnPath(): string | null {
 }
 
 export default function Participants() {
-  const { message } = App.useApp();
+  const { message, modal } = App.useApp();
   const setCurrentPath = useSetAtom(currentPathAtom);
   const [participants, setParticipants] = useState<ParticipantListItem[]>([]);
   const [eventOptions, setEventOptions] = useState<ParticipantEventOption[]>([]);
+  const [participantTypeOptions, setParticipantTypeOptions] = useState<ParticipantTypeOption[]>([]);
   const [keyword, setKeyword] = useState('');
   const [selectedEventSeqs, setSelectedEventSeqs] = useState<number[]>([]);
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedParticipant, setSelectedParticipant] = useState<ParticipantListItem | null>(null);
+  const [participantTypeDirty, setParticipantTypeDirty] = useState(false);
+  const [savingParticipantTypes, setSavingParticipantTypes] = useState(false);
   const [returnPath, setReturnPath] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
   const initialLoadRef = useRef(false);
@@ -176,6 +182,7 @@ export default function Participants() {
         const target = list.find((participant) => participant.participantSeq === pendingParticipantSeq);
         if (target) {
           setSelectedParticipant(target);
+          setParticipantTypeDirty(false);
         } else {
           message.warning('Participant was not found.');
         }
@@ -196,8 +203,18 @@ export default function Participants() {
     }
   };
 
+  const fetchParticipantTypeOptions = async () => {
+    try {
+      const res = await callGetParticipantTypeOptions();
+      setParticipantTypeOptions(res?.item ?? []);
+    } catch {
+      setParticipantTypeOptions([]);
+    }
+  };
+
   useEffect(() => {
     fetchEventOptions();
+    fetchParticipantTypeOptions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -208,6 +225,7 @@ export default function Participants() {
     setReturnPath(readParticipantReturnPath());
     if (pendingParticipant) {
       setSelectedParticipant(pendingParticipant);
+      setParticipantTypeDirty(false);
     }
     fetchParticipants(readPendingParticipantDetailSeq() ?? pendingParticipant?.participantSeq ?? null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -303,6 +321,68 @@ export default function Participants() {
       return;
     }
     setSelectedParticipant(null);
+    setParticipantTypeDirty(false);
+  };
+
+  const openParticipantDetail = (participant: ParticipantListItem) => {
+    setSelectedParticipant(participant);
+    setParticipantTypeDirty(false);
+  };
+
+  const handleParticipantTypeChange = (eventParticipantSeq: number, participantTypeCd: string) => {
+    const normalizedValue = participantTypeCd || null;
+    const selectedOption = participantTypeOptions.find((option) => option.value === normalizedValue);
+    setSelectedParticipant((current) => {
+      if (!current) return current;
+      return {
+        ...current,
+        events: current.events.map((event) => (
+          event.eventParticipantSeq === eventParticipantSeq
+            ? {
+                ...event,
+                participantTypeCd: normalizedValue,
+                participantTypeName: normalizedValue ? (selectedOption?.label ?? normalizedValue) : null,
+              }
+            : event
+        )),
+      };
+    });
+    setParticipantTypeDirty(true);
+  };
+
+  const persistParticipantTypes = async (participantSnapshot: ParticipantListItem) => {
+    setSavingParticipantTypes(true);
+    try {
+      await callSaveParticipantEventTypes(
+        participantSnapshot.participantSeq,
+        participantSnapshot.events.map((event) => ({
+          eventParticipantSeq: event.eventParticipantSeq,
+          participantTypeCd: event.participantTypeCd || null,
+        })),
+      );
+      setParticipants((current) => current.map((participant) => (
+        participant.participantSeq === participantSnapshot.participantSeq ? participantSnapshot : participant
+      )));
+      setParticipantTypeDirty(false);
+      message.success('Participant type saved.');
+    } catch {
+      message.error('Failed to save participant type.');
+    } finally {
+      setSavingParticipantTypes(false);
+    }
+  };
+
+  const handleSaveParticipantTypes = () => {
+    if (!selectedParticipant || !participantTypeDirty || savingParticipantTypes) return;
+    const participantSnapshot = selectedParticipant;
+    modal.confirm({
+      title: 'Save Participant Type',
+      content: 'Do you want to save participant type changes?',
+      okText: 'Save',
+      cancelText: 'Cancel',
+      centered: true,
+      onOk: () => persistParticipantTypes(participantSnapshot),
+    });
   };
 
   if (selectedParticipant) {
@@ -314,6 +394,15 @@ export default function Participants() {
             <p>{selectedParticipant.email}</p>
           </div>
           <div className="saf-screen-actions">
+            <button
+              type="button"
+              className="saf-action-btn is-primary"
+              onClick={handleSaveParticipantTypes}
+              disabled={!participantTypeDirty || savingParticipantTypes || !selectedParticipant.events.length}
+            >
+              <SaveOutlined />
+              <span>{savingParticipantTypes ? 'Saving...' : 'Save'}</span>
+            </button>
             <button type="button" className="saf-action-btn is-secondary" onClick={handleDetailBack}>
               <ArrowLeftOutlined />
               <span>{returnPath ? 'Back' : 'List'}</span>
@@ -341,6 +430,7 @@ export default function Participants() {
                 <tr>
                   <th>Event Name</th>
                   <th>Type</th>
+                  <th>Participant Type</th>
                   <th>Status</th>
                   <th>Payment</th>
                   <th>Registered At</th>
@@ -352,6 +442,25 @@ export default function Participants() {
                   <tr key={event.eventParticipantSeq}>
                     <td title={event.eventTitle}>{event.eventTitle}</td>
                     <td>{renderEventType(event.eventType)}</td>
+                    <td>
+                      <select
+                        className="saf-participant-type-select"
+                        value={event.participantTypeCd ?? ''}
+                        onClick={(clickEvent) => clickEvent.stopPropagation()}
+                        onChange={(changeEvent) => handleParticipantTypeChange(
+                          event.eventParticipantSeq,
+                          changeEvent.target.value,
+                        )}
+                        disabled={savingParticipantTypes}
+                      >
+                        <option value="">-</option>
+                        {participantTypeOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
                     <td>{renderStatus(event.status)}</td>
                     <td>{renderPaymentInfo(event)}</td>
                     <td>{formatDateTime(event.registeredAt)}</td>
@@ -360,7 +469,7 @@ export default function Participants() {
                 ))}
                 {!selectedParticipant.events.length && (
                   <tr>
-                    <td colSpan={6} className="saf-participant-empty">
+                    <td colSpan={7} className="saf-participant-empty">
                       <CalendarOutlined />
                       <span>No event registrations found.</span>
                     </td>
@@ -478,7 +587,7 @@ export default function Participants() {
           </thead>
           <tbody>
             {participantPagination.pagedItems.map((participant) => (
-              <tr key={participant.participantSeq} onClick={() => setSelectedParticipant(participant)}>
+              <tr key={participant.participantSeq} onClick={() => openParticipantDetail(participant)}>
                 <td>
                   <strong>{formatParticipantName(participant)}</strong>
                   <span className="saf-participant-position">{participant.position || '-'}</span>

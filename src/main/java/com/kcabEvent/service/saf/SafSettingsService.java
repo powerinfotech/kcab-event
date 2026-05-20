@@ -21,4 +21,6 @@ public interface SafSettingsService {
     void saveOrganizationGradeLimits(List<OrganizationGradeLimitDto> limits, Long updatedBy);
 
     void ensureOrganizationGradeCodeDefaults();
+
+    void ensureParticipantTypeCodeDefaults();
 }

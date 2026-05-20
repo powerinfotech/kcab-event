@@ -4,11 +4,16 @@ import com.kcabEvent.annotation.KcabEventSession;
 import com.kcabEvent.dto.common.ApiResponse;
 import com.kcabEvent.dto.common.LoginUser;
 import com.kcabEvent.dto.participant.ParticipantEventOptionDto;
+import com.kcabEvent.dto.participant.ParticipantEventTypeSaveDto;
 import com.kcabEvent.dto.participant.ParticipantListDto;
+import com.kcabEvent.dto.participant.ParticipantTypeOptionDto;
 import com.kcabEvent.service.participant.ParticipantService;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -40,6 +45,21 @@ public class ParticipantController {
     @GetMapping("/events")
     public ApiResponse<List<ParticipantEventOptionDto>> selectEventOptions(@KcabEventSession LoginUser loginUser) {
         return ApiResponse.ok(participantService.selectEventOptions(loginUser));
+    }
+
+    @GetMapping("/participant-types")
+    public ApiResponse<List<ParticipantTypeOptionDto>> selectParticipantTypeOptions() {
+        return ApiResponse.ok(participantService.selectParticipantTypeOptions());
+    }
+
+    @PutMapping("/{participantSeq}/event-types")
+    public ApiResponse<Void> updateParticipantEventTypes(
+            @KcabEventSession LoginUser loginUser,
+            @PathVariable Long participantSeq,
+            @RequestBody List<ParticipantEventTypeSaveDto> items
+    ) {
+        participantService.updateParticipantEventTypes(participantSeq, items, loginUser);
+        return ApiResponse.ok();
     }
 
     private List<Long> parseLongCsv(String csv) {
