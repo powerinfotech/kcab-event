@@ -1752,10 +1752,10 @@ export default function SuperEventList() {
           open={discountUsageModal.open}
           onCancel={closeDiscountUsageModal}
           footer={null}
-          width={960}
+          width={1280}
           destroyOnHidden
         >
-          <div className="saf-table-wrap">
+          <div className="saf-table-wrap saf-discount-usage-modal">
             <table className="saf-table">
               <thead>
                 <tr>

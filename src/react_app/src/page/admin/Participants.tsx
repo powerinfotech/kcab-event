@@ -264,47 +264,17 @@ export default function Participants() {
         { headerName: 'Position', dataIndex: 'position', width: 16 },
         { headerName: 'Event Count', dataIndex: 'eventCount', width: 12 },
         { headerName: 'Status Summary', dataIndex: 'statusSummary', width: 18 },
-        { headerName: 'Latest Registered At', dataIndex: 'latestRegisteredAt', width: 20 },
-        { headerName: 'Event Title', dataIndex: 'eventTitle', width: 32 },
-        { headerName: 'Event Type', dataIndex: 'eventType', width: 16 },
-        { headerName: 'Participation Status', dataIndex: 'eventStatus', width: 16 },
-        { headerName: 'Payment Status', dataIndex: 'paymentStatus', width: 14 },
-        { headerName: 'Registered At', dataIndex: 'registeredAt', width: 20 },
-        { headerName: 'Cancelled At', dataIndex: 'cancelledAt', width: 20 },
-        { headerName: 'Cancel Reason', dataIndex: 'cancelReason', width: 24 },
       ];
 
-      const rows: Record<string, unknown>[] = [];
-      participants.forEach((participant) => {
-        const base = {
-          fullName: participant.fullName || '',
-          email: participant.email || '',
-          country: participant.country || '',
-          organizationName: participant.organizationName || '',
-          position: participant.position || '',
-          eventCount: participant.eventCount ?? 0,
-          statusSummary: participant.statusSummary || '',
-          latestRegisteredAt: formatDateTime(participant.latestRegisteredAt),
-        };
-        if (!participant.events.length) {
-          rows.push({ ...base });
-          return;
-        }
-        participant.events.forEach((event) => {
-          rows.push({
-            ...base,
-            eventTitle: event.eventTitle || '',
-            eventType: EVENT_TYPE_LABELS[event.eventType] ?? event.eventType ?? '',
-            eventStatus: PARTICIPATION_STATUS_LABELS[event.status] ?? event.status ?? '',
-            paymentStatus: event.paymentStatus
-              ? PAYMENT_STATUS_LABELS[event.paymentStatus as PaymentStatus] ?? event.paymentStatus
-              : '',
-            registeredAt: formatDateTime(event.registeredAt),
-            cancelledAt: formatDateTime(event.cancelledAt),
-            cancelReason: event.cancelReason || '',
-          });
-        });
-      });
+      const rows = participants.map((participant) => ({
+        fullName: participant.fullName || '',
+        email: participant.email || '',
+        country: participant.country || '',
+        organizationName: participant.organizationName || '',
+        position: participant.position || '',
+        eventCount: participant.eventCount ?? 0,
+        statusSummary: participant.statusSummary || '',
+      }));
 
       const stamp = new Date().toISOString().slice(0, 10);
       await callExcelDownload(columns, rows, `participants_${stamp}`);

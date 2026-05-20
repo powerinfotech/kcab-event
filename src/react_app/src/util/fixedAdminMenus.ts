@@ -48,6 +48,7 @@ export function getFixedAdminMenuInfo(admYn?: string): MenuInfo[] {
       menu(159, 'Gallery', '/gallery', 'admin/Gallery', 10),
       menu(160, 'User Management', '/users', 'admin/UserManagementMock', 11),
       menu(165, 'FAQ Management', '/faq', 'admin/FaqManagement', 12),
+      menu(166, 'Popup Management', '/popups', 'admin/PopupManagement', 13),
       menu(170, 'Settings', '/settings', 'admin/Settings', 99),
     ];
   }

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kcabEvent.dao.PopupDao">
+
+    <select id="selectPopupList" resultType="com.kcabEvent.dto.popup.PopupListDto">
+        SELECT
+             p.popup_seq
+            ,p.title
+            ,p.content
+            ,p.status
+            ,p.sort_seq
+            ,p.start_at
+            ,p.end_at
+            ,p.created_at
+            ,p.updated_at
+        FROM event.popups p
+        <where>
+            p.deleted_at IS NULL
+            <if test="status != null and status != ''">
+                AND p.status = #{status}
+            </if>
+            <if test="activeOnly != null and activeOnly">
+                AND p.status = 'published'
+                AND (p.start_at IS NULL OR p.start_at &lt;= NOW())
+                AND (p.end_at   IS NULL OR p.end_at   &gt;= NOW())
+            </if>
+        </where>
+        ORDER BY p.sort_seq ASC, p.popup_seq DESC
+    </select>
+
+    <insert id="insertPopup" parameterType="com.kcabEvent.domain.Popup" useGeneratedKeys="true" keyProperty="popupSeq">
+        INSERT INTO event.popups (
+             title
+            ,content
+            ,status
+            ,sort_seq
+            ,start_at
+            ,end_at
+            ,created_by
+            ,updated_by
+        ) VALUES (
+             #{title}
+            ,#{content}
+            ,#{status}
+            ,#{sortSeq}
+            ,#{startAt}
+            ,#{endAt}
+            ,#{createdBy}
+            ,#{updatedBy}
+        )
+    </insert>
+
+    <update id="updatePopup" parameterType="com.kcabEvent.domain.Popup">
+        UPDATE event.popups
+        SET  title       = #{title}
+            ,content     = #{content}
+            ,status      = #{status}
+            ,sort_seq    = #{sortSeq}
+            ,start_at    = #{startAt}
+            ,end_at      = #{endAt}
+            ,updated_by  = #{updatedBy}
+            ,updated_at  = NOW()
+        WHERE popup_seq  = #{popupSeq}
+          AND deleted_at IS NULL
+    </update>
+
+    <update id="softDeletePopup">
+        UPDATE event.popups
+        SET  deleted_at = NOW()
+            ,updated_by = #{userSeq}
+            ,updated_at = NOW()
+        WHERE popup_seq  = #{popupSeq}
+          AND deleted_at IS NULL
+    </update>
+
+</mapper>

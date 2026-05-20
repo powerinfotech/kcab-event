@@ -1,10 +1,62 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import LogoImage from '../assets/images/logo.png';
+import { callGetPublicPopupList } from '@api/popup/PopupApi';
+import { PopupItem } from '@interface/popup/PopupManagement';
+import MainPopupOverlay from '@component/popup/MainPopupOverlay';
+
+const POPUP_DISMISS_COOKIE_PREFIX = 'popup_dismissed_';
+
+function isPopupDismissedToday(popupSeq: number): boolean {
+  if (typeof document === 'undefined') return false;
+  return document.cookie.split(';').some((entry) => {
+    const trimmed = entry.trim();
+    return trimmed.startsWith(`${POPUP_DISMISS_COOKIE_PREFIX}${popupSeq}=`);
+  });
+}
+
+function dismissPopupForToday(popupSeq: number): void {
+  if (typeof document === 'undefined') return;
+  const endOfDay = new Date();
+  endOfDay.setHours(23, 59, 59, 999);
+  document.cookie = `${POPUP_DISMISS_COOKIE_PREFIX}${popupSeq}=Y; expires=${endOfDay.toUTCString()}; path=/`;
+}
 
 export default function HomePage() {
   const logoSrc = typeof LogoImage === 'string' ? LogoImage : (LogoImage as { src?: string })?.src ?? '';
+  const [popups, setPopups] = useState<PopupItem[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await callGetPublicPopupList();
+        if (cancelled) return;
+        const list = (res?.item ?? []).filter((popup) => {
+          if (!popup.popupSeq) return true;
+          return !isPopupDismissedToday(popup.popupSeq);
+        });
+        setPopups(list);
+      } catch {
+        // Silent: popup is non-critical content.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const handlePopupClose = (popup: PopupItem) => {
+    setPopups((prev) => prev.filter((item) => item.popupSeq !== popup.popupSeq));
+  };
+
+  const handlePopupDismissToday = (popup: PopupItem) => {
+    if (popup.popupSeq) {
+      dismissPopupForToday(popup.popupSeq);
+    }
+    handlePopupClose(popup);
+  };
 
   const handleNavigate = (url: string) => {
     window.history.pushState(null, '', url);
@@ -59,6 +111,12 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      <MainPopupOverlay
+        popups={popups}
+        onClose={handlePopupClose}
+        onDismissToday={handlePopupDismissToday}
+      />
 
       <footer className="pub-footer">
         <div className="pub-footer-inner">

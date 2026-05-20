@@ -97,6 +97,7 @@ public class CommonController {
             menus.add(fixedMenu(159, "Gallery", "/gallery", "admin/Gallery", 11, 1));
             menus.add(fixedMenu(160, "User Management", "/users", "admin/UserManagementMock", 12, 1));
             menus.add(fixedMenu(165, "FAQ Management", "/faq", "admin/FaqManagement", 13, 1));
+            menus.add(fixedMenu(166, "Popup Management", "/popups", "admin/PopupManagement", 14, 1));
             menus.add(fixedMenu(170, "Settings", "/settings", "admin/Settings", 99, 1));
             return menus;
         }
