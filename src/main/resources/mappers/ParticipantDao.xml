@@ -15,6 +15,8 @@
             ,ep.event_seq
             ,e.title AS event_title
             ,e.event_type
+            ,ep.participant_type_cd
+            ,COALESCE(ptc.com_cd_nm, ep.participant_type_cd) AS participant_type_name
             ,COALESCE(NULLIF(pay.price_name, ''), NULLIF(pay.price_type, '')) AS payment_name
             ,pay.payment_seq
             ,pay.status AS payment_status
@@ -37,6 +39,13 @@
         INNER JOIN event.events e
             ON e.event_seq = ep.event_seq
            AND e.deleted_at IS NULL
+        LEFT JOIN event.com_grp_cd ptg
+            ON ptg.com_grp_cd = 'PARTICIPANT_TYPE'
+           AND ptg.use_yn = 'Y'
+        LEFT JOIN event.com_cd ptc
+            ON ptc.com_grp_cd_seq = ptg.com_grp_cd_seq
+           AND ptc.com_cd = ep.participant_type_cd
+           AND ptc.use_yn = 'Y'
         LEFT JOIN LATERAL (
             SELECT
                  pr.price_name
@@ -132,5 +141,32 @@
         </if>
         ORDER BY e.start_at DESC NULLS LAST, e.event_seq DESC
     </select>
+
+    <select id="selectParticipantTypeOptions" resultType="com.kcabEvent.dto.participant.ParticipantTypeOptionDto">
+        SELECT
+             c.com_cd AS value
+            ,c.com_cd_nm AS label
+            ,COALESCE(c.sort_seq, 0) AS sort_seq
+        FROM event.com_grp_cd g
+        INNER JOIN event.com_cd c
+            ON c.com_grp_cd_seq = g.com_grp_cd_seq
+        WHERE g.com_grp_cd = 'PARTICIPANT_TYPE'
+          AND g.use_yn = 'Y'
+          AND c.use_yn = 'Y'
+        ORDER BY COALESCE(c.sort_seq, 0), c.com_cd
+    </select>
+
+    <update id="updateParticipantEventType">
+        UPDATE event.event_participants ep
+        SET participant_type_cd = NULLIF(#{participantTypeCd,jdbcType=VARCHAR}, '')
+        FROM event.events e
+        WHERE ep.event_seq = e.event_seq
+          AND e.deleted_at IS NULL
+          AND ep.participant_seq = #{participantSeq}
+          AND ep.event_participant_seq = #{eventParticipantSeq}
+        <if test="organizationSeq != null">
+          AND e.organization_seq = #{organizationSeq}
+        </if>
+    </update>
 
 </mapper>

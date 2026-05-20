@@ -42,6 +42,11 @@ interface RichEditorVariableOption {
   description?: string;
 }
 
+export interface RichEditorTextColorOption {
+  label: string;
+  value: string;
+}
+
 interface Props {
   value: string;
   isEditable: boolean;
@@ -55,9 +60,11 @@ interface Props {
   onImageUpload?: (file: File) => Promise<string>;
   /** 메일 템플릿 등에서 삽입할 수 있는 변수 목록 */
   variables?: RichEditorVariableOption[];
+  /** 툴바에 노출할 텍스트 색상 옵션. 미지정 시 기본 팔레트 사용 */
+  textColorOptions?: RichEditorTextColorOption[];
 }
 
-const TEXT_COLOR_OPTIONS = [
+const DEFAULT_TEXT_COLOR_OPTIONS: RichEditorTextColorOption[] = [
   { label: 'Default', value: '' },
   { label: 'Black', value: '#111827' },
   { label: 'Navy', value: '#102033' },
@@ -152,6 +159,7 @@ const CustomRichEditor = ({
   maxLength,
   onImageUpload,
   variables = [],
+  textColorOptions = DEFAULT_TEXT_COLOR_OPTIONS,
 }: Props) => {
   const uploaderRef = useRef(onImageUpload);
   useEffect(() => {
@@ -324,7 +332,7 @@ const CustomRichEditor = ({
           <ToolbarButton onClick={() => commandChain().toggleUnderline().run()} isActive={editor.isActive('underline')} icon={<UnderlineOutlined />} title="밑줄 (Ctrl+U)" />
           <ToolbarButton onClick={() => commandChain().toggleStrike().run()} isActive={editor.isActive('strike')} icon={<StrikethroughOutlined />} title="취소선" />
           <div className="rich-editor-color-group" aria-label="Text color">
-            {TEXT_COLOR_OPTIONS.map((option) => {
+            {textColorOptions.map((option) => {
               const isActiveColor = option.value.toLowerCase() === currentColor;
               return (
                 <button

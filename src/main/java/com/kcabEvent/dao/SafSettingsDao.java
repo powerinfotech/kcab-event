@@ -19,6 +19,10 @@ public interface SafSettingsDao {
 
     void insertDefaultOrganizationGradeCodesIfMissing();
 
+    void insertParticipantTypeCodeGroupIfMissing();
+
+    void insertDefaultParticipantTypeCodesIfMissing();
+
     List<SettingsGroupDto> selectSettingsGroups();
 
     int upsertSettingsGroup(SettingsGroupDto dto);

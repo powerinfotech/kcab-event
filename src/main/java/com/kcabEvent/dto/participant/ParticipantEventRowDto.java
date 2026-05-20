@@ -20,6 +20,8 @@ public class ParticipantEventRowDto {
     private Long eventSeq;
     private String eventTitle;
     private String eventType;
+    private String participantTypeCd;
+    private String participantTypeName;
     private String paymentName;
     private Long paymentSeq;
     private String paymentStatus;
