@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { App, DatePicker, Select } from 'antd';
+import { App, DatePicker, Modal, Select } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
 import { useAtomValue, useSetAtom } from 'jotai';
 import {
@@ -28,6 +28,7 @@ import {
   callApproveEvent,
   callCancelEventApproval,
   callDeleteEvent,
+  callGetDiscountCodeUsage,
   callGetEventDetail,
   callGetEventList,
   callRejectEvent,
@@ -39,6 +40,7 @@ import { sessionInfoAtom } from '@atom/sessionInfoAtom';
 import { currentPathAtom, pushPath } from '@atom/currentPathAtom';
 import { getAdminRole } from '@util/fixedAdminMenus';
 import {
+  DiscountCodeUsageItem,
   EVENT_STATUS_LABELS,
   EVENT_STATUS_TONE,
   EVENT_TYPE_LABELS,
@@ -266,6 +268,12 @@ export default function SuperEventList() {
   const [saving, setSaving] = useState(false);
   const [submitAttempted, setSubmitAttempted] = useState(false);
   const [pricingAmountDrafts, setPricingAmountDrafts] = useState<Record<string, string>>({});
+  const [discountUsageModal, setDiscountUsageModal] = useState<{
+    open: boolean;
+    loading: boolean;
+    code: string;
+    items: DiscountCodeUsageItem[];
+  }>({ open: false, loading: false, code: '', items: [] });
 
   const isNew = selectedSeq === null;
   const titleValue = form.title.trim();
@@ -580,6 +588,26 @@ export default function SuperEventList() {
       ...prev,
       discountCodes: (prev.discountCodes ?? []).filter((_, rowIndex) => rowIndex !== index),
     }));
+  };
+
+  const openDiscountUsageModal = async (discount: EventDiscountCodeItem) => {
+    if (!discount.discountCodeSeq) {
+      message.info('Save the event before viewing usage history.');
+      return;
+    }
+    const code = discount.discountCode || '';
+    setDiscountUsageModal({ open: true, loading: true, code, items: [] });
+    try {
+      const res = await callGetDiscountCodeUsage(discount.discountCodeSeq);
+      setDiscountUsageModal({ open: true, loading: false, code, items: res?.item ?? [] });
+    } catch {
+      message.error('Failed to load discount code usage.');
+      setDiscountUsageModal({ open: false, loading: false, code: '', items: [] });
+    }
+  };
+
+  const closeDiscountUsageModal = () => {
+    setDiscountUsageModal({ open: false, loading: false, code: '', items: [] });
   };
 
   const validateForm = () => {
@@ -1618,7 +1646,18 @@ export default function SuperEventList() {
                           </select>
                         </td>
                         <td className="saf-pricing-count-cell">
-                          {formatDiscountUsage(discount)}
+                          {(discount.usedCount ?? 0) > 0 && discount.discountCodeSeq ? (
+                            <button
+                              type="button"
+                              className="saf-link-button"
+                              onClick={() => openDiscountUsageModal(discount)}
+                              title="View users who used this code"
+                            >
+                              {formatDiscountUsage(discount)}
+                            </button>
+                          ) : (
+                            formatDiscountUsage(discount)
+                          )}
                         </td>
                         {canEdit && (
                           <td className="saf-pricing-action-cell">
@@ -1739,6 +1778,61 @@ export default function SuperEventList() {
             </div>
           </section>
         )}
+
+        <Modal
+          title={discountUsageModal.code ? `Discount Code Usage · ${discountUsageModal.code}` : 'Discount Code Usage'}
+          open={discountUsageModal.open}
+          onCancel={closeDiscountUsageModal}
+          footer={null}
+          width={960}
+          destroyOnHidden
+        >
+          <div className="saf-table-wrap">
+            <table className="saf-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Organization</th>
+                  <th>Position</th>
+                  <th>Country</th>
+                  <th>Payment Name</th>
+                  <th>Status</th>
+                  <th>Registered At</th>
+                </tr>
+              </thead>
+              <tbody>
+                {discountUsageModal.items.map((row, idx) => (
+                  <tr key={`${row.email ?? 'row'}-${idx}`}>
+                    <td><strong>{row.name || '-'}</strong></td>
+                    <td>{row.email || '-'}</td>
+                    <td>{row.organization || '-'}</td>
+                    <td>{row.position || '-'}</td>
+                    <td>{row.country || '-'}</td>
+                    <td>{row.paymentName || '-'}</td>
+                    <td>{renderParticipationStatus(row.status)}</td>
+                    <td>{formatDateTime(row.registeredAt)}</td>
+                  </tr>
+                ))}
+                {!discountUsageModal.loading && !discountUsageModal.items.length && (
+                  <tr>
+                    <td colSpan={8} className="saf-event-empty">
+                      <CalendarOutlined />
+                      <span>No usage history for this discount code yet.</span>
+                    </td>
+                  </tr>
+                )}
+                {discountUsageModal.loading && (
+                  <tr>
+                    <td colSpan={8} className="saf-event-empty">
+                      <span>Loading...</span>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </Modal>
 
       </div>
     );

@@ -2,12 +2,13 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { App, Popover, Select } from 'antd';
-import { ArrowLeftOutlined, CalendarOutlined, CloseOutlined, CreditCardOutlined, ReloadOutlined, SearchOutlined, TeamOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, CalendarOutlined, CloseOutlined, CreditCardOutlined, DownloadOutlined, ReloadOutlined, SearchOutlined, TeamOutlined } from '@ant-design/icons';
 import { useSetAtom } from 'jotai';
 import {
   callGetParticipantEventOptions,
   callGetParticipantList,
 } from '@api/admin/ParticipantManagementApi';
+import { callExcelDownload, ExcelColumnDef } from '@api/CommonExcelApi';
 import { currentPathAtom, pushPath } from '@atom/currentPathAtom';
 import {
   ParticipantEventItem,
@@ -153,6 +154,7 @@ export default function Participants() {
   const [loading, setLoading] = useState(false);
   const [selectedParticipant, setSelectedParticipant] = useState<ParticipantListItem | null>(null);
   const [returnPath, setReturnPath] = useState<string | null>(null);
+  const [exporting, setExporting] = useState(false);
   const initialLoadRef = useRef(false);
 
   const fetchParticipants = async (pendingParticipantSeq?: number | null) => {
@@ -228,6 +230,72 @@ export default function Participants() {
     [eventOptions, selectedEventSeqs],
   );
   const participantPagination = useClientGridPagination(participants);
+
+  const handleExportExcel = async () => {
+    if (!participants.length) {
+      message.warning('No participants to export.');
+      return;
+    }
+    setExporting(true);
+    try {
+      const columns: ExcelColumnDef[] = [
+        { headerName: 'Name', dataIndex: 'fullName', width: 18 },
+        { headerName: 'Email', dataIndex: 'email', width: 28 },
+        { headerName: 'Country', dataIndex: 'country', width: 14 },
+        { headerName: 'Organization', dataIndex: 'organizationName', width: 22 },
+        { headerName: 'Position', dataIndex: 'position', width: 16 },
+        { headerName: 'Event Count', dataIndex: 'eventCount', width: 12 },
+        { headerName: 'Status Summary', dataIndex: 'statusSummary', width: 18 },
+        { headerName: 'Latest Registered At', dataIndex: 'latestRegisteredAt', width: 20 },
+        { headerName: 'Event Title', dataIndex: 'eventTitle', width: 32 },
+        { headerName: 'Event Type', dataIndex: 'eventType', width: 16 },
+        { headerName: 'Participation Status', dataIndex: 'eventStatus', width: 16 },
+        { headerName: 'Payment Status', dataIndex: 'paymentStatus', width: 14 },
+        { headerName: 'Registered At', dataIndex: 'registeredAt', width: 20 },
+        { headerName: 'Cancelled At', dataIndex: 'cancelledAt', width: 20 },
+        { headerName: 'Cancel Reason', dataIndex: 'cancelReason', width: 24 },
+      ];
+
+      const rows: Record<string, unknown>[] = [];
+      participants.forEach((participant) => {
+        const base = {
+          fullName: participant.fullName || '',
+          email: participant.email || '',
+          country: participant.country || '',
+          organizationName: participant.organizationName || '',
+          position: participant.position || '',
+          eventCount: participant.eventCount ?? 0,
+          statusSummary: participant.statusSummary || '',
+          latestRegisteredAt: formatDateTime(participant.latestRegisteredAt),
+        };
+        if (!participant.events.length) {
+          rows.push({ ...base });
+          return;
+        }
+        participant.events.forEach((event) => {
+          rows.push({
+            ...base,
+            eventTitle: event.eventTitle || '',
+            eventType: EVENT_TYPE_LABELS[event.eventType] ?? event.eventType ?? '',
+            eventStatus: PARTICIPATION_STATUS_LABELS[event.status] ?? event.status ?? '',
+            paymentStatus: event.paymentStatus
+              ? PAYMENT_STATUS_LABELS[event.paymentStatus as PaymentStatus] ?? event.paymentStatus
+              : '',
+            registeredAt: formatDateTime(event.registeredAt),
+            cancelledAt: formatDateTime(event.cancelledAt),
+            cancelReason: event.cancelReason || '',
+          });
+        });
+      });
+
+      const stamp = new Date().toISOString().slice(0, 10);
+      await callExcelDownload(columns, rows, `participants_${stamp}`);
+    } catch (err) {
+      message.error('Failed to download Excel.');
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const handleDetailBack = () => {
     if (returnPath) {
@@ -314,6 +382,15 @@ export default function Participants() {
           <p>Participants are grouped by person, with their participating events summarized in the grid.</p>
         </div>
         <div className="saf-screen-actions">
+          <button
+            type="button"
+            className="saf-action-btn is-secondary"
+            onClick={handleExportExcel}
+            disabled={exporting || loading || !participants.length}
+          >
+            <DownloadOutlined />
+            <span>{exporting ? 'Exporting...' : 'Download Excel'}</span>
+          </button>
           <button type="button" className="saf-action-btn is-secondary" onClick={() => fetchParticipants()} disabled={loading}>
             <ReloadOutlined />
             <span>Refresh</span>
@@ -392,11 +469,11 @@ export default function Participants() {
             <tr>
               <th>Name</th>
               <th>Email</th>
+              <th>Country</th>
               <th>Organization</th>
               <th>Participating Events</th>
               <th>Event Count</th>
               <th>Status Summary</th>
-              <th>Latest Registered At</th>
             </tr>
           </thead>
           <tbody>
@@ -407,11 +484,11 @@ export default function Participants() {
                   <span className="saf-participant-position">{participant.position || '-'}</span>
                 </td>
                 <td>{participant.email}</td>
+                <td>{participant.country || '-'}</td>
                 <td>{participant.organizationName || '-'}</td>
                 <td>{renderEventSummary(participant.events)}</td>
                 <td>{participant.eventCount ?? 0}</td>
                 <td>{participant.statusSummary || '-'}</td>
-                <td>{formatDateTime(participant.latestRegisteredAt)}</td>
               </tr>
             ))}
             {!participants.length && (

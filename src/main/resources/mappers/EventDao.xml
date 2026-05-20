@@ -607,6 +607,48 @@
         ORDER BY dc.sort_seq ASC, dc.discount_code_seq ASC
     </select>
 
+    <select id="selectEventDiscountCodeBySeq" resultType="com.kcabEvent.dto.event.EventDiscountCodeDto">
+        SELECT
+             dc.discount_code_seq
+            ,dc.event_seq
+            ,dc.discount_code
+            ,dc.discount_type
+            ,dc.discount_value
+            ,dc.currency_code
+            ,dc.applies_to_price_type
+            ,dc.usage_limit
+            ,dc.valid_from_at
+            ,dc.valid_to_at
+            ,dc.use_yn
+            ,dc.sort_seq
+        FROM event.event_discount_codes dc
+        WHERE dc.discount_code_seq = #{discountCodeSeq}
+          AND dc.deleted_at IS NULL
+    </select>
+
+    <select id="selectDiscountCodeUsage" resultType="com.kcabEvent.dto.event.DiscountCodeUsageDto">
+        SELECT
+             TRIM(CONCAT_WS(' ', pa.first_name, NULLIF(pa.middle_name, ''), pa.last_name)) AS name
+            ,pa.email
+            ,pa.organization_name AS organization
+            ,pa.position
+            ,pa.country
+            ,COALESCE(NULLIF(pr.price_name, ''), NULLIF(pr.price_type, '')) AS payment_name
+            ,ep.status
+            ,ep.registered_at
+        FROM event.payments p
+        INNER JOIN event.participants pa
+            ON pa.participant_seq = p.participant_seq
+        LEFT JOIN event.event_participants ep
+            ON ep.event_participant_seq = p.event_participant_seq
+        LEFT JOIN event.event_pricing pr
+            ON pr.event_pricing_seq = p.event_pricing_seq
+           AND pr.deleted_at IS NULL
+        WHERE p.discount_code_seq = #{discountCodeSeq}
+          AND p.status = 'paid'
+        ORDER BY ep.registered_at DESC NULLS LAST, p.payment_seq DESC
+    </select>
+
     <insert id="insertEvent" parameterType="com.kcabEvent.domain.Event" useGeneratedKeys="true" keyProperty="eventSeq">
         INSERT INTO event.events (
             slug, title, description, event_type, is_paid,

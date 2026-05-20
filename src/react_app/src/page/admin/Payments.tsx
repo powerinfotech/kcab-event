@@ -6,6 +6,7 @@ import dayjs, { Dayjs } from 'dayjs';
 import {
   ArrowLeftOutlined,
   CreditCardOutlined,
+  DownloadOutlined,
   FileTextOutlined,
   ReloadOutlined,
   SaveOutlined,
@@ -19,6 +20,7 @@ import {
   callGetPaymentList,
   callUpdatePaymentMemo,
 } from '@api/admin/PaymentManagementApi';
+import { callExcelDownload, ExcelColumnDef } from '@api/CommonExcelApi';
 import {
   PAYMENT_STATUS_LABELS,
   PAYMENT_STATUS_TONE,
@@ -109,6 +111,7 @@ export default function Payments() {
   const [savingMemo, setSavingMemo] = useState(false);
   const [cancelState, setCancelState] = useState<CancelModalState>(EMPTY_CANCEL);
   const [cancelSubmitting, setCancelSubmitting] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   const pagination = useClientGridPagination(payments);
 
@@ -216,6 +219,159 @@ export default function Payments() {
       open: true,
       reason: '',
     });
+  };
+
+  const handleExportExcel = async () => {
+    if (!payments.length) {
+      message.warning('No payments to export.');
+      return;
+    }
+    setExporting(true);
+    try {
+      const detailResults = await Promise.all(
+        payments.map((p) =>
+          callGetPaymentDetail(p.paymentSeq)
+            .then((res) => res?.item ?? null)
+            .catch(() => null),
+        ),
+      );
+
+      const columns: ExcelColumnDef[] = [
+        { headerName: 'Order ID', dataIndex: 'pgOrderId', width: 22 },
+        { headerName: 'PG Tx ID', dataIndex: 'pgTransactionId', width: 22 },
+        { headerName: 'PG Provider', dataIndex: 'pgProvider', width: 14 },
+        { headerName: 'PG MID', dataIndex: 'pgMid', width: 16 },
+        { headerName: 'Status', dataIndex: 'status', width: 12 },
+        { headerName: 'Event', dataIndex: 'eventTitle', width: 30 },
+        { headerName: 'Event Type', dataIndex: 'eventType', width: 14 },
+        { headerName: 'Event Start', dataIndex: 'eventStartDt', width: 20 },
+        { headerName: 'Participation', dataIndex: 'participationStatus', width: 14 },
+        { headerName: 'Ticket', dataIndex: 'priceName', width: 22 },
+        { headerName: 'Price Type', dataIndex: 'priceType', width: 14 },
+        { headerName: 'Amount', dataIndex: 'amount', width: 14 },
+        { headerName: 'Currency', dataIndex: 'currency', width: 10 },
+        { headerName: 'Original Amount', dataIndex: 'originalAmount', width: 14 },
+        { headerName: 'Discount Code', dataIndex: 'discountCode', width: 16 },
+        { headerName: 'Discount Amount', dataIndex: 'discountAmount', width: 14 },
+        { headerName: 'Settle Amount', dataIndex: 'settleAmount', width: 14 },
+        { headerName: 'Settle Currency', dataIndex: 'settleCurrency', width: 10 },
+        { headerName: 'FX Rate', dataIndex: 'fxRate', width: 12 },
+        { headerName: 'Refunded Amount', dataIndex: 'refundedAmount', width: 14 },
+        { headerName: 'Method', dataIndex: 'paymentMethod', width: 12 },
+        { headerName: 'Card Company', dataIndex: 'cardCompany', width: 14 },
+        { headerName: 'Card Last4', dataIndex: 'cardLast4', width: 10 },
+        { headerName: 'Approval No', dataIndex: 'approvalNo', width: 16 },
+        { headerName: 'Installment', dataIndex: 'installmentMonths', width: 10 },
+        { headerName: 'Paid At', dataIndex: 'paidAt', width: 20 },
+        { headerName: 'Cancelled At', dataIndex: 'cancelledAt', width: 20 },
+        { headerName: 'Cancel Reason', dataIndex: 'cancelReason', width: 24 },
+        { headerName: 'Failed Reason', dataIndex: 'failedReason', width: 24 },
+        { headerName: 'PG Response Code', dataIndex: 'pgResponseCode', width: 14 },
+        { headerName: 'PG Response Message', dataIndex: 'pgResponseMessage', width: 24 },
+        { headerName: 'Verified At', dataIndex: 'verifiedAt', width: 20 },
+        { headerName: 'Webhook At', dataIndex: 'webhookReceivedAt', width: 20 },
+        { headerName: 'Payer Name', dataIndex: 'payerName', width: 18 },
+        { headerName: 'Payer Email', dataIndex: 'payerEmail', width: 26 },
+        { headerName: 'Payer Country', dataIndex: 'payerCountry', width: 14 },
+        { headerName: 'Payer Organization', dataIndex: 'payerOrganization', width: 22 },
+        { headerName: 'Payer Position', dataIndex: 'payerPosition', width: 16 },
+        { headerName: 'Admin Memo', dataIndex: 'adminMemo', width: 30 },
+        { headerName: 'Created At', dataIndex: 'createdAt', width: 20 },
+        { headerName: 'Refunds', dataIndex: 'refundCount', width: 10 },
+        { headerName: 'Refund Type', dataIndex: 'refundType', width: 14 },
+        { headerName: 'Refund Amount', dataIndex: 'refundAmount', width: 14 },
+        { headerName: 'Refund Currency', dataIndex: 'refundCurrency', width: 10 },
+        { headerName: 'Refund Status', dataIndex: 'refundStatus', width: 14 },
+        { headerName: 'Refund Reason', dataIndex: 'refundReason', width: 28 },
+        { headerName: 'Refund Request ID', dataIndex: 'refundRequestId', width: 22 },
+        { headerName: 'PG Refund Tx ID', dataIndex: 'pgRefundTransactionId', width: 22 },
+        { headerName: 'Refund Balance Before', dataIndex: 'refundBalanceBefore', width: 14 },
+        { headerName: 'Refund Balance After', dataIndex: 'refundBalanceAfter', width: 14 },
+        { headerName: 'Refund Requested At', dataIndex: 'refundRequestedAt', width: 20 },
+        { headerName: 'Refund Processed At', dataIndex: 'refundProcessedAt', width: 20 },
+        { headerName: 'Refund Requested By', dataIndex: 'refundRequestedByName', width: 18 },
+        { headerName: 'Refund Processed By', dataIndex: 'refundProcessedByName', width: 18 },
+      ];
+
+      const rows: Record<string, unknown>[] = [];
+      payments.forEach((p, idx) => {
+        const d = detailResults[idx];
+        const base: Record<string, unknown> = {
+          pgOrderId: p.pgOrderId,
+          pgTransactionId: p.pgTransactionId ?? '',
+          pgProvider: p.pgProvider ?? '',
+          pgMid: d?.pgMid ?? '',
+          status: PAYMENT_STATUS_LABELS[p.status as PaymentStatus] ?? p.status ?? '',
+          eventTitle: p.eventTitle ?? '',
+          eventType: p.eventType ? (EVENT_TYPE_LABELS[p.eventType] ?? p.eventType) : '',
+          eventStartDt: formatDateTime(d?.eventStartDt ?? null),
+          participationStatus: d?.participationStatus ?? '',
+          priceName: p.priceName ?? '',
+          priceType: p.priceType ?? '',
+          amount: p.amount != null && p.amount !== '' ? Number(p.amount) : '',
+          currency: p.currency ?? '',
+          originalAmount: p.originalAmount != null && p.originalAmount !== '' ? Number(p.originalAmount) : '',
+          discountCode: p.discountCode ?? '',
+          discountAmount: p.discountAmount != null && p.discountAmount !== '' ? Number(p.discountAmount) : '',
+          settleAmount: p.settleAmount != null && p.settleAmount !== '' ? Number(p.settleAmount) : '',
+          settleCurrency: p.settleCurrency ?? '',
+          fxRate: d?.fxRate != null && d.fxRate !== '' ? Number(d.fxRate) : '',
+          refundedAmount: p.refundedAmount != null && p.refundedAmount !== '' ? Number(p.refundedAmount) : '',
+          paymentMethod: p.paymentMethod ?? '',
+          cardCompany: p.cardCompany ?? '',
+          cardLast4: p.cardLast4 ?? '',
+          approvalNo: d?.approvalNo ?? '',
+          installmentMonths: d?.installmentMonths ?? '',
+          paidAt: formatDateTime(p.paidAt),
+          cancelledAt: formatDateTime(p.cancelledAt),
+          cancelReason: d?.cancelReason ?? '',
+          failedReason: d?.failedReason ?? '',
+          pgResponseCode: d?.pgResponseCode ?? '',
+          pgResponseMessage: d?.pgResponseMessage ?? '',
+          verifiedAt: formatDateTime(d?.verifiedAt ?? null),
+          webhookReceivedAt: formatDateTime(d?.webhookReceivedAt ?? null),
+          payerName: p.payerName ?? '',
+          payerEmail: p.payerEmail ?? '',
+          payerCountry: p.payerCountry ?? '',
+          payerOrganization: d?.payerOrganization ?? '',
+          payerPosition: d?.payerPosition ?? '',
+          adminMemo: d?.adminMemo ?? '',
+          createdAt: formatDateTime(p.createdAt),
+          refundCount: p.refundCount ?? 0,
+        };
+
+        const refunds = d?.refunds ?? [];
+        if (!refunds.length) {
+          rows.push({ ...base });
+          return;
+        }
+        refunds.forEach((r) => {
+          rows.push({
+            ...base,
+            refundType: REFUND_TYPE_LABELS[r.refundType] ?? r.refundType,
+            refundAmount: r.amount != null && r.amount !== '' ? Number(r.amount) : '',
+            refundCurrency: r.currency ?? p.currency ?? '',
+            refundStatus: REFUND_STATUS_LABELS[r.status] ?? r.status,
+            refundReason: r.reason ?? '',
+            refundRequestId: r.refundRequestId ?? '',
+            pgRefundTransactionId: r.pgRefundTransactionId ?? r.pgRefundId ?? '',
+            refundBalanceBefore: r.balanceBefore != null && r.balanceBefore !== '' ? Number(r.balanceBefore) : '',
+            refundBalanceAfter: r.balanceAfter != null && r.balanceAfter !== '' ? Number(r.balanceAfter) : '',
+            refundRequestedAt: formatDateTime(r.requestedAt),
+            refundProcessedAt: formatDateTime(r.processedAt),
+            refundRequestedByName: r.requestedByName ?? '',
+            refundProcessedByName: r.processedByName ?? '',
+          });
+        });
+      });
+
+      const stamp = new Date().toISOString().slice(0, 10);
+      await callExcelDownload(columns, rows, `payments_${stamp}`);
+    } catch (err) {
+      message.error('Failed to download Excel.');
+    } finally {
+      setExporting(false);
+    }
   };
 
   const submitCancel = async () => {
@@ -440,6 +596,15 @@ export default function Payments() {
           <p>View Eximbay card payments. Filter by event, status, currency, or date to narrow down.</p>
         </div>
         <div className="saf-screen-actions">
+          <button
+            type="button"
+            className="saf-action-btn is-secondary"
+            onClick={handleExportExcel}
+            disabled={exporting || loading || !payments.length}
+          >
+            <DownloadOutlined />
+            <span>{exporting ? 'Exporting...' : 'Download Excel'}</span>
+          </button>
           <button type="button" className="saf-action-btn is-secondary" onClick={fetchPayments} disabled={loading}>
             <ReloadOutlined />
             <span>Refresh</span>

@@ -219,6 +219,17 @@ export interface EventDiscountCodeItem {
   sortSeq?: number | null;
 }
 
+export interface DiscountCodeUsageItem {
+  name: string | null;
+  email: string | null;
+  organization: string | null;
+  position: string | null;
+  country: string | null;
+  paymentName: string | null;
+  status: string | null;
+  registeredAt: string | null;
+}
+
 export interface EventListSearchParam {
   status?: string;
   eventType?: string;

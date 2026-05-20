@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { ApiResponse } from '@interface/common';
 import {
+  DiscountCodeUsageItem,
   EventListItem,
   EventDetail,
   EventListSearchParam,
@@ -66,6 +67,13 @@ export const callRejectEvent = async (eventSeq: number, rejectionReason: string)
 export const callDeleteEvent = async (eventSeq: number) => {
   const { data } = await axios.post<ApiResponse<void>>('/api/event/delete', null, {
     params: { eventSeq },
+  });
+  return data;
+};
+
+export const callGetDiscountCodeUsage = async (discountCodeSeq: number) => {
+  const { data } = await axios.get<ApiResponse<DiscountCodeUsageItem[]>>('/api/event/discount-code-usage', {
+    params: { discountCodeSeq },
   });
   return data;
 };

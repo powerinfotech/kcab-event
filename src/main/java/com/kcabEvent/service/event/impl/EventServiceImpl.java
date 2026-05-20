@@ -6,6 +6,7 @@ import com.kcabEvent.dao.SafSettingsDao;
 import com.kcabEvent.domain.Event;
 import com.kcabEvent.dto.common.LoginUser;
 import com.kcabEvent.dto.email.EmailTemplateDetailDto;
+import com.kcabEvent.dto.event.DiscountCodeUsageDto;
 import com.kcabEvent.dto.event.EventDiscountCodeDto;
 import com.kcabEvent.dto.event.EventListDto;
 import com.kcabEvent.dto.event.EventNotificationRecipientDto;
@@ -169,6 +170,17 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
         assertEventAccessible(event, loginUser);
         loadPricingDetails(event, true);
         return event;
+    }
+
+    @Override
+    public List<DiscountCodeUsageDto> selectDiscountCodeUsage(Long discountCodeSeq, LoginUser loginUser) {
+        EventDiscountCodeDto discountCode = eventDao.selectEventDiscountCodeBySeq(discountCodeSeq);
+        if (discountCode == null || discountCode.getEventSeq() == null) {
+            throw new BusinessException("Discount code was not found.");
+        }
+        Event event = eventDao.selectEventBySeq(discountCode.getEventSeq());
+        assertEventAccessible(event, loginUser);
+        return eventDao.selectDiscountCodeUsage(discountCodeSeq);
     }
 
     @Override

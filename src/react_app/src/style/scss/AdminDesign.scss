@@ -2569,12 +2569,13 @@
     }
   }
 
-  th:nth-child(1) { width: 17%; }
+  th:nth-child(1) { width: 15%; }
   th:nth-child(2) { width: 19%; }
-  th:nth-child(3) { width: 15%; }
-  th:nth-child(4) { width: 27%; }
-  th:nth-child(5) { width: 9%; }
-  th:nth-child(6) { width: 13%; }
+  th:nth-child(3) { width: 11%; }
+  th:nth-child(4) { width: 15%; }
+  th:nth-child(5) { width: 23%; }
+  th:nth-child(6) { width: 8%; }
+  th:nth-child(7) { width: 9%; }
 
   td {
     min-width: 0;
@@ -4738,6 +4739,21 @@
   color: #0f172a;
   font-weight: 900;
   text-align: center !important;
+
+  .saf-link-button {
+    background: none;
+    border: none;
+    padding: 0;
+    color: #1d4ed8;
+    font-weight: 900;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+
+    &:hover {
+      color: #1e40af;
+    }
+  }
 }
 
 .saf-pricing-action-cell {

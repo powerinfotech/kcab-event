@@ -1,6 +1,7 @@
 package com.kcabEvent.dao;
 
 import com.kcabEvent.domain.Event;
+import com.kcabEvent.dto.event.DiscountCodeUsageDto;
 import com.kcabEvent.dto.event.EventDiscountCodeDto;
 import com.kcabEvent.dto.event.EventListDto;
 import com.kcabEvent.dto.event.EventNotificationRecipientDto;
@@ -61,6 +62,10 @@ public interface EventDao {
     List<EventPricingDto> selectEventPricingList(@Param("eventSeq") Long eventSeq);
 
     List<EventDiscountCodeDto> selectEventDiscountCodeList(@Param("eventSeq") Long eventSeq);
+
+    EventDiscountCodeDto selectEventDiscountCodeBySeq(@Param("discountCodeSeq") Long discountCodeSeq);
+
+    List<DiscountCodeUsageDto> selectDiscountCodeUsage(@Param("discountCodeSeq") Long discountCodeSeq);
 
     void insertEvent(Event event);
 

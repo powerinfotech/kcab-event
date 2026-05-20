@@ -4,6 +4,7 @@ import com.kcabEvent.annotation.KcabEventSession;
 import com.kcabEvent.domain.Event;
 import com.kcabEvent.dto.common.ApiResponse;
 import com.kcabEvent.dto.common.LoginUser;
+import com.kcabEvent.dto.event.DiscountCodeUsageDto;
 import com.kcabEvent.dto.event.EventPageComponentCatalogDto;
 import com.kcabEvent.dto.event.EventListDto;
 import com.kcabEvent.dto.event.EventReviewRequestDto;
@@ -143,5 +144,15 @@ public class EventController {
             @RequestParam Long eventSeq) {
         eventService.deleteEvent(eventSeq, loginUser);
         return ApiResponse.ok();
+    }
+
+    /**
+     * 할인 코드를 사용한 결제 참가자 목록을 조회한다.
+     */
+    @GetMapping("/discount-code-usage")
+    public ApiResponse<List<DiscountCodeUsageDto>> selectDiscountCodeUsage(
+            @KcabEventSession LoginUser loginUser,
+            @RequestParam Long discountCodeSeq) {
+        return ApiResponse.ok(eventService.selectDiscountCodeUsage(discountCodeSeq, loginUser));
     }
 }

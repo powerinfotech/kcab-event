@@ -5,6 +5,7 @@ import { App } from 'antd';
 import {
   ArrowLeftOutlined,
   CheckOutlined,
+  DownloadOutlined,
   EyeInvisibleOutlined,
   EyeOutlined,
   PauseCircleOutlined,
@@ -26,6 +27,7 @@ import {
   callUpdateAdminUser,
   callWithdrawAdminUser,
 } from '@api/admin/AdminUserManagementApi';
+import { callExcelDownload, ExcelColumnDef } from '@api/CommonExcelApi';
 import {
   AdminUserDetail,
   AdminUserListItem,
@@ -93,6 +95,7 @@ export default function UserManagementMock() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [submitAttempted, setSubmitAttempted] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   const isRequiredEmpty = (value?: string) => submitAttempted && !value?.trim();
 
@@ -273,6 +276,70 @@ export default function UserManagementMock() {
     });
   };
 
+  const handleExportExcel = async () => {
+    if (!users.length) {
+      message.warning('No users to export.');
+      return;
+    }
+    setExporting(true);
+    try {
+      const detailResults = await Promise.all(
+        users.map((u) =>
+          callGetAdminUserDetail(u.userSeq)
+            .then((res) => res?.item ?? null)
+            .catch(() => null),
+        ),
+      );
+
+      const orgTypeLabel = (value?: string) =>
+        ORG_TYPE_OPTIONS.find((o) => o.value === value)?.label ?? value ?? '';
+
+      const columns: ExcelColumnDef[] = [
+        { headerName: 'User ID', dataIndex: 'userId', width: 18 },
+        { headerName: 'Name', dataIndex: 'name', width: 18 },
+        { headerName: 'Email', dataIndex: 'email', width: 28 },
+        { headerName: 'Position', dataIndex: 'position', width: 18 },
+        { headerName: 'User Type', dataIndex: 'userType', width: 14 },
+        { headerName: 'Status', dataIndex: 'status', width: 12 },
+        { headerName: 'Organization Name', dataIndex: 'organizationName', width: 22 },
+        { headerName: 'Org Type', dataIndex: 'orgType', width: 18 },
+        { headerName: 'Contact Email', dataIndex: 'contactEmail', width: 26 },
+        { headerName: 'Contact Phone', dataIndex: 'contactPhone', width: 16 },
+        { headerName: 'Website', dataIndex: 'website', width: 26 },
+        { headerName: 'Grade', dataIndex: 'grade', width: 8 },
+        { headerName: 'Created At', dataIndex: 'createdAt', width: 20 },
+        { headerName: 'Updated At', dataIndex: 'updatedAt', width: 20 },
+      ];
+
+      const rows = users.map((u, idx) => {
+        const d = detailResults[idx];
+        return {
+          userId: u.userId ?? '',
+          name: u.name ?? '',
+          email: u.email ?? '',
+          position: u.position ?? d?.position ?? '',
+          userType: USER_TYPE_LABEL[u.userType] ?? u.userType,
+          status: USER_STATUS_LABEL[u.status] ?? u.status,
+          organizationName: u.organizationName ?? d?.organizationName ?? '',
+          orgType: orgTypeLabel(u.orgType ?? d?.orgType),
+          contactEmail: d?.contactEmail ?? '',
+          contactPhone: d?.contactPhone ?? '',
+          website: d?.website ?? '',
+          grade: d?.grade ?? '',
+          createdAt: formatDate(u.createdAt),
+          updatedAt: formatDate(u.updatedAt),
+        };
+      });
+
+      const stamp = new Date().toISOString().slice(0, 10);
+      await callExcelDownload(columns, rows, `users_${stamp}`);
+    } catch (err) {
+      message.error('Failed to download Excel.');
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const handleApprove = () => confirmAction(
     'Approve Registration',
     'Do you want to approve this registration?',
@@ -425,6 +492,15 @@ export default function UserManagementMock() {
           <p>Pending requests are shown first, followed by admins and organizations.</p>
         </div>
         <div className="saf-screen-actions">
+          <button
+            type="button"
+            className="saf-action-btn is-secondary"
+            onClick={handleExportExcel}
+            disabled={exporting || loading || !users.length}
+          >
+            <DownloadOutlined />
+            <span>{exporting ? 'Exporting...' : 'Download Excel'}</span>
+          </button>
           <button type="button" className="saf-action-btn is-secondary" onClick={fetchUsers} disabled={loading}>
             <ReloadOutlined />
             <span>Refresh</span>

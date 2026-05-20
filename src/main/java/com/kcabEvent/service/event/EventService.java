@@ -2,6 +2,7 @@ package com.kcabEvent.service.event;
 
 import com.kcabEvent.domain.Event;
 import com.kcabEvent.dto.common.LoginUser;
+import com.kcabEvent.dto.event.DiscountCodeUsageDto;
 import com.kcabEvent.dto.event.EventPageComponentCatalogDto;
 import com.kcabEvent.dto.event.EventListDto;
 import com.kcabEvent.dto.event.EventSaveDto;
@@ -73,6 +74,11 @@ public interface EventService {
      * 관리자가 승인 대기 이벤트를 반려한다.
      */
     void rejectEvent(Long eventSeq, String rejectionReason, LoginUser loginUser);
+
+    /**
+     * 할인 코드를 사용한 결제 참가자 목록을 조회한다.
+     */
+    List<DiscountCodeUsageDto> selectDiscountCodeUsage(Long discountCodeSeq, LoginUser loginUser);
 
     /**
      * 이벤트 순번으로 이벤트를 삭제한다.
