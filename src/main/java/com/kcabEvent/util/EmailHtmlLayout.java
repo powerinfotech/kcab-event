@@ -2,6 +2,11 @@ package com.kcabEvent.util;
 
 import org.springframework.util.StringUtils;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
+import java.util.Base64;
+
 /**
  * Builds the shared HTML shell used by editable email templates.
  */
@@ -9,7 +14,8 @@ public final class EmailHtmlLayout {
 
     private static final String BRAND_NAME = "Seoul ADR Festival";
     private static final String HEADER_BACKGROUND = "#62c4d2";
-    private static final String STAMP_IMAGE_SRC = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMjAiIGhlaWdodD0iMTI0IiB2aWV3Qm94PSIwIDAgMjIwIDEyNCI+CiAgPHJlY3Qgd2lkdGg9IjIyMCIgaGVpZ2h0PSIxMjQiIHJ4PSI0IiBmaWxsPSIjZmZmZmZmIi8+CiAgPGcgc3Ryb2tlPSIjNzNjOWQ3IiBzdHJva2Utd2lkdGg9IjEuNiIgZmlsbD0ibm9uZSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj4KICAgIDxwYXRoIGQ9Ik0zNiA0MmMxOCA4IDQ5IDExIDc0IDExczU2LTMgNzQtMTEiLz4KICAgIDxwYXRoIGQ9Ik00OCAzNGMxMiA4IDM5IDExIDYyIDExczUwLTMgNjItMTEiLz4KICAgIDxwYXRoIGQ9Ik00MiAzOWMxNSA3IDQzIDEwIDY4IDEwczUzLTMgNjgtMTAiLz4KICAgIDxwYXRoIGQ9Ik01MiAyOGM0IDcgMCAxMC01IDExIi8+CiAgICA8cGF0aCBkPSJNMTY4IDI4Yy00IDcgMCAxMCA1IDExIi8+CiAgICA8cGF0aCBkPSJNNjUgMzNjMTcgNSA3MyA1IDkwIDAiLz4KICAgIDxwYXRoIGQ9Ik0zOSA2MWgxNDIiLz4KICAgIDxwYXRoIGQ9Ik00NyA1N2MxNyA3IDQzIDkgNjMgOXM0Ni0yIDYzLTkiLz4KICAgIDxwYXRoIGQ9Ik01MiA2NmgxMTYiLz4KICAgIDxwYXRoIGQ9Ik02MSA2OWg5OCIvPgogICAgPHBhdGggZD0iTTczIDUydjIzTTg4IDUzdjIyTTEwMyA1NHYyMU0xMTggNTR2MjFNMTMzIDUzdjIyTTE0OCA1MnYyMyIvPgogICAgPHBhdGggZD0iTTY1IDc1aDkwIi8+CiAgICA8cGF0aCBkPSJNNTkgODBoMTAyIi8+CiAgPC9nPgogIDx0ZXh0IHg9IjExMCIgeT0iMTA0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwsIEhlbHZldGljYSwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNSIgZm9udC13ZWlnaHQ9IjgwMCIgbGV0dGVyLXNwYWNpbmc9IjAuNiIgZmlsbD0iIzFmNzhhNCI+U0VPVUwgQURSIEZFU1RJVkFMPC90ZXh0Pgo8L3N2Zz4=";
+    private static final String STAMP_IMAGE_RESOURCE = "email-assets/seoul-adr-stamp.png";
+    private static final String STAMP_IMAGE_SRC = loadStampImageSrc();
 
     private EmailHtmlLayout() {
     }
@@ -72,6 +78,18 @@ public final class EmailHtmlLayout {
 
     private static boolean isFullHtmlDocument(String html) {
         return html != null && html.matches("(?is).*<html[\\s>].*");
+    }
+
+    private static String loadStampImageSrc() {
+        try (InputStream input = EmailHtmlLayout.class.getClassLoader().getResourceAsStream(STAMP_IMAGE_RESOURCE)) {
+            if (input == null) {
+                throw new IllegalStateException("Email stamp image resource not found: " + STAMP_IMAGE_RESOURCE);
+            }
+            String base64 = Base64.getEncoder().encodeToString(input.readAllBytes());
+            return "data:image/png;base64," + base64;
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to load email stamp image.", e);
+        }
     }
 
     private static String normalizeStoredHtml(String bodyHtml) {
