@@ -21,6 +21,10 @@ public final class EmailHtmlLayout {
     }
 
     public static String wrapTemplateBody(String bodyHtml) {
+        return wrapTemplateBody(bodyHtml, null);
+    }
+
+    public static String wrapTemplateBody(String bodyHtml, String topImageSrc) {
         String normalizedHtml = normalizeStoredHtml(bodyHtml);
         if (!StringUtils.hasText(normalizedHtml)) {
             normalizedHtml = "<p>No body content.</p>";
@@ -40,6 +44,8 @@ public final class EmailHtmlLayout {
                       .mail-card { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
                       .mail-header { padding: 24px 28px; background: __HEADER_BACKGROUND__; color: #ffffff; font-size: 20px; font-weight: 700; letter-spacing: .2px; }
                       .mail-body { padding: 28px; font-size: 15px; line-height: 1.65; }
+                      .mail-top-image { margin: 0 0 24px; }
+                      .mail-top-image img { display: block; width: 100%; max-width: 584px; height: auto; border: 0; border-radius: 6px; }
                       .mail-body p { margin: 0 0 14px; }
                       .mail-body a { color: #1f5b95; font-weight: 700; }
                       .mail-footer { padding: 18px 28px; border-top: 1px solid #edf1f5; color: #64748b; font-size: 12px; line-height: 1.5; }
@@ -54,7 +60,7 @@ public final class EmailHtmlLayout {
                     <div class="mail-shell" style="max-width:640px;margin:0 auto;padding:32px 20px;">
                       <div class="mail-card" style="background:#ffffff;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">
                         <div class="mail-header" style="padding:24px 28px;background:__HEADER_BACKGROUND__;color:#ffffff;font-size:20px;font-weight:700;letter-spacing:.2px;">__BRAND_NAME__</div>
-                        <div class="mail-body" style="padding:28px;font-size:15px;line-height:1.65;">__BODY_HTML__</div>
+                        <div class="mail-body" style="padding:28px;font-size:15px;line-height:1.65;">__TOP_IMAGE_HTML____BODY_HTML__</div>
                         <div class="mail-footer" style="padding:18px 28px;border-top:1px solid #edf1f5;color:#64748b;font-size:12px;line-height:1.5;">
                           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;max-width:100%;">
                             <tr>
@@ -73,6 +79,7 @@ public final class EmailHtmlLayout {
                 .replace("__HEADER_BACKGROUND__", HEADER_BACKGROUND)
                 .replace("__BRAND_NAME__", BRAND_NAME)
                 .replace("__STAMP_IMAGE_SRC__", STAMP_IMAGE_SRC)
+                .replace("__TOP_IMAGE_HTML__", buildTopImageHtml(topImageSrc))
                 .replace("__BODY_HTML__", normalizedHtml);
     }
 
@@ -90,6 +97,25 @@ public final class EmailHtmlLayout {
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to load email stamp image.", e);
         }
+    }
+
+    private static String buildTopImageHtml(String topImageSrc) {
+        if (!StringUtils.hasText(topImageSrc)) {
+            return "";
+        }
+        return """
+                <div class="mail-top-image" style="margin:0 0 24px;">
+                  <img src="__TOP_IMAGE_SRC__" alt="" style="display:block;width:100%;max-width:584px;height:auto;border:0;border-radius:6px;">
+                </div>
+                """.replace("__TOP_IMAGE_SRC__", escapeAttribute(topImageSrc.trim()));
+    }
+
+    private static String escapeAttribute(String value) {
+        return value
+                .replace("&", "&amp;")
+                .replace("\"", "&quot;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;");
     }
 
     private static String normalizeStoredHtml(String bodyHtml) {

@@ -4,6 +4,7 @@ import com.kcabEvent.dao.EventDao;
 import com.kcabEvent.dao.SafOrganizationDao;
 import com.kcabEvent.dao.SafSettingsDao;
 import com.kcabEvent.domain.Event;
+import com.kcabEvent.dto.common.FileDetailDto;
 import com.kcabEvent.dto.common.LoginUser;
 import com.kcabEvent.dto.email.EmailTemplateDetailDto;
 import com.kcabEvent.dto.event.DiscountCodeUsageDto;
@@ -17,6 +18,7 @@ import com.kcabEvent.dto.event.EventPricingDto;
 import com.kcabEvent.dto.event.EventSaveDto;
 import com.kcabEvent.dto.event.PublicEventPageDto;
 import com.kcabEvent.exception.custom.BusinessException;
+import com.kcabEvent.service.common.FileService;
 import com.kcabEvent.service.email.EmailLogService;
 import com.kcabEvent.service.email.EmailTemplateService;
 import com.kcabEvent.service.event.EventService;
@@ -30,11 +32,16 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.util.HtmlUtils;
 
 import jakarta.annotation.Resource;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -70,6 +77,9 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
 
     @Resource(name = "safSettingsDao")
     private SafSettingsDao safSettingsDao;
+
+    @Resource(name = "fileService")
+    private FileService fileService;
 
     @Resource(name = "emailTemplateService")
     private EmailTemplateService emailTemplateService;
@@ -240,6 +250,7 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
         }
         event.setStatus(resolveSaveStatus(admin, savedEvent));
         event.setUseYn(saveDto.getUseYn() != null ? saveDto.getUseYn() : "Y");
+        event.setEmailHeaderImageFileSeq(saveDto.getEmailHeaderImageFileSeq());
         event.setAttachmentFileSeq(saveDto.getAttachmentFileSeq());
         String resolvedEventType = admin ? (saveDto.getEventType() != null ? saveDto.getEventType() : "main") : EVENT_TYPE_SIDE;
         event.setEventType(resolvedEventType);
@@ -979,7 +990,7 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
 
         String subject = renderTemplate(template.getSubject(), variables, false);
         String bodyHtml = renderTemplate(template.getBodyHtml(), variables, true);
-        String emailHtml = EmailHtmlLayout.wrapTemplateBody(bodyHtml);
+        String emailHtml = EmailHtmlLayout.wrapTemplateBody(bodyHtml, resolveEmailHeaderImageSrc(event));
 
         emailLogService.sendHtmlAndLog(
                 template.getTemplateSeq(),
@@ -989,6 +1000,60 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
                 emailHtml,
                 emailHtml
         );
+    }
+
+    private String resolveEmailHeaderImageSrc(Event event) {
+        if (event == null || event.getEmailHeaderImageFileSeq() == null) {
+            return null;
+        }
+
+        try {
+            List<FileDetailDto> files = fileService.getFileList(event.getEmailHeaderImageFileSeq().intValue());
+            FileDetailDto image = files.stream()
+                    .filter(file -> file.getDelYn() == null || !"Y".equalsIgnoreCase(file.getDelYn()))
+                    .filter(file -> isImageExtension(file.getFileType()))
+                    .findFirst()
+                    .orElse(null);
+            if (image == null || !StringUtils.hasText(image.getFilePath())) {
+                return null;
+            }
+
+            Path imagePath = Paths.get(image.getFilePath()).toAbsolutePath().normalize();
+            byte[] bytes = Files.readAllBytes(imagePath);
+            return "data:" + imageMimeType(image.getFileType()) + ";base64," + Base64.getEncoder().encodeToString(bytes);
+        } catch (IOException | RuntimeException e) {
+            log.warn("Failed to load event email header image. eventSeq={}, fileSeq={}",
+                    event.getEventSeq(),
+                    event.getEmailHeaderImageFileSeq(),
+                    e
+            );
+            return null;
+        }
+    }
+
+    private boolean isImageExtension(String extension) {
+        if (!StringUtils.hasText(extension)) {
+            return false;
+        }
+        return switch (extension.trim().toLowerCase(Locale.ROOT)) {
+            case "png", "jpg", "jpeg", "gif", "webp", "svg", "bmp" -> true;
+            default -> false;
+        };
+    }
+
+    private String imageMimeType(String extension) {
+        if (!StringUtils.hasText(extension)) {
+            return "application/octet-stream";
+        }
+        return switch (extension.trim().toLowerCase(Locale.ROOT)) {
+            case "png" -> "image/png";
+            case "jpg", "jpeg" -> "image/jpeg";
+            case "gif" -> "image/gif";
+            case "webp" -> "image/webp";
+            case "svg" -> "image/svg+xml";
+            case "bmp" -> "image/bmp";
+            default -> "application/octet-stream";
+        };
     }
 
     private String renderTemplate(String template, Map<String, String> variables, boolean escapeHtml) {
