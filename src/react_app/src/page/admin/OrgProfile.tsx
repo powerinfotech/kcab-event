@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { App, Modal, Upload } from 'antd';
-import type { UploadFile, UploadProps } from 'antd';
+import React, { useEffect, useRef, useState } from 'react';
+import { App, Modal } from 'antd';
 import {
   DeleteOutlined,
   EyeInvisibleOutlined,
@@ -633,11 +632,15 @@ export default function OrgProfile() {
               </Field>
               <Field label="Organization Image" wide>
                 <div className="saf-thumbnail-uploader">
-                  <OrganizationImageUpload
-                    fileList={organizationImageFiles}
-                    onChange={setOrganizationImageFiles}
-                    disabled={loading || saving}
-                  />
+                  {loading ? (
+                    <div className="saf-image-upload-skeleton" aria-hidden="true" />
+                  ) : (
+                    <OrganizationImageUpload
+                      fileList={organizationImageFiles}
+                      onChange={setOrganizationImageFiles}
+                      disabled={saving}
+                    />
+                  )}
                   <p className="saf-hint-inline">1 organization image only (JPG/PNG/GIF/WebP) · max 30MB.</p>
                 </div>
               </Field>
@@ -648,15 +651,6 @@ export default function OrgProfile() {
     </div>
   );
 }
-
-type OrganizationImageUploadFile = UploadFile & {
-  fileSeq?: number;
-  fileDtlSeq?: number;
-  filePath?: string;
-  fileUrl?: string;
-  sortSeq: number;
-  iudType?: IudType;
-};
 
 const IMAGE_MAX_SIZE = 30 * 1024 * 1024;
 
@@ -669,22 +663,13 @@ const isBrowserReadableUrl = (url?: string): boolean => {
   return /^(https?:|data:|blob:|\/api\/|\/_next\/|\/images\/|\/uploads?\/)/i.test(url);
 };
 
-const getImagePreviewUrl = (file: Partial<FileDetailType & OrganizationImageUploadFile>): string | undefined => {
-  const directUrl = file.fileUrl ?? file.url ?? file.filePath;
+const getImagePreviewUrl = (file: Partial<FileDetailType>): string | undefined => {
+  const directUrl = file.fileUrl ?? file.filePath;
   if (!directUrl) return undefined;
   if (isBrowserReadableUrl(directUrl)) return directUrl;
   if (file.filePath) return `/api/download-file?filePath=${encodeURIComponent(file.filePath)}`;
   return undefined;
 };
-
-const getBase64 = (file: File): Promise<string> => (
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = reject;
-  })
-);
 
 const revokeLocalPreview = (file: FileDetailType) => {
   const previewUrl = file.fileUrl ?? file.filePath;
@@ -699,24 +684,6 @@ const reindexImageFiles = (files: FileDetailType[]) => {
   });
 };
 
-const fileDtoToUploadFile = (file: FileDetailType): OrganizationImageUploadFile => {
-  const imageUrl = getImagePreviewUrl(file);
-  return {
-    uid: getFileUid(file),
-    name: file.fileNm || 'Organization image',
-    status: 'done',
-    url: imageUrl,
-    thumbUrl: imageUrl,
-    fileSeq: file.fileSeq,
-    fileDtlSeq: file.fileDtlSeq,
-    filePath: file.filePath,
-    fileUrl: file.fileUrl,
-    sortSeq: file.sortSeq,
-    iudType: file.iudType,
-    originFileObj: file.originFileObj,
-  };
-};
-
 function OrganizationImageUpload({
   fileList,
   onChange,
@@ -727,13 +694,14 @@ function OrganizationImageUpload({
   disabled?: boolean;
 }) {
   const { message } = App.useApp();
+  const inputRef = useRef<HTMLInputElement>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
-  const visibleFiles = fileList.filter((file) => file.iudType !== IudType.D);
-  const displayFileList = visibleFiles.map(fileDtoToUploadFile);
+  const visibleFile = fileList.find((file) => file.iudType !== IudType.D);
+  const previewUrl = visibleFile ? getImagePreviewUrl(visibleFile) : undefined;
 
-  const createImageFileDetail = (uploadFile: UploadFile): FileDetailType | null => {
-    const rcFile = (uploadFile.originFileObj ?? uploadFile) as RcFile;
+  const createImageFileDetail = (file: File): FileDetailType | null => {
+    const rcFile = file as RcFile;
     if (!rcFile.type?.startsWith('image/')) {
       message.error('이미지 파일만 업로드 가능합니다.');
       return null;
@@ -744,10 +712,11 @@ function OrganizationImageUpload({
       return null;
     }
 
+    rcFile.uid = rcFile.uid ?? `org-image-${Date.now()}`;
     const previewUrl = URL.createObjectURL(rcFile);
     return {
-      uid: uploadFile.uid,
-      fileNm: uploadFile.name,
+      uid: rcFile.uid,
+      fileNm: rcFile.name,
       filePath: previewUrl,
       fileUrl: previewUrl,
       sortSeq: 1,
@@ -756,27 +725,12 @@ function OrganizationImageUpload({
     };
   };
 
-  const handleChange: UploadProps['onChange'] = ({ file: changedFile }) => {
-    if (changedFile.status === 'removed') {
-      const target = fileList.find((file) => getFileUid(file) === changedFile.uid);
-      if (!target) return;
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const nextFile = event.target.files?.[0];
+    event.target.value = '';
+    if (!nextFile) return;
 
-      const nextFiles = fileList.flatMap((file) => {
-        if (getFileUid(file) !== changedFile.uid) return [file];
-        if (file.iudType === IudType.I) {
-          revokeLocalPreview(file);
-          return [];
-        }
-        return [{ ...file, iudType: IudType.D }];
-      });
-
-      onChange(reindexImageFiles(nextFiles));
-      return;
-    }
-
-    if (fileList.some((file) => getFileUid(file) === changedFile.uid)) return;
-
-    const nextImage = createImageFileDetail(changedFile);
+    const nextImage = createImageFileDetail(nextFile);
     if (!nextImage) return;
 
     const retainedFiles = fileList.flatMap((file) => {
@@ -791,54 +745,75 @@ function OrganizationImageUpload({
     onChange(reindexImageFiles([...retainedFiles, nextImage]));
   };
 
-  const handlePreview: UploadProps['onPreview'] = async (file) => {
-    const imageUrl = getImagePreviewUrl(file as OrganizationImageUploadFile);
-    if (imageUrl) {
-      setPreviewImage(imageUrl);
-      setPreviewOpen(true);
-      return;
-    }
+  const handleRemove = () => {
+    if (!visibleFile) return;
 
-    if (file.originFileObj) {
-      setPreviewImage(await getBase64(file.originFileObj as File));
-      setPreviewOpen(true);
-    }
+    const nextFiles = fileList.flatMap((file) => {
+      if (getFileUid(file) !== getFileUid(visibleFile)) return [file];
+      if (file.iudType === IudType.I) {
+        revokeLocalPreview(file);
+        return [];
+      }
+      return [{ ...file, iudType: IudType.D }];
+    });
+
+    onChange(reindexImageFiles(nextFiles));
   };
+
+  const handlePreview = () => {
+    if (!previewUrl) return;
+    setPreviewImage(previewUrl);
+    setPreviewOpen(true);
+  };
+
+  const openFileDialog = () => {
+    if (disabled) return;
+    inputRef.current?.click();
+  };
+
+  useEffect(() => () => {
+    for (const file of fileList) {
+      if (file.iudType === IudType.I) revokeLocalPreview(file);
+    }
+  }, []);
 
   return (
     <>
-      <Upload
-        listType="picture-card"
-        fileList={displayFileList}
-        onPreview={handlePreview}
-        onChange={handleChange}
-        beforeUpload={(file: RcFile) => {
-          if (!file.type.startsWith('image/')) {
-            message.error('이미지 파일만 업로드 가능합니다.');
-            return Upload.LIST_IGNORE;
-          }
-          if (file.size > IMAGE_MAX_SIZE) {
-            message.error('Only images up to 30MB can be uploaded.');
-            return Upload.LIST_IGNORE;
-          }
-          return false;
-        }}
-        disabled={disabled}
-        maxCount={1}
-        accept="image/*"
-        showUploadList={{
-          showDownloadIcon: false,
-          showRemoveIcon: !disabled,
-          removeIcon: <DeleteOutlined />,
-        }}
-      >
-        {visibleFiles.length >= 1 || disabled ? null : (
-          <div>
-            <PlusOutlined />
-            <div className="mt8">업로드</div>
+      <div className="saf-organization-image-upload">
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          disabled={disabled}
+        />
+        {visibleFile && previewUrl ? (
+          <div className="saf-organization-image-card">
+            <img src={previewUrl} alt="Organization" />
+            <div className="saf-organization-image-actions">
+              <button type="button" aria-label="Preview image" onClick={handlePreview}>
+                <EyeOutlined />
+              </button>
+              <button type="button" aria-label="Replace image" onClick={openFileDialog} disabled={disabled}>
+                <PlusOutlined />
+              </button>
+              <button type="button" aria-label="Remove image" onClick={handleRemove} disabled={disabled}>
+                <DeleteOutlined />
+              </button>
+            </div>
           </div>
+        ) : (
+          <button
+            type="button"
+            className="saf-organization-image-empty"
+            onClick={openFileDialog}
+            disabled={disabled}
+          >
+            <PlusOutlined />
+            <span>업로드</span>
+          </button>
         )}
-      </Upload>
+      </div>
       <Modal
         open={previewOpen}
         title="Organization Image"

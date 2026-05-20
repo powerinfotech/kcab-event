@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { App, Select } from 'antd';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { App, Modal, Select } from 'antd';
 import {
   ArrowLeftOutlined,
   DeleteOutlined,
+  EyeOutlined,
   FileImageOutlined,
   PictureOutlined,
   PlusOutlined,
@@ -21,12 +22,14 @@ import {
 } from '@api/admin/GalleryApi';
 import { buildGalleryImageUrl } from '@api/gallery/GalleryApi';
 import { callGetFileList, callSaveFiles } from '@api/CommonApi';
-import CustomFile, { FileDetailType } from '@component/upload/CustomFile';
+import { FileDetailType } from '@component/upload/CustomFile';
 import {
   GalleryDetail,
   GalleryListItem,
   GallerySavePayload,
 } from '@interface/admin/Gallery';
+import { IudType } from '@interface/common';
+import type { RcFile } from 'antd/es/upload/interface';
 import AdminGridPagination, { useClientGridPagination } from './AdminGridPagination';
 
 type Mode = 'list' | 'edit';
@@ -46,6 +49,8 @@ interface FormState {
 }
 
 const thisYear = () => new Date().getFullYear();
+const MAX_GALLERY_IMAGE_COUNT = 80;
+const GALLERY_IMAGE_MAX_SIZE = 30 * 1024 * 1024;
 
 const blankForm = (): FormState => ({
   title: '',
@@ -106,7 +111,7 @@ export default function Gallery() {
   const pagination = useClientGridPagination(items);
 
   const visibleImageCount = useMemo(
-    () => images.filter((image) => image.iudType !== 'D').length,
+    () => images.filter((image) => image.iudType !== IudType.D).length,
     [images],
   );
 
@@ -355,16 +360,14 @@ export default function Gallery() {
           <section className="saf-panel">
             <PanelTitle
               title="Gallery Images"
-              subtitle={`${visibleImageCount} image(s) selected. Drag files to adjust display order.`}
+              subtitle={`${visibleImageCount} image(s) selected. Drag thumbnails to adjust display order.`}
             />
             <div className={`saf-thumbnail-uploader${imageInvalid ? ' is-invalid' : ''}`}>
-              <CustomFile
+              <GalleryImageUpload
                 fileList={images}
-                onFileListChange={setImages}
-                isEditable={!saving}
-                maxCount={80}
-                accept="image/*"
-                multiple
+                onChange={setImages}
+                disabled={saving}
+                maxCount={MAX_GALLERY_IMAGE_COUNT}
               />
               <p className="saf-hint-inline">Images only · max 30MB each · up to 80 images per album.</p>
             </div>
@@ -498,6 +501,236 @@ export default function Gallery() {
         <AdminGridPagination {...pagination} />
       </section>
     </div>
+  );
+}
+
+const getFileUid = (file: FileDetailType) => (
+  file.fileDtlSeq ? String(file.fileDtlSeq) : file.uid ?? `${file.fileNm}-${file.sortSeq}`
+);
+
+const isBrowserReadableUrl = (url?: string): boolean => {
+  if (!url) return false;
+  return /^(https?:|data:|blob:|\/api\/|\/_next\/|\/images\/|\/uploads?\/)/i.test(url);
+};
+
+const getGalleryImagePreviewUrl = (file: Partial<FileDetailType>): string => {
+  if (file.fileUrl) return file.fileUrl;
+  if (isBrowserReadableUrl(file.filePath)) return file.filePath ?? '';
+  return buildGalleryImageUrl(file.filePath);
+};
+
+const revokeLocalPreview = (file: FileDetailType) => {
+  const previewUrl = file.fileUrl ?? file.filePath;
+  if (previewUrl?.startsWith('blob:')) URL.revokeObjectURL(previewUrl);
+};
+
+const reindexGalleryImages = (files: FileDetailType[]) => {
+  let nextSortSeq = 1;
+  return files.map((file) => {
+    if (file.iudType === IudType.D) return { ...file, sortSeq: 0 };
+
+    const sortSeq = nextSortSeq++;
+    const iudType = file.iudType === IudType.I
+      ? IudType.I
+      : file.sortSeq !== sortSeq || file.iudType === IudType.U
+        ? IudType.U
+        : file.iudType;
+
+    return { ...file, sortSeq, iudType };
+  });
+};
+
+const sortVisibleImages = (files: FileDetailType[]) => (
+  files
+    .filter((file) => file.iudType !== IudType.D)
+    .slice()
+    .sort((a, b) => (a.sortSeq || 0) - (b.sortSeq || 0))
+);
+
+function GalleryImageUpload({
+  fileList,
+  onChange,
+  disabled,
+  maxCount,
+}: {
+  fileList: FileDetailType[];
+  onChange: (files: FileDetailType[]) => void;
+  disabled?: boolean;
+  maxCount: number;
+}) {
+  const { message } = App.useApp();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const localPreviewUrls = useRef<Set<string>>(new Set());
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewImage, setPreviewImage] = useState('');
+  const [draggingUid, setDraggingUid] = useState<string | null>(null);
+  const visibleImages = useMemo(() => sortVisibleImages(fileList), [fileList]);
+
+  const createImageFileDetail = (file: File, index: number): FileDetailType | null => {
+    const rcFile = file as RcFile;
+    if (!rcFile.type?.startsWith('image/')) {
+      message.error('이미지 파일만 업로드 가능합니다.');
+      return null;
+    }
+
+    if (rcFile.size > GALLERY_IMAGE_MAX_SIZE) {
+      message.error('Only images up to 30MB can be uploaded.');
+      return null;
+    }
+
+    rcFile.uid = rcFile.uid ?? `gallery-image-${Date.now()}-${index}`;
+    const previewUrl = URL.createObjectURL(rcFile);
+    localPreviewUrls.current.add(previewUrl);
+
+    return {
+      uid: rcFile.uid,
+      fileNm: rcFile.name,
+      filePath: previewUrl,
+      fileUrl: previewUrl,
+      sortSeq: 0,
+      originFileObj: rcFile,
+      iudType: IudType.I,
+    };
+  };
+
+  const openFileDialog = () => {
+    if (disabled || visibleImages.length >= maxCount) return;
+    inputRef.current?.click();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = Array.from(event.target.files ?? []);
+    event.target.value = '';
+    if (!selectedFiles.length) return;
+
+    const availableCount = maxCount - visibleImages.length;
+    if (availableCount <= 0) {
+      message.warning(`You can upload up to ${maxCount} images.`);
+      return;
+    }
+
+    if (selectedFiles.length > availableCount) {
+      message.warning(`Only ${availableCount} more image(s) can be added.`);
+    }
+
+    const nextImages = selectedFiles
+      .slice(0, availableCount)
+      .map(createImageFileDetail)
+      .filter((file): file is FileDetailType => file !== null);
+
+    if (!nextImages.length) return;
+    onChange(reindexGalleryImages([...fileList, ...nextImages]));
+  };
+
+  const handleRemove = (target: FileDetailType) => {
+    const targetUid = getFileUid(target);
+    const nextFiles = fileList.flatMap((file) => {
+      if (getFileUid(file) !== targetUid) return [file];
+      if (file.iudType === IudType.I) {
+        revokeLocalPreview(file);
+        localPreviewUrls.current.delete(file.fileUrl ?? file.filePath ?? '');
+        return [];
+      }
+      return [{ ...file, iudType: IudType.D }];
+    });
+
+    onChange(reindexGalleryImages(nextFiles));
+  };
+
+  const handlePreview = (file: FileDetailType) => {
+    const previewUrl = getGalleryImagePreviewUrl(file);
+    if (!previewUrl) return;
+    setPreviewImage(previewUrl);
+    setPreviewOpen(true);
+  };
+
+  const handleDrop = (targetUid: string) => {
+    if (!draggingUid || draggingUid === targetUid) return;
+
+    const currentVisible = sortVisibleImages(fileList);
+    const fromIndex = currentVisible.findIndex((file) => getFileUid(file) === draggingUid);
+    const toIndex = currentVisible.findIndex((file) => getFileUid(file) === targetUid);
+    if (fromIndex < 0 || toIndex < 0) return;
+
+    const reordered = currentVisible.slice();
+    const [moved] = reordered.splice(fromIndex, 1);
+    reordered.splice(toIndex, 0, moved);
+    const deletedFiles = fileList.filter((file) => file.iudType === IudType.D);
+
+    onChange(reindexGalleryImages([...deletedFiles, ...reordered]));
+    setDraggingUid(null);
+  };
+
+  useEffect(() => () => {
+    for (const previewUrl of localPreviewUrls.current) {
+      URL.revokeObjectURL(previewUrl);
+    }
+  }, []);
+
+  return (
+    <>
+      <div className="saf-gallery-image-upload">
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={handleFileChange}
+          disabled={disabled}
+        />
+        <div className="saf-gallery-image-grid">
+          {visibleImages.map((file, index) => {
+            const uid = getFileUid(file);
+            const previewUrl = getGalleryImagePreviewUrl(file);
+            return (
+              <div
+                key={uid}
+                className={`saf-gallery-image-card${draggingUid === uid ? ' is-dragging' : ''}`}
+                draggable={!disabled}
+                onDragStart={() => setDraggingUid(uid)}
+                onDragOver={(event) => event.preventDefault()}
+                onDrop={() => handleDrop(uid)}
+                onDragEnd={() => setDraggingUid(null)}
+              >
+                {previewUrl ? (
+                  <img src={previewUrl} alt={`Gallery image ${index + 1}`} />
+                ) : (
+                  <span className="saf-gallery-image-placeholder"><PictureOutlined /></span>
+                )}
+                <span className="saf-gallery-image-index">{index + 1}</span>
+                <div className="saf-gallery-image-actions">
+                  <button type="button" aria-label="Preview image" onClick={() => handlePreview(file)}>
+                    <EyeOutlined />
+                  </button>
+                  <button type="button" aria-label="Remove image" onClick={() => handleRemove(file)} disabled={disabled}>
+                    <DeleteOutlined />
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+          {visibleImages.length < maxCount && (
+            <button
+              type="button"
+              className="saf-gallery-image-add"
+              onClick={openFileDialog}
+              disabled={disabled}
+            >
+              <PlusOutlined />
+              <span>업로드</span>
+            </button>
+          )}
+        </div>
+      </div>
+      <Modal
+        open={previewOpen}
+        title="Gallery Image"
+        footer={null}
+        onCancel={() => setPreviewOpen(false)}
+      >
+        <img alt="Gallery preview" src={previewImage} style={{ width: '100%' }} />
+      </Modal>
+    </>
   );
 }
 
