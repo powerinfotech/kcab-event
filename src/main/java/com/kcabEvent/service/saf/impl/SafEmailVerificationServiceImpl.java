@@ -6,6 +6,7 @@ import com.kcabEvent.exception.custom.BusinessException;
 import com.kcabEvent.service.email.EmailLogService;
 import com.kcabEvent.service.saf.SafEmailVerificationService;
 import com.kcabEvent.service.saf.SafSignupService;
+import com.kcabEvent.util.EmailHtmlLayout;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -155,30 +156,18 @@ public class SafEmailVerificationServiceImpl implements SafEmailVerificationServ
     }
 
     private String buildEmail(String code) {
-        return """
-                <html>
-                <head><meta charset="UTF-8"></head>
-                <body style="margin:0;padding:0;background:#ffffff;font-family:Arial,'Segoe UI',sans-serif;">
-                  <div style="width:500px;padding:40px 20px;">
-                    <div style="width:400px;border:1px solid #eeeeee;border-radius:8px;padding:32px 24px;">
-                      <div style="font-size:20px;font-weight:700;color:#333;padding-bottom:14px;border-bottom:2px solid #f0f0f0;">
-                        KCAB INTERNATIONAL
-                      </div>
-                      <div style="font-size:15px;color:#444;line-height:1.6;padding:24px 0 18px;">
-                        Hello,<br>
-                        Please use the verification code below to complete your email verification.
-                      </div>
-                      <div style="display:inline-block;background:#f8f9fa;border:1px solid #eeeeee;border-radius:6px;padding:15px 30px;font-size:28px;font-weight:700;color:#007BFF;letter-spacing:3px;">
-                        %s
-                      </div>
-                      <div style="margin-top:24px;padding-top:18px;border-top:1px solid #f0f0f0;font-size:13px;line-height:1.5;">
-                        <strong style="color:#d9534f;">Never share this verification code with anyone else.</strong><br>
-                        <span style="color:#999;">This code will expire in %d minutes.</span>
-                      </div>
-                    </div>
-                  </div>
-                </body>
-                </html>
+        String bodyHtml = """
+                <p>Hello,</p>
+                <p>Please use the verification code below to complete your email verification.</p>
+                <div style="display:inline-block;background:#f8f9fa;border:1px solid #eeeeee;border-radius:6px;padding:15px 30px;font-size:28px;font-weight:700;color:#1f78a4;letter-spacing:3px;">
+                  %s
+                </div>
+                <p style="margin-top:24px;padding-top:18px;border-top:1px solid #f0f0f0;font-size:13px;line-height:1.5;">
+                  <strong style="color:#d9534f;">Never share this verification code with anyone else.</strong><br>
+                  <span style="color:#64748b;">This code will expire in %d minutes.</span>
+                </p>
                 """.formatted(code, CODE_EXPIRE_MINUTES);
+
+        return EmailHtmlLayout.wrapTemplateBody(bodyHtml);
     }
 }
