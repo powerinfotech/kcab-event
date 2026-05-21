@@ -211,10 +211,14 @@ export function SuperDashboard() {
   const pendingSideEvents = getLatestPendingSideEvents(dashboardMetrics?.pendingSideEvents);
 
   return (
-    <div className="saf-screen">
-      <ScreenHeader
-        title="Welcome, Admin"
-      />
+    <div className="saf-screen saf-admin-dashboard-screen">
+      <section className="saf-admin-dashboard-hero">
+        <div>
+          <span>Admin Console</span>
+          <h1>Welcome, Admin</h1>
+          <p>오늘 처리해야 할 작업과 행사 진행 현황을 한눈에 확인하세요.</p>
+        </div>
+      </section>
       <MetricGrid metrics={buildSuperMetrics(dashboardMetrics)} />
       <div className="saf-dashboard-grid">
         <section className="saf-panel saf-dashboard-review-panel">

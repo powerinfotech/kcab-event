@@ -104,9 +104,10 @@ body,
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    padding: 12px 24px;
-    background: $gray100;
-    border-bottom: 1px solid $gray90;
+    padding: 14px 28px;
+    background: #ffffff;
+    border-bottom: 1px solid #eceaf6;
+    box-shadow: 0 1px 0 rgba(21, 19, 64, 0.04);
     flex-shrink: 0;
 }
 .app_topbar_left {
@@ -151,20 +152,26 @@ body,
 
 .app_topbar_scope {
     flex-shrink: 0;
-    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: #f0edff;
+    font-size: 11px;
     font-weight: 800;
-    color: #1f5b95;
+    color: #9586f2;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
     white-space: nowrap;
 
     &.is-organization {
-        color: #14784f;
+        background: #fdeaff;
+        color: #a142d0;
     }
 }
 
 .app_topbar_name {
-    font-size: 13px;
-    font-weight: 600;
-    color: $gray20;
+    font-size: 14px;
+    font-weight: 700;
+    color: #151340;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -176,18 +183,19 @@ body,
     height: 36px;
     padding: 0;
     background: none;
-    border: none;
-    color: $gray50;
+    border: 1px solid transparent;
+    color: #6b6788;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 4px;
-    transition: background 0.2s, color 0.2s;
+    border-radius: 8px;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
 
     &:hover {
-        background: $gray96;
-        color: $gray20;
+        background: #f7f5ff;
+        color: #9586f2;
+        border-color: #e7e3f5;
     }
 }
 

@@ -15,11 +15,33 @@ export default function ClientProviders({ children }: { children: React.ReactNod
   return (
     <ConfigProvider locale={locale} theme={{
           token: {
-            colorPrimary: '#FFDD00',
-            borderRadius: 4,
-            colorBorder: '#d9d9d9',
-            colorText: '#333',
-            colorTextSecondary: '#666',
+            // KCAB International — saf-renewal palette (lavender)
+            colorPrimary: '#b09cf2',          // var(--saf-purple) — softer lavender
+            colorInfo: '#0d56bd',             // var(--saf-blue)
+            colorSuccess: '#16a34a',
+            colorWarning: '#f59e0b',
+            colorError: '#dc2626',
+            colorLink: '#9586f2',             // var(--saf-purple-2)
+            borderRadius: 8,
+            colorBorder: '#e7e3f5',           // var(--saf-border)
+            colorText: '#151340',             // var(--saf-ink)
+            colorTextSecondary: '#6b6788',    // var(--saf-mute)
+            fontFamily: "'Onest', 'Open Sans', 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif",
+          },
+          components: {
+            Button: {
+              colorPrimaryHover: '#9586f2',
+              colorPrimaryActive: '#8474f0',
+              primaryShadow: '0 4px 10px rgba(176, 156, 242, 0.16)',
+            },
+            Pagination: {
+              colorPrimary: '#b09cf2',
+              colorPrimaryHover: '#9586f2',
+            },
+            Tag: {
+              defaultBg: '#f0edff',
+              defaultColor: '#9586f2',
+            },
           },
         }}>
       <App>
