@@ -42,6 +42,67 @@ export default function ClientProviders({ children }: { children: React.ReactNod
               defaultBg: '#f0edff',
               defaultColor: '#9586f2',
             },
+            Modal: {
+              titleColor: '#151340',
+              titleFontSize: 18,
+              headerBg: '#ffffff',
+              contentBg: '#ffffff',
+              borderRadiusLG: 14,
+              footerBg: '#ffffff',
+            },
+            Drawer: {
+              colorBgElevated: '#ffffff',
+            },
+            Tooltip: {
+              colorBgSpotlight: '#151340',
+              colorTextLightSolid: '#ffffff',
+              borderRadius: 6,
+            },
+            Popover: {
+              titleMinWidth: 0,
+              colorBgElevated: '#ffffff',
+            },
+            Spin: {
+              colorPrimary: '#b09cf2',
+            },
+            Switch: {
+              colorPrimary: '#b09cf2',
+              colorPrimaryHover: '#9586f2',
+            },
+            Checkbox: {
+              colorPrimary: '#b09cf2',
+              colorPrimaryHover: '#9586f2',
+            },
+            Radio: {
+              colorPrimary: '#b09cf2',
+              colorPrimaryHover: '#9586f2',
+            },
+            Select: {
+              colorBorder: '#e7e3f5',
+              optionSelectedBg: '#f0edff',
+              optionSelectedColor: '#5a48ef',
+              activeBorderColor: '#b09cf2',
+              hoverBorderColor: '#d6cff0',
+              activeOutlineColor: 'rgba(176, 156, 242, 0.18)',
+            },
+            DatePicker: {
+              colorBorder: '#e7e3f5',
+              activeBorderColor: '#b09cf2',
+              hoverBorderColor: '#d6cff0',
+              activeShadow: '0 0 0 3px rgba(176, 156, 242, 0.18)',
+            },
+            Input: {
+              colorBorder: '#e7e3f5',
+              activeBorderColor: '#b09cf2',
+              hoverBorderColor: '#d6cff0',
+              activeShadow: '0 0 0 3px rgba(176, 156, 242, 0.18)',
+            },
+            Notification: {
+              colorBgElevated: '#ffffff',
+            },
+            Message: {
+              colorBgElevated: '#ffffff',
+            },
           },
         }}>
       <App>

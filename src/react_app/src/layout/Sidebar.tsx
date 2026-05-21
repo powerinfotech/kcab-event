@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   CalendarOutlined,
+  CloseOutlined,
   CreditCardOutlined,
   DashboardOutlined,
   HistoryOutlined,
@@ -150,31 +151,78 @@ export default function Sidebar({
       .filter((group) => group.items.length > 0);
   })();
 
-  return (
-    <aside className="saf-sidebar">
-      <button className="saf-sidebar-brand" type="button" onClick={() => move('/')}>
-        <span>{role === 'ADMIN' ? 'KCAB Admin' : 'Organization'}</span>
-        <strong>{role === 'ADMIN' ? 'Admin Console' : 'Organization Console'}</strong>
-      </button>
+  const [isOpenOnMobile, setIsOpenOnMobile] = useState(false);
 
-      <nav className="saf-sidebar-menu" aria-label="Admin menu">
-        {groupedMenus.map((group) => (
-          <div className="saf-sidebar-group" key={group.key}>
-            <p className="saf-sidebar-group-label">{group.label}</p>
-            {group.items.map((menu) => (
-              <button
-                key={menu.menuSeq}
-                type="button"
-                className={`saf-sidebar-item ${isActive(menu.menuUrl) ? 'is-active' : ''}`}
-                onClick={() => move(menu.menuUrl)}
-              >
-                <span className="saf-sidebar-icon">{iconByUrl[menu.menuUrl] ?? <DashboardOutlined />}</span>
-                <span>{menu.menuNm}</span>
-              </button>
-            ))}
-          </div>
-        ))}
-      </nav>
-    </aside>
+  // 좁은 화면에서 열린 상태로 라우트가 바뀌면 자동 닫힘 + ESC 닫힘 처리.
+  useEffect(() => {
+    setIsOpenOnMobile(false);
+  }, [currentPath]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (!isOpenOnMobile) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsOpenOnMobile(false);
+    };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [isOpenOnMobile]);
+
+  // TopBar의 햄버거 버튼이 invoke하는 toggle. window 이벤트로 가볍게 연결.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const onToggle = () => setIsOpenOnMobile((prev) => !prev);
+    window.addEventListener('saf-sidebar-toggle', onToggle);
+    return () => window.removeEventListener('saf-sidebar-toggle', onToggle);
+  }, []);
+
+  const close = useCallback(() => setIsOpenOnMobile(false), []);
+
+  return (
+    <>
+      <div
+        className={`saf-sidebar-scrim ${isOpenOnMobile ? 'is-open' : ''}`}
+        aria-hidden="true"
+        onClick={close}
+      />
+      <aside className={`saf-sidebar ${isOpenOnMobile ? 'is-open' : ''}`} aria-hidden={!isOpenOnMobile && undefined}>
+        <button className="saf-sidebar-brand" type="button" onClick={() => move('/')}>
+          <span>{role === 'ADMIN' ? 'KCAB Admin' : 'Organization'}</span>
+          <strong>{role === 'ADMIN' ? 'Admin Console' : 'Organization Console'}</strong>
+        </button>
+
+        <button
+          type="button"
+          className="saf-sidebar-close"
+          aria-label="Close menu"
+          onClick={close}
+        >
+          <CloseOutlined />
+        </button>
+
+        <nav className="saf-sidebar-menu" aria-label="Admin menu">
+          {groupedMenus.map((group) => (
+            <div className="saf-sidebar-group" key={group.key}>
+              <p className="saf-sidebar-group-label">{group.label}</p>
+              {group.items.map((menu) => (
+                <button
+                  key={menu.menuSeq}
+                  type="button"
+                  className={`saf-sidebar-item ${isActive(menu.menuUrl) ? 'is-active' : ''}`}
+                  onClick={() => move(menu.menuUrl)}
+                >
+                  <span className="saf-sidebar-icon">{iconByUrl[menu.menuUrl] ?? <DashboardOutlined />}</span>
+                  <span>{menu.menuNm}</span>
+                </button>
+              ))}
+            </div>
+          ))}
+        </nav>
+      </aside>
+    </>
   );
 }

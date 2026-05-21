@@ -40,17 +40,17 @@
   }
 
   &.is-active {
-    background: $brandYellow;
-    color: $gray10;
-    font-weight: 600;
+    background: linear-gradient(135deg, $PrimaryMain 0%, $PrimaryDark 100%);
+    color: #ffffff;
+    font-weight: 700;
     border-color: $PrimaryDark;
 
     .tab_close {
-      color: $gray20;
+      color: rgba(255, 255, 255, 0.88);
 
       &:hover {
-        background: rgba(0, 0, 0, 0.12);
-        color: $gray10;
+        background: rgba(255, 255, 255, 0.18);
+        color: #ffffff;
       }
     }
   }

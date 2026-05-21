@@ -2,7 +2,7 @@
 
 import { callLogout } from '@api/CommonApi';
 import { HttpStatusCode } from 'axios';
-import { LogoutOutlined } from '@ant-design/icons';
+import { LogoutOutlined, MenuOutlined } from '@ant-design/icons';
 import { useAtomValue } from 'jotai';
 import { sessionInfoAtom } from '@atom/sessionInfoAtom';
 import { useMessage } from '@hook/useMessage';
@@ -25,9 +25,24 @@ export default function TopBar() {
     }
   };
 
+  const toggleSidebar = () => {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('saf-sidebar-toggle'));
+    }
+  };
+
   return (
     <div className="app_topbar">
-      <div className="app_topbar_left" />
+      <div className="app_topbar_left">
+        <button
+          type="button"
+          className="app_topbar_menu_toggle"
+          aria-label="Open menu"
+          onClick={toggleSidebar}
+        >
+          <MenuOutlined />
+        </button>
+      </div>
       <div className="app_topbar_right">
         <div className="app_topbar_user">
           <span className="app_topbar_identity">
