@@ -99,6 +99,9 @@ export default function OrgProfile() {
   const [organizationImageFiles, setOrganizationImageFiles] = useState<FileDetailType[]>([]);
 
   const isOrganization = form.userType === 'organization';
+  const hasOrganizationProfile = isOrganization || form.userType === 'admin' || !!form.organizationSeq || !!form.imageFileSeq;
+  const organizationFieldsRequired = isOrganization || !!form.organizationSeq;
+  const shouldVerifyContactEmail = isOrganization || !!form.organizationSeq;
   const emailValue = form.email.trim();
   const normalizedEmailValue = normalizeEmail(form.email);
   const emailChanged = !!form.userSeq && normalizedEmailValue !== originalEmail;
@@ -114,7 +117,7 @@ export default function OrgProfile() {
         : 'Verified';
   const contactEmailValue = form.contactEmail?.trim() ?? '';
   const normalizedContactEmailValue = normalizeEmail(form.contactEmail);
-  const contactEmailChanged = isOrganization && !!form.userSeq && normalizedContactEmailValue !== originalContactEmail;
+  const contactEmailChanged = shouldVerifyContactEmail && !!form.userSeq && normalizedContactEmailValue !== originalContactEmail;
   const isVerifiedChangedContactEmail = contactEmailChanged && contactEmailVerified;
   const contactEmailFieldLocked = contactEmailVerifyOpen || isVerifiedChangedContactEmail;
   const contactEmailActionButtonDisabled = contactEmailCodeSending || (!contactEmailChanged && !contactEmailVerifyOpen);
@@ -129,7 +132,7 @@ export default function OrgProfile() {
   const isEmailRuleInvalid = submitAttempted && !!emailValue && !EMAIL_REGEXP.value.test(emailValue);
   const isEmailVerificationInvalid = submitAttempted && emailChanged && !emailVerified;
   const isContactEmailRuleInvalid = submitAttempted
-    && isOrganization
+    && hasOrganizationProfile
     && !!contactEmailValue
     && !EMAIL_REGEXP.value.test(contactEmailValue);
   const isContactEmailVerificationInvalid = submitAttempted && contactEmailChanged && !contactEmailVerified;
@@ -271,12 +274,12 @@ export default function OrgProfile() {
       return false;
     }
 
-    if (isOrganization && (!form.organizationName?.trim() || !contactEmailValue || !form.orgType)) {
+    if (organizationFieldsRequired && (!form.organizationName?.trim() || !contactEmailValue || !form.orgType)) {
       message.warning('Please fill in all required organization fields.');
       return false;
     }
 
-    if (isOrganization && !EMAIL_REGEXP.value.test(contactEmailValue)) {
+    if (hasOrganizationProfile && contactEmailValue && !EMAIL_REGEXP.value.test(contactEmailValue)) {
       message.warning('Please enter a valid contact email address.');
       return false;
     }
@@ -545,17 +548,20 @@ export default function OrgProfile() {
           </div>
         </section>
 
-        {isOrganization && (
+        {hasOrganizationProfile && (
           <section className="saf-panel">
             <PanelTitle title="Organization Information" subtitle="Based on the organizations table." />
             <div className="saf-form-grid">
-              <Field label="Organization Name *" invalid={isRequiredEmpty(form.organizationName)}>
+              <Field
+                label={`Organization Name${organizationFieldsRequired ? ' *' : ''}`}
+                invalid={organizationFieldsRequired && isRequiredEmpty(form.organizationName)}
+              >
                 <input
                   value={form.organizationName ?? ''}
                   onChange={(event) => updateForm('organizationName', event.target.value)}
                 />
               </Field>
-              <Field label="Organization Type *">
+              <Field label={`Organization Type${organizationFieldsRequired ? ' *' : ''}`}>
                 <select
                   value={form.orgType ?? 'law_firm'}
                   onChange={(event) => updateForm('orgType', event.target.value)}
@@ -565,7 +571,10 @@ export default function OrgProfile() {
                   ))}
                 </select>
               </Field>
-              <Field label="Contact Email *" invalid={isRequiredEmpty(form.contactEmail) || isContactEmailRuleInvalid || isContactEmailVerificationInvalid}>
+              <Field
+                label={`Contact Email${organizationFieldsRequired ? ' *' : ''}`}
+                invalid={(organizationFieldsRequired && isRequiredEmpty(form.contactEmail)) || isContactEmailRuleInvalid || isContactEmailVerificationInvalid}
+              >
                 <div className="saf-input-action">
                   <input
                     value={form.contactEmail ?? ''}
@@ -573,14 +582,16 @@ export default function OrgProfile() {
                     disabled={contactEmailFieldLocked}
                     onChange={(event) => handleContactEmailChange(event.target.value)}
                   />
-                  <button
-                    type="button"
-                    className={`saf-check-btn${contactEmailVerifyOpen || isVerifiedChangedContactEmail || !contactEmailChanged ? ' is-checked' : ''}`}
-                    onClick={handleContactEmailButtonClick}
-                    disabled={contactEmailActionButtonDisabled}
-                  >
-                    {contactEmailActionButtonLabel}
-                  </button>
+                  {shouldVerifyContactEmail && (
+                    <button
+                      type="button"
+                      className={`saf-check-btn${contactEmailVerifyOpen || isVerifiedChangedContactEmail || !contactEmailChanged ? ' is-checked' : ''}`}
+                      onClick={handleContactEmailButtonClick}
+                      disabled={contactEmailActionButtonDisabled}
+                    >
+                      {contactEmailActionButtonLabel}
+                    </button>
+                  )}
                 </div>
                 {contactEmailChanged && !contactEmailVerifyOpen && !contactEmailVerified && (
                   <p className="saf-verify-hint">Please verify this contact email before saving.</p>

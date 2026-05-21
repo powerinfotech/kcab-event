@@ -1,135 +1,696 @@
-.homepage {
+.saf-renewal-home {
+  --saf-ink: #151340;
+  --saf-purple: #7d42ea;
+  --saf-pink: #e99bff;
+  --saf-blue: #0d56bd;
+  --saf-soft: #f0edff;
+
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  font-family: 'Noto Sans KR', 'Noto Sans Korean', sans-serif;
-  color: #333;
+  background: #fff;
+  color: var(--saf-ink);
+  font-family: 'Onest', 'Open Sans', 'Noto Sans KR', sans-serif;
+  overflow-x: hidden;
+
+  *,
+  *::before,
+  *::after {
+    letter-spacing: 0;
+  }
 }
 
-.homepage-header {
-  background: #fff;
-  border-bottom: 1px solid #e0e0e0;
-  position: sticky;
-  top: 0;
-  z-index: 100;
+.saf-renewal-section-inner {
+  width: min(100% - 48px, 1080px);
+  margin: 0 auto;
+}
 
-  .homepage-header-inner {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 24px;
-    height: 64px;
+.saf-renewal-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  padding: 30px 0;
+  color: #fff;
+}
+
+.saf-renewal-header-inner {
+  width: min(100% - 48px, 1060px);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+}
+
+.saf-renewal-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #fff;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.saf-renewal-brand-text {
+  max-width: 86px;
+  font-size: 10px;
+  line-height: 1.05;
+}
+
+.saf-renewal-logo {
+  display: inline-flex;
+  width: 58px;
+  height: 36px;
+
+  svg {
+    width: 100%;
+    height: 100%;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+}
+
+.saf-renewal-nav {
+  display: flex;
+  align-items: center;
+  gap: 34px;
+
+  a {
+    color: rgba(255, 255, 255, 0.92);
+    font-size: 16px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: opacity 0.2s ease;
+
+    &:hover {
+      opacity: 0.72;
+    }
+  }
+}
+
+.saf-renewal-hero {
+  position: relative;
+  height: min(860px, 94vh);
+  min-height: 640px;
+  display: flex;
+  align-items: center;
+  background-size: cover;
+  background-position: center;
+  color: #fff;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(90deg, rgba(33, 18, 105, 0.76) 0%, rgba(111, 35, 139, 0.48) 44%, rgba(4, 24, 72, 0.5) 100%),
+      linear-gradient(180deg, rgba(6, 12, 52, 0.1) 0%, rgba(10, 13, 54, 0.82) 100%);
+  }
+}
+
+.saf-renewal-hero-content {
+  position: relative;
+  z-index: 1;
+  width: min(100% - 48px, 720px);
+  margin-left: max(24px, calc(50% - 260px));
+  padding-top: 88px;
+}
+
+.saf-renewal-eyebrow,
+.saf-renewal-kicker {
+  margin: 0 0 22px;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 16px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.saf-renewal-hero h1 {
+  margin: 0;
+  color: #fff;
+  font-size: 72px;
+  line-height: 1.12;
+  font-weight: 900;
+
+  span {
+    color: var(--saf-pink);
+  }
+}
+
+.saf-renewal-hero-copy {
+  max-width: 700px;
+  margin: 24px 0 34px;
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 20px;
+  line-height: 1.55;
+}
+
+.saf-renewal-primary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 56px;
+  padding: 0 34px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #5a48ef 0%, #bd4df2 100%);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 900;
+  text-transform: uppercase;
+  box-shadow: 0 16px 34px rgba(47, 16, 116, 0.34);
+}
+
+.saf-renewal-hero-control {
+  position: absolute;
+  z-index: 1;
+  left: max(24px, calc(50% - 640px));
+  bottom: 96px;
+  display: flex;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.saf-renewal-threads {
+  position: relative;
+  min-height: 640px;
+  padding: 92px 0 0;
+  background-color: #7c43e4;
+  background-size: cover;
+  background-position: center top;
+  color: #fff;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(90deg, rgba(48, 21, 139, 0.72) 0%, rgba(96, 40, 190, 0.38) 44%, rgba(137, 67, 226, 0.08) 100%),
+      linear-gradient(180deg, rgba(24, 20, 94, 0.08) 0%, rgba(57, 21, 154, 0.42) 100%);
+  }
+}
+
+.saf-renewal-threads-inner {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 0.95fr 1.6fr;
+  gap: 70px;
+  align-items: start;
+}
+
+.saf-renewal-section-copy {
+  padding-top: 10px;
+
+  h2 {
+    margin: 0;
+    color: #fff;
+    font-size: 36px;
+    line-height: 1.15;
+    font-weight: 900;
+  }
+
+  p:last-child {
+    margin: 18px 0 0;
+    max-width: 360px;
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 15px;
+    line-height: 1.65;
+  }
+}
+
+.saf-renewal-title-line {
+  width: 64px;
+  height: 2px;
+  margin: 22px 0 0;
+  background: rgba(255, 255, 255, 0.68);
+}
+
+.saf-renewal-thread-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 150px;
+}
+
+.saf-renewal-thread-card {
+  position: relative;
+  min-height: 280px;
+  overflow: hidden;
+  background: #201a54;
+
+  img {
+    width: 100%;
+    height: 100%;
+    min-height: 280px;
+    display: block;
+    object-fit: cover;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(12, 10, 48, 0.02) 20%, rgba(12, 10, 48, 0.86) 100%);
+  }
+}
+
+.saf-renewal-thread-caption {
+  position: absolute;
+  z-index: 1;
+  inset: auto 16px 16px;
+  color: #fff;
+
+  span {
+    display: block;
+    margin-bottom: 124px;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  h3 {
+    margin: 0 0 3px;
+    color: #fff;
+    font-size: 18px;
+    line-height: 1.2;
+    font-weight: 900;
+  }
+
+  p {
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 12px;
+    line-height: 1.35;
+  }
+}
+
+.saf-renewal-statement {
+  position: relative;
+  padding: 76px 0;
+  background-size: cover;
+  background-position: center;
+  color: #fff;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(23, 27, 99, 0.92), rgba(96, 48, 180, 0.42));
+  }
+
+  .saf-renewal-section-inner {
+    position: relative;
+    z-index: 1;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 28px;
   }
 
-  .homepage-logo {
-    font-size: 20px;
-    font-weight: 700;
-    color: #1a1a2e;
-    letter-spacing: 1px;
+  h2 {
+    max-width: 680px;
     margin: 0;
-  }
-
-  .homepage-admin-link {
-    padding: 8px 20px;
-    border: 1px solid #1a1a2e;
-    border-radius: 4px;
-    color: #1a1a2e;
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 500;
-    transition: all 0.2s;
-
-    &:hover {
-      background: #1a1a2e;
-      color: #fff;
-    }
-  }
-}
-
-.homepage-hero {
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-  padding: 120px 24px;
-  text-align: center;
-
-  .homepage-hero-inner {
-    max-width: 800px;
-    margin: 0 auto;
-  }
-
-  .homepage-hero-title {
-    font-size: 42px;
-    font-weight: 700;
     color: #fff;
+    font-size: 36px;
+    line-height: 1.32;
+    font-weight: 500;
+  }
+
+  a {
+    flex: 0 0 auto;
+    width: 82px;
+    height: 82px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(226, 170, 255, 0.94);
+    color: #fff;
+    font-size: 34px;
+    text-decoration: none;
+  }
+}
+
+.saf-renewal-recap {
+  padding: 112px 0 90px;
+  background: linear-gradient(180deg, #fff 0%, #f2f0ff 42%, #fff 100%);
+
+  > .saf-renewal-section-inner > h2 {
+    max-width: 700px;
+    margin: 0 0 34px;
+    color: var(--saf-ink);
+    font-size: 42px;
+    line-height: 1.08;
+    font-weight: 900;
+  }
+
+  .saf-renewal-kicker {
+    margin-bottom: 16px;
+    color: #6a3ed9;
+    font-size: 13px;
+  }
+}
+
+.saf-renewal-recap-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 52px;
+  align-items: start;
+}
+
+.saf-renewal-recap-card {
+  min-height: 290px;
+  padding: 70px 42px;
+  background-size: cover;
+  background-position: center;
+  color: #fff;
+
+  p {
+    margin: 0 0 18px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 13px;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  h3 {
+    margin: 0 0 22px;
+    color: #fff;
+    font-size: 32px;
+    line-height: 1.2;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+
+  a {
+    display: inline-flex;
+    min-height: 38px;
+    align-items: center;
+    padding: 0 24px;
+    border: 1px solid rgba(255, 255, 255, 0.72);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+}
+
+.saf-renewal-recap-copy {
+  p {
     margin: 0 0 16px;
-    letter-spacing: 2px;
+    color: #4e4c68;
+    font-size: 16px;
+    line-height: 1.55;
   }
 
-  .homepage-hero-desc {
-    font-size: 18px;
-    color: rgba(255, 255, 255, 0.8);
-    margin: 0;
-    line-height: 1.6;
-  }
-}
-
-.homepage-content {
-  flex: 1;
-  background: #f5f6fa;
-  padding: 60px 24px;
-
-  .homepage-content-inner {
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-
-  .homepage-card-grid {
+  dl {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
-
-    @media (max-width: 768px) {
-      grid-template-columns: 1fr;
-    }
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px 40px;
+    margin-top: 32px;
+    padding-top: 28px;
+    border-top: 1px solid rgba(45, 31, 98, 0.22);
   }
 
-  .homepage-card {
-    background: #fff;
-    border-radius: 8px;
-    padding: 32px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-    transition: transform 0.2s, box-shadow 0.2s;
-
-    &:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-    }
+  dt {
+    color: #7040d9;
+    font-size: 34px;
+    line-height: 1;
+    font-weight: 900;
   }
 
-  .homepage-card-title {
-    font-size: 18px;
-    font-weight: 600;
-    color: #1a1a2e;
-    margin: 0 0 12px;
-  }
-
-  .homepage-card-desc {
-    font-size: 14px;
-    color: #666;
-    line-height: 1.6;
-    margin: 0;
+  dd {
+    margin-top: 6px;
+    color: #5e5a76;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
   }
 }
 
-.homepage-footer {
-  background: #1a1a2e;
-  color: rgba(255, 255, 255, 0.6);
-  text-align: center;
-  padding: 24px;
-  font-size: 13px;
+.saf-renewal-gallery-heading {
+  margin-top: 74px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+
+  &::before,
+  &::after {
+    content: '';
+    height: 1px;
+    flex: 1;
+    background: rgba(42, 31, 95, 0.18);
+  }
+
+  span {
+    color: #7040d9;
+    font-size: 13px;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+}
+
+.saf-renewal-gallery-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 22px;
+  margin-top: 24px;
+
+  img {
+    width: 100%;
+    aspect-ratio: 1.22;
+    display: block;
+    object-fit: cover;
+  }
+}
+
+.saf-renewal-sponsors {
+  padding: 84px 0 94px;
+  background: #fff;
+
+  h2 {
+    margin: 0 0 44px;
+    color: var(--saf-purple);
+    font-size: 44px;
+    line-height: 1.1;
+    font-weight: 900;
+  }
+}
+
+.saf-renewal-sponsor-row {
+  padding: 28px 0 42px;
+  border-top: 1px solid rgba(42, 31, 95, 0.2);
+
+  h3 {
+    margin: 0 0 30px;
+    color: var(--saf-ink);
+    font-size: 21px;
+    font-weight: 900;
+  }
+}
+
+.saf-renewal-logo-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 26px 54px;
+  align-items: center;
+}
+
+.saf-renewal-sponsor-logo {
+  min-height: 70px;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+
+  img {
+    max-width: 100%;
+    max-height: 64px;
+    width: auto;
+    height: auto;
+    display: block;
+    object-fit: contain;
+  }
+}
+
+.saf-renewal-footer {
+  padding: 74px 0 58px;
+  background: linear-gradient(115deg, #0559bf 0%, #9252e7 100%);
+  color: #fff;
+
+  .saf-renewal-section-inner {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 34px 72px;
+    align-items: start;
+  }
 
   p {
     margin: 0;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  small {
+    grid-column: 2;
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 12px;
+  }
+}
+
+.saf-renewal-footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  .saf-renewal-logo {
+    width: 92px;
+    height: 58px;
+  }
+
+  strong {
+    color: #fff;
+    font-size: 22px;
+    line-height: 0.96;
+    font-weight: 900;
+  }
+}
+
+@media (max-width: 900px) {
+  .saf-renewal-section-inner,
+  .saf-renewal-header-inner {
+    width: min(100% - 32px, 720px);
+  }
+
+  .saf-renewal-header {
+    padding: 22px 0;
+  }
+
+  .saf-renewal-nav {
+    gap: 16px;
+
+    a {
+      font-size: 13px;
+    }
+  }
+
+  .saf-renewal-hero {
+    height: min(760px, 94vh);
+    min-height: 650px;
+  }
+
+  .saf-renewal-hero-content {
+    width: min(100% - 32px, 620px);
+    margin: 0 auto;
+    padding-top: 78px;
+  }
+
+  .saf-renewal-hero h1 {
+    font-size: 56px;
+  }
+
+  .saf-renewal-hero-copy {
+    font-size: 17px;
+  }
+
+  .saf-renewal-threads-inner,
+  .saf-renewal-recap-grid,
+  .saf-renewal-footer .saf-renewal-section-inner {
+    grid-template-columns: 1fr;
+  }
+
+  .saf-renewal-thread-grid {
+    margin-top: 42px;
+  }
+
+  .saf-renewal-gallery-strip,
+  .saf-renewal-logo-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .saf-renewal-footer small {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .saf-renewal-header-inner {
+    align-items: flex-start;
+  }
+
+  .saf-renewal-nav {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 10px 14px;
+  }
+
+  .saf-renewal-brand-text {
+    display: none;
+  }
+
+  .saf-renewal-hero {
+    height: min(690px, 94vh);
+    min-height: 620px;
+    background-position: center;
+  }
+
+  .saf-renewal-hero h1 {
+    font-size: 42px;
+  }
+
+  .saf-renewal-eyebrow {
+    font-size: 13px;
+  }
+
+  .saf-renewal-hero-copy {
+    font-size: 15px;
+  }
+
+  .saf-renewal-threads {
+    padding-top: 70px;
+  }
+
+  .saf-renewal-section-copy h2,
+  .saf-renewal-statement h2,
+  .saf-renewal-recap > .saf-renewal-section-inner > h2,
+  .saf-renewal-sponsors h2 {
+    font-size: 32px;
+  }
+
+  .saf-renewal-thread-grid,
+  .saf-renewal-gallery-strip,
+  .saf-renewal-logo-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .saf-renewal-thread-caption span {
+    margin-bottom: 96px;
+  }
+
+  .saf-renewal-statement .saf-renewal-section-inner {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .saf-renewal-recap {
+    padding: 78px 0 72px;
+  }
+
+  .saf-renewal-recap-card {
+    padding: 48px 28px;
+
+    h3 {
+      font-size: 25px;
+    }
+  }
+
+  .saf-renewal-recap-copy dl {
+    grid-template-columns: 1fr;
   }
 }
