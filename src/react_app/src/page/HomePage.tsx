@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { callGetPublicPopupList } from '@api/popup/PopupApi';
 import { PopupItem } from '@interface/popup/PopupManagement';
-import MainPopupWindowLauncher from '@component/popup/MainPopupWindowLauncher';
+import MainPopupOverlay from '@component/popup/MainPopupOverlay';
 import HeroSeoulImage from '../assets/images/saf-renewal/hero-seoul.jpg';
 import WaveBgImage from '../assets/images/saf-renewal/wave-bg.png';
 import SeoulBannerImage from '../assets/images/saf-renewal/seoul-banner.jpg';
@@ -385,7 +385,7 @@ export default function HomePage() {
         </div>
       </footer>
 
-      <MainPopupWindowLauncher
+      <MainPopupOverlay
         popups={popups}
         onClose={handlePopupClose}
         onDismissToday={handlePopupDismissToday}

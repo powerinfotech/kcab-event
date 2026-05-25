@@ -6,7 +6,6 @@ import dayjs, { Dayjs } from 'dayjs';
 import {
   ArrowLeftOutlined,
   DeleteOutlined,
-  EditOutlined,
   EyeOutlined,
   NotificationOutlined,
   PlusOutlined,
@@ -18,7 +17,7 @@ import { callGetPopupList, callSavePopup } from '@api/popup/PopupApi';
 import { PopupItem, PopupStatus } from '@interface/popup/PopupManagement';
 import { IudType } from '@interface/common';
 import CustomRichEditor from '@component/special/CustomRichEditor';
-import MainPopupWindowLauncher from '@component/popup/MainPopupWindowLauncher';
+import MainPopupOverlay from '@component/popup/MainPopupOverlay';
 import AdminGridPagination from './AdminGridPagination';
 
 function toDayjs(value?: string | null): Dayjs | null {
@@ -83,7 +82,6 @@ export default function PopupManagement() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [previewOpen, setPreviewOpen] = useState(false);
-  const [previewKey, setPreviewKey] = useState(0);
 
   const fetchPopupList = useCallback(async () => {
     setLoading(true);
@@ -184,7 +182,6 @@ export default function PopupManagement() {
       message.info('Enter a title to preview.');
       return;
     }
-    setPreviewKey((prev) => prev + 1);
     setPreviewOpen(true);
   };
 
@@ -365,10 +362,9 @@ export default function PopupManagement() {
         </div>
 
         {previewOpen && (
-          <MainPopupWindowLauncher
-            key={previewKey}
+          <MainPopupOverlay
             popups={[detail]}
-            showDismissToday={false}
+            previewMode
             onClose={() => setPreviewOpen(false)}
           />
         )}
@@ -430,7 +426,6 @@ export default function PopupManagement() {
               <th style={{ width: 80 }}>Sort</th>
               <th style={{ width: 260 }}>Display Period</th>
               <th style={{ width: 160 }}>Updated</th>
-              <th style={{ width: 120 }} />
             </tr>
           </thead>
           <tbody>
@@ -445,29 +440,11 @@ export default function PopupManagement() {
                 <td>{row.sortSeq}</td>
                 <td>{formatDateRange(row.startAt, row.endAt)}</td>
                 <td>{formatDateTime(row.updatedAt)}</td>
-                <td onClick={(event) => event.stopPropagation()}>
-                  <button
-                    className="saf-table-icon-btn"
-                    type="button"
-                    onClick={() => openDetail(row)}
-                    title="Edit popup"
-                  >
-                    <EditOutlined />
-                  </button>
-                  <button
-                    className="saf-table-icon-btn is-danger"
-                    type="button"
-                    onClick={() => deletePopup(row)}
-                    title="Delete popup"
-                  >
-                    <DeleteOutlined />
-                  </button>
-                </td>
               </tr>
             ))}
             {total === 0 && (
               <tr>
-                <td className="saf-user-empty" colSpan={6}>
+                <td className="saf-user-empty" colSpan={5}>
                   <NotificationOutlined />
                   <span>No popups yet.</span>
                 </td>
