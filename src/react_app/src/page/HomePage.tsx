@@ -85,7 +85,7 @@ const navItems = [
   { label: 'Official Events', href: '/events' },
   { label: 'Calendar', href: '#program' },
   { label: 'Visit Seoul', href: '#visit' },
-  { label: 'Archives', href: '#archives' },
+  { label: 'Archives', href: '/past-editions' },
   { label: 'Contact', href: '#contact' },
 ];
 

@@ -45,6 +45,7 @@ import qs from 'qs';
 import {ErrorCode, ErrorResponse} from '@interface/common';
 
 const AUTH_MESSAGE_STORAGE_KEY = 'kcab-auth-message';
+const DEFAULT_API_TIMEOUT_MS = 30 * 60 * 1000;
 
 interface GlobalAxiosInterceptorProps {
     children: React.ReactNode;
@@ -102,7 +103,7 @@ const GlobalAxiosProvider = (props: GlobalAxiosInterceptorProps) => {
 
     useEffect(() => {
         axios.defaults.withCredentials = true;
-        axios.defaults.timeout = 30000;
+        axios.defaults.timeout = DEFAULT_API_TIMEOUT_MS;
         axios.defaults.transitional = {
             clarifyTimeoutError: true,
             forcedJSONParsing: true,

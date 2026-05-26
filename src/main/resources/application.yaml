@@ -30,7 +30,7 @@ spring:
   servlet:
     multipart:
       max-file-size: 30MB
-      max-request-size: 300MB
+      max-request-size: 3GB
 
 server:
   port: 8070

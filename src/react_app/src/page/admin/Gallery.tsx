@@ -47,7 +47,7 @@ interface FormState {
   useYn: string;
 }
 
-const MAX_GALLERY_IMAGE_COUNT = 80;
+const MAX_GALLERY_IMAGE_COUNT = 100;
 const GALLERY_IMAGE_MAX_SIZE = 30 * 1024 * 1024;
 
 const blankForm = (): FormState => ({
@@ -340,7 +340,7 @@ export default function Gallery() {
                 disabled={saving}
                 maxCount={MAX_GALLERY_IMAGE_COUNT}
               />
-              <p className="saf-hint-inline">Images only · max 30MB each · up to 80 images per album.</p>
+              <p className="saf-hint-inline">Images only · max 30MB each · up to 100 images per album.</p>
             </div>
           </section>
 

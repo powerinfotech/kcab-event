@@ -89,6 +89,9 @@ export const UPLOAD_CONTEXT = {
 
 export type UploadContext = typeof UPLOAD_CONTEXT[keyof typeof UPLOAD_CONTEXT];
 
+const FILE_UPLOAD_TIMEOUT_MS = 30 * 60 * 1000;
+const FILE_UPLOAD_BATCH_SIZE = 1;
+
 export const callUploadEditorImage = async (file: File, uploadContext?: UploadContext): Promise<EditorImageUploadResponse> => {
     const formData = new FormData();
     formData.append('file', file);
@@ -113,6 +116,46 @@ export const callSaveFiles = async (
     const updateFileList = fileList.filter((fileData) => fileData.iudType === IudType.U);
     const deleteFileList = fileList.filter((fileData) => fileData.iudType === IudType.D);
 
+    let resolvedFileSeq = fileSeq;
+    let lastResponse: ApiResponse<any> | null = null;
+
+    if (insertFileList.length === 0) {
+        return postSaveFileRequest(resolvedFileSeq, menuSeq, [], updateFileList, deleteFileList, uploadContext);
+    }
+
+    for (let start = 0; start < insertFileList.length; start += FILE_UPLOAD_BATCH_SIZE) {
+        const insertBatch = insertFileList.slice(start, start + FILE_UPLOAD_BATCH_SIZE);
+        const shouldSendChanges = start === 0;
+        lastResponse = await postSaveFileRequest(
+            resolvedFileSeq,
+            menuSeq,
+            insertBatch,
+            shouldSendChanges ? updateFileList : [],
+            shouldSendChanges ? deleteFileList : [],
+            uploadContext,
+        );
+
+        const nextFileSeq = lastResponse?.item?.fileSeq;
+        if (nextFileSeq) {
+            resolvedFileSeq = Number(nextFileSeq);
+        }
+    }
+
+    if (!lastResponse) {
+        return postSaveFileRequest(resolvedFileSeq, menuSeq, [], updateFileList, deleteFileList, uploadContext);
+    }
+
+    return lastResponse;
+};
+
+const postSaveFileRequest = async (
+    fileSeq : number|null,
+    menuSeq : number,
+    insertFileList : FileDetailType[],
+    updateFileList : FileDetailType[],
+    deleteFileList : FileDetailType[],
+    uploadContext?: UploadContext,
+) => {
     const formData = new FormData();
 
     const insertFileMetaList = insertFileList.map((fileData) => {
@@ -153,7 +196,9 @@ export const callSaveFiles = async (
     formData.append("updateFileList", JSON.stringify(updateFileMetaList));
     formData.append("deleteFileList", JSON.stringify(deleteFileMetaList));
 
-    const {data} = await axios.post<ApiResponse<any>>('/api/save-file', formData);
+    const {data} = await axios.post<ApiResponse<any>>('/api/save-file', formData, {
+        timeout: FILE_UPLOAD_TIMEOUT_MS,
+    });
 
     return data;
 };
