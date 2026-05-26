@@ -5,7 +5,6 @@ import { App } from 'antd';
 import {
   ArrowLeftOutlined,
   DeleteOutlined,
-  EditOutlined,
   PlusOutlined,
   QuestionCircleOutlined,
   ReloadOutlined,
@@ -425,7 +424,6 @@ export default function FaqManagement() {
               <th>Answer</th>
               <th style={{ width: 110 }}>Status</th>
               <th style={{ width: 80 }}>Sort</th>
-              <th style={{ width: 120 }} />
             </tr>
           </thead>
           <tbody>
@@ -445,29 +443,11 @@ export default function FaqManagement() {
                   </span>
                 </td>
                 <td>{row.sortSeq}</td>
-                <td onClick={(event) => event.stopPropagation()}>
-                  <button
-                    className="saf-table-icon-btn"
-                    type="button"
-                    onClick={() => openDetail(row)}
-                    title="Edit FAQ"
-                  >
-                    <EditOutlined />
-                  </button>
-                  <button
-                    className="saf-table-icon-btn is-danger"
-                    type="button"
-                    onClick={() => deleteFaq(row)}
-                    title="Delete FAQ"
-                  >
-                    <DeleteOutlined />
-                  </button>
-                </td>
               </tr>
             ))}
             {total === 0 && (
               <tr>
-                <td className="saf-user-empty" colSpan={7}>
+                <td className="saf-user-empty" colSpan={6}>
                   <QuestionCircleOutlined />
                   <span>No FAQ found.</span>
                 </td>
