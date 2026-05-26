@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
-import { App } from 'antd';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { App, Modal } from 'antd';
 import {
   ArrowLeftOutlined,
   CheckOutlined,
+  DeleteOutlined,
   DownloadOutlined,
   EyeInvisibleOutlined,
   EyeOutlined,
@@ -17,6 +18,7 @@ import {
   StopOutlined,
   TeamOutlined,
 } from '@ant-design/icons';
+import type { RcFile } from 'antd/es/upload/interface';
 import {
   callApproveAdminUser,
   callCreateAdminUser,
@@ -27,7 +29,9 @@ import {
   callUpdateAdminUser,
   callWithdrawAdminUser,
 } from '@api/admin/AdminUserManagementApi';
+import { callGetFileList, callSaveFiles, UPLOAD_CONTEXT } from '@api/CommonApi';
 import { callExcelDownload, ExcelColumnDef } from '@api/CommonExcelApi';
+import { FileDetailType } from '@component/upload/CustomFile';
 import {
   AdminUserDetail,
   AdminUserListItem,
@@ -37,6 +41,7 @@ import {
   ORGANIZATION_GRADE_OPTIONS,
   OrganizationGrade,
 } from '@interface/admin/AdminUserManagement';
+import { IudType } from '@interface/common';
 import { ORG_TYPE_OPTIONS } from '@interface/saf/SafAuth';
 import { EMAIL_REGEXP } from '@util/validationPatterns';
 import AdminGridPagination, { useClientGridPagination } from './AdminGridPagination';
@@ -78,6 +83,7 @@ const emptyDetail: AdminUserDetail = {
   contactEmail: '',
   contactPhone: '',
   website: '',
+  imageFileSeq: null,
   grade: 'C',
 };
 
@@ -96,6 +102,7 @@ export default function UserManagementMock() {
   const [showPassword, setShowPassword] = useState(false);
   const [submitAttempted, setSubmitAttempted] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [organizationImageFiles, setOrganizationImageFiles] = useState<FileDetailType[]>([]);
 
   const isRequiredEmpty = (value?: string) => submitAttempted && !value?.trim();
 
@@ -140,7 +147,18 @@ export default function UserManagementMock() {
     setLoading(true);
     try {
       const res = await callGetAdminUserDetail(userSeq);
-      setForm({ ...emptyDetail, ...res.item });
+      const nextForm = { ...emptyDetail, ...res.item };
+      setForm(nextForm);
+      if (nextForm.imageFileSeq) {
+        try {
+          const fileRes = await callGetFileList(nextForm.imageFileSeq);
+          setOrganizationImageFiles((fileRes?.item as FileDetailType[]) ?? []);
+        } catch {
+          setOrganizationImageFiles([]);
+        }
+      } else {
+        setOrganizationImageFiles([]);
+      }
       setPassword('');
       setShowPassword(false);
       setSubmitAttempted(false);
@@ -161,7 +179,7 @@ export default function UserManagementMock() {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
-  const buildSaveParam = (): AdminUserSaveParam => ({
+  const buildSaveParam = (imageFileSeq: number | null = form.imageFileSeq ?? null): AdminUserSaveParam => ({
     userId: userIdValue,
     email: emailValue,
     password: password || undefined,
@@ -175,6 +193,7 @@ export default function UserManagementMock() {
     contactEmail: contactEmailValue,
     contactPhone: form.contactPhone,
     website: form.website,
+    imageFileSeq,
     grade: form.grade ?? 'C',
   });
 
@@ -220,13 +239,28 @@ export default function UserManagementMock() {
   const saveUser = async () => {
     setSaving(true);
     try {
+      let resolvedImageFileSeq: number | null = isOrganization ? (form.imageFileSeq ?? null) : null;
+      if (isOrganization && organizationImageFiles.some((file) => file.iudType)) {
+        const fileRes = await callSaveFiles(
+          resolvedImageFileSeq,
+          0,
+          organizationImageFiles,
+          UPLOAD_CONTEXT.ORGANIZATION_IMAGE,
+        );
+        const newSeq = fileRes?.item?.fileSeq;
+        if (newSeq) resolvedImageFileSeq = Number(newSeq);
+        if (fileRes?.item?.fileList) {
+          setOrganizationImageFiles(fileRes.item.fileList as FileDetailType[]);
+        }
+      }
+
       if (isNew) {
-        await callCreateAdminUser(buildSaveParam());
+        await callCreateAdminUser(buildSaveParam(resolvedImageFileSeq));
         message.success('User has been registered.');
         setMode('list');
         await fetchUsers();
       } else {
-        await callUpdateAdminUser(selectedSeq!, buildSaveParam());
+        await callUpdateAdminUser(selectedSeq!, buildSaveParam(resolvedImageFileSeq));
         message.success('User information has been saved.');
         await fetchUsers();
         await fetchDetail(selectedSeq!);
@@ -476,6 +510,20 @@ export default function UserManagementMock() {
                     ))}
                   </select>
                 </Field>
+                <Field label="Organization Image" wide>
+                  <div className="saf-thumbnail-uploader">
+                    {loading ? (
+                      <div className="saf-image-upload-skeleton" aria-hidden="true" />
+                    ) : (
+                      <OrganizationImageUpload
+                        fileList={organizationImageFiles}
+                        onChange={setOrganizationImageFiles}
+                        disabled={saving || approvalPending}
+                      />
+                    )}
+                    <p className="saf-hint-inline">1 organization image only (JPG/PNG/GIF/WebP) · max 30MB.</p>
+                  </div>
+                </Field>
               </div>
             </section>
           )}
@@ -505,7 +553,7 @@ export default function UserManagementMock() {
             <ReloadOutlined />
             <span>Refresh</span>
           </button>
-          <button type="button" className="saf-action-btn is-primary" onClick={() => { setForm(emptyDetail); setPassword(''); setShowPassword(false); setSubmitAttempted(false); setSelectedSeq(null); setMode('detail'); }}>
+          <button type="button" className="saf-action-btn is-primary" onClick={() => { setForm(emptyDetail); setOrganizationImageFiles([]); setPassword(''); setShowPassword(false); setSubmitAttempted(false); setSelectedSeq(null); setMode('detail'); }}>
             <PlusOutlined />
             <span>Register</span>
           </button>
@@ -656,4 +704,178 @@ function formatDate(value?: string) {
     hour: '2-digit',
     minute: '2-digit',
   }).format(new Date(value));
+}
+
+const IMAGE_MAX_SIZE = 30 * 1024 * 1024;
+
+const getFileUid = (file: FileDetailType) => (
+  file.fileDtlSeq ? String(file.fileDtlSeq) : file.uid ?? `${file.fileNm}-${file.sortSeq}`
+);
+
+const isBrowserReadableUrl = (url?: string): boolean => {
+  if (!url) return false;
+  return /^(https?:|data:|blob:|\/api\/|\/_next\/|\/images\/|\/uploads?\/)/i.test(url);
+};
+
+const getImagePreviewUrl = (file: Partial<FileDetailType>): string | undefined => {
+  const directUrl = file.fileUrl ?? file.filePath;
+  if (!directUrl) return undefined;
+  if (isBrowserReadableUrl(directUrl)) return directUrl;
+  if (file.filePath) return `/api/download-file?filePath=${encodeURIComponent(file.filePath)}`;
+  return undefined;
+};
+
+const revokeLocalPreview = (file: FileDetailType) => {
+  const previewUrl = file.fileUrl ?? file.filePath;
+  if (previewUrl?.startsWith('blob:')) URL.revokeObjectURL(previewUrl);
+};
+
+const reindexImageFiles = (files: FileDetailType[]) => {
+  let nextSortSeq = 1;
+  return files.map((file) => {
+    if (file.iudType === IudType.D) return { ...file, sortSeq: 0 };
+    return { ...file, sortSeq: nextSortSeq++ };
+  });
+};
+
+function OrganizationImageUpload({
+  fileList,
+  onChange,
+  disabled,
+}: {
+  fileList: FileDetailType[];
+  onChange: (files: FileDetailType[]) => void;
+  disabled?: boolean;
+}) {
+  const { message } = App.useApp();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewImage, setPreviewImage] = useState('');
+  const visibleFile = fileList.find((file) => file.iudType !== IudType.D);
+  const previewUrl = visibleFile ? getImagePreviewUrl(visibleFile) : undefined;
+
+  const createImageFileDetail = (file: File): FileDetailType | null => {
+    const rcFile = file as RcFile;
+    if (!rcFile.type?.startsWith('image/')) {
+      message.error('이미지 파일만 업로드 가능합니다.');
+      return null;
+    }
+
+    if (rcFile.size > IMAGE_MAX_SIZE) {
+      message.error('Only images up to 30MB can be uploaded.');
+      return null;
+    }
+
+    rcFile.uid = rcFile.uid ?? `org-image-${Date.now()}`;
+    const previewUrl = URL.createObjectURL(rcFile);
+    return {
+      uid: rcFile.uid,
+      fileNm: rcFile.name,
+      filePath: previewUrl,
+      fileUrl: previewUrl,
+      sortSeq: 1,
+      originFileObj: rcFile,
+      iudType: IudType.I,
+    };
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const nextFile = event.target.files?.[0];
+    event.target.value = '';
+    if (!nextFile) return;
+
+    const nextImage = createImageFileDetail(nextFile);
+    if (!nextImage) return;
+
+    const retainedFiles = fileList.flatMap((file) => {
+      if (file.iudType === IudType.D) return [file];
+      if (file.iudType === IudType.I) {
+        revokeLocalPreview(file);
+        return [];
+      }
+      return [{ ...file, iudType: IudType.D }];
+    });
+
+    onChange(reindexImageFiles([...retainedFiles, nextImage]));
+  };
+
+  const handleRemove = () => {
+    if (!visibleFile) return;
+
+    const nextFiles = fileList.flatMap((file) => {
+      if (getFileUid(file) !== getFileUid(visibleFile)) return [file];
+      if (file.iudType === IudType.I) {
+        revokeLocalPreview(file);
+        return [];
+      }
+      return [{ ...file, iudType: IudType.D }];
+    });
+
+    onChange(reindexImageFiles(nextFiles));
+  };
+
+  const handlePreview = () => {
+    if (!previewUrl) return;
+    setPreviewImage(previewUrl);
+    setPreviewOpen(true);
+  };
+
+  const openFileDialog = () => {
+    if (disabled) return;
+    inputRef.current?.click();
+  };
+
+  useEffect(() => () => {
+    for (const file of fileList) {
+      if (file.iudType === IudType.I) revokeLocalPreview(file);
+    }
+  }, []);
+
+  return (
+    <>
+      <div className="saf-organization-image-upload">
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          disabled={disabled}
+        />
+        {visibleFile && previewUrl ? (
+          <div className="saf-organization-image-card">
+            <img src={previewUrl} alt="Organization" />
+            <div className="saf-organization-image-actions">
+              <button type="button" aria-label="Preview image" onClick={handlePreview}>
+                <EyeOutlined />
+              </button>
+              <button type="button" aria-label="Replace image" onClick={openFileDialog} disabled={disabled}>
+                <PlusOutlined />
+              </button>
+              <button type="button" aria-label="Remove image" onClick={handleRemove} disabled={disabled}>
+                <DeleteOutlined />
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            type="button"
+            className="saf-organization-image-empty"
+            onClick={openFileDialog}
+            disabled={disabled}
+          >
+            <PlusOutlined />
+            <span>업로드</span>
+          </button>
+        )}
+      </div>
+      <Modal
+        open={previewOpen}
+        title="Organization Image"
+        footer={null}
+        onCancel={() => setPreviewOpen(false)}
+      >
+        <img alt="Organization preview" src={previewImage} style={{ width: '100%' }} />
+      </Modal>
+    </>
+  );
 }

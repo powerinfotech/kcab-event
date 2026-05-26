@@ -2,6 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { BookOutlined, SafetyCertificateOutlined, TeamOutlined } from '@ant-design/icons';
+import { useSetAtom } from 'jotai';
+import { currentPathAtom, pushPath } from '@atom/currentPathAtom';
 import { callGetPublicPopupList } from '@api/popup/PopupApi';
 import { PopupItem } from '@interface/popup/PopupManagement';
 import MainPopupOverlay from '@component/popup/MainPopupOverlay';
@@ -199,6 +201,13 @@ const sponsorGroups = [
 
 export default function HomePage() {
   const [popups, setPopups] = useState<PopupItem[]>([]);
+  const setCurrentPath = useSetAtom(currentPathAtom);
+
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (!href.startsWith('/') || href.includes('#')) return;
+    e.preventDefault();
+    pushPath(href, setCurrentPath);
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -248,7 +257,13 @@ export default function HomePage() {
             </div>
             <nav className="saf-renewal-nav" aria-label="Main navigation">
               {navItems.map((item) => (
-                <a key={item.label} href={item.href}>{item.label}</a>
+                <a
+                  key={item.label}
+                  href={item.href}
+                  onClick={(e) => handleNavClick(e, item.href)}
+                >
+                  {item.label}
+                </a>
               ))}
             </nav>
           </div>
