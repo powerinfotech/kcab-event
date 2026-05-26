@@ -10,4 +10,5 @@ public class EmailTemplatePreviewSendDto {
     private String recipientName;
     private String subject;
     private String bodyHtml;
+    private String topImageSrc;
 }

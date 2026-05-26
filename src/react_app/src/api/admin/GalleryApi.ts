@@ -12,7 +12,6 @@ const BASE_URL = '/api/admin/gallery';
 export const callGetGalleryList = async (params: GallerySearchParams = {}) => {
   const { data } = await axios.get<ApiResponse<GalleryListItem[]>>(BASE_URL, {
     params: {
-      galleryYear: params.galleryYear || undefined,
       useYn: params.useYn || undefined,
       keyword: params.keyword || undefined,
     },

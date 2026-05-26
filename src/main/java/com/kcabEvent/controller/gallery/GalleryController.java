@@ -32,12 +32,10 @@ public class GalleryController {
     @GetMapping
     public ApiResponse<List<GalleryListDto>> selectGalleryList(
             @KcabEventSession LoginUser loginUser,
-            @RequestParam(required = false) Integer galleryYear,
             @RequestParam(required = false) String useYn,
             @RequestParam(required = false) String keyword
     ) {
         GallerySearchDto search = new GallerySearchDto();
-        search.setGalleryYear(galleryYear);
         search.setUseYn(useYn);
         search.setKeyword(keyword);
         return ApiResponse.ok(galleryService.selectGalleryList(search));

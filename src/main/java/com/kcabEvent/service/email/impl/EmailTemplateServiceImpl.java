@@ -186,7 +186,8 @@ public class EmailTemplateServiceImpl extends EgovAbstractServiceImpl implements
 
         EmailTemplateDetailDto detail = selectTemplateDetail(code);
         String subject = sendDto.getSubject().trim();
-        String bodyHtml = EmailHtmlLayout.wrapTemplateBody(sanitizeEditableHtml(sendDto.getBodyHtml()));
+        String topImageSrc = StringUtils.hasText(sendDto.getTopImageSrc()) ? sendDto.getTopImageSrc().trim() : null;
+        String bodyHtml = EmailHtmlLayout.wrapTemplateBody(sanitizeEditableHtml(sendDto.getBodyHtml()), topImageSrc);
 
         emailLogService.sendHtmlAndLog(
                 detail.getTemplateSeq(),

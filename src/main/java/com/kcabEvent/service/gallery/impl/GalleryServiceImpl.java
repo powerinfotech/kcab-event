@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service("galleryService")
@@ -79,7 +80,7 @@ public class GalleryServiceImpl extends EgovAbstractServiceImpl implements Galle
         Gallery entity = new Gallery();
         entity.setGallerySeq(saveDto.getGallerySeq());
         entity.setTitle(requireText(saveDto.getTitle(), "Title is required."));
-        entity.setGalleryYear(requireYear(saveDto.getGalleryYear()));
+        entity.setGalleryYear(resolveGalleryYear(saveDto.getGalleryYear(), saveDto.getGallerySeq() == null));
         entity.setDescription(saveDto.getDescription());
         entity.setFileSeq(saveDto.getFileSeq());
         entity.setSortSeq(saveDto.getSortSeq() != null ? saveDto.getSortSeq() : 0);
@@ -123,9 +124,9 @@ public class GalleryServiceImpl extends EgovAbstractServiceImpl implements Galle
         return normalized;
     }
 
-    private Integer requireYear(Integer year) {
+    private Integer resolveGalleryYear(Integer year, boolean insert) {
         if (year == null) {
-            throw new BusinessException("Gallery year is required.");
+            return insert ? LocalDate.now().getYear() : null;
         }
         if (year < 2000 || year > 2100) {
             throw new BusinessException("Gallery year must be between 2000 and 2100.");

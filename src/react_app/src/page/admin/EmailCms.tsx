@@ -9,18 +9,21 @@ import {
   SendOutlined,
 } from '@ant-design/icons';
 import CustomRichEditor from '@component/special/CustomRichEditor';
-import { UPLOAD_CONTEXT } from '@api/CommonApi';
+import { UPLOAD_CONTEXT, callGetFileList } from '@api/CommonApi';
 import {
   callGetEmailTemplateDetail,
   callGetEmailTemplates,
   callSaveEmailTemplate,
   callSendEmailTemplatePreview,
 } from '@api/admin/EmailTemplateApi';
+import { callGetEventDetail, callGetEventList } from '@api/event/EventApi';
 import {
   EmailTemplateDetail,
   EmailTemplateListItem,
   EmailTemplateVariable,
 } from '@interface/admin/EmailTemplate';
+import { EventListItem } from '@interface/event/EventManagement';
+import { FileDetailType } from '@component/upload/CustomFile';
 import { EMAIL_REGEXP } from '@util/validationPatterns';
 
 const EMPTY_TEMPLATE: EmailTemplateDetail = {
@@ -35,6 +38,44 @@ const EMPTY_TEMPLATE: EmailTemplateDetail = {
 const EMAIL_BRAND_NAME = 'Seoul ADR Festival';
 const EMAIL_HEADER_BACKGROUND = '#62c4d2';
 const EMAIL_STAMP_IMAGE_SRC = '/email-assets/seoul-adr-stamp.png';
+
+const OFFICIAL_EVENT_TEMPLATE_CODES = new Set(['official_event_participation_confirm']);
+
+function isBrowserReadableUrl(url?: string): boolean {
+  if (!url) return false;
+  return /^(https?:|data:|blob:|\/api\/|\/_next\/|\/images\/|\/uploads?\/)/i.test(url);
+}
+
+function getImagePreviewUrl(file: Partial<FileDetailType>): string | undefined {
+  const directUrl = file.fileUrl ?? file.filePath;
+  if (!directUrl) return undefined;
+  if (isBrowserReadableUrl(directUrl)) return directUrl;
+  if (file.filePath) return `/api/download-file?filePath=${encodeURIComponent(file.filePath)}`;
+  return undefined;
+}
+
+function toAbsoluteImageUrl(url?: string): string | undefined {
+  if (!url) return undefined;
+  if (typeof window === 'undefined') return url;
+  if (/^(https?:|data:|blob:)/i.test(url)) return url;
+  return `${window.location.origin}${url.startsWith('/') ? '' : '/'}${url}`;
+}
+
+async function fetchImageAsDataUrl(url: string): Promise<string | null> {
+  try {
+    const res = await fetch(url, { credentials: 'include' });
+    if (!res.ok) return null;
+    const blob = await res.blob();
+    return await new Promise<string | null>((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(typeof reader.result === 'string' ? reader.result : null);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+}
 
 export default function EmailCms() {
   const { message } = App.useApp();
@@ -51,11 +92,19 @@ export default function EmailCms() {
   const [sendOpen, setSendOpen] = useState(false);
   const [sendRecipientEmail, setSendRecipientEmail] = useState('');
   const [sendRecipientName, setSendRecipientName] = useState('');
+  const [officialEvents, setOfficialEvents] = useState<EventListItem[]>([]);
+  const [selectedEventSeq, setSelectedEventSeq] = useState<number | null>(null);
+  const [eventTopImageUrl, setEventTopImageUrl] = useState<string | null>(null);
+
+  const supportsEventTopImage = OFFICIAL_EVENT_TEMPLATE_CODES.has(selectedCode);
 
   const variables = useMemo(() => parseVariables(detail.variables), [detail.variables]);
   const previewSubject = useMemo(() => renderTemplate(subject, variables), [subject, variables]);
   const renderedBodyHtml = useMemo(() => renderTemplate(bodyHtml, variables), [bodyHtml, variables]);
-  const previewHtml = useMemo(() => buildEmailPreviewHtml(renderedBodyHtml), [renderedBodyHtml]);
+  const previewHtml = useMemo(
+    () => buildEmailPreviewHtml(renderedBodyHtml, supportsEventTopImage ? eventTopImageUrl : null),
+    [renderedBodyHtml, eventTopImageUrl, supportsEventTopImage],
+  );
   const unknownVariables = useMemo(() => findUnknownVariables(`${subject} ${bodyHtml}`, variables), [subject, bodyHtml, variables]);
 
   const fetchTemplates = async () => {
@@ -149,6 +198,7 @@ export default function EmailCms() {
         recipientName: sendRecipientName.trim() || undefined,
         subject: previewSubject.trim(),
         bodyHtml: renderedBodyHtml,
+        topImageSrc: supportsEventTopImage && eventTopImageUrl ? eventTopImageUrl : undefined,
       });
       message.success('Preview email has been sent.');
       setSendOpen(false);
@@ -172,6 +222,61 @@ export default function EmailCms() {
   useEffect(() => {
     fetchTemplates();
   }, []);
+
+  useEffect(() => {
+    if (!supportsEventTopImage) {
+      setOfficialEvents([]);
+      setSelectedEventSeq(null);
+      setEventTopImageUrl(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await callGetEventList({ eventType: 'main' });
+        if (cancelled) return;
+        setOfficialEvents(res?.item ?? []);
+      } catch {
+        if (!cancelled) setOfficialEvents([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [supportsEventTopImage]);
+
+  useEffect(() => {
+    if (!supportsEventTopImage || !selectedEventSeq) {
+      setEventTopImageUrl(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const detailRes = await callGetEventDetail(selectedEventSeq);
+        const headerSeq = detailRes?.item?.emailHeaderImageFileSeq ?? null;
+        if (!headerSeq) {
+          if (!cancelled) setEventTopImageUrl(null);
+          return;
+        }
+        const fileRes = await callGetFileList(headerSeq);
+        const firstFile = (fileRes?.item ?? []).find((file) => file.delYn !== 'Y');
+        const previewUrl = firstFile ? getImagePreviewUrl(firstFile) : undefined;
+        const absoluteUrl = toAbsoluteImageUrl(previewUrl);
+        if (!absoluteUrl) {
+          if (!cancelled) setEventTopImageUrl(null);
+          return;
+        }
+        const dataUrl = await fetchImageAsDataUrl(absoluteUrl);
+        if (!cancelled) setEventTopImageUrl(dataUrl ?? absoluteUrl);
+      } catch {
+        if (!cancelled) setEventTopImageUrl(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [supportsEventTopImage, selectedEventSeq]);
 
   return (
     <div className="saf-screen saf-email-cms-screen">
@@ -268,6 +373,29 @@ export default function EmailCms() {
               </button>
             ))}
           </div>
+
+          {supportsEventTopImage && (
+            <div className="saf-panel-title">
+              <h2>Event Top Image</h2>
+              <p>Pick an official event to preview its Email Top image.</p>
+              <select
+                className="saf-event-top-select"
+                value={selectedEventSeq ?? ''}
+                onChange={(event) => {
+                  const next = event.target.value;
+                  setSelectedEventSeq(next ? Number(next) : null);
+                }}
+              >
+                <option value="">No event selected</option>
+                {officialEvents.map((event) => (
+                  <option key={event.eventSeq} value={event.eventSeq}>{event.title}</option>
+                ))}
+              </select>
+              {selectedEventSeq !== null && !eventTopImageUrl && (
+                <p className="saf-email-warning">This event has no Email Top image attached.</p>
+              )}
+            </div>
+          )}
 
           <div className="saf-panel-title is-preview-title">
             <h2>Live Preview</h2>
@@ -370,8 +498,11 @@ function stripHtml(value: string) {
   return normalizeStoredHtml(value).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ');
 }
 
-function buildEmailPreviewHtml(bodyHtml: string) {
+function buildEmailPreviewHtml(bodyHtml: string, topImageUrl?: string | null) {
   const normalizedHtml = normalizeStoredHtml(bodyHtml);
+  const topImageMarkup = topImageUrl
+    ? `<div class="mail-top-image"><img src="${escapeHtmlAttribute(topImageUrl)}" alt=""></div>`
+    : '';
 
   return `
     <!doctype html>
@@ -382,6 +513,8 @@ function buildEmailPreviewHtml(bodyHtml: string) {
           body { margin: 0; background: #f4f6f9; font-family: Arial, 'Segoe UI', sans-serif; color: #1f2937; }
           .mail-shell { max-width: 640px; margin: 0 auto; padding: 32px 20px; }
           .mail-card { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
+          .mail-top-image { background: #ffffff; }
+          .mail-top-image img { display: block; width: 100%; height: auto; }
           .mail-header { padding: 24px 28px; background: ${EMAIL_HEADER_BACKGROUND}; color: #ffffff; font-size: 20px; font-weight: 700; letter-spacing: .2px; }
           .mail-body { padding: 28px; font-size: 15px; line-height: 1.65; }
           .mail-body p { margin: 0 0 14px; }
@@ -397,6 +530,7 @@ function buildEmailPreviewHtml(bodyHtml: string) {
       <body>
         <div class="mail-shell">
           <div class="mail-card">
+            ${topImageMarkup}
             <div class="mail-header">${EMAIL_BRAND_NAME}</div>
             <div class="mail-body">${normalizedHtml || '<p>No body content.</p>'}</div>
             <div class="mail-footer">
@@ -414,6 +548,15 @@ function buildEmailPreviewHtml(bodyHtml: string) {
       </body>
     </html>
   `;
+}
+
+function escapeHtmlAttribute(value: string) {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
 }
 
 function normalizeStoredHtml(bodyHtml?: string) {

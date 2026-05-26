@@ -41,20 +41,17 @@ const USE_YN_OPTIONS = [
 
 interface FormState {
   title: string;
-  galleryYear: string;
   description: string;
   fileSeq: number | null;
   sortSeq: string;
   useYn: string;
 }
 
-const thisYear = () => new Date().getFullYear();
 const MAX_GALLERY_IMAGE_COUNT = 80;
 const GALLERY_IMAGE_MAX_SIZE = 30 * 1024 * 1024;
 
 const blankForm = (): FormState => ({
   title: '',
-  galleryYear: String(thisYear()),
   description: '',
   fileSeq: null,
   sortSeq: '0',
@@ -74,7 +71,6 @@ export default function Gallery() {
 
   const [items, setItems] = useState<GalleryListItem[]>([]);
   const [keyword, setKeyword] = useState('');
-  const [yearFilter, setYearFilter] = useState<string>('');
   const [useYnFilter, setUseYnFilter] = useState<string>('');
   const [loading, setLoading] = useState(false);
 
@@ -89,10 +85,8 @@ export default function Gallery() {
   const fetchList = useCallback(async () => {
     setLoading(true);
     try {
-      const trimmedYear = yearFilter.trim();
       const res = await callGetGalleryList({
         keyword: keyword.trim() || undefined,
-        galleryYear: trimmedYear ? Number(trimmedYear) : undefined,
         useYn: useYnFilter || undefined,
       });
       setItems(res?.item ?? []);
@@ -101,7 +95,7 @@ export default function Gallery() {
     } finally {
       setLoading(false);
     }
-  }, [keyword, yearFilter, useYnFilter, message]);
+  }, [keyword, useYnFilter, message]);
 
   useEffect(() => {
     fetchList();
@@ -137,7 +131,6 @@ export default function Gallery() {
       setDetailMeta(detail);
       setForm({
         title: detail.title,
-        galleryYear: String(detail.galleryYear ?? thisYear()),
         description: detail.description ?? '',
         fileSeq: detail.fileSeq ?? null,
         sortSeq: String(detail.sortSeq ?? 0),
@@ -175,24 +168,13 @@ export default function Gallery() {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
-  const galleryYearNumber = Number(form.galleryYear);
   const sortSeqNumber = Number(form.sortSeq || 0);
   const titleInvalid = submitAttempted && !form.title.trim();
-  const yearInvalid = submitAttempted && (
-    !form.galleryYear
-    || Number.isNaN(galleryYearNumber)
-    || galleryYearNumber < 2000
-    || galleryYearNumber > 2100
-  );
   const imageInvalid = submitAttempted && visibleImageCount === 0;
 
   const validate = () => {
     if (!form.title.trim()) {
       message.warning('Please enter a title.');
-      return false;
-    }
-    if (!form.galleryYear || Number.isNaN(galleryYearNumber) || galleryYearNumber < 2000 || galleryYearNumber > 2100) {
-      message.warning('Please enter a valid gallery year.');
       return false;
     }
     if (visibleImageCount === 0) {
@@ -217,7 +199,6 @@ export default function Gallery() {
 
       const payload: GallerySavePayload = {
         title: form.title.trim(),
-        galleryYear: galleryYearNumber,
         description: form.description.trim() || null,
         fileSeq: resolvedFileSeq,
         sortSeq: Number.isNaN(sortSeqNumber) ? 0 : sortSeqNumber,
@@ -310,15 +291,14 @@ export default function Gallery() {
 
         <div className="saf-notice-news-editor">
           <section className="saf-panel">
-            <PanelTitle title="Gallery Information" subtitle="Images are shown on the public Gallery page by year." />
+            <PanelTitle title="Gallery Information" subtitle="Images are shown on the public Gallery page." />
             <div className="saf-form-grid">
-              <Field label="Gallery Year *" invalid={yearInvalid}>
+              <Field label="Title *" invalid={titleInvalid}>
                 <input
-                  type="number"
-                  min={2000}
-                  max={2100}
-                  value={form.galleryYear}
-                  onChange={(e) => updateForm('galleryYear', e.target.value)}
+                  value={form.title}
+                  maxLength={300}
+                  placeholder="e.g. SAF Highlights"
+                  onChange={(e) => updateForm('title', e.target.value)}
                   disabled={saving}
                 />
               </Field>
@@ -334,15 +314,6 @@ export default function Gallery() {
                   type="number"
                   value={form.sortSeq}
                   onChange={(e) => updateForm('sortSeq', e.target.value)}
-                  disabled={saving}
-                />
-              </Field>
-              <Field label="Title *" invalid={titleInvalid}>
-                <input
-                  value={form.title}
-                  maxLength={300}
-                  placeholder="e.g. SAF 2025"
-                  onChange={(e) => updateForm('title', e.target.value)}
                   disabled={saving}
                 />
               </Field>
@@ -395,7 +366,7 @@ export default function Gallery() {
       <header className="saf-screen-header">
         <div>
           <h1>Gallery</h1>
-          <p>Manage public SAF photo galleries by year.</p>
+          <p>Manage public SAF photo galleries.</p>
         </div>
         <div className="saf-screen-actions">
           <button type="button" className="saf-action-btn is-secondary" onClick={fetchList} disabled={loading}>
@@ -421,16 +392,6 @@ export default function Gallery() {
             }}
           />
         </div>
-        <input
-          className="saf-gallery-year-filter"
-          type="number"
-          placeholder="Year"
-          value={yearFilter}
-          onChange={(e) => setYearFilter(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') fetchList();
-          }}
-        />
         <Select
           allowClear
           className="saf-filter-select"
@@ -446,9 +407,8 @@ export default function Gallery() {
         <table className="saf-table saf-gallery-table">
           <thead>
             <tr>
-              <th style={{ width: 120 }}>Preview</th>
-              <th style={{ width: 110 }}>Year</th>
               <th>Title</th>
+              <th style={{ width: 120 }}>Preview</th>
               <th style={{ width: 110 }}>Images</th>
               <th style={{ width: 110 }}>Status</th>
               <th style={{ width: 130 }}>Sort</th>
@@ -459,6 +419,10 @@ export default function Gallery() {
             {pagination.pagedItems.map((item) => (
               <tr key={item.gallerySeq} onClick={() => handleOpenEdit(item)}>
                 <td>
+                  <strong>{item.title}</strong>
+                  {item.description && <span className="saf-gallery-desc">{item.description}</span>}
+                </td>
+                <td>
                   {item.coverFileUrl || item.coverFilePath ? (
                     <img
                       className="saf-gallery-thumb"
@@ -468,11 +432,6 @@ export default function Gallery() {
                   ) : (
                     <span className="saf-gallery-thumb is-empty"><PictureOutlined /></span>
                   )}
-                </td>
-                <td><strong>{item.galleryYear}</strong></td>
-                <td>
-                  <strong>{item.title}</strong>
-                  {item.description && <span className="saf-gallery-desc">{item.description}</span>}
                 </td>
                 <td>
                   <span className="saf-muted-inline">
@@ -490,7 +449,7 @@ export default function Gallery() {
             ))}
             {!items.length && (
               <tr>
-                <td colSpan={7} className="saf-participant-empty">
+                <td colSpan={6} className="saf-participant-empty">
                   <PictureOutlined />
                   <span>{loading ? 'Loading...' : 'No galleries found.'}</span>
                 </td>

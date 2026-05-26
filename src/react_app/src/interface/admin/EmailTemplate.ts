@@ -30,4 +30,5 @@ export interface EmailTemplatePreviewSendParam {
   recipientName?: string;
   subject: string;
   bodyHtml: string;
+  topImageSrc?: string;
 }

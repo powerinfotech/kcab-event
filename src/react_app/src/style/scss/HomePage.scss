@@ -1,516 +1,808 @@
 .saf-renewal-home {
-  --saf-ink: #151340;
-  --saf-purple: #7d42ea;
-  --saf-pink: #e99bff;
-  --saf-blue: #0d56bd;
-  --saf-soft: #f0edff;
+  --saf-ink: #11132f;
+  --saf-muted: #5f637b;
+  --saf-blue: #315cff;
+  --saf-purple: #7b54f6;
+  --saf-pink: #df55e7;
+  --saf-line: rgba(37, 36, 74, 0.12);
 
   min-height: 100vh;
+  overflow-x: hidden;
   background: #fff;
   color: var(--saf-ink);
   font-family: 'Onest', 'Open Sans', 'Noto Sans KR', sans-serif;
-  overflow-x: hidden;
 
   *,
   *::before,
   *::after {
+    box-sizing: border-box;
     letter-spacing: 0;
   }
 }
 
-.saf-renewal-section-inner {
-  width: min(100% - 48px, 1080px);
-  margin: 0 auto;
+.saf-renewal-shell {
+  width: min(100% - 48px, 996px);
+  margin-left: max(24px, calc(50% - 356px));
+  margin-right: 0;
 }
 
 .saf-renewal-header {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 20;
-  padding: 30px 0;
-  color: #fff;
+  inset: 0 0 auto 0;
+  z-index: 30;
+  height: 124px;
+  background: transparent;
 }
 
 .saf-renewal-header-inner {
-  width: min(100% - 48px, 1060px);
-  margin: 0 auto;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 32px;
+  gap: 48px;
+  width: min(100% - 96px, 1440px);
+  margin: 0 auto;
+}
+
+.saf-renewal-header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.saf-renewal-social {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.16);
+    color: #fff;
+    transition: background 0.18s ease;
+  }
+
+  a:hover {
+    background: rgba(255, 255, 255, 0.32);
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
 }
 
 .saf-renewal-brand {
   display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  color: #fff;
-  font-weight: 800;
-  text-transform: uppercase;
-}
-
-.saf-renewal-brand-text {
-  max-width: 86px;
-  font-size: 10px;
-  line-height: 1.05;
+  color: #4d3fd7;
 }
 
 .saf-renewal-logo {
   display: inline-flex;
-  width: 58px;
-  height: 36px;
+  width: 94px;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
 
   svg {
     width: 100%;
-    height: 100%;
+    height: 40px;
     fill: none;
     stroke: currentColor;
-    stroke-width: 2.2;
+    stroke-width: 2;
     stroke-linecap: round;
     stroke-linejoin: round;
   }
 }
 
+.saf-renewal-logo-title {
+  margin-top: 3px;
+  color: currentColor;
+  font-size: 7px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
 .saf-renewal-nav {
   display: flex;
   align-items: center;
-  gap: 34px;
+  gap: 28px;
 
   a {
-    color: rgba(255, 255, 255, 0.92);
-    font-size: 16px;
+    color: #fff;
+    font-size: 15px;
     font-weight: 500;
     text-decoration: none;
-    transition: opacity 0.2s ease;
+    white-space: nowrap;
+    opacity: 0.92;
+    transition: opacity 0.18s ease;
+  }
 
-    &:hover {
-      opacity: 0.72;
-    }
+  a:hover {
+    opacity: 1;
+  }
+}
+
+.saf-renewal-brand {
+  color: #fff;
+
+  .saf-renewal-logo-title {
+    color: #fff;
+  }
+}
+
+.saf-renewal-sunset-hero {
+  position: relative;
+  min-height: 100vh;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  color: #fff;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.saf-renewal-sunset-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(20, 16, 46, 0.45) 0%, rgba(20, 16, 46, 0.0) 30%, rgba(20, 16, 46, 0.55) 100%),
+    linear-gradient(120deg, rgba(123, 84, 246, 0.35) 0%, rgba(20, 16, 46, 0) 55%);
+  z-index: 0;
+}
+
+.saf-renewal-sunset-hero-inner {
+  position: relative;
+  z-index: 2;
+  width: min(100% - 96px, 1440px);
+  margin: 0 auto;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+}
+
+.saf-renewal-sunset-hero-content {
+  width: 100%;
+  max-width: 760px;
+  padding-left: 80px;
+}
+
+.saf-renewal-sunset-eyebrow {
+  margin: 0 0 26px;
+  color: #d6b3ff;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+}
+
+.saf-renewal-sunset-title {
+  margin: 0 0 28px;
+  font-size: 92px;
+  line-height: 1.02;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: -1.5px;
+  white-space: nowrap;
+
+  span {
+    background: linear-gradient(90deg, #f1c6ff 0%, #d99bff 55%, #b485ff 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+  }
+}
+
+.saf-renewal-sunset-meta {
+  display: grid;
+  grid-template-columns: 138px 1fr;
+  align-items: start;
+  gap: 28px;
+  margin-bottom: 36px;
+}
+
+.saf-renewal-sunset-pager {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 22px;
+  font-weight: 600;
+  padding-top: 6px;
+  text-shadow: 0 2px 6px rgba(20, 16, 46, 0.45);
+}
+
+.saf-renewal-sunset-pager-arrow {
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.saf-renewal-sunset-pager-num {
+  font-variant-numeric: tabular-nums;
+}
+
+.saf-renewal-sunset-pager-sep {
+  color: rgba(255, 255, 255, 0.55);
+  margin: 0 4px;
+}
+
+.saf-renewal-sunset-copy {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 15px;
+  line-height: 1.6;
+  font-weight: 400;
+}
+
+.saf-renewal-sunset-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 24px;
+  border-radius: 999px;
+  background: linear-gradient(95deg, #6f3df0 0%, #b35bff 100%);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  text-decoration: none;
+  box-shadow: 0 16px 30px -14px rgba(122, 64, 240, 0.75);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+
+  span {
+    font-size: 14px;
+    line-height: 1;
+  }
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 22px 40px -16px rgba(122, 64, 240, 0.85);
   }
 }
 
 .saf-renewal-hero {
   position: relative;
-  height: min(860px, 94vh);
-  min-height: 640px;
+  height: 186px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 24% 116%, rgba(210, 234, 212, 0.85) 0 130px, transparent 132px),
+    linear-gradient(58deg, rgba(202, 231, 239, 0.82) 0 15%, transparent 15.2%),
+    linear-gradient(236deg, rgba(218, 168, 245, 0.8) 0 19%, transparent 19.2%),
+    linear-gradient(48deg, rgba(196, 168, 234, 0.28) 0 48%, transparent 48.2%),
+    linear-gradient(100deg, #f4f1ff 0%, #fbf2ff 60%, #e8c9ff 100%);
+}
+
+.saf-renewal-hero-inner {
+  position: relative;
+  height: 100%;
   display: flex;
   align-items: center;
-  background-size: cover;
-  background-position: center;
-  color: #fff;
+}
 
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background:
-      linear-gradient(90deg, rgba(33, 18, 105, 0.76) 0%, rgba(111, 35, 139, 0.48) 44%, rgba(4, 24, 72, 0.5) 100%),
-      linear-gradient(180deg, rgba(6, 12, 52, 0.1) 0%, rgba(10, 13, 54, 0.82) 100%);
+.saf-renewal-hero-media {
+  position: relative;
+  width: 270px;
+  height: 170px;
+  flex: 0 0 270px;
+}
+
+.saf-renewal-hero-loop {
+  position: absolute;
+  left: 116px;
+  top: 18px;
+  width: 158px;
+  height: 112px;
+  border: 4px solid #d978f1;
+  border-radius: 60% 52% 50% 0 / 54% 58% 42% 0;
+}
+
+.saf-renewal-hero-dot {
+  position: absolute;
+  left: 102px;
+  top: 132px;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #4d63ff 0%, #db52ed 100%);
+}
+
+.saf-renewal-hero-copy-block {
+  position: relative;
+  z-index: 1;
+  min-width: 660px;
+  margin-left: 34px;
+
+  h1 {
+    margin: 0;
+    color: #171348;
+    font-size: 50px;
+    line-height: 1.04;
+    font-weight: 900;
+    white-space: nowrap;
+  }
+
+  h1 span {
+    color: var(--saf-purple);
+  }
+
+  p {
+    margin: 14px 0 26px;
+    color: #5b5a72;
+    font-size: 18px;
+    line-height: 1.35;
   }
 }
 
-.saf-renewal-hero-content {
-  position: relative;
-  z-index: 1;
-  width: min(100% - 48px, 720px);
-  margin-left: max(24px, calc(50% - 260px));
-  padding-top: 88px;
-}
-
-.saf-renewal-eyebrow,
-.saf-renewal-kicker {
-  margin: 0 0 22px;
-  color: rgba(255, 255, 255, 0.88);
-  font-size: 16px;
-  font-weight: 800;
-  text-transform: uppercase;
-}
-
-.saf-renewal-hero h1 {
-  margin: 0;
-  color: #fff;
-  font-size: 72px;
-  line-height: 1.12;
-  font-weight: 900;
+.saf-renewal-date-block {
+  display: grid;
+  gap: 4px;
 
   span {
-    color: var(--saf-pink);
+    color: #7f7c91;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+  }
+
+  strong {
+    color: var(--saf-ink);
+    font-size: 20px;
+    line-height: 1.2;
+    font-weight: 900;
   }
 }
 
-.saf-renewal-hero-copy {
-  max-width: 700px;
-  margin: 24px 0 34px;
-  color: rgba(255, 255, 255, 0.86);
-  font-size: 20px;
-  line-height: 1.55;
+.saf-renewal-expect {
+  padding: 132px 0 86px;
+  background: #fff;
 }
 
-.saf-renewal-primary-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-height: 56px;
-  padding: 0 34px;
-  border-radius: 999px;
-  background: linear-gradient(135deg, #5a48ef 0%, #bd4df2 100%);
-  color: #fff;
-  font-size: 14px;
-  font-weight: 900;
-  text-transform: uppercase;
-  box-shadow: 0 16px 34px rgba(47, 16, 116, 0.34);
+.saf-renewal-expect .saf-renewal-shell {
+  width: min(100% - 96px, 1200px);
+  margin: 0 auto;
 }
 
-.saf-renewal-hero-control {
-  position: absolute;
-  z-index: 1;
-  left: max(24px, calc(50% - 640px));
-  bottom: 96px;
-  display: flex;
-  gap: 8px;
-  color: rgba(255, 255, 255, 0.35);
-  font-size: 20px;
-  font-weight: 800;
-}
-
-.saf-renewal-threads {
-  position: relative;
-  min-height: 640px;
-  padding: 92px 0 0;
-  background-color: #7c43e4;
-  background-size: cover;
-  background-position: center top;
-  color: #fff;
-
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background:
-      linear-gradient(90deg, rgba(48, 21, 139, 0.72) 0%, rgba(96, 40, 190, 0.38) 44%, rgba(137, 67, 226, 0.08) 100%),
-      linear-gradient(180deg, rgba(24, 20, 94, 0.08) 0%, rgba(57, 21, 154, 0.42) 100%);
-  }
-}
-
-.saf-renewal-threads-inner {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  grid-template-columns: 0.95fr 1.6fr;
-  gap: 70px;
-  align-items: start;
-}
-
-.saf-renewal-section-copy {
-  padding-top: 10px;
+.saf-renewal-section-heading {
+  max-width: 760px;
+  margin: 0 auto;
+  text-align: center;
 
   h2 {
-    margin: 0;
-    color: #fff;
-    font-size: 36px;
-    line-height: 1.15;
+    margin: 30px 0 22px;
+    color: var(--saf-ink);
+    font-size: 60px;
+    line-height: 1.18;
     font-weight: 900;
   }
 
-  p:last-child {
-    margin: 18px 0 0;
-    max-width: 360px;
-    color: rgba(255, 255, 255, 0.78);
-    font-size: 15px;
-    line-height: 1.65;
+  h2 strong {
+    display: inline-block;
+    color: var(--saf-purple);
+    font-weight: 900;
+  }
+
+  p {
+    margin: 0;
+    color: #686b83;
+    font-size: 18px;
+    line-height: 1.62;
   }
 }
 
-.saf-renewal-title-line {
-  width: 64px;
-  height: 2px;
-  margin: 22px 0 0;
-  background: rgba(255, 255, 255, 0.68);
+.saf-renewal-pill {
+  display: inline-flex;
+  min-height: 30px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 28px;
+  border: 1px solid rgba(74, 70, 135, 0.1);
+  border-radius: 999px;
+  background: linear-gradient(100deg, #edf4ff 0%, #ffe3ff 100%);
+  color: #2f2188;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 5px;
+  text-transform: uppercase;
 }
 
-.saf-renewal-thread-grid {
+.saf-renewal-expect-grid {
+  width: 100%;
+  margin: 80px auto 0;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
-  margin-top: 150px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
 }
 
-.saf-renewal-thread-card {
+.saf-renewal-expect-card {
   position: relative;
-  min-height: 280px;
+  min-height: 360px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
   overflow: hidden;
-  background: #201a54;
-
-  img {
-    width: 100%;
-    height: 100%;
-    min-height: 280px;
-    display: block;
-    object-fit: cover;
-  }
+  border-radius: 24px;
+  background: #1b1748;
+  box-shadow: 0 28px 60px rgba(52, 45, 93, 0.22);
+  color: #fff;
+  isolation: isolate;
 
   &::after {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(180deg, rgba(12, 10, 48, 0.02) 20%, rgba(12, 10, 48, 0.86) 100%);
+    background: linear-gradient(180deg, rgba(20, 16, 46, 0) 38%, rgba(20, 16, 46, 0.85) 100%);
+    z-index: 1;
   }
 }
 
-.saf-renewal-thread-caption {
+.saf-renewal-expect-card-media {
   position: absolute;
-  z-index: 1;
-  inset: auto 16px 16px;
-  color: #fff;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 0;
+  transition: transform 0.3s ease;
+}
 
-  span {
-    display: block;
-    margin-bottom: 124px;
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 12px;
-    font-weight: 800;
-  }
+.saf-renewal-expect-card:hover .saf-renewal-expect-card-media {
+  transform: scale(1.04);
+}
+
+.saf-renewal-expect-card-body {
+  position: relative;
+  z-index: 2;
+  padding: 26px 26px 28px;
 
   h3 {
-    margin: 0 0 3px;
+    margin: 0 0 10px;
     color: #fff;
-    font-size: 18px;
+    font-size: 22px;
     line-height: 1.2;
     font-weight: 900;
   }
 
   p {
-    color: rgba(255, 255, 255, 0.72);
-    font-size: 12px;
-    line-height: 1.35;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.84);
+    font-size: 14px;
+    line-height: 1.5;
   }
 }
 
 .saf-renewal-statement {
   position: relative;
-  padding: 76px 0;
+  min-height: 460px;
   background-size: cover;
   background-position: center;
+  background-repeat: no-repeat;
+  overflow: hidden;
+  isolation: isolate;
   color: #fff;
+}
 
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(90deg, rgba(23, 27, 99, 0.92), rgba(96, 48, 180, 0.42));
-  }
+.saf-renewal-statement-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(15, 12, 38, 0.7) 0%, rgba(15, 12, 38, 0.85) 100%);
+  z-index: 0;
+}
 
-  .saf-renewal-section-inner {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 28px;
-  }
+.saf-renewal-statement-inner {
+  position: relative;
+  z-index: 1;
+  width: min(100% - 96px, 1200px);
+  margin: 0 auto;
+  padding: 110px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
 
-  h2 {
-    max-width: 680px;
-    margin: 0;
-    color: #fff;
-    font-size: 36px;
-    line-height: 1.32;
-    font-weight: 500;
-  }
+.saf-renewal-statement-kicker {
+  margin: 0 0 24px;
+  color: #c9b3ff;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+}
 
-  a {
-    flex: 0 0 auto;
-    width: 82px;
-    height: 82px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    background: rgba(226, 170, 255, 0.94);
-    color: #fff;
-    font-size: 34px;
-    text-decoration: none;
+.saf-renewal-statement-title {
+  margin: 0 0 36px;
+  max-width: 920px;
+  color: #fff;
+  font-size: 44px;
+  line-height: 1.25;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.saf-renewal-statement-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: #fff;
+  font-size: 26px;
+  text-decoration: none;
+  transition: transform 0.18s ease, background 0.18s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.22);
   }
 }
 
 .saf-renewal-recap {
-  padding: 112px 0 90px;
-  background: linear-gradient(180deg, #fff 0%, #f2f0ff 42%, #fff 100%);
-
-  > .saf-renewal-section-inner > h2 {
-    max-width: 700px;
-    margin: 0 0 34px;
-    color: var(--saf-ink);
-    font-size: 42px;
-    line-height: 1.08;
-    font-weight: 900;
-  }
-
-  .saf-renewal-kicker {
-    margin-bottom: 16px;
-    color: #6a3ed9;
-    font-size: 13px;
-  }
+  padding: 158px 0 110px;
+  background: #fff;
 }
 
 .saf-renewal-recap-grid {
   display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
-  gap: 52px;
+  grid-template-columns: 644px 430px;
+  gap: 32px;
   align-items: start;
 }
 
 .saf-renewal-recap-card {
-  min-height: 290px;
-  padding: 70px 42px;
-  background-size: cover;
-  background-position: center;
+  min-height: 394px;
+  padding: 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-radius: 40px;
+  background:
+    radial-gradient(circle at 96% 8%, rgba(255, 255, 255, 0.28) 0 120px, transparent 122px),
+    linear-gradient(135deg, #315cff 0%, #824bf4 48%, #ef58d4 100%);
+  box-shadow: 0 36px 72px rgba(75, 67, 156, 0.18);
   color: #fff;
 
-  p {
-    margin: 0 0 18px;
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 13px;
-    font-weight: 800;
-    text-transform: uppercase;
-  }
-
-  h3 {
-    margin: 0 0 22px;
-    color: #fff;
-    font-size: 32px;
-    line-height: 1.2;
-    font-weight: 900;
-    text-transform: uppercase;
-  }
-
-  a {
-    display: inline-flex;
-    min-height: 38px;
-    align-items: center;
-    padding: 0 24px;
-    border: 1px solid rgba(255, 255, 255, 0.72);
-    color: #fff;
+  > span {
+    position: relative;
+    padding-left: 42px;
+    color: rgba(255, 255, 255, 0.92);
     font-size: 12px;
     font-weight: 900;
+    letter-spacing: 7px;
+    text-transform: uppercase;
+  }
+
+  > span::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 32px;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.7);
+  }
+
+  div {
+    display: flex;
+    justify-content: space-between;
+    color: rgba(28, 43, 139, 0.38);
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 4px;
     text-transform: uppercase;
   }
 }
 
 .saf-renewal-recap-copy {
+  padding-top: 8px;
+
+  h2 {
+    margin: 24px 0 24px;
+    color: var(--saf-ink);
+    font-size: 48px;
+    line-height: 1.12;
+    font-weight: 900;
+  }
+
   p {
-    margin: 0 0 16px;
-    color: #4e4c68;
-    font-size: 16px;
-    line-height: 1.55;
+    max-width: 430px;
+    margin: 0;
+    color: #585b73;
+    font-size: 17px;
+    line-height: 1.58;
   }
 
   dl {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 24px 40px;
-    margin-top: 32px;
-    padding-top: 28px;
-    border-top: 1px solid rgba(45, 31, 98, 0.22);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 28px;
+    margin: 54px 0 0;
   }
 
   dt {
-    color: #7040d9;
+    color: var(--saf-purple);
     font-size: 34px;
     line-height: 1;
     font-weight: 900;
   }
 
   dd {
-    margin-top: 6px;
-    color: #5e5a76;
-    font-size: 12px;
+    margin-top: 8px;
+    color: #57596c;
+    font-size: 11px;
     font-weight: 800;
     text-transform: uppercase;
   }
 }
 
-.saf-renewal-gallery-heading {
-  margin-top: 74px;
+.saf-renewal-journey {
+  padding: 170px 0 150px;
+  background:
+    radial-gradient(circle at 82% 18%, rgba(132, 45, 243, 0.75) 0 260px, transparent 430px),
+    linear-gradient(140deg, #061070 0%, #270073 42%, #7200bd 100%);
+  color: #fff;
+}
+
+.saf-renewal-journey .saf-renewal-shell {
+  width: min(100% - 96px, 1200px);
+  margin: 0 auto;
+}
+
+.saf-renewal-journey-heading {
+  max-width: 830px;
+  margin: 0 auto;
+  text-align: center;
+
+  > span {
+    display: inline-flex;
+    min-height: 34px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 24px;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: 999px;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+  }
+
+  h2 {
+    margin: 42px 0 26px;
+    color: #fff;
+    font-size: 58px;
+    line-height: 1.22;
+    font-weight: 900;
+  }
+
+  p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 18px;
+    line-height: 1.56;
+  }
+}
+
+.saf-renewal-journey-grid {
+  margin-top: 96px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.saf-renewal-journey-card {
+  position: relative;
+  min-height: 420px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 18px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  isolation: isolate;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(20, 8, 70, 0.12) 0%, rgba(10, 0, 58, 0.82) 100%);
+    z-index: 1;
+  }
+
+  span {
+    position: absolute;
+    z-index: 2;
+    left: 22px;
+    bottom: 22px;
+    color: #fff;
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+  }
+}
+
+.saf-renewal-sponsors {
+  padding: 146px 0 156px;
+  background: #fff;
+
+  h2 {
+    max-width: 760px;
+    margin: 0 0 90px 340px;
+    color: var(--saf-ink);
+    font-size: 48px;
+    line-height: 1.18;
+    font-weight: 900;
+    text-align: center;
+  }
+
+  h2 span {
+    color: var(--saf-purple);
+  }
+}
+
+.saf-renewal-sponsor-row {
+  padding: 0 0 78px;
+}
+
+.saf-renewal-sponsor-title {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 20px;
+  margin-bottom: 36px;
 
   &::before,
   &::after {
     content: '';
     height: 1px;
     flex: 1;
-    background: rgba(42, 31, 95, 0.18);
+    background: var(--saf-line);
   }
 
   span {
-    color: #7040d9;
-    font-size: 13px;
+    display: inline-flex;
+    min-height: 30px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 28px;
+    border-radius: 999px;
+    background: linear-gradient(100deg, #e8f2ff 0%, #ffdffd 100%);
+    color: #2c1b89;
+    font-size: 12px;
     font-weight: 900;
+    letter-spacing: 5px;
     text-transform: uppercase;
-  }
-}
-
-.saf-renewal-gallery-strip {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 22px;
-  margin-top: 24px;
-
-  img {
-    width: 100%;
-    aspect-ratio: 1.22;
-    display: block;
-    object-fit: cover;
-  }
-}
-
-.saf-renewal-sponsors {
-  padding: 84px 0 94px;
-  background: #fff;
-
-  h2 {
-    margin: 0 0 44px;
-    color: var(--saf-purple);
-    font-size: 44px;
-    line-height: 1.1;
-    font-weight: 900;
-  }
-}
-
-.saf-renewal-sponsor-row {
-  padding: 28px 0 42px;
-  border-top: 1px solid rgba(42, 31, 95, 0.2);
-
-  h3 {
-    margin: 0 0 30px;
-    color: var(--saf-ink);
-    font-size: 21px;
-    font-weight: 900;
+    white-space: nowrap;
   }
 }
 
 .saf-renewal-logo-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 26px 54px;
+  grid-template-columns: repeat(4, 190px);
+  gap: 36px 58px;
   align-items: center;
+  justify-content: center;
 }
 
 .saf-renewal-sponsor-logo {
-  min-height: 70px;
+  min-height: 72px;
   margin: 0;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
 
   img {
     max-width: 100%;
-    max-height: 64px;
+    max-height: 68px;
     width: auto;
     height: auto;
     display: block;
@@ -519,26 +811,24 @@
 }
 
 .saf-renewal-footer {
-  padding: 74px 0 58px;
-  background: linear-gradient(115deg, #0559bf 0%, #9252e7 100%);
+  padding: 54px 0 52px;
+  background: linear-gradient(115deg, #075cc4 0%, #9d55ef 100%);
   color: #fff;
 
-  .saf-renewal-section-inner {
-    display: grid;
-    grid-template-columns: 220px 1fr;
-    gap: 34px 72px;
-    align-items: start;
+  .saf-renewal-shell {
+    display: block;
   }
 
   p {
-    margin: 0;
-    color: rgba(255, 255, 255, 0.9);
+    margin: 28px 0 0;
+    color: rgba(255, 255, 255, 0.88);
     font-size: 14px;
     line-height: 1.5;
   }
 
   small {
-    grid-column: 2;
+    display: block;
+    margin-top: 28px;
     color: rgba(255, 255, 255, 0.72);
     font-size: 12px;
   }
@@ -547,11 +837,10 @@
 .saf-renewal-footer-brand {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 18px;
 
   .saf-renewal-logo {
-    width: 92px;
-    height: 58px;
+    width: 104px;
   }
 
   strong {
@@ -563,134 +852,117 @@
 }
 
 @media (max-width: 900px) {
-  .saf-renewal-section-inner,
-  .saf-renewal-header-inner {
+  .saf-renewal-shell {
     width: min(100% - 32px, 720px);
+    margin: 0 auto;
   }
 
   .saf-renewal-header {
-    padding: 22px 0;
+    height: auto;
+    padding: 26px 0;
   }
 
-  .saf-renewal-nav {
-    gap: 16px;
-
-    a {
-      font-size: 13px;
-    }
-  }
-
-  .saf-renewal-hero {
-    height: min(760px, 94vh);
-    min-height: 650px;
-  }
-
-  .saf-renewal-hero-content {
-    width: min(100% - 32px, 620px);
-    margin: 0 auto;
-    padding-top: 78px;
-  }
-
-  .saf-renewal-hero h1 {
-    font-size: 56px;
-  }
-
-  .saf-renewal-hero-copy {
-    font-size: 17px;
-  }
-
-  .saf-renewal-threads-inner,
-  .saf-renewal-recap-grid,
-  .saf-renewal-footer .saf-renewal-section-inner {
-    grid-template-columns: 1fr;
-  }
-
-  .saf-renewal-thread-grid {
-    margin-top: 42px;
-  }
-
-  .saf-renewal-gallery-strip,
-  .saf-renewal-logo-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .saf-renewal-footer small {
-    grid-column: auto;
-  }
-}
-
-@media (max-width: 640px) {
   .saf-renewal-header-inner {
+    flex-direction: column;
     align-items: flex-start;
+    gap: 24px;
   }
 
   .saf-renewal-nav {
     flex-wrap: wrap;
-    justify-content: flex-end;
-    gap: 10px 14px;
-  }
-
-  .saf-renewal-brand-text {
-    display: none;
+    gap: 18px;
+    padding-top: 0;
   }
 
   .saf-renewal-hero {
-    height: min(690px, 94vh);
-    min-height: 620px;
-    background-position: center;
+    height: auto;
+    padding: 44px 0 54px;
   }
 
-  .saf-renewal-hero h1 {
-    font-size: 42px;
+  .saf-renewal-hero-inner {
+    display: block;
   }
 
-  .saf-renewal-eyebrow {
-    font-size: 13px;
-  }
+  .saf-renewal-hero-copy-block {
+    min-width: 0;
+    margin: 28px 0 0;
 
-  .saf-renewal-hero-copy {
-    font-size: 15px;
-  }
-
-  .saf-renewal-threads {
-    padding-top: 70px;
-  }
-
-  .saf-renewal-section-copy h2,
-  .saf-renewal-statement h2,
-  .saf-renewal-recap > .saf-renewal-section-inner > h2,
-  .saf-renewal-sponsors h2 {
-    font-size: 32px;
-  }
-
-  .saf-renewal-thread-grid,
-  .saf-renewal-gallery-strip,
-  .saf-renewal-logo-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .saf-renewal-thread-caption span {
-    margin-bottom: 96px;
-  }
-
-  .saf-renewal-statement .saf-renewal-section-inner {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .saf-renewal-recap {
-    padding: 78px 0 72px;
-  }
-
-  .saf-renewal-recap-card {
-    padding: 48px 28px;
-
-    h3 {
-      font-size: 25px;
+    h1 {
+      white-space: normal;
+      font-size: 42px;
     }
   }
 
+  .saf-renewal-section-heading,
+  .saf-renewal-journey-heading,
+  .saf-renewal-sponsors h2 {
+    max-width: none;
+    margin-left: 0;
+  }
+
+  .saf-renewal-section-heading h2,
+  .saf-renewal-journey-heading h2 {
+    font-size: 42px;
+  }
+
+  .saf-renewal-expect-grid,
+  .saf-renewal-journey-grid {
+    width: 100%;
+    grid-template-columns: 1fr;
+  }
+
+  .saf-renewal-recap-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .saf-renewal-logo-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .saf-renewal-logo {
+    width: 76px;
+
+    svg {
+      height: 32px;
+    }
+  }
+
+  .saf-renewal-logo-title {
+    font-size: 5.5px;
+  }
+
+  .saf-renewal-hero-media {
+    transform: scale(0.82);
+    transform-origin: left top;
+  }
+
+  .saf-renewal-hero-copy-block h1,
+  .saf-renewal-section-heading h2,
+  .saf-renewal-recap-copy h2,
+  .saf-renewal-journey-heading h2,
+  .saf-renewal-sponsors h2 {
+    font-size: 34px;
+  }
+
+  .saf-renewal-expect,
+  .saf-renewal-recap,
+  .saf-renewal-sponsors {
+    padding-top: 78px;
+    padding-bottom: 78px;
+  }
+
+  .saf-renewal-recap-card {
+    min-height: 280px;
+    padding: 32px;
+  }
+
   .saf-renewal-recap-copy dl {
+    grid-template-columns: 1fr;
+  }
+
+  .saf-renewal-logo-grid {
     grid-template-columns: 1fr;
   }
 }

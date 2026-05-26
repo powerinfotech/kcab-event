@@ -34,7 +34,6 @@ export interface GalleryDetail extends GalleryListItem {
 
 export interface GallerySavePayload {
   title: string;
-  galleryYear: number;
   description?: string | null;
   fileSeq?: number | null;
   sortSeq: number;
@@ -42,7 +41,6 @@ export interface GallerySavePayload {
 }
 
 export interface GallerySearchParams {
-  galleryYear?: number | '';
   useYn?: string;
   keyword?: string;
 }

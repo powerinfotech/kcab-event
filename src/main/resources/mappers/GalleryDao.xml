@@ -124,7 +124,7 @@
         VALUES
             (
              #{title}
-            ,#{galleryYear}
+            ,COALESCE(#{galleryYear,jdbcType=INTEGER}, CAST(EXTRACT(YEAR FROM CURRENT_DATE) AS INTEGER))
             ,#{description,jdbcType=VARCHAR}
             ,#{fileSeq,jdbcType=BIGINT}
             ,COALESCE(#{sortSeq,jdbcType=INTEGER}, 0)
@@ -137,7 +137,7 @@
     <update id="updateGallery" parameterType="com.kcabEvent.domain.Gallery">
         UPDATE event.gallery
         SET  title = #{title}
-            ,gallery_year = #{galleryYear}
+            ,gallery_year = COALESCE(#{galleryYear,jdbcType=INTEGER}, gallery_year)
             ,description = #{description,jdbcType=VARCHAR}
             ,file_seq = #{fileSeq,jdbcType=BIGINT}
             ,sort_seq = COALESCE(#{sortSeq,jdbcType=INTEGER}, 0)

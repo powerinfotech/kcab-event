@@ -5942,17 +5942,6 @@
 
 /* Gallery */
 .saf-gallery-screen {
-  .saf-gallery-year-filter {
-    width: 120px;
-    height: 38px;
-    border: 1px solid #e7e3f5;
-    border-radius: 6px;
-    padding: 0 12px;
-    background: #fff;
-    color: #2a2750;
-    font-weight: 800;
-  }
-
   .saf-gallery-table {
     table-layout: fixed;
 
@@ -5965,10 +5954,10 @@
       }
     }
 
-    th:nth-child(1),
-    td:nth-child(1),
     th:nth-child(2),
     td:nth-child(2),
+    th:nth-child(3),
+    td:nth-child(3),
     th:nth-child(4),
     td:nth-child(4),
     th:nth-child(5),
@@ -5978,7 +5967,7 @@
       text-align: center;
     }
 
-    td:nth-child(3) {
+    td:nth-child(1) {
       overflow: hidden;
     }
   }
