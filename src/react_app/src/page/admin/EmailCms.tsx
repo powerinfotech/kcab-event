@@ -78,7 +78,7 @@ async function fetchImageAsDataUrl(url: string): Promise<string | null> {
 }
 
 export default function EmailCms() {
-  const { message } = App.useApp();
+  const { message, modal } = App.useApp();
   const [templates, setTemplates] = useState<EmailTemplateListItem[]>([]);
   const [selectedCode, setSelectedCode] = useState('');
   const [detail, setDetail] = useState<EmailTemplateDetail>(EMPTY_TEMPLATE);
@@ -141,17 +141,7 @@ export default function EmailCms() {
     }
   };
 
-  const saveTemplate = async () => {
-    if (!selectedCode) return;
-    if (!subject.trim()) {
-      message.warning('Subject is required.');
-      return;
-    }
-    if (!stripHtml(bodyHtml).trim()) {
-      message.warning('Body is required.');
-      return;
-    }
-
+  const persistTemplate = async () => {
     setSaving(true);
     try {
       const result = await callSaveEmailTemplate(selectedCode, {
@@ -168,6 +158,27 @@ export default function EmailCms() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const saveTemplate = () => {
+    if (!selectedCode) return;
+    if (!subject.trim()) {
+      message.warning('Subject is required.');
+      return;
+    }
+    if (!stripHtml(bodyHtml).trim()) {
+      message.warning('Body is required.');
+      return;
+    }
+
+    modal.confirm({
+      title: 'Save Email Template',
+      content: 'Do you want to save changes to this email template?',
+      okText: 'Save',
+      cancelText: 'Cancel',
+      centered: true,
+      onOk: persistTemplate,
+    });
   };
 
   const sendPreviewEmail = async () => {

@@ -988,26 +988,31 @@
   justify-content: center;
   gap: 8px;
   padding: 0 18px;
+  border: 0;
   border-radius: 8px;
+  background: transparent;
   font-weight: 800;
   font-size: 13px;
   letter-spacing: 0.02em;
+  cursor: pointer;
   transition: filter 0.15s ease, background 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
 
   &.is-secondary {
-    background: #fff;
+    background-color: #fff;
+    background-image: none;
     color: var(--saf-ink);
     border: 1px solid var(--saf-border);
 
     &:hover:not(:disabled) {
-      background: var(--saf-soft);
+      background-color: var(--saf-soft);
       border-color: var(--saf-border-strong);
       color: var(--saf-purple-2);
     }
   }
 
   &.is-primary {
-    background: linear-gradient(135deg, var(--saf-purple-2) 0%, var(--saf-purple-3) 100%);
+    background-color: #9586f2;
+    background-image: linear-gradient(135deg, #9586f2 0%, #dba8f6 100%);
     color: #fff;
     box-shadow: 0 4px 12px rgba(149, 134, 242, 0.16);
 
@@ -1018,17 +1023,20 @@
   }
 
   &.is-approve {
-    background: var(--saf-success);
+    background-color: #16a34a;
+    background-image: none;
     color: #fff;
   }
 
   &.is-warning {
-    background: var(--saf-warning);
+    background-color: #f59e0b;
+    background-image: none;
     color: #fff;
   }
 
   &.is-danger {
-    background: var(--saf-danger);
+    background-color: #dc2626;
+    background-image: none;
     color: #fff;
   }
 
@@ -1036,6 +1044,34 @@
     opacity: .55;
     cursor: not-allowed;
     box-shadow: none;
+  }
+}
+
+/* AntD Modal footer 내부에서도 saf-action-btn 톤이 확실히 유지되도록.
+   .ant-modal-footer 가 button 기본 스타일을 덮는 케이스가 있어 specificity 한 단계 보강. */
+.ant-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+
+  .saf-action-btn,
+  > .saf-action-btn {
+    margin: 0;          /* AntD 기본 margin-inline-start 제거 (gap 으로 일괄 통일) */
+
+    &.is-primary {
+      background-color: #9586f2;
+      background-image: linear-gradient(135deg, #9586f2 0%, #dba8f6 100%);
+      color: #fff;
+      border: 0;
+    }
+
+    &.is-secondary {
+      background-color: #fff;
+      background-image: none;
+      color: #151340;
+      border: 1px solid #e7e3f5;
+    }
   }
 }
 
