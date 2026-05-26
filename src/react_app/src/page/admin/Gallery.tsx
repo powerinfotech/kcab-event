@@ -428,6 +428,8 @@ export default function Gallery() {
                       className="saf-gallery-thumb"
                       src={item.coverFileUrl || buildGalleryImageUrl(item.coverFilePath)}
                       alt={item.title}
+                      loading="lazy"
+                      decoding="async"
                     />
                   ) : (
                     <span className="saf-gallery-thumb is-empty"><PictureOutlined /></span>
@@ -652,7 +654,7 @@ function GalleryImageUpload({
                 onDragEnd={() => setDraggingUid(null)}
               >
                 {previewUrl ? (
-                  <img src={previewUrl} alt={`Gallery image ${index + 1}`} />
+                  <LazyGalleryThumbnail src={previewUrl} alt={`Gallery image ${index + 1}`} />
                 ) : (
                   <span className="saf-gallery-image-placeholder"><PictureOutlined /></span>
                 )}
@@ -687,9 +689,53 @@ function GalleryImageUpload({
         footer={null}
         onCancel={() => setPreviewOpen(false)}
       >
-        <img alt="Gallery preview" src={previewImage} style={{ width: '100%' }} />
+        <img alt="Gallery preview" src={previewImage} decoding="async" style={{ width: '100%' }} />
       </Modal>
     </>
+  );
+}
+
+function LazyGalleryThumbnail({ src, alt }: { src: string; alt: string }) {
+  const placeholderRef = useRef<HTMLSpanElement>(null);
+  const [shouldLoad, setShouldLoad] = useState(false);
+
+  useEffect(() => {
+    if (!src) return;
+
+    const node = placeholderRef.current;
+    if (!node || typeof IntersectionObserver === 'undefined') {
+      setShouldLoad(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry?.isIntersecting) return;
+        setShouldLoad(true);
+        observer.disconnect();
+      },
+      { rootMargin: '240px' },
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [src]);
+
+  if (!shouldLoad) {
+    return (
+      <span ref={placeholderRef} className="saf-gallery-image-placeholder">
+        <PictureOutlined />
+      </span>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      loading="lazy"
+      decoding="async"
+    />
   );
 }
 
