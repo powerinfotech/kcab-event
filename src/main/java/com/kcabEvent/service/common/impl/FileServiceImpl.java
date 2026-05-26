@@ -16,10 +16,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.annotation.Resource;
+import javax.imageio.ImageIO;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
@@ -56,6 +62,11 @@ public class FileServiceImpl implements FileService {
 
     @Value("${file.url.inline-image-prefix:/api/public/editor-image}")
     private String inlineImageUrlPrefix;
+
+    private static final int DEFAULT_THUMBNAIL_WIDTH = 320;
+    private static final int MIN_THUMBNAIL_WIDTH = 80;
+    private static final int MAX_THUMBNAIL_WIDTH = 800;
+    private final Object thumbnailCreationLock = new Object();
 
     public FileServiceImpl(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
@@ -312,6 +323,50 @@ public class FileServiceImpl implements FileService {
                 .body(resource);
     }
 
+    @Override
+    public ResponseEntity<org.springframework.core.io.Resource> streamImageThumbnail(Integer fileDtlSeq, Integer width) {
+        FileDetailDto detail = fileDao.selectFileDetailBySeq(fileDtlSeq);
+        if (detail == null) {
+            return ResponseEntity.notFound().build();
+        }
+        if (!isImageExtension(detail.getFileType())) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        Path uploadDirPath = Paths.get(uploadDir).toAbsolutePath().normalize();
+        Path normalizedPath = Paths.get(detail.getFilePath()).toAbsolutePath().normalize();
+        if (!normalizedPath.startsWith(uploadDirPath)) {
+            return ResponseEntity.badRequest().build();
+        }
+        File sourceFile = normalizedPath.toFile();
+        if (!sourceFile.exists()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        int thumbnailWidth = normalizeThumbnailWidth(width);
+        try {
+            Path thumbnailPath = buildThumbnailPath(uploadDirPath, detail, thumbnailWidth);
+            File thumbnailFile = thumbnailPath.toFile();
+            if (!thumbnailFile.exists() || thumbnailFile.lastModified() < sourceFile.lastModified()) {
+                synchronized (thumbnailCreationLock) {
+                    if (!thumbnailFile.exists() || thumbnailFile.lastModified() < sourceFile.lastModified()) {
+                        createThumbnail(sourceFile, thumbnailPath, thumbnailWidth);
+                    }
+                }
+            }
+
+            org.springframework.core.io.Resource resource = new UrlResource(thumbnailFile.toURI());
+            return ResponseEntity.ok()
+                    .contentType(MediaType.IMAGE_JPEG)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline")
+                    .header(HttpHeaders.CACHE_CONTROL, "public, max-age=31536000")
+                    .body(resource);
+        } catch (IOException e) {
+            log.warn("Failed to create thumbnail for fileDtlSeq={}", fileDtlSeq, e);
+            return streamInlineFile(fileDtlSeq);
+        }
+    }
+
     private MediaType guessImageMediaType(String extension) {
         if (extension == null) return MediaType.APPLICATION_OCTET_STREAM;
         return switch (extension.toLowerCase()) {
@@ -337,6 +392,48 @@ public class FileServiceImpl implements FileService {
             case "png", "gif", "jpg", "jpeg", "webp", "svg", "bmp" -> true;
             default -> false;
         };
+    }
+
+    private int normalizeThumbnailWidth(Integer width) {
+        int requested = width == null ? DEFAULT_THUMBNAIL_WIDTH : width;
+        return Math.max(MIN_THUMBNAIL_WIDTH, Math.min(MAX_THUMBNAIL_WIDTH, requested));
+    }
+
+    private Path buildThumbnailPath(Path uploadDirPath, FileDetailDto detail, int width) throws IOException {
+        Path thumbnailDir = uploadDirPath.resolve("thumbnails").normalize();
+        if (!thumbnailDir.startsWith(uploadDirPath)) {
+            throw new IOException("Invalid thumbnail path.");
+        }
+        Files.createDirectories(thumbnailDir);
+        return thumbnailDir.resolve(detail.getFileDtlSeq() + "_" + width + ".jpg").normalize();
+    }
+
+    private void createThumbnail(File sourceFile, Path thumbnailPath, int targetWidth) throws IOException {
+        BufferedImage source = ImageIO.read(sourceFile);
+        if (source == null) {
+            throw new IOException("Unsupported image format.");
+        }
+
+        double ratio = Math.min(1.0, (double) targetWidth / source.getWidth());
+        int outputWidth = Math.max(1, (int) Math.round(source.getWidth() * ratio));
+        int outputHeight = Math.max(1, (int) Math.round(source.getHeight() * ratio));
+
+        BufferedImage thumbnail = new BufferedImage(outputWidth, outputHeight, BufferedImage.TYPE_INT_RGB);
+        Graphics2D graphics = thumbnail.createGraphics();
+        try {
+            graphics.setColor(Color.WHITE);
+            graphics.fillRect(0, 0, outputWidth, outputHeight);
+            graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            graphics.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+            graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            graphics.drawImage(source, 0, 0, outputWidth, outputHeight, null);
+        } finally {
+            graphics.dispose();
+        }
+
+        if (!ImageIO.write(thumbnail, "jpg", thumbnailPath.toFile())) {
+            throw new IOException("No JPEG writer available.");
+        }
     }
 
     private String buildPublicUrl(String prefix, Integer fileDtlSeq) {

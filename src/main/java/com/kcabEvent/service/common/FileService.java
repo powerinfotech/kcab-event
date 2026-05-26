@@ -83,4 +83,9 @@ public interface FileService {
      * 인라인 이미지 등 파일을 브라우저에 인라인으로 서빙한다 (Content-Disposition: inline).
      */
     ResponseEntity<Resource> streamInlineFile(Integer fileDtlSeq);
+
+    /**
+     * 큰 원본 이미지를 화면용 썸네일로 변환해 캐시한 뒤 인라인으로 서빙한다.
+     */
+    ResponseEntity<Resource> streamImageThumbnail(Integer fileDtlSeq, Integer width);
 }

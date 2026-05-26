@@ -84,6 +84,15 @@ public class FileController {
         return fileService.streamInlineFile(fileDtlSeq);
     }
 
+    /** 화면 썸네일 이미지 서빙 (세션 불필요 — public 경로). */
+    @GetMapping("/public/file-thumbnail/{fileDtlSeq}")
+    public org.springframework.http.ResponseEntity<org.springframework.core.io.Resource> serveFileThumbnail(
+            @PathVariable Integer fileDtlSeq,
+            @RequestParam(value = "w", required = false) Integer width
+    ) {
+        return fileService.streamImageThumbnail(fileDtlSeq, width);
+    }
+
     @lombok.Getter @lombok.Setter
     public static class EditorImageUploadResponse {
         private Integer fileDtlSeq;

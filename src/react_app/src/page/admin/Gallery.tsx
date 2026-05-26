@@ -426,7 +426,7 @@ export default function Gallery() {
                   {item.coverFileUrl || item.coverFilePath ? (
                     <img
                       className="saf-gallery-thumb"
-                      src={item.coverFileUrl || buildGalleryImageUrl(item.coverFilePath)}
+                      src={buildFileThumbnailUrl(item.coverFileDtlSeq, 240) || item.coverFileUrl || buildGalleryImageUrl(item.coverFilePath)}
                       alt={item.title}
                       loading="lazy"
                       decoding="async"
@@ -479,6 +479,15 @@ const getGalleryImagePreviewUrl = (file: Partial<FileDetailType>): string => {
   if (isBrowserReadableUrl(file.filePath)) return file.filePath ?? '';
   return buildGalleryImageUrl(file.filePath);
 };
+
+const buildFileThumbnailUrl = (fileDtlSeq?: number | null, width = 320): string => {
+  if (!fileDtlSeq) return '';
+  return `/api/public/file-thumbnail/${fileDtlSeq}?w=${width}`;
+};
+
+const getGalleryImageThumbnailUrl = (file: Partial<FileDetailType>, width = 320): string => (
+  buildFileThumbnailUrl(file.fileDtlSeq, width) || getGalleryImagePreviewUrl(file)
+);
 
 const revokeLocalPreview = (file: FileDetailType) => {
   const previewUrl = file.fileUrl ?? file.filePath;
@@ -643,6 +652,7 @@ function GalleryImageUpload({
           {visibleImages.map((file, index) => {
             const uid = getFileUid(file);
             const previewUrl = getGalleryImagePreviewUrl(file);
+            const thumbnailUrl = getGalleryImageThumbnailUrl(file, 320);
             return (
               <div
                 key={uid}
@@ -653,8 +663,8 @@ function GalleryImageUpload({
                 onDrop={() => handleDrop(uid)}
                 onDragEnd={() => setDraggingUid(null)}
               >
-                {previewUrl ? (
-                  <LazyGalleryThumbnail src={previewUrl} alt={`Gallery image ${index + 1}`} />
+                {thumbnailUrl ? (
+                  <LazyGalleryThumbnail src={thumbnailUrl} alt={`Gallery image ${index + 1}`} />
                 ) : (
                   <span className="saf-gallery-image-placeholder"><PictureOutlined /></span>
                 )}
