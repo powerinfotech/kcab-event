@@ -1462,21 +1462,27 @@
   top: 0;
   z-index: 5;
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 142px));
+  justify-content: center;
   gap: 8px;
-  padding: 12px;
+  padding: 10px;
   border: 1px solid #ece8fb;
-  border-radius: 16px;
+  border-radius: 14px;
   background: rgba(255, 255, 255, 0.92);
   box-shadow: 0 12px 28px rgba(21, 19, 64, 0.08);
   backdrop-filter: blur(12px);
 
+  &.saf-archive-day-nav--5 {
+    grid-template-columns: repeat(5, minmax(0, 142px));
+  }
+
   a {
     min-width: 0;
-    padding: 15px 16px;
-    border-radius: 10px;
+    padding: 12px 12px;
+    border-radius: 9px;
     color: #4a4475;
     text-decoration: none;
+    text-align: center;
     transition: background 0.16s ease, color 0.16s ease;
 
     &:hover {
@@ -1494,13 +1500,13 @@
   }
 
   strong {
-    font-size: 17px;
+    font-size: 15px;
     font-weight: 900;
   }
 
   span {
-    margin-top: 5px;
-    font-size: 12px;
+    margin-top: 4px;
+    font-size: 11px;
     font-weight: 700;
   }
 }
@@ -1672,6 +1678,26 @@
   align-items: center;
   justify-content: center;
 
+  a {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: transform 0.16s ease, opacity 0.16s ease;
+
+    &:hover {
+      opacity: 0.78;
+      transform: translateY(-1px);
+    }
+
+    &:focus-visible {
+      outline: 3px solid rgba(109, 94, 215, 0.32);
+      outline-offset: 3px;
+    }
+  }
+
   img {
     display: block;
     width: auto;
@@ -1734,9 +1760,27 @@
 
   .saf-archive-day-nav {
     position: static;
-    grid-template-columns: repeat(6, minmax(122px, 1fr));
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 7px;
+    padding: 9px;
+    overflow-x: visible;
+
+    &.saf-archive-day-nav--5 {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+
+    a {
+      padding: 10px 6px;
+    }
+
+    strong {
+      font-size: 14px;
+    }
+
+    span {
+      margin-top: 3px;
+      font-size: 10px;
+    }
   }
 
   .saf-archive-day-section {
