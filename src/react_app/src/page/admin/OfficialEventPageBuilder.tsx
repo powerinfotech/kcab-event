@@ -8,6 +8,7 @@ import {
   DeleteOutlined,
   EyeOutlined,
   PlusOutlined,
+  QuestionCircleOutlined,
   SaveOutlined,
 } from '@ant-design/icons';
 import {
@@ -908,6 +909,7 @@ const SectionEditor: React.FC<{
   const selectedBackgroundOption = getSectionBackgroundOption(sectionSettings.backgroundStyle);
   const backgroundPickerRef = useRef<HTMLDivElement>(null);
   const [backgroundPickerOpen, setBackgroundPickerOpen] = useState(false);
+  const [sectionGuideOpen, setSectionGuideOpen] = useState(false);
   const updateSectionSettings = (patch: Partial<SectionSettings>) => {
     onUpdate({ settingsJson: JSON.stringify({ ...sectionSettings, ...patch }) });
   };
@@ -946,16 +948,31 @@ const SectionEditor: React.FC<{
           <h3>{preset.label}</h3>
           <p>{preset.description}</p>
         </div>
-        <label className="saf-simple-toggle">
-          <input
-            type="checkbox"
-            checked={section.useYn !== 'N'}
-            disabled={!canEdit}
-            onChange={(e) => onUpdate({ useYn: e.target.checked ? 'Y' : 'N' })}
-          />
-          <span>화면에 보이기</span>
-        </label>
+        <div className="saf-simple-editor-actions">
+          <button
+            type="button"
+            className={`saf-visual-help-trigger${sectionGuideOpen ? ' is-active' : ''}`}
+            onClick={() => setSectionGuideOpen((open) => !open)}
+            aria-expanded={sectionGuideOpen}
+          >
+            <QuestionCircleOutlined />
+            <span>화면 예시</span>
+          </button>
+          <label className="saf-simple-toggle">
+            <input
+              type="checkbox"
+              checked={section.useYn !== 'N'}
+              disabled={!canEdit}
+              onChange={(e) => onUpdate({ useYn: e.target.checked ? 'Y' : 'N' })}
+            />
+            <span>화면에 보이기</span>
+          </label>
+        </div>
       </div>
+
+      {sectionGuideOpen && (
+        <SectionVisualGuide preset={preset} section={section} block={visibleItems[0]} />
+      )}
 
       <div className="saf-simple-form">
         <label>
@@ -1074,12 +1091,14 @@ const SectionEditor: React.FC<{
               <h4>{preset.addLabel?.replace('Add ', '') ?? 'Items'}</h4>
               <p>아래 정보를 입력하면 공개 화면에 자동으로 정리되어 보입니다.</p>
             </div>
-            {canEdit && (
-              <button type="button" className="saf-action-btn is-secondary" onClick={onAddItem}>
-                <PlusOutlined />
-                <span>{preset.addLabel}</span>
-              </button>
-            )}
+            <div className="saf-simple-items-actions">
+              {canEdit && (
+                <button type="button" className="saf-action-btn is-secondary" onClick={onAddItem}>
+                  <PlusOutlined />
+                  <span>{preset.addLabel}</span>
+                </button>
+              )}
+            </div>
           </div>
           {visibleItems.map((block) => (
             <SectionItemEditor
@@ -1112,25 +1131,240 @@ const SectionItemEditor: React.FC<{
   onMove: (direction: -1 | 1) => void;
   imageFiles: FileDetailType[];
   onImageFilesChange: (files: FileDetailType[]) => void;
-}> = ({ preset, block, canEdit, onUpdate, onRemove, onMove, imageFiles, onImageFilesChange }) => (
-  <article className="saf-simple-item">
-    <div className="saf-simple-item-head">
-      <strong>{getItemHeading(preset, block)}</strong>
-      <div>
-        <button type="button" disabled={!canEdit} onClick={() => onMove(-1)} title="위로 이동">
-          <ArrowUpOutlined />
-        </button>
-        <button type="button" disabled={!canEdit} onClick={() => onMove(1)} title="아래로 이동">
-          <ArrowDownOutlined />
-        </button>
-        <button type="button" disabled={!canEdit} onClick={onRemove} title="삭제">
-          <DeleteOutlined />
-        </button>
+}> = ({ preset, block, canEdit, onUpdate, onRemove, onMove, imageFiles, onImageFilesChange }) => {
+  const [helpOpen, setHelpOpen] = useState(false);
+  const isProgramItem = preset.sectionType === 'program';
+
+  return (
+    <article className="saf-simple-item">
+      <div className="saf-simple-item-head">
+        <strong>{getItemHeading(preset, block)}</strong>
+        <div>
+          {isProgramItem && (
+            <button
+              type="button"
+              className={`saf-session-help-trigger${helpOpen ? ' is-active' : ''}`}
+              onClick={() => setHelpOpen((open) => !open)}
+              title="세션 화면 예시"
+              aria-label="세션 화면 예시"
+              aria-expanded={helpOpen}
+            >
+              <QuestionCircleOutlined />
+            </button>
+          )}
+          <button type="button" disabled={!canEdit} onClick={() => onMove(-1)} title="위로 이동">
+            <ArrowUpOutlined />
+          </button>
+          <button type="button" disabled={!canEdit} onClick={() => onMove(1)} title="아래로 이동">
+            <ArrowDownOutlined />
+          </button>
+          <button type="button" disabled={!canEdit} onClick={onRemove} title="삭제">
+            <DeleteOutlined />
+          </button>
+        </div>
       </div>
+      {isProgramItem && helpOpen && <ProgramSessionGuide block={block} />}
+      {renderItemFields(preset, block, canEdit, onUpdate, imageFiles, onImageFilesChange)}
+    </article>
+  );
+};
+
+const SectionVisualGuide: React.FC<{
+  preset: SectionPreset;
+  section: EventPageSection;
+  block?: EventPageBlock;
+}> = ({ preset, section, block }) => {
+  if (preset.sectionType === 'program') {
+    return <ProgramSessionGuide block={block} />;
+  }
+
+  const content = parseBlockContent(block?.contentJson);
+  const sectionTitle = section.title || preset.defaultTitle || preset.label;
+  const subtitle = section.subtitle || preset.description;
+  const itemTitle = block?.title || block?.organizationName || preset.addLabel?.replace('Add ', '') || 'Item';
+  const imageLabel = typeof content.imageUrl === 'string' && content.imageUrl ? '이미지' : '사진/로고';
+
+  if (preset.sectionType === 'speakers') {
+    return (
+      <aside className="saf-visual-guide" aria-label={`${preset.label} 화면 예시`}>
+        <VisualGuideTitle title="연사 섹션 화면 예시" description="사진, 이름, 직책, 소속, 약력이 카드 안에서 이렇게 배치됩니다." />
+        <div className="saf-visual-canvas is-speakers">
+          <div className="saf-visual-speaker-card">
+            <div className="saf-visual-avatar">{imageLabel}</div>
+            <strong>{itemTitle}</strong>
+            <span>{block?.subtitle || '직책'}</span>
+            <small>{block?.organizationName || '소속'}</small>
+            <p>{block?.body ? '약력 문구' : '약력은 카드 아래쪽에 짧게 표시됩니다.'}</p>
+          </div>
+          <VisualPin label="사진" />
+          <VisualPin label="이름/직책/소속" />
+          <VisualPin label="약력" />
+        </div>
+      </aside>
+    );
+  }
+
+  if (preset.sectionType === 'supporting_organizations') {
+    return (
+      <aside className="saf-visual-guide" aria-label={`${preset.label} 화면 예시`}>
+        <VisualGuideTitle title="기관/로고 섹션 화면 예시" description="기관 구분별로 묶이고, 로고나 기관명이 카드로 정렬됩니다." />
+        <div className="saf-visual-canvas is-orgs">
+          <div className="saf-visual-group-title">{block ? getOrganizationGroup(block) : 'Host Organization'}</div>
+          <div className="saf-visual-logo-grid">
+            <div>{block?.organizationName || itemTitle}</div>
+            <div>Logo</div>
+            <div>Logo</div>
+          </div>
+          <VisualPin label="기관 구분" />
+          <VisualPin label="로고/기관명" />
+        </div>
+      </aside>
+    );
+  }
+
+  if (preset.sectionType === 'venue') {
+    return (
+      <aside className="saf-visual-guide" aria-label={`${preset.label} 화면 예시`}>
+        <VisualGuideTitle title="장소 섹션 화면 예시" description="장소명, 짧은 안내, 상세 설명, 버튼 문구가 안내 카드로 배치됩니다." />
+        <div className="saf-visual-canvas is-card">
+          <div className="saf-visual-card-image">장소 이미지</div>
+          <div className="saf-visual-card-body">
+            <strong>{itemTitle}</strong>
+            <p>{block?.summary || section.body || '주소 / 회의실 / 오시는 길 안내'}</p>
+            <span>{block?.buttonLabel || 'View Location'}</span>
+          </div>
+          <VisualPin label="장소명" />
+          <VisualPin label="주소/안내" />
+          <VisualPin label="링크 버튼" />
+        </div>
+      </aside>
+    );
+  }
+
+  if (preset.sectionType === 'visit_seoul') {
+    return (
+      <aside className="saf-visual-guide" aria-label={`${preset.label} 화면 예시`}>
+        <VisualGuideTitle title="호텔/방문 안내 화면 예시" description="호텔명, 주소, 예약 안내, 버튼 문구가 카드 형태로 보입니다." />
+        <div className="saf-visual-canvas is-card">
+          <div className="saf-visual-card-image">호텔 이미지</div>
+          <div className="saf-visual-card-body">
+            <strong>{itemTitle}</strong>
+            <p>{block?.summary || '주소 / 행사장까지 이동 시간'}</p>
+            <span>{block?.buttonLabel || 'View Hotel'}</span>
+          </div>
+          <VisualPin label="호텔명" />
+          <VisualPin label="주소/안내" />
+          <VisualPin label="버튼" />
+        </div>
+      </aside>
+    );
+  }
+
+  if (preset.sectionType === 'notice') {
+    return (
+      <aside className="saf-visual-guide" aria-label={`${preset.label} 화면 예시`}>
+        <VisualGuideTitle title="공지 섹션 화면 예시" description="공지 제목, 설명, 링크 버튼이 한 줄 카드로 정리됩니다." />
+        <div className="saf-visual-canvas is-notice">
+          <span>NOTICE</span>
+          <div>
+            <strong>{itemTitle}</strong>
+            <p>{block?.summary || block?.body || '공지 설명 문구'}</p>
+          </div>
+          <em>{block?.buttonLabel || 'View Notice'}</em>
+          <VisualPin label="공지 제목" />
+          <VisualPin label="설명/버튼" />
+        </div>
+      </aside>
+    );
+  }
+
+  if (preset.sectionType === 'contact') {
+    return (
+      <aside className="saf-visual-guide" aria-label={`${preset.label} 화면 예시`}>
+        <VisualGuideTitle title="문의 섹션 화면 예시" description="담당 부서, 연락처 설명, 이메일/링크 버튼이 문의 카드로 표시됩니다." />
+        <div className="saf-visual-canvas is-contact">
+          <div className="saf-visual-contact-card">
+            <strong>{itemTitle}</strong>
+            <p>{block?.summary || section.body || '담당 부서 / 이메일 / 연락처 안내'}</p>
+            <span>{block?.buttonLabel || 'Contact'}</span>
+          </div>
+          <VisualPin label="담당 부서" />
+          <VisualPin label="연락처 설명" />
+          <VisualPin label="이메일/링크" />
+        </div>
+      </aside>
+    );
+  }
+
+  return (
+    <aside className="saf-visual-guide" aria-label={`${preset.label} 화면 예시`}>
+      <VisualGuideTitle title={`${preset.label} 화면 예시`} description="섹션 제목, 소개 문구, 본문이 공개 화면에서 위에서 아래로 배치됩니다." />
+      <div className="saf-visual-canvas is-text">
+        <span>{section.eyebrow || preset.label}</span>
+        <strong>{sectionTitle}</strong>
+        <p>{section.body || subtitle}</p>
+        <VisualPin label="제목" />
+        <VisualPin label="소개/본문" />
+      </div>
+    </aside>
+  );
+};
+
+const VisualGuideTitle: React.FC<{ title: string; description: string }> = ({ title, description }) => (
+  <div className="saf-visual-guide-title">
+    <QuestionCircleOutlined />
+    <div>
+      <strong>{title}</strong>
+      <p>{description}</p>
     </div>
-    {renderItemFields(preset, block, canEdit, onUpdate, imageFiles, onImageFilesChange)}
-  </article>
+  </div>
 );
+
+const VisualPin: React.FC<{ label: string }> = ({ label }) => (
+  <i className="saf-visual-pin">{label}</i>
+);
+
+const ProgramSessionGuide: React.FC<{ block?: EventPageBlock }> = ({ block }) => {
+  const content = parseBlockContent(block?.contentJson);
+  const sessionType = getProgramSessionTypeLabel(content);
+  const track = block ? getProgramTrack(block) : PROGRAM_TRACK_OPTIONS[0];
+  const dayLabel = typeof content.dayLabel === 'string' ? content.dayLabel : '';
+  const moderator = typeof content.moderator === 'string' ? content.moderator : '';
+  const timeText = block ? formatPreviewBlockTime(block) || 'TBD' : 'TBD';
+  const titleText = block?.title || 'Session';
+
+  return (
+    <aside className="saf-visual-guide saf-session-guide" aria-label="세션 화면 예시">
+      <VisualGuideTitle title="세션 화면 예시" description="입력값이 공개 이벤트 페이지의 세션 카드 안에서 어디에 보이는지 그림처럼 확인합니다." />
+      <div className="saf-visual-canvas is-session">
+        <div className="saf-visual-track">
+          <span>{track}</span>
+          <VisualPin label="프로그램 구분" />
+        </div>
+        <div className="saf-session-visual-card">
+          <time>
+            {dayLabel && <small>{dayLabel}</small>}
+            <strong>{timeText}</strong>
+            <VisualPin label="날짜/시간" />
+          </time>
+          <div>
+            <em>{sessionType}</em>
+            <h5>{titleText}</h5>
+            <p>{block?.speakerNames || '발표자 이름'}</p>
+            <p>{moderator ? `Moderator: ${moderator}` : 'Moderator: 좌장 이름'}</p>
+            <span>{block?.venueName || '장소'}</span>
+            {block?.body && <small>설명 문구</small>}
+            <VisualPin label="형태/제목" />
+            <VisualPin label="발표자/좌장/장소" />
+          </div>
+        </div>
+        <div className="saf-visual-link-note">
+          상세 링크를 넣으면 세션 제목이 클릭 가능한 링크로 바뀝니다.
+        </div>
+      </div>
+    </aside>
+  );
+};
 
 function renderItemFields(
   preset: SectionPreset,
@@ -1781,7 +2015,15 @@ const PreviewProgramSession: React.FC<{ block: EventPageBlock }> = ({ block }) =
       </time>
       <div>
         {sessionType && <em>{sessionType}</em>}
-        <h4>{block.title || 'Session'}</h4>
+        {block.linkUrl ? (
+          <h4>
+            <a className="saf-builder-preview-program-link" href={block.linkUrl} target={block.linkTarget || '_self'} rel="noopener noreferrer">
+              {block.title || 'Session'}
+            </a>
+          </h4>
+        ) : (
+          <h4>{block.title || 'Session'}</h4>
+        )}
         {block.speakerNames && <p>{block.speakerNames}</p>}
         {moderator && <p>Moderator: {moderator}</p>}
         {block.venueName && <span>{block.venueName}</span>}
