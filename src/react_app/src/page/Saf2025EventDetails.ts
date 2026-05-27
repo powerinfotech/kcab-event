@@ -210,10 +210,44 @@ export const saf2025EventDetails: Record<string, Saf2025EventDetail> = {
     ],
   },
   'welcome-reception': {
+    images: [
+      {
+        src: `${saf2025DetailAssetPath}/welcome-reception-1.jpg`,
+        alt: 'SAF 2025 Welcome Reception highlight photo',
+      },
+      {
+        src: `${saf2025DetailAssetPath}/welcome-reception-2.jpg`,
+        alt: 'SAF 2025 Welcome Reception venue highlight photo',
+      },
+    ],
     sections: [
       {
         title: 'Overview',
-        lines: ['Seoul', 'ADR', 'Festival 2026'],
+        lines: ['The Welcome Reception is the signature opening event of the Seoul ADR Festival 2025. This special evening brings together ADR experts, practitioners, institutional representatives, academics, and service users from across the globe to celebrate the commencement of SAF 2025 in the vibrant heart of Seoul.'],
+      },
+      {
+        title: 'What Makes It Special',
+        lines: ['SAF 2025’s Welcome Reception offers a unique opportunity to gather with the Festival’s largest group of participants at the official opening event. It is the first chance of the week to reconnect with familiar faces, meet new colleagues, and expand professional networks in a relaxed and lively atmosphere.'],
+      },
+      {
+        title: 'The Iconic Venue',
+        lines: ['Hosted at the stylish Mondrian Seoul Itaewon, the Reception is set in the heart of Seoul’s most iconic and international district. Itaewon provides an ideal backdrop for an elegant yet dynamic evening where contemporary design meets global connections to celebrate the start of SAF 2025.'],
+      },
+      {
+        title: 'Registration Fee',
+        lines: ['Registration Fee: KRW 20,000 (incl. 10% VAT, total KRW 22,000)', 'Registration fee includes a buffet, complimentary wine and champagne.', 'Registration Closed'],
+      },
+      {
+        title: 'How to Register',
+        lines: ['Official Sponsors: a special complimentary code has been distributed to all official sponsors of SAF 2025. Sponsors must still complete the registration process.', 'Co-hosts, moderators, panelists, and invited guests: an exclusive complimentary code is available. Please contact the SAF Secretariat for details and registration assistance.', 'Anyone who wishes to attend: register through the original Register Now flow when registration is open.'],
+      },
+      {
+        title: 'Event Details',
+        lines: ['Date & Time: Monday, 27 October 2025, 19:00-21:00 (KST)', '18:30 Registration and networking over welcome drinks', '19:30 Opening and welcome remarks', '21:00 Event concludes', 'Location: Botanical Garden Hall (B2F), Mondrian Seoul Itaewon, 23 Jangmun-ro, Yongsan-gu, Seoul'],
+      },
+      {
+        title: 'Contact',
+        lines: ['Should you have any inquiries, please contact us at saf@kcab.or.kr.'],
       },
     ],
   },

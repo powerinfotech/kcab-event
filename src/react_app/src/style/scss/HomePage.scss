@@ -1879,6 +1879,12 @@
     background: #f8f6ff;
     box-shadow: 0 10px 24px rgba(21, 19, 64, 0.08);
   }
+
+  img[src*="welcome-reception"] {
+    width: min(100%, 220px);
+    max-height: 640px;
+    object-fit: contain;
+  }
 }
 
 .saf-archive-hosts {
