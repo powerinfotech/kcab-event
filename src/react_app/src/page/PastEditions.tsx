@@ -26,6 +26,7 @@ interface SafArchiveHost {
   name: string;
   logo: string;
   href?: string;
+  subtitle?: string;
 }
 
 interface SafArchiveEvent {
@@ -33,6 +34,13 @@ interface SafArchiveEvent {
   title: string;
   format?: string;
   venue?: string;
+  summary?: string;
+  topics?: string[];
+  topicLabel?: string;
+  sourceHref?: string;
+  sourceLabel?: string;
+  hostLabel?: string;
+  showHostNames?: boolean;
   hosts: SafArchiveHost[];
 }
 
@@ -158,8 +166,18 @@ const saf2020Hosts: Record<string, SafArchiveHost> = {
 const editions: PastEdition[] = [
   { year: 2025, dateRange: 'Oct 27 - Oct 31, 2025', theme: 'Unveiling Excellence in Arbitration', badge: 'Latest' },
   { year: 2024, dateRange: 'Oct 28 - Nov 1, 2024', theme: 'ADR Reborn' },
-  { year: 2023, dateRange: 'Oct 30 - Nov 3, 2023', theme: 'New World No Map' },
-  { year: 2022, dateRange: 'Nov 7 - Nov 11, 2022', theme: 'Solidarity for Recovery' },
+  {
+    year: 2023,
+    dateRange: 'Oct 30 - Nov 3, 2023',
+    theme: 'New World, No Map',
+    detailPath: '/past-editions/2023',
+  },
+  {
+    year: 2022,
+    dateRange: 'Nov 7 - Nov 11, 2022',
+    theme: 'Resilience for Recovery',
+    detailPath: '/past-editions/2022',
+  },
   {
     year: 2021,
     dateRange: 'Nov 1 - Nov 5, 2021',
@@ -637,6 +655,582 @@ const saf2021Days: SafArchiveDay[] = [
   },
 ];
 
+const saf2022SpeakerBasePath = '/archives/2022/speakers';
+const saf2022ImageBasePath = '/archives/2022/images';
+
+const saf2022Speakers: Record<string, SafArchiveHost> = {
+  benjaminHughes: {
+    name: 'Benjamin Hughes',
+    subtitle: 'Independent Arbitrator, Fountain Court Chambers',
+    logo: `${saf2022SpeakerBasePath}/benjamin-hughes.png`,
+  },
+  ericNg: {
+    name: 'Eric Ng',
+    subtitle: 'Deputy Secretary-General, HKIAC',
+    logo: `${saf2022SpeakerBasePath}/eric-ng.png`,
+  },
+  jaeSungLee: {
+    name: 'Jae Sung Lee',
+    subtitle: 'Senior Legal Officer, UNCITRAL',
+    logo: `${saf2022SpeakerBasePath}/jae-sung-lee.png`,
+  },
+  kevinNash: {
+    name: 'Kevin Nash',
+    subtitle: 'Registrar, SIAC',
+    logo: `${saf2022SpeakerBasePath}/kevin-nash.png`,
+  },
+  michaelLee: {
+    name: 'Michael Lee',
+    subtitle: 'Vice President, ICDR',
+    logo: `${saf2022SpeakerBasePath}/michael-lee.png`,
+  },
+  steveKim: {
+    name: 'Steve Kim',
+    subtitle: 'Secretary-General, KCAB INTERNATIONAL',
+    logo: `${saf2022SpeakerBasePath}/steve-kim.png`,
+  },
+  donnaHuang: {
+    name: 'Dr. Zhijin (Donna) Huang',
+    subtitle: 'Director, ICC Arbitration and ADR, North Asia',
+    logo: `${saf2022SpeakerBasePath}/donna-huang.png`,
+  },
+  sueHyunLim: {
+    name: 'Sue Hyun Lim',
+    subtitle: 'Partner, Kim & Chang',
+    logo: `${saf2022SpeakerBasePath}/sue-hyun-lim.png`,
+  },
+  alastairHenderson: {
+    name: 'Alastair Henderson',
+    subtitle: 'Managing Partner, Herbert Smith Freehills',
+    logo: `${saf2022SpeakerBasePath}/alastair-henderson.png`,
+  },
+  andresJanaLinetzky: {
+    name: 'Andres Jana Linetzky',
+    subtitle: 'Founding Partner, Jana & Gil Dispute Resolution',
+    logo: `${saf2022SpeakerBasePath}/andres-jana-linetzky.png`,
+  },
+  evaKalnina: {
+    name: 'Eva Kalnina',
+    subtitle: 'Independent Arbitrator, Arbitration Chambers',
+    logo: `${saf2022SpeakerBasePath}/eva-kalnina.png`,
+  },
+  jeonghyeSophieAhn: {
+    name: 'Jeonghye Sophie Ahn',
+    subtitle: 'Partner, Yulchon LLC',
+    logo: `${saf2022SpeakerBasePath}/jeonghye-sophie-ahn.png`,
+  },
+  sweeYenKoh: {
+    name: 'Swee Yen Koh',
+    subtitle: 'Partner, WongPartnership',
+    logo: `${saf2022SpeakerBasePath}/swee-yen-koh.png`,
+  },
+  yoshimiOhara: {
+    name: 'Yoshimi Ohara',
+    subtitle: 'Partner, Nagashima Ohno & Tsunematsu',
+    logo: `${saf2022SpeakerBasePath}/yoshimi-ohara.png`,
+  },
+};
+
+const saf2022Days: SafArchiveDay[] = [
+  {
+    label: 'Wed',
+    date: '9 November',
+    events: [
+      {
+        time: '16:00 - 16:10',
+        title: 'Opening Remarks',
+        format: 'Opening',
+        venue: 'Virtual Conference',
+        summary: 'Minister of Justice, Korea',
+        hosts: [],
+      },
+      {
+        time: '16:10 - 17:25',
+        title: 'The Importance of Solidarity among Arbitral Institutions on the Road to Pandemic Recovery',
+        format: 'Session 1 - 75 minutes',
+        venue: 'Virtual Conference',
+        summary: 'Moderator: Benjamin Hughes, Independent Arbitrator, Fountain Court Chambers.',
+        topics: [
+          'What has changed in the global arbitration ecosystem?',
+          'How has Covid-19 changed the way we view and handle arbitration?',
+          'What are the duties and responsibilities of arbitral institutions going forward?',
+        ],
+        hostLabel: 'Speakers',
+        showHostNames: true,
+        hosts: [
+          saf2022Speakers.benjaminHughes,
+          saf2022Speakers.ericNg,
+          saf2022Speakers.jaeSungLee,
+          saf2022Speakers.kevinNash,
+          saf2022Speakers.michaelLee,
+          saf2022Speakers.steveKim,
+          saf2022Speakers.donnaHuang,
+        ],
+      },
+      {
+        time: '17:25 - 17:40',
+        title: 'Break',
+        format: '15 minutes',
+        hosts: [],
+      },
+    ],
+  },
+  {
+    label: 'Thu',
+    date: '10 November',
+    events: [
+      {
+        time: '17:40 - 19:00',
+        title: 'Innovation Updates',
+        format: 'Session 2 - 80 minutes',
+        venue: 'Virtual Conference',
+        summary: 'Moderator: Sue Hyun Lim, Partner, Kim & Chang.',
+        topics: [
+          'Procedural innovations in arbitration in the last ten years and where they are now.',
+          'Expedited arbitration and dispute resolution in the digital economy.',
+          'Emergency arbitration.',
+          'Condition precedent, escalation clause, and mandatory mediation.',
+          'Conditional fee, contingency fee, and expedited procedure.',
+          'Arbitrator schedule and disclosure.',
+        ],
+        hostLabel: 'Speakers',
+        showHostNames: true,
+        hosts: [
+          saf2022Speakers.sueHyunLim,
+          saf2022Speakers.alastairHenderson,
+          saf2022Speakers.andresJanaLinetzky,
+          saf2022Speakers.evaKalnina,
+          saf2022Speakers.jeonghyeSophieAhn,
+          saf2022Speakers.sweeYenKoh,
+          saf2022Speakers.yoshimiOhara,
+        ],
+      },
+    ],
+  },
+];
+
+const saf2023HostBasePath = '/archives/2023/hosts';
+
+const saf2023Hosts: Record<string, SafArchiveHost> = {
+  driverTrett: {
+    name: 'Driver Trett',
+    logo: `${saf2023HostBasePath}/driver-trett.png`,
+    href: 'https://www.driver-group.com/en/asia-pacific/',
+  },
+  yulchon: {
+    name: 'Yulchon LLC',
+    logo: `${saf2023HostBasePath}/yulchon.jpg`,
+    href: 'https://www.yulchon.com/ko/main/main.do',
+  },
+  samsungCt: {
+    name: 'Samsung C&T',
+    logo: `${saf2023HostBasePath}/samsung-ct.png`,
+    href: 'https://www.samsungcnt.com/index.do',
+  },
+  dentonsLee: {
+    name: 'Dentons Lee',
+    logo: `${saf2023HostBasePath}/dentons-lee.jpg`,
+    href: 'https://www.dentonslee.com/',
+  },
+  kimChang: {
+    name: 'Kim & Chang',
+    logo: `${saf2023HostBasePath}/kim-chang.png`,
+    href: 'https://www.kimchang.com/ko/main.kc',
+  },
+  aaaIcdr: {
+    name: 'AAA-ICDR',
+    logo: `${saf2023HostBasePath}/aaa-icdr.png`,
+    href: 'https://www.icdr.org/',
+  },
+  yoonYang: {
+    name: 'Yoon & Yang',
+    logo: `${saf2023HostBasePath}/yoon-yang.png`,
+    href: 'https://www.yoonyang.com/eng/main?lang=en',
+  },
+  exponent: {
+    name: 'Exponent',
+    logo: `${saf2023HostBasePath}/exponent.jpg`,
+    href: 'https://www.exponent.com/',
+  },
+  fti: {
+    name: 'FTI Consulting',
+    logo: `${saf2023HostBasePath}/fti.jpg`,
+    href: 'https://www.fticonsulting.com/',
+  },
+  taswea: {
+    name: 'TASWEA',
+    logo: `${saf2023HostBasePath}/taswea.jpg`,
+    href: 'https://taswea.com/',
+  },
+  lawHouse: {
+    name: 'Law House',
+    logo: `${saf2023HostBasePath}/law-house.jpg`,
+    href: 'https://lawhouse.ae/',
+  },
+  secretariat: {
+    name: 'Secretariat',
+    logo: `${saf2023HostBasePath}/secretariat.jpg`,
+    href: 'https://secretariat-intl.com/',
+  },
+  kocia: {
+    name: 'KOCIA',
+    logo: `${saf2023HostBasePath}/kocia.jpg`,
+    href: 'https://en.kocia.io/',
+  },
+  kica: {
+    name: 'KICA',
+    logo: `${saf2023HostBasePath}/kica.jpg`,
+    href: 'https://www.kica.bar/',
+  },
+  kcab: {
+    name: 'KCAB INTERNATIONAL',
+    logo: `${saf2023HostBasePath}/kcab-international.png`,
+    href: 'http://www.kcabinternational.or.kr/main.do',
+  },
+  siac: {
+    name: 'SIAC',
+    logo: `${saf2023HostBasePath}/siac.jpg`,
+    href: 'https://siac.org.sg/',
+  },
+  cms: {
+    name: 'CMS',
+    logo: `${saf2023HostBasePath}/cms.png`,
+    href: 'https://cms.law/en/int/',
+  },
+  ciarb: {
+    name: 'CIArb',
+    logo: `${saf2023HostBasePath}/ciarb.jpg`,
+    href: 'https://www.ciarb.org/',
+  },
+  scma: {
+    name: 'SCMA',
+    logo: `${saf2023HostBasePath}/scma.png`,
+    href: 'https://www.scma.org.sg/',
+  },
+  kmla: {
+    name: 'Korea Maritime Law Association',
+    logo: `${saf2023HostBasePath}/kmla.jpg`,
+    href: 'http://www.kormla.or.kr/eng/sub01-01.asp',
+  },
+  simc: {
+    name: 'SIMC',
+    logo: `${saf2023HostBasePath}/simc.png`,
+    href: 'https://simc.com.sg/',
+  },
+  hkiac: {
+    name: 'HKIAC',
+    logo: `${saf2023HostBasePath}/hkiac.png`,
+    href: 'https://www.hkiac.org/',
+  },
+  steptoe: {
+    name: 'Steptoe & Johnson',
+    logo: `${saf2023HostBasePath}/steptoe.jpg`,
+    href: 'https://www.steptoe.com/en/',
+  },
+  leeKo: {
+    name: 'Lee & Ko',
+    logo: `${saf2023HostBasePath}/lee-ko.png`,
+    href: 'https://www.leeko.com/leenko/main.do?lang=KR',
+  },
+  ysiac: {
+    name: 'YSIAC',
+    logo: `${saf2023HostBasePath}/ysiac.jpg`,
+    href: 'https://siac.org.sg/ysiac-council-members',
+  },
+  hsf: {
+    name: 'Herbert Smith Freehills',
+    logo: `${saf2023HostBasePath}/hsf.jpg`,
+    href: 'https://herbertsmithfreehills.com/',
+  },
+  peterKim: {
+    name: 'Peter & Kim',
+    logo: `${saf2023HostBasePath}/peter-kim.png`,
+    href: 'https://peterandkim.com/',
+  },
+  moj: {
+    name: 'Ministry of Justice, Republic of Korea',
+    logo: `${saf2023HostBasePath}/moj.png`,
+    href: 'https://www.moj.go.kr/moj/index.do',
+  },
+  uncitral: {
+    name: 'UNCITRAL RCAP',
+    logo: `${saf2023HostBasePath}/uncitral.jpg`,
+    href: 'https://un-rok.org/about-un/offices/uncitral-rcap/',
+  },
+  draju: {
+    name: 'DR & AJU',
+    logo: `${saf2023HostBasePath}/draju.jpg`,
+    href: 'https://www.draju.com/en/main/main.html',
+  },
+  skrine: {
+    name: 'Skrine',
+    logo: `${saf2023HostBasePath}/skrine.jpg`,
+    href: 'https://www.skrine.com/',
+  },
+  amt: {
+    name: 'Anderson Mori & Tomotsune',
+    logo: `${saf2023HostBasePath}/amt.jpg`,
+    href: 'https://www.amt-law.com/en/',
+  },
+  icc: {
+    name: 'ICC International Court of Arbitration',
+    logo: `${saf2023HostBasePath}/icc.png`,
+    href: 'https://iccwbo.org/dispute-resolution/dispute-resolution-services/icc-international-court-of-arbitration/',
+  },
+  thirtyNineEssex: {
+    name: '39 Essex Chambers',
+    logo: `${saf2023HostBasePath}/39-essex.jpg`,
+    href: 'https://www.39essex.com/',
+  },
+  bkl: {
+    name: 'BKL',
+    logo: `${saf2023HostBasePath}/bkl.png`,
+    href: 'https://www.bkl.co.kr/law?lang=ko',
+  },
+  kcabNext: {
+    name: 'KCAB NEXT',
+    logo: `${saf2023HostBasePath}/kcab-next.png`,
+    href: 'http://www.kcabinternational.or.kr/common/index.do?jpath=/contents/sub040601',
+  },
+  covington: {
+    name: 'Covington & Burling LLP',
+    logo: `${saf2023HostBasePath}/covington.jpg`,
+    href: 'https://www.cov.com/',
+  },
+  sclVietnam: {
+    name: 'SCL Vietnam',
+    logo: `${saf2023HostBasePath}/scl-vietnam.png`,
+    href: 'https://scl.org.vn/',
+  },
+  sclKorea: {
+    name: 'SCL Korea',
+    logo: `${saf2023HostBasePath}/scl-korea.png`,
+    href: 'http://www.sclkorea.org/',
+  },
+};
+
+const saf2023Days: SafArchiveDay[] = [
+  {
+    label: 'Mon',
+    date: '30 October',
+    events: [
+      {
+        time: '10:30 - 12:00',
+        title: 'Driver Trett - Yulchon Panel Discussion',
+        summary: 'Perspectives on Expert Witness Engagement in Construction Dispute',
+        hosts: [saf2023Hosts.driverTrett, saf2023Hosts.yulchon, saf2023Hosts.samsungCt],
+      },
+      {
+        time: '10:30 - 12:00',
+        title: 'Dentons Lee Panel Discussion',
+        summary: 'Pre-Arbitration and Post-Arbitration Considerations of a Dispute: What you need to know and decide when you have been wronged, have financial damages and need to collect.',
+        hosts: [saf2023Hosts.dentonsLee],
+      },
+      {
+        time: '13:00 - 15:00',
+        title: 'Kim & Chang - Korea Chamber of Commerce and Industry Joint Seminar',
+        summary: 'How to Avoid or Manage M&A Disputes (*conducted in Korean)',
+        hosts: [saf2023Hosts.kimChang],
+      },
+      {
+        time: '14:00 - 16:00',
+        title: 'AAA-ICDR Event',
+        summary: 'Strategies to Develop a Career in International Arbitration',
+        hosts: [saf2023Hosts.aaaIcdr],
+      },
+      {
+        time: '15:00 - 17:00',
+        title: 'Yoon & Yang Seminar',
+        summary: 'Emerging Technology and Market in International ADR',
+        hosts: [
+          saf2023Hosts.yoonYang,
+          saf2023Hosts.exponent,
+          saf2023Hosts.fti,
+          saf2023Hosts.taswea,
+          saf2023Hosts.lawHouse,
+        ],
+      },
+      {
+        time: '16:00 - 17:30',
+        title: 'Secretariat - Panel Discussion',
+        summary: 'Managing Expert Evidence and Recovering Costs in Arbitration: Insider Perspectives and Strategies',
+        hosts: [saf2023Hosts.secretariat],
+      },
+      {
+        time: '16:30 - 18:00',
+        title: 'KOCIA - KICA Joint Webinar',
+        summary: 'Resolving New Waves of Disputes in Creative Ways',
+        hosts: [saf2023Hosts.kocia, saf2023Hosts.kica],
+      },
+      {
+        time: '19:00 - 21:00',
+        title: 'Seoul ADR Festival 2023: The Grand Welcome Reception',
+        venue: 'Harmony Ballroom, B1 Intercontinental Seoul COEX',
+        hosts: [saf2023Hosts.kcab],
+      },
+    ],
+  },
+  {
+    label: 'Tue',
+    date: '31 October',
+    events: [
+      {
+        time: '09:30 - 13:30',
+        title: 'SIAC Seoul Conference 2023',
+        summary: 'Prove Your Case: Revisiting Document Production and Witness Testimony for Korean Companies',
+        hosts: [saf2023Hosts.siac],
+      },
+      {
+        time: '10:00 - 12:00',
+        title: 'CMS Seminar',
+        summary: 'Emergency Arbitration - No Longer a Novelty But Is It Effective?',
+        hosts: [saf2023Hosts.cms],
+      },
+      {
+        time: '12:00 - 13:30',
+        title: 'CIArb (EAB) YMG Korea Chapter Event',
+        summary: 'Fireside Chat - Live, laugh and learn in arbitration and beyond',
+        hosts: [saf2023Hosts.ciarb],
+      },
+      {
+        time: '12:00 - 14:00',
+        title: 'KMLA-SCMA Joint Seminar',
+        summary: 'Study on the Cases and Procedures of Maritime Arbitration in South Korea and Singapore',
+        hosts: [saf2023Hosts.kmla, saf2023Hosts.scma],
+      },
+      {
+        time: '13:30 - 17:00',
+        title: 'SIMC Seoul Seminar 2023',
+        summary: 'Practical Insights into Mediating Mega Tech Disputes & Rising Trends in Asia',
+        hosts: [saf2023Hosts.simc],
+      },
+      {
+        time: '14:00 - 16:00',
+        title: 'HKIAC Event',
+        summary: 'Breaking the Boundaries: Arbitration, Construction and Energy',
+        hosts: [saf2023Hosts.hkiac],
+      },
+      {
+        time: '15:30 - 17:00',
+        title: 'Steptoe & Johnson Seminar',
+        summary: 'US and International Dispute Resolution: Cross-Border Technology Protection, Intellectual Property Enforcement and International Arbitration',
+        hosts: [saf2023Hosts.steptoe],
+      },
+      {
+        time: '17:00 - 18:00',
+        title: 'Lee & Ko Event',
+        summary: 'Room for Debate II',
+        hosts: [saf2023Hosts.leeKo],
+      },
+      {
+        time: '18:00 - 21:00',
+        title: 'YSIAC Networking Session',
+        summary: 'Wine and Dine + 7 Questions with SIAC Registrar',
+        hosts: [saf2023Hosts.ysiac],
+      },
+      {
+        time: '18:30 - 21:00',
+        title: "KCAB Women's Interest Committee Networking Event",
+        summary: "Herbert Smith Freehills and Women's Interest Committee Networking Event",
+        hosts: [saf2023Hosts.hsf],
+      },
+      {
+        time: '20:00',
+        title: 'CMS Cocktail Reception',
+        summary: '*Invitation Only*',
+        hosts: [saf2023Hosts.cms],
+      },
+    ],
+  },
+  {
+    label: 'Wed',
+    date: '1 November',
+    events: [
+      {
+        time: '09:00 - 18:00',
+        title: 'The 12th Asia-Pacific ADR Conference',
+        summary: 'New World, No Map',
+        venue: 'Grand Ballroom (3F), SONO FELICE Convention',
+        topicLabel: 'Sessions',
+        topics: [
+          'Session 1: Arbitration Institutions - Endemic: New Crossroads Ahead for Arbitral Institutions. Keep Tradition or Start Anew?',
+          "Session 2: Arbitration Practice - Keep Up or Perish? Practitioners' Dilemma in the New Digital ADR Age",
+          'Session 3: ISDS - ISDS Landscape: Global and Asia',
+          'Session 4: New Trends in Industry Sectors - Your Money in Digital Jungle: What Does It Mean to You?',
+        ],
+        sourceHref: 'https://www.seouladrfestival.com/2023adr-conference',
+        sourceLabel: 'Read More',
+        hosts: [saf2023Hosts.kcab],
+      },
+      {
+        time: '18:30 - 21:30',
+        title: 'Peter & Kim Networking Event',
+        summary: 'Peter & Kim Jazz Night',
+        hosts: [saf2023Hosts.peterKim],
+      },
+    ],
+  },
+  {
+    label: 'Thu',
+    date: '2 November',
+    events: [
+      {
+        time: '09:30 - 17:45',
+        title: 'Ministry of Justice, Republic of Korea & UNCITRAL RCAP',
+        summary: 'ADR Special Session on ISDS Reform',
+        hosts: [saf2023Hosts.moj, saf2023Hosts.uncitral],
+      },
+      {
+        time: '10:00 - 12:00',
+        title: 'DR & AJU-SKRINE-Anderson Mori & Tomotsune Joint Event',
+        summary: 'Unchained: Supply Chain Disputes in a Shifting Global Landscape',
+        hosts: [saf2023Hosts.draju, saf2023Hosts.skrine, saf2023Hosts.amt],
+      },
+      {
+        time: '11:45 - 14:00',
+        title: 'ICC Potluck Event',
+        hosts: [saf2023Hosts.icc],
+      },
+      {
+        time: '14:00 - 16:00',
+        title: 'Yulchon - 39 Essex Roundtable Discussion',
+        summary: 'UK-Singaporean-Korean perspectives on hot topics in International Arbitration',
+        hosts: [saf2023Hosts.yulchon, saf2023Hosts.thirtyNineEssex],
+      },
+      {
+        time: '17:00 - 20:00',
+        title: 'BKL Art Dinner',
+        summary: '*Invitation Only',
+        hosts: [saf2023Hosts.bkl],
+      },
+      {
+        time: '19:00 - 21:00',
+        title: 'KCAB NEXT',
+        summary: 'KCAB NEXT Pub Quiz',
+        hosts: [saf2023Hosts.kcabNext],
+      },
+    ],
+  },
+  {
+    label: 'Fri',
+    date: '3 November',
+    events: [
+      {
+        time: '11:00 - 12:00',
+        title: 'Covington & Burling LLP Webinar',
+        summary: 'The Use of International Arbitration for IP and Technology Disputes',
+        hosts: [saf2023Hosts.covington],
+      },
+      {
+        time: '16:00 - 18:00',
+        title: 'SCL Korea - SCL Vietnam Joint Event',
+        summary: 'ADR & Construction Industry in Vietnam: Views from Vietnam & Korea',
+        hosts: [saf2023Hosts.sclKorea, saf2023Hosts.sclVietnam],
+      },
+    ],
+  },
+];
+
 /* HomePage.tsx 의 SocialIcon / FestivalLogo 와 1:1 동일하게 둔다. */
 function SocialIcon({ icon }: { icon: string }) {
   if (icon === 'A') {
@@ -680,6 +1274,7 @@ function FestivalLogo() {
 const ALL_FILTER = 'ALL';
 const assetSrc = (asset: string | { src?: string }) => (typeof asset === 'string' ? asset : asset.src ?? '');
 const safArchiveDayId = (year: number, label: string) => `saf-${year}-${label.toLowerCase()}`;
+const compactArchiveDate = (date: string) => date.replace('October', 'Oct').replace('November', 'Nov');
 
 export default function PastEditions() {
   const setCurrentPath = useSetAtom(currentPathAtom);
@@ -906,6 +1501,34 @@ export function PastEdition2020() {
   );
 }
 
+export function PastEdition2022() {
+  return (
+    <PastEditionDetail
+      year={2022}
+      theme="Resilience for Recovery"
+      dateRange="9 to 10 November"
+      visualDateRange="9-10 Nov"
+      intro="The 11th Asia-Pacific ADR Virtual Conference was held under the theme Resilience, Restoration, Recalibration on 9-10 November 2022 in Korea Standard Time."
+      dayMetricLabel="program days"
+      visualImage={`${saf2022ImageBasePath}/gyeonghoeru.png`}
+      days={saf2022Days}
+    />
+  );
+}
+
+export function PastEdition2023() {
+  return (
+    <PastEditionDetail
+      year={2023}
+      theme="New World, No Map"
+      dateRange="30 October to 3 November"
+      visualDateRange="30 Oct-3 Nov"
+      intro="Seoul ADR Festival 2023 ran from 30 October to 3 November in Korea Standard Time. This page combines the five original day-by-day program pages into one continuous archive schedule."
+      days={saf2023Days}
+    />
+  );
+}
+
 export function PastEdition2021() {
   return (
     <PastEditionDetail
@@ -923,10 +1546,22 @@ interface PastEditionDetailProps {
   theme: string;
   dateRange: string;
   visualDateRange: string;
+  intro?: string;
+  dayMetricLabel?: string;
+  visualImage?: string;
   days: SafArchiveDay[];
 }
 
-function PastEditionDetail({ year, theme, dateRange, visualDateRange, days }: PastEditionDetailProps) {
+function PastEditionDetail({
+  year,
+  theme,
+  dateRange,
+  visualDateRange,
+  intro,
+  dayMetricLabel = 'festival days',
+  visualImage,
+  days,
+}: PastEditionDetailProps) {
   const setCurrentPath = useSetAtom(currentPathAtom);
   const totalEvents = days.reduce((sum, day) => sum + day.events.length, 0);
 
@@ -1002,13 +1637,13 @@ function PastEditionDetail({ year, theme, dateRange, visualDateRange, days }: Pa
               <p className="saf-renewal-eyebrow">SAF Archive · {year}</p>
               <h1>{theme}</h1>
               <p>
-                Seoul ADR Festival {year} ran from {dateRange} in Korea Standard Time.
-                This page combines the original day-by-day archive into one continuous schedule.
+                {intro
+                  ?? `Seoul ADR Festival ${year} ran from ${dateRange} in Korea Standard Time. This page combines the original day-by-day archive into one continuous schedule.`}
               </p>
               <div className="saf-archive-detail-stats">
                 <div>
                   <strong>{days.length}</strong>
-                  <span>festival days</span>
+                  <span>{dayMetricLabel}</span>
                 </div>
                 <div>
                   <strong>{totalEvents}</strong>
@@ -1022,7 +1657,7 @@ function PastEditionDetail({ year, theme, dateRange, visualDateRange, days }: Pa
             </div>
             <div
               className="saf-archive-detail-visual"
-              style={{ backgroundImage: `url(${assetSrc(HeroSeoulImage)})` }}
+              style={{ backgroundImage: `url(${assetSrc(visualImage ?? HeroSeoulImage)})` }}
               aria-hidden="true"
             >
               <div>
@@ -1046,7 +1681,7 @@ function PastEditionDetail({ year, theme, dateRange, visualDateRange, days }: Pa
                   onClick={(e) => handleDayJump(e, day.label)}
                 >
                   <strong>{day.label}</strong>
-                  <span>{day.date.replace('November', 'Nov')}</span>
+                  <span>{days.length === 6 ? day.date : compactArchiveDate(day.date)}</span>
                 </a>
               ))}
             </nav>
@@ -1072,6 +1707,9 @@ function PastEditionDetail({ year, theme, dateRange, visualDateRange, days }: Pa
                         <div className="saf-archive-event-card">
                           <div>
                             <h3>{event.title}</h3>
+                            {event.summary && (
+                              <p className="saf-archive-event-summary">{event.summary}</p>
+                            )}
                             {(event.format || event.venue) && (
                               <dl>
                                 {event.format && (
@@ -1088,28 +1726,67 @@ function PastEditionDetail({ year, theme, dateRange, visualDateRange, days }: Pa
                                 )}
                               </dl>
                             )}
+                            {event.topics && event.topics.length > 0 && (
+                              <div className="saf-archive-event-topics-block">
+                                <span>{event.topicLabel ?? 'Topics'}</span>
+                                <ul className="saf-archive-event-topics">
+                                  {event.topics.map((topic) => (
+                                    <li key={`${event.title}-${topic}`}>{topic}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            {event.sourceHref && (
+                              <a
+                                className="saf-archive-event-source-link"
+                                href={event.sourceHref}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                {event.sourceLabel ?? 'Read More'}
+                              </a>
+                            )}
                           </div>
-                          <div className="saf-archive-hosts">
-                            <span>{event.hosts.length > 1 ? 'Hosts' : 'Host'}</span>
-                            <div>
-                              {event.hosts.map((host) => (
-                                <figure key={`${event.title}-${host.name}`} className="saf-archive-host-logo">
-                                  {host.href ? (
-                                    <a
-                                      href={host.href}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      aria-label={`Open ${host.name} website`}
-                                    >
-                                      <img src={host.logo} alt={`${host.name} logo`} loading="lazy" />
-                                    </a>
-                                  ) : (
-                                    <img src={host.logo} alt={`${host.name} logo`} loading="lazy" />
-                                  )}
-                                </figure>
-                              ))}
+                          {event.hosts.length > 0 && (
+                            <div className={`saf-archive-hosts ${event.showHostNames ? 'saf-archive-hosts--people' : ''}`}>
+                              <span>{event.hostLabel ?? (event.hosts.length > 1 ? 'Hosts' : 'Host')}</span>
+                              <div>
+                                {event.hosts.map((host) => (
+                                  <figure
+                                    key={`${event.title}-${host.name}`}
+                                    className={`saf-archive-host-logo ${event.showHostNames ? 'saf-archive-host-logo--captioned' : ''}`}
+                                  >
+                                    {host.href ? (
+                                      <a
+                                        href={host.href}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        aria-label={`Open ${host.name} website`}
+                                      >
+                                        <img
+                                          src={host.logo}
+                                          alt={event.showHostNames ? host.name : `${host.name} logo`}
+                                          loading="lazy"
+                                        />
+                                      </a>
+                                    ) : (
+                                      <img
+                                        src={host.logo}
+                                        alt={event.showHostNames ? host.name : `${host.name} logo`}
+                                        loading="lazy"
+                                      />
+                                    )}
+                                    {event.showHostNames && (
+                                      <figcaption>
+                                        <strong>{host.name}</strong>
+                                        {host.subtitle && <span>{host.subtitle}</span>}
+                                      </figcaption>
+                                    )}
+                                  </figure>
+                                ))}
+                              </div>
                             </div>
-                          </div>
+                          )}
                         </div>
                       </li>
                     ))}
