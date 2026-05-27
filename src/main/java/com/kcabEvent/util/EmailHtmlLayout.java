@@ -13,7 +13,12 @@ import java.util.Base64;
 public final class EmailHtmlLayout {
 
     private static final String BRAND_NAME = "Seoul ADR Festival";
-    private static final String HEADER_BACKGROUND = "#62c4d2";
+    private static final String HEADER_BACKGROUND = "#f0edff";
+    private static final String HEADER_ACCENT = "#a996ee";
+    private static final String HEADER_TEXT = "#2a2750";
+    private static final String BODY_BACKGROUND = "#f7f5ff";
+    private static final String CARD_BORDER = "#e7e3f5";
+    private static final String LINK_COLOR = "#7e6ef0";
     private static final String STAMP_IMAGE_RESOURCE = "email-assets/seoul-adr-stamp.png";
     private static final String STAMP_IMAGE_SRC = loadStampImageSrc();
 
@@ -39,16 +44,16 @@ public final class EmailHtmlLayout {
                   <head>
                     <meta charset="UTF-8">
                     <style>
-                      body { margin: 0; background: #f4f6f9; font-family: Arial, 'Segoe UI', sans-serif; color: #1f2937; }
+                      body { margin: 0; background: __BODY_BACKGROUND__; font-family: Arial, 'Segoe UI', sans-serif; color: #1f2937; }
                       .mail-shell { max-width: 640px; margin: 0 auto; padding: 32px 20px; }
-                      .mail-card { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
-                      .mail-header { padding: 24px 28px; background: __HEADER_BACKGROUND__; color: #ffffff; font-size: 20px; font-weight: 700; letter-spacing: .2px; }
+                      .mail-card { background: #ffffff; border: 1px solid __CARD_BORDER__; border-radius: 8px; overflow: hidden; }
+                      .mail-header { padding: 22px 28px; border-top: 6px solid __HEADER_ACCENT__; border-bottom: 1px solid #dcd4ff; background: __HEADER_BACKGROUND__; color: __HEADER_TEXT__; font-size: 20px; font-weight: 700; letter-spacing: .2px; }
                       .mail-body { padding: 28px; font-size: 15px; line-height: 1.65; }
                       .mail-top-image { margin: 0 0 24px; }
                       .mail-top-image img { display: block; width: 100%; max-width: 584px; height: auto; border: 0; border-radius: 6px; }
                       .mail-body p { margin: 0 0 14px; }
-                      .mail-body a { color: #1f5b95; font-weight: 700; }
-                      .mail-footer { padding: 18px 28px; border-top: 1px solid #edf1f5; color: #64748b; font-size: 12px; line-height: 1.5; }
+                      .mail-body a { color: __LINK_COLOR__; font-weight: 700; }
+                      .mail-footer { padding: 18px 28px; border-top: 1px solid __CARD_BORDER__; background: __BODY_BACKGROUND__; color: #6b6788; font-size: 12px; line-height: 1.5; }
                       .mail-footer-text { vertical-align: bottom; }
                       .mail-stamp-cell { width: 172px; text-align: right; vertical-align: bottom; }
                       .mail-stamp { display: block; width: 158px; max-width: 158px; height: auto; margin-left: auto; }
@@ -56,15 +61,15 @@ public final class EmailHtmlLayout {
                       table { max-width: 100%; }
                     </style>
                   </head>
-                  <body style="margin:0;background:#f4f6f9;font-family:Arial,'Segoe UI',sans-serif;color:#1f2937;">
+                  <body style="margin:0;background:__BODY_BACKGROUND__;font-family:Arial,'Segoe UI',sans-serif;color:#1f2937;">
                     <div class="mail-shell" style="max-width:640px;margin:0 auto;padding:32px 20px;">
-                      <div class="mail-card" style="background:#ffffff;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">
-                        <div class="mail-header" style="padding:24px 28px;background:__HEADER_BACKGROUND__;color:#ffffff;font-size:20px;font-weight:700;letter-spacing:.2px;">__BRAND_NAME__</div>
+                      <div class="mail-card" style="background:#ffffff;border:1px solid __CARD_BORDER__;border-radius:8px;overflow:hidden;">
+                        <div class="mail-header" style="padding:22px 28px;border-top:6px solid __HEADER_ACCENT__;border-bottom:1px solid #dcd4ff;background:__HEADER_BACKGROUND__;color:__HEADER_TEXT__;font-size:20px;font-weight:700;letter-spacing:.2px;">__BRAND_NAME__</div>
                         <div class="mail-body" style="padding:28px;font-size:15px;line-height:1.65;">__TOP_IMAGE_HTML____BODY_HTML__</div>
-                        <div class="mail-footer" style="padding:18px 28px;border-top:1px solid #edf1f5;color:#64748b;font-size:12px;line-height:1.5;">
+                        <div class="mail-footer" style="padding:18px 28px;border-top:1px solid __CARD_BORDER__;background:__BODY_BACKGROUND__;color:#6b6788;font-size:12px;line-height:1.5;">
                           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;max-width:100%;">
                             <tr>
-                              <td class="mail-footer-text" style="vertical-align:bottom;color:#64748b;font-size:12px;line-height:1.5;">This is an automated email from __BRAND_NAME__.</td>
+                              <td class="mail-footer-text" style="vertical-align:bottom;color:#6b6788;font-size:12px;line-height:1.5;">This is an automated email from __BRAND_NAME__.</td>
                               <td class="mail-stamp-cell" align="right" style="width:172px;text-align:right;vertical-align:bottom;">
                                 <img class="mail-stamp" src="__STAMP_IMAGE_SRC__" width="158" alt="Seoul ADR Festival" style="display:block;width:158px;max-width:158px;height:auto;margin-left:auto;">
                               </td>
@@ -77,6 +82,11 @@ public final class EmailHtmlLayout {
                 </html>
                 """
                 .replace("__HEADER_BACKGROUND__", HEADER_BACKGROUND)
+                .replace("__HEADER_ACCENT__", HEADER_ACCENT)
+                .replace("__HEADER_TEXT__", HEADER_TEXT)
+                .replace("__BODY_BACKGROUND__", BODY_BACKGROUND)
+                .replace("__CARD_BORDER__", CARD_BORDER)
+                .replace("__LINK_COLOR__", LINK_COLOR)
                 .replace("__BRAND_NAME__", BRAND_NAME)
                 .replace("__STAMP_IMAGE_SRC__", STAMP_IMAGE_SRC)
                 .replace("__TOP_IMAGE_HTML__", buildTopImageHtml(topImageSrc))

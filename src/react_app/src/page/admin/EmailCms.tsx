@@ -36,7 +36,12 @@ const EMPTY_TEMPLATE: EmailTemplateDetail = {
 };
 
 const EMAIL_BRAND_NAME = 'Seoul ADR Festival';
-const EMAIL_HEADER_BACKGROUND = '#62c4d2';
+const EMAIL_HEADER_BACKGROUND = '#f0edff';
+const EMAIL_HEADER_ACCENT = '#a996ee';
+const EMAIL_HEADER_TEXT = '#2a2750';
+const EMAIL_BODY_BACKGROUND = '#f7f5ff';
+const EMAIL_CARD_BORDER = '#e7e3f5';
+const EMAIL_LINK_COLOR = '#7e6ef0';
 const EMAIL_STAMP_IMAGE_SRC = '/email-assets/seoul-adr-stamp.png';
 
 const OFFICIAL_EVENT_TEMPLATE_CODES = new Set(['official_event_participation_confirm']);
@@ -479,7 +484,11 @@ export default function EmailCms() {
 
 function resolveInitialCode(items: EmailTemplateListItem[]) {
   const pathCode = window.location.pathname.split('/').pop();
-  if (items.some((item) => item.code === pathCode)) return pathCode ?? '';
+  const pathCodeAlias: Record<string, string> = {
+    'registration-confirm': 'official_event_participation_confirm',
+  };
+  const resolvedPathCode = pathCode ? pathCodeAlias[pathCode] ?? pathCode : '';
+  if (items.some((item) => item.code === resolvedPathCode)) return resolvedPathCode;
   return items[0]?.code ?? '';
 }
 
@@ -521,16 +530,16 @@ function buildEmailPreviewHtml(bodyHtml: string, topImageUrl?: string | null) {
       <head>
         <meta charset="UTF-8">
         <style>
-          body { margin: 0; background: #f4f6f9; font-family: Arial, 'Segoe UI', sans-serif; color: #1f2937; }
+          body { margin: 0; background: ${EMAIL_BODY_BACKGROUND}; font-family: Arial, 'Segoe UI', sans-serif; color: #1f2937; }
           .mail-shell { max-width: 640px; margin: 0 auto; padding: 32px 20px; }
-          .mail-card { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
-          .mail-top-image { background: #ffffff; }
-          .mail-top-image img { display: block; width: 100%; height: auto; }
-          .mail-header { padding: 24px 28px; background: ${EMAIL_HEADER_BACKGROUND}; color: #ffffff; font-size: 20px; font-weight: 700; letter-spacing: .2px; }
+          .mail-card { background: #ffffff; border: 1px solid ${EMAIL_CARD_BORDER}; border-radius: 8px; overflow: hidden; }
+          .mail-top-image { margin: 0 0 24px; }
+          .mail-top-image img { display: block; width: 100%; max-width: 584px; height: auto; border: 0; border-radius: 6px; }
+          .mail-header { padding: 22px 28px; border-top: 6px solid ${EMAIL_HEADER_ACCENT}; border-bottom: 1px solid #dcd4ff; background: ${EMAIL_HEADER_BACKGROUND}; color: ${EMAIL_HEADER_TEXT}; font-size: 20px; font-weight: 700; letter-spacing: .2px; }
           .mail-body { padding: 28px; font-size: 15px; line-height: 1.65; }
           .mail-body p { margin: 0 0 14px; }
-          .mail-body a { color: #1f5b95; font-weight: 700; }
-          .mail-footer { padding: 18px 28px; border-top: 1px solid #edf1f5; color: #64748b; font-size: 12px; line-height: 1.5; }
+          .mail-body a { color: ${EMAIL_LINK_COLOR}; font-weight: 700; }
+          .mail-footer { padding: 18px 28px; border-top: 1px solid ${EMAIL_CARD_BORDER}; background: ${EMAIL_BODY_BACKGROUND}; color: #6b6788; font-size: 12px; line-height: 1.5; }
           .mail-footer-text { vertical-align: bottom; }
           .mail-stamp-cell { width: 172px; text-align: right; vertical-align: bottom; }
           .mail-stamp { display: block; width: 158px; max-width: 158px; height: auto; margin-left: auto; }
@@ -538,16 +547,15 @@ function buildEmailPreviewHtml(bodyHtml: string, topImageUrl?: string | null) {
           table { max-width: 100%; }
         </style>
       </head>
-      <body>
+      <body style="margin:0;background:${EMAIL_BODY_BACKGROUND};font-family:Arial,'Segoe UI',sans-serif;color:#1f2937;">
         <div class="mail-shell">
           <div class="mail-card">
-            ${topImageMarkup}
             <div class="mail-header">${EMAIL_BRAND_NAME}</div>
-            <div class="mail-body">${normalizedHtml || '<p>No body content.</p>'}</div>
+            <div class="mail-body">${topImageMarkup}${normalizedHtml || '<p>No body content.</p>'}</div>
             <div class="mail-footer">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;max-width:100%;">
                 <tr>
-                  <td class="mail-footer-text" style="vertical-align:bottom;color:#64748b;font-size:12px;line-height:1.5;">This is an automated email from ${EMAIL_BRAND_NAME}.</td>
+                  <td class="mail-footer-text" style="vertical-align:bottom;color:#6b6788;font-size:12px;line-height:1.5;">This is an automated email from ${EMAIL_BRAND_NAME}.</td>
                   <td class="mail-stamp-cell" align="right" style="width:172px;text-align:right;vertical-align:bottom;">
                     <img class="mail-stamp" src="${EMAIL_STAMP_IMAGE_SRC}" width="158" alt="${EMAIL_BRAND_NAME}" style="display:block;width:158px;max-width:158px;height:auto;margin-left:auto;">
                   </td>

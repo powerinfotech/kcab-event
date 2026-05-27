@@ -42,7 +42,7 @@ public class EmailTemplateServiceImpl extends EgovAbstractServiceImpl implements
                     """
                             <p>Hello {{user_name}},</p>
                             <p>Please use the verification code below to reset your password.</p>
-                            <p style="font-size:28px;font-weight:700;color:#1f5b95;letter-spacing:3px;">{{reset_code}}</p>
+                            <p style="font-size:28px;font-weight:700;color:#7e6ef0;letter-spacing:3px;">{{reset_code}}</p>
                             <p><strong>Never share this verification code with anyone else.</strong><br>This code will expire in {{expire_minutes}} minutes.</p>
                             """,
                     variables("user_name", "reset_code", "expire_minutes")
