@@ -8,7 +8,7 @@ import PublicNotice from '@page/public/PublicNotice';
 import PublicFaq from '@page/public/PublicFaq';
 import PublicEvents from '@page/public/PublicEvents';
 import PublicEventPage from '@page/public/PublicEventPage';
-import PastEditions, { PastEdition2020, PastEdition2021, PastEdition2022, PastEdition2023 } from '@page/PastEditions';
+import PastEditions, { PastEdition2020, PastEdition2021, PastEdition2022, PastEdition2023, PastEdition2025, PastEdition2025EventDetail } from '@page/PastEditions';
 import SafSignup from '@page/saf/SafSignup';
 import { getUserLoginInfo } from '@api/CommonApi';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
@@ -155,6 +155,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     if (currentPath === '/past-editions/2021') return <PastEdition2021 />;
     if (currentPath === '/past-editions/2022') return <PastEdition2022 />;
     if (currentPath === '/past-editions/2023') return <PastEdition2023 />;
+    if (currentPath === '/past-editions/2025') return <PastEdition2025 />;
+    if (currentPath.startsWith('/past-editions/2025/events/')) {
+      const eventSlug = decodeURIComponent(currentPath.replace(/^\/past-editions\/2025\/events\//, '').split('/')[0] ?? '');
+      return <PastEdition2025EventDetail slug={eventSlug} />;
+    }
     if (currentPath === '/events') return <PublicEvents />;
     if (currentPath.startsWith('/event/')) {
       const urlSlug = decodeURIComponent(currentPath.replace(/^\/event\//, '').split('/')[0] ?? '');
