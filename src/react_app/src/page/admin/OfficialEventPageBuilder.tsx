@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { App, Modal } from 'antd';
+import { App } from 'antd';
 import {
   ArrowDownOutlined,
   ArrowUpOutlined,
@@ -23,6 +23,7 @@ import {
   EventPageSection,
   PublicEventPage,
 } from '@interface/event/EventManagement';
+import HeroSeoulImage from '../../assets/images/saf-renewal/hero-seoul.jpg';
 
 interface OfficialEventPageBuilderProps {
   eventSeq: number | null;
@@ -56,13 +57,14 @@ interface PageSettings {
 }
 
 interface SectionSettings {
-  backgroundStyle?: 'white' | 'soft' | 'navy' | 'gold';
+  backgroundStyle?: 'white' | 'soft' | 'brand-purple' | 'brand-blue' | 'brand-pink' | 'brand-gradient' | 'lavender' | 'blue' | 'mint' | 'rose' | 'peach' | 'gold' | 'slate' | 'navy';
   width?: 'normal' | 'wide';
   spacing?: 'compact' | 'normal' | 'spacious';
   [key: string]: unknown;
 }
 
 const EMPTY_CATALOG: EventPageComponentCatalog = { categories: [], templates: [] };
+const assetSrc = (asset: string | { src?: string }) => (typeof asset === 'string' ? asset : asset.src ?? '');
 const DEFAULT_THEME: PageTheme = {
   heroBackgroundType: 'color',
   heroOverlay: 'dark',
@@ -85,10 +87,20 @@ const HERO_COLOR_OPTIONS = [
 ];
 
 const SECTION_BACKGROUND_OPTIONS = [
-  { value: 'white', label: '흰색' },
-  { value: 'soft', label: '연한 회색' },
-  { value: 'navy', label: '짙은 남색' },
-  { value: 'gold', label: '골드 포인트' },
+  { value: 'white', label: '흰색', swatch: '#ffffff' },
+  { value: 'soft', label: '연한 회색', swatch: 'linear-gradient(135deg, #f6f8fb, #ffffff)' },
+  { value: 'brand-purple', label: 'SAF 퍼플', swatch: 'linear-gradient(135deg, #ede7ff, #ffffff)' },
+  { value: 'brand-blue', label: 'SAF 블루', swatch: 'linear-gradient(135deg, #e5eeff, #ffffff)' },
+  { value: 'brand-pink', label: 'SAF 핑크', swatch: 'linear-gradient(135deg, #ffe6fb, #ffffff)' },
+  { value: 'brand-gradient', label: 'SAF 메인 그라데이션', swatch: 'linear-gradient(135deg, #315cff, #8b54f6 55%, #df55e7)' },
+  { value: 'lavender', label: '라벤더', swatch: 'linear-gradient(135deg, #efe7ff, #ffffff)' },
+  { value: 'blue', label: '연한 블루', swatch: 'linear-gradient(135deg, #e8f2ff, #ffffff)' },
+  { value: 'mint', label: '민트', swatch: 'linear-gradient(135deg, #e3fbf2, #ffffff)' },
+  { value: 'rose', label: '로즈', swatch: 'linear-gradient(135deg, #ffe7f3, #ffffff)' },
+  { value: 'peach', label: '피치', swatch: 'linear-gradient(135deg, #ffefdf, #ffffff)' },
+  { value: 'gold', label: '골드 포인트', swatch: 'linear-gradient(135deg, #fff0bb, #ffffff)' },
+  { value: 'slate', label: '슬레이트', swatch: 'linear-gradient(135deg, #334155, #111827)' },
+  { value: 'navy', label: '짙은 남색', swatch: 'linear-gradient(135deg, #10105a, #6f28bb)' },
 ] as const;
 
 const SECTION_WIDTH_OPTIONS = [
@@ -204,12 +216,26 @@ const SECTION_PRESETS: SectionPreset[] = [
 const OfficialEventPageBuilder: React.FC<OfficialEventPageBuilderProps> = ({ eventSeq, canEdit }) => {
   const { message } = App.useApp();
   const tempSeqRef = useRef(-1);
+  const previewShellRef = useRef<HTMLDivElement>(null);
+  const previewBodyRef = useRef<HTMLDivElement>(null);
+  const previewScrollFrameRef = useRef<number | null>(null);
+  const previewDragRef = useRef<{
+    pointerId: number;
+    startClientX: number;
+    startClientY: number;
+    startLeft: number;
+    startTop: number;
+    width: number;
+    height: number;
+  } | null>(null);
   const [catalog, setCatalog] = useState<EventPageComponentCatalog>(EMPTY_CATALOG);
   const [page, setPage] = useState<PublicEventPage | null>(null);
   const [activeSectionSeq, setActiveSectionSeq] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewDragging, setPreviewDragging] = useState(false);
+  const [previewPosition, setPreviewPosition] = useState<{ left: number; top: number } | null>(null);
   const [heroFiles, setHeroFiles] = useState<FileDetailType[]>([]);
   const [blockImageFiles, setBlockImageFiles] = useState<Record<number, FileDetailType[]>>({});
 
@@ -220,6 +246,99 @@ const OfficialEventPageBuilder: React.FC<OfficialEventPageBuilderProps> = ({ eve
   const activePreset = useMemo(() => getPreset(activeSection), [activeSection]);
   const theme = useMemo(() => parseTheme(page?.themeJson), [page?.themeJson]);
   const pageSettings = useMemo(() => parsePageSettings(page?.settingsJson), [page?.settingsJson]);
+
+  const scrollPreviewToSection = (sectionSeq?: number | null) => {
+    if (sectionSeq === null || sectionSeq === undefined || typeof window === 'undefined') return;
+    if (previewScrollFrameRef.current !== null) {
+      window.cancelAnimationFrame(previewScrollFrameRef.current);
+    }
+    previewScrollFrameRef.current = window.requestAnimationFrame(() => {
+      previewScrollFrameRef.current = window.requestAnimationFrame(() => {
+        const body = previewBodyRef.current;
+        const target = body?.querySelector<HTMLElement>(`#preview-${sectionSeq}`);
+        previewScrollFrameRef.current = null;
+        if (!body || !target) return;
+        const bodyRect = body.getBoundingClientRect();
+        const targetRect = target.getBoundingClientRect();
+        body.scrollTo({
+          top: body.scrollTop + targetRect.top - bodyRect.top - 16,
+          behavior: 'smooth',
+        });
+      });
+    });
+  };
+
+  const openPreview = (sectionSeq?: number | null) => {
+    const targetSeq = sectionSeq ?? activeSectionSeq ?? page?.sections[0]?.sectionSeq ?? null;
+    setPreviewOpen(true);
+    if (targetSeq !== null && targetSeq !== undefined) {
+      replacePreviewHash(targetSeq);
+      scrollPreviewToSection(targetSeq);
+    }
+  };
+
+  const closePreview = () => {
+    setPreviewOpen(false);
+    clearPreviewHash();
+  };
+
+  const navigatePreviewSection = (sectionSeq: number) => {
+    setPreviewOpen(true);
+    setActiveSectionSeq(sectionSeq);
+    replacePreviewHash(sectionSeq);
+    scrollPreviewToSection(sectionSeq);
+  };
+
+  const clampPreviewPosition = (left: number, top: number, width: number, height: number) => {
+    if (typeof window === 'undefined') return { left, top };
+    const padding = 12;
+    const maxLeft = Math.max(padding, window.innerWidth - width - padding);
+    const maxTop = Math.max(padding, window.innerHeight - height - padding);
+    return {
+      left: Math.min(Math.max(left, padding), maxLeft),
+      top: Math.min(Math.max(top, padding), maxTop),
+    };
+  };
+
+  const handlePreviewDragStart = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (event.button !== 0 || (event.target as HTMLElement).closest('button')) return;
+    const shell = previewShellRef.current;
+    if (!shell) return;
+    const rect = shell.getBoundingClientRect();
+    previewDragRef.current = {
+      pointerId: event.pointerId,
+      startClientX: event.clientX,
+      startClientY: event.clientY,
+      startLeft: rect.left,
+      startTop: rect.top,
+      width: rect.width,
+      height: rect.height,
+    };
+    setPreviewPosition({ left: rect.left, top: rect.top });
+    setPreviewDragging(true);
+    event.currentTarget.setPointerCapture(event.pointerId);
+    event.preventDefault();
+  };
+
+  const handlePreviewDragMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    const drag = previewDragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    const nextLeft = drag.startLeft + event.clientX - drag.startClientX;
+    const nextTop = drag.startTop + event.clientY - drag.startClientY;
+    setPreviewPosition(clampPreviewPosition(nextLeft, nextTop, drag.width, drag.height));
+  };
+
+  const handlePreviewDragEnd = (event: React.PointerEvent<HTMLDivElement>) => {
+    const drag = previewDragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    try {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    } catch {
+      // Pointer capture may already be released by the browser.
+    }
+    previewDragRef.current = null;
+    setPreviewDragging(false);
+  };
 
   const nextTempSeq = () => {
     const value = tempSeqRef.current;
@@ -267,6 +386,44 @@ const OfficialEventPageBuilder: React.FC<OfficialEventPageBuilderProps> = ({ eve
     load();
     return () => { mounted = false; };
   }, [eventSeq, message]);
+
+  useEffect(() => () => {
+    if (previewScrollFrameRef.current !== null && typeof window !== 'undefined') {
+      window.cancelAnimationFrame(previewScrollFrameRef.current);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!page) return;
+    const hashSectionSeq = readPreviewHashSectionSeq();
+    if (hashSectionSeq === null) return;
+    const targetSeq = resolvePreviewSectionSeq(page, hashSectionSeq);
+    if (targetSeq === null) return;
+    setPreviewOpen(true);
+    setActiveSectionSeq(targetSeq);
+    scrollPreviewToSection(targetSeq);
+  }, [page?.eventPageSeq]);
+
+  useEffect(() => {
+    if (!page || typeof window === 'undefined') return undefined;
+    const handleHashChange = () => {
+      const hashSectionSeq = readPreviewHashSectionSeq();
+      if (hashSectionSeq === null) return;
+      const targetSeq = resolvePreviewSectionSeq(page, hashSectionSeq);
+      if (targetSeq === null) return;
+      setPreviewOpen(true);
+      setActiveSectionSeq(targetSeq);
+      scrollPreviewToSection(targetSeq);
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, [page]);
+
+  useEffect(() => {
+    if (!previewOpen || activeSectionSeq === null) return;
+    replacePreviewHash(activeSectionSeq);
+    scrollPreviewToSection(activeSectionSeq);
+  }, [activeSectionSeq, previewOpen]);
 
   const updatePage = (patch: Partial<PublicEventPage>) => {
     setPage((prev) => (prev ? { ...prev, ...patch } : prev));
@@ -410,7 +567,7 @@ const OfficialEventPageBuilder: React.FC<OfficialEventPageBuilderProps> = ({ eve
         canPreview={!!page}
         saving={saving || loading}
         onSave={saveBuilder}
-        onPreview={() => setPreviewOpen(true)}
+        onPreview={() => openPreview()}
       />
 
       {loading || !page ? (
@@ -654,24 +811,40 @@ const OfficialEventPageBuilder: React.FC<OfficialEventPageBuilderProps> = ({ eve
         </>
       )}
 
-      <Modal
-        title="미리보기"
-        open={previewOpen}
-        footer={null}
-        width={1120}
-        centered
-        className="saf-builder-preview-modal"
-        onCancel={() => setPreviewOpen(false)}
-      >
-        {page && (
-          <OfficialPagePreview
-            page={page}
-            theme={theme}
-            heroImageUrl={getFilePreviewUrl(heroFiles)}
-            blockImageFiles={blockImageFiles}
-          />
-        )}
-      </Modal>
+      {previewOpen && page && (
+        <div
+          ref={previewShellRef}
+          className={`saf-builder-modeless-preview${previewDragging ? ' is-dragging' : ''}`}
+          role="dialog"
+          aria-label="미리보기"
+          style={previewPosition ? { left: previewPosition.left, top: previewPosition.top, right: 'auto' } : undefined}
+        >
+          <div
+            className="saf-builder-modeless-preview-head"
+            onPointerDown={handlePreviewDragStart}
+            onPointerMove={handlePreviewDragMove}
+            onPointerUp={handlePreviewDragEnd}
+            onPointerCancel={handlePreviewDragEnd}
+          >
+            <div>
+              <strong>미리보기</strong>
+              <span>수정 내용이 저장 전 상태 그대로 실시간 반영됩니다.</span>
+            </div>
+            <button type="button" onClick={closePreview} aria-label="미리보기 닫기">
+              닫기
+            </button>
+          </div>
+          <div className="saf-builder-modeless-preview-body" ref={previewBodyRef}>
+            <OfficialPagePreview
+              page={page}
+              theme={theme}
+              heroImageUrl={getFilePreviewUrl(heroFiles)}
+              blockImageFiles={blockImageFiles}
+              onNavigateSection={navigatePreviewSection}
+            />
+          </div>
+        </div>
+      )}
     </section>
   );
 };
@@ -732,8 +905,38 @@ const SectionEditor: React.FC<{
 }) => {
   const visibleItems = section.blocks ?? [];
   const sectionSettings = parseSectionSettings(section.settingsJson);
+  const selectedBackgroundOption = getSectionBackgroundOption(sectionSettings.backgroundStyle);
+  const backgroundPickerRef = useRef<HTMLDivElement>(null);
+  const [backgroundPickerOpen, setBackgroundPickerOpen] = useState(false);
   const updateSectionSettings = (patch: Partial<SectionSettings>) => {
     onUpdate({ settingsJson: JSON.stringify({ ...sectionSettings, ...patch }) });
+  };
+
+  useEffect(() => {
+    if (!backgroundPickerOpen) return undefined;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!backgroundPickerRef.current?.contains(event.target as Node)) {
+        setBackgroundPickerOpen(false);
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setBackgroundPickerOpen(false);
+      }
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [backgroundPickerOpen]);
+
+  const selectBackgroundStyle = (value: SectionSettings['backgroundStyle']) => {
+    updateSectionSettings({ backgroundStyle: value });
+    setBackgroundPickerOpen(false);
   };
 
   return (
@@ -773,18 +976,51 @@ const SectionEditor: React.FC<{
             placeholder={preset.defaultTitle}
           />
         </label>
-        <label>
+        <div className="saf-background-select-field">
           <span>배경</span>
-          <select
-            value={sectionSettings.backgroundStyle || 'white'}
-            disabled={!canEdit}
-            onChange={(e) => updateSectionSettings({ backgroundStyle: e.target.value as SectionSettings['backgroundStyle'] })}
-          >
-            {SECTION_BACKGROUND_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>{option.label}</option>
-            ))}
-          </select>
-        </label>
+          <div className={`saf-background-select${backgroundPickerOpen ? ' is-open' : ''}`} ref={backgroundPickerRef}>
+            <button
+              type="button"
+              className="saf-background-trigger"
+              disabled={!canEdit}
+              aria-haspopup="listbox"
+              aria-expanded={backgroundPickerOpen}
+              onClick={() => setBackgroundPickerOpen((open) => !open)}
+            >
+              <i
+                className="saf-background-swatch"
+                style={{ background: selectedBackgroundOption.swatch }}
+                title={selectedBackgroundOption.label}
+                aria-hidden="true"
+              />
+              <strong>{selectedBackgroundOption.label}</strong>
+            </button>
+            {backgroundPickerOpen && canEdit && (
+              <div className="saf-background-menu" role="listbox" aria-label="섹션 배경 색상">
+                {SECTION_BACKGROUND_OPTIONS.map((option) => {
+                  const selected = option.value === selectedBackgroundOption.value;
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      className={`saf-background-option${selected ? ' is-selected' : ''}`}
+                      role="option"
+                      aria-selected={selected}
+                      onClick={() => selectBackgroundStyle(option.value as SectionSettings['backgroundStyle'])}
+                    >
+                      <i
+                        className="saf-background-option-swatch"
+                        style={{ background: option.swatch }}
+                        aria-hidden="true"
+                      />
+                      <span>{option.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
         <label>
           <span>가로폭</span>
           <select
@@ -1243,27 +1479,46 @@ const OfficialPagePreview: React.FC<{
   theme: PageTheme;
   heroImageUrl?: string;
   blockImageFiles: Record<number, FileDetailType[]>;
-}> = ({ page, theme, heroImageUrl, blockImageFiles }) => {
+  onNavigateSection?: (sectionSeq: number) => void;
+}> = ({ page, theme, heroImageUrl, blockImageFiles, onNavigateSection }) => {
   const sections = (page.sections ?? []).filter((section) => section.useYn !== 'N');
   const navSections = sections.filter((section) => section.showInNavYn !== 'N' && (section.navLabel || section.title));
   const accentColor = getThemeColor(theme.themeColor);
-  const heroStyle = buildHeroStyle(theme, heroImageUrl);
   const pageSettings = parsePageSettings(page.settingsJson);
+  const heroTitle = page.heroTitle || page.pageTitle || page.eventTitle || 'Official Event';
+  const heroSubtitle = page.heroSubtitle || page.pageSubtitle || formatPreviewEventMeta(page);
+  const fallbackHeroImageUrl = assetSrc(HeroSeoulImage);
+  const resolvedHeroImageUrl = heroImageUrl || page.heroImageUrl || fallbackHeroImageUrl;
+  const heroTheme = (heroImageUrl || page.heroImageUrl) ? theme : { ...theme, heroBackgroundType: 'image' as const };
+  const primarySection = navSections.find((section) => section.sectionType === 'program') ?? navSections[0];
+  const primarySectionLabel = primarySection?.sectionType === 'program'
+    ? 'View Program'
+    : `View ${primarySection?.navLabel || primarySection?.title || 'Details'}`;
+  const handleSectionLinkClick = (event: React.MouseEvent<HTMLAnchorElement>, sectionSeq: number) => {
+    if (!onNavigateSection) return;
+    event.preventDefault();
+    onNavigateSection(sectionSeq);
+  };
 
   return (
     <div className="saf-builder-preview" style={{ '--preview-accent': accentColor } as React.CSSProperties}>
-      <section className="saf-builder-preview-hero" style={heroStyle}>
+      <section className="saf-builder-preview-hero" style={buildHeroStyle(heroTheme, resolvedHeroImageUrl)}>
         <div className="saf-builder-preview-hero-copy">
-          <span style={{ color: accentColor }}>KCAB International</span>
-          <h1>{page.heroTitle || page.pageTitle || page.eventTitle || 'Official Event'}</h1>
-          {(page.heroSubtitle || page.pageSubtitle || page.location) && (
-            <p>{page.heroSubtitle || page.pageSubtitle || page.location}</p>
+          <span>Official Event</span>
+          <h1>{heroTitle}</h1>
+          {heroSubtitle && (
+            <p>{heroSubtitle}</p>
+          )}
+          {primarySection && (
+            <a href={`#preview-${primarySection.sectionSeq}`} onClick={(event) => handleSectionLinkClick(event, primarySection.sectionSeq)}>
+              {primarySectionLabel}
+            </a>
           )}
         </div>
         <div className="saf-builder-preview-info-card">
-          {renderPreviewInfoRow('Date', formatPreviewRange(page.eventStartDt, page.eventEndDt))}
+          {renderPreviewInfoRow('Date', formatPreviewDateRange(page.eventStartDt, page.eventEndDt))}
           {renderPreviewInfoRow('Venue', page.location)}
-          {renderPreviewInfoRow('Registration', pageSettings.registrationStatusLabel)}
+          {renderPreviewInfoRow('Registration', pageSettings.registrationStatusLabel || formatStatusLabel(page.eventStatus))}
           {renderPreviewInfoRow('Organizer', pageSettings.organizerName)}
           {renderPreviewInfoRow('Contact', [pageSettings.contactEmail, pageSettings.contactPhone].filter(Boolean).join(' / '))}
           {pageSettings.infoNote && <p>{pageSettings.infoNote}</p>}
@@ -1274,7 +1529,11 @@ const OfficialPagePreview: React.FC<{
       {navSections.length > 0 && (
         <nav className="saf-builder-preview-nav">
           {navSections.map((section) => (
-            <a key={section.sectionSeq} href={`#preview-${section.sectionSeq}`}>
+            <a
+              key={section.sectionSeq}
+              href={`#preview-${section.sectionSeq}`}
+              onClick={(event) => handleSectionLinkClick(event, section.sectionSeq)}
+            >
               {section.navLabel || section.title}
             </a>
           ))}
@@ -1353,13 +1612,15 @@ const PreviewSection: React.FC<{
   }
 
   if (section.sectionType === 'visit_seoul') {
+    const hotelHeading = section.subtitle?.trim().toLowerCase().includes('partner hotel') ? '' : 'Partner Hotels';
+
     return (
       <section id={`preview-${section.sectionSeq}`} className={sectionClassName}>
         <PreviewSectionTitle section={section} />
-        {section.body && <div className="saf-builder-preview-copy" dangerouslySetInnerHTML={{ __html: section.body }} />}
+        {section.body && <div className="saf-builder-preview-copy is-rich" dangerouslySetInnerHTML={{ __html: section.body }} />}
         {blocks.length > 0 && (
           <>
-            <h3 className="saf-builder-preview-subtitle">Partner Hotels</h3>
+            {hotelHeading && <h3 className="saf-builder-preview-subtitle">{hotelHeading}</h3>}
             <div className="saf-builder-preview-card-grid">
               {blocks.map((block) => (
                 <PreviewCard key={block.blockSeq} block={block} imageUrl={getBlockPreviewImageUrl(block, blockImageFiles)} />
@@ -1371,10 +1632,26 @@ const PreviewSection: React.FC<{
     );
   }
 
+  if (section.sectionType === 'notice') {
+    return (
+      <section id={`preview-${section.sectionSeq}`} className={`${sectionClassName} saf-builder-preview-notice-section`}>
+        <PreviewSectionTitle section={section} />
+        {section.body && <div className="saf-builder-preview-copy is-rich" dangerouslySetInnerHTML={{ __html: section.body }} />}
+        {blocks.length > 0 && (
+          <div className="saf-builder-preview-notice-list">
+            {blocks.map((block) => (
+              <PreviewNoticeCard key={block.blockSeq} block={block} />
+            ))}
+          </div>
+        )}
+      </section>
+    );
+  }
+
   return (
     <section id={`preview-${section.sectionSeq}`} className={sectionClassName}>
       <PreviewSectionTitle section={section} />
-      {section.body && <div className="saf-builder-preview-copy" dangerouslySetInnerHTML={{ __html: section.body }} />}
+      {section.body && <div className="saf-builder-preview-copy is-rich" dangerouslySetInnerHTML={{ __html: section.body }} />}
       {blocks.length > 0 && (
         <div className="saf-builder-preview-card-grid">
           {blocks.map((block) => (
@@ -1416,13 +1693,32 @@ const PreviewCard: React.FC<{ block: EventPageBlock; imageUrl?: string }> = ({ b
       <h4>{block.title || block.organizationName || block.buttonLabel || block.blockType}</h4>
       {block.subtitle && <p className="saf-builder-preview-card-subtitle">{block.subtitle}</p>}
       {block.summary && <p>{block.summary}</p>}
-      {block.body && <div className="saf-builder-preview-copy">{block.body}</div>}
+      {block.body && <div className="saf-builder-preview-copy is-rich" dangerouslySetInnerHTML={{ __html: block.body }} />}
       {roomRates && <p><strong>Room Rates</strong><br />{roomRates}</p>}
       {bookingDeadline && <p><strong>Booking Deadline</strong><br />{bookingDeadline}</p>}
       {block.buttonLabel && <em>{block.buttonLabel}</em>}
     </article>
   );
 };
+
+const PreviewNoticeCard: React.FC<{ block: EventPageBlock }> = ({ block }) => (
+  <article className="saf-builder-preview-notice-card">
+    <div className="saf-builder-preview-notice-marker">
+      {block.badgeText || 'Notice'}
+    </div>
+    <div className="saf-builder-preview-notice-copy">
+      <h4>{block.title || 'Notice'}</h4>
+      {block.subtitle && <p className="saf-builder-preview-card-subtitle">{block.subtitle}</p>}
+      {block.summary && <p>{block.summary}</p>}
+      {block.body && <div className="saf-builder-preview-copy is-rich" dangerouslySetInnerHTML={{ __html: block.body }} />}
+    </div>
+    {block.linkUrl && (
+      <span className="saf-builder-preview-notice-action">
+        {block.buttonLabel || 'View Notice'}
+      </span>
+    )}
+  </article>
+);
 
 const PreviewOrganizationGroups: React.FC<{
   blocks: EventPageBlock[];
@@ -1463,7 +1759,7 @@ const PreviewProgramGroups: React.FC<{ blocks: EventPageBlock[] }> = ({ blocks }
     <div className="saf-builder-preview-program">
       {groups.map(([track, sessions]) => (
         <div key={track} className="saf-builder-preview-program-track">
-          <h3>{track}</h3>
+          <h3><span>{track}</span></h3>
           {sessions.map((block) => <PreviewProgramSession key={block.blockSeq} block={block} />)}
         </div>
       ))}
@@ -1481,7 +1777,7 @@ const PreviewProgramSession: React.FC<{ block: EventPageBlock }> = ({ block }) =
     <article className={`saf-builder-preview-session is-${getProgramSessionTypeValue(content)}`}>
       <time>
         {dayLabel && <span>{dayLabel}</span>}
-        {formatPreviewRange(block.startAt, block.endAt) || 'TBD'}
+        {formatPreviewBlockTime(block) || 'TBD'}
       </time>
       <div>
         {sessionType && <em>{sessionType}</em>}
@@ -1489,7 +1785,7 @@ const PreviewProgramSession: React.FC<{ block: EventPageBlock }> = ({ block }) =
         {block.speakerNames && <p>{block.speakerNames}</p>}
         {moderator && <p>Moderator: {moderator}</p>}
         {block.venueName && <span>{block.venueName}</span>}
-        {block.body && <div className="saf-builder-preview-copy">{block.body}</div>}
+        {block.body && <div className="saf-builder-preview-copy is-rich" dangerouslySetInnerHTML={{ __html: block.body }} />}
       </div>
     </article>
   );
@@ -1909,6 +2205,10 @@ function getThemeColor(themeColor: string) {
   return THEME_COLOR_OPTIONS.find((option) => option.value === themeColor)?.color ?? THEME_COLOR_OPTIONS[0].color;
 }
 
+function getSectionBackgroundOption(value?: string | null) {
+  return SECTION_BACKGROUND_OPTIONS.find((option) => option.value === value) ?? SECTION_BACKGROUND_OPTIONS[0];
+}
+
 function buildHeroStyle(theme: PageTheme, heroImageUrl?: string): React.CSSProperties {
   if (theme.heroBackgroundType === 'image' && heroImageUrl) {
     return {
@@ -1955,16 +2255,112 @@ function toDatetimeInput(value?: string | null) {
   return value.replace(' ', 'T').slice(0, 16);
 }
 
-function formatPreviewDate(value?: string | null) {
-  if (!value) return '';
-  return value.replace('T', ' ').slice(0, 16);
+function readPreviewHashSectionSeq() {
+  if (typeof window === 'undefined') return null;
+  const match = window.location.hash.match(/^#preview-(-?\d+)$/);
+  if (!match) return null;
+  const sectionSeq = Number(match[1]);
+  return Number.isFinite(sectionSeq) ? sectionSeq : null;
 }
 
-function formatPreviewRange(start?: string | null, end?: string | null) {
-  const startText = formatPreviewDate(start);
-  const endText = formatPreviewDate(end);
+function replacePreviewHash(sectionSeq: number) {
+  if (typeof window === 'undefined') return;
+  const nextUrl = `${window.location.pathname}${window.location.search}#preview-${sectionSeq}`;
+  window.history.replaceState(null, '', nextUrl);
+}
+
+function clearPreviewHash() {
+  if (typeof window === 'undefined') return;
+  if (!window.location.hash.startsWith('#preview-')) return;
+  const nextUrl = `${window.location.pathname}${window.location.search}`;
+  window.history.replaceState(null, '', nextUrl);
+}
+
+function resolvePreviewSectionSeq(page: PublicEventPage, requestedSeq: number) {
+  if (page.sections.some((section) => section.sectionSeq === requestedSeq)) return requestedSeq;
+  return page.sections[0]?.sectionSeq ?? null;
+}
+
+function formatPreviewEventMeta(page: PublicEventPage) {
+  const parts = [formatPreviewDateRange(page.eventStartDt, page.eventEndDt), page.location].filter(Boolean);
+  return parts.join(' | ');
+}
+
+function formatPreviewDate(value?: string | null) {
+  if (!value) return '';
+  const date = parseDateTime(value);
+  if (!date) return value.replace('T', ' ').slice(0, 16);
+  return `${formatDateOnly(date)} ${formatTimeOnly(date)}`;
+}
+
+function formatPreviewDateRange(start?: string | null, end?: string | null) {
+  const startDate = parseDateTime(start);
+  const endDate = parseDateTime(end);
+
+  if (startDate && endDate) {
+    if (isSameDay(startDate, endDate)) {
+      return `${formatDateOnly(startDate)} ${formatTimeOnly(startDate)} - ${formatTimeOnly(endDate)}`;
+    }
+    return `${formatDateOnly(startDate)} ${formatTimeOnly(startDate)} - ${formatDateOnly(endDate)} ${formatTimeOnly(endDate)}`;
+  }
+
+  const startText = startDate ? `${formatDateOnly(startDate)} ${formatTimeOnly(startDate)}` : formatPreviewDate(start);
+  const endText = endDate ? `${formatDateOnly(endDate)} ${formatTimeOnly(endDate)}` : formatPreviewDate(end);
   if (startText && endText) return `${startText} - ${endText}`;
   return startText || endText;
+}
+
+function formatPreviewBlockTime(block: EventPageBlock) {
+  const startDate = parseDateTime(block.startAt);
+  const endDate = parseDateTime(block.endAt);
+
+  if (startDate && endDate) {
+    if (isSameDay(startDate, endDate)) {
+      return `${formatTimeOnly(startDate)} - ${formatTimeOnly(endDate)}`;
+    }
+    return `${formatDateOnly(startDate)} ${formatTimeOnly(startDate)} - ${formatDateOnly(endDate)} ${formatTimeOnly(endDate)}`;
+  }
+
+  if (startDate) return formatTimeOnly(startDate);
+  if (endDate) return formatTimeOnly(endDate);
+  return formatPreviewDateRange(block.startAt, block.endAt);
+}
+
+function parseDateTime(value?: string | null) {
+  if (!value) return null;
+  const normalized = value.includes('T') ? value : value.replace(' ', 'T');
+  const parsed = new Date(normalized);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function formatDateOnly(date: Date) {
+  return new Intl.DateTimeFormat('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(date);
+}
+
+function formatTimeOnly(date: Date) {
+  return new Intl.DateTimeFormat('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).format(date);
+}
+
+function isSameDay(first: Date, second: Date) {
+  return first.getFullYear() === second.getFullYear()
+    && first.getMonth() === second.getMonth()
+    && first.getDate() === second.getDate();
+}
+
+function formatStatusLabel(status?: string | null) {
+  if (!status) return '';
+  return status
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
 function stripHtml(value: string) {

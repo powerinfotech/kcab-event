@@ -1,8 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import PublicHeader from './components/PublicHeader';
-import PublicFooter from './components/PublicFooter';
 import { callGetPublicEventPage } from '@api/event/EventApi';
 import { EventPageBlock, EventPageSection, PublicEventPage as PublicEventPageModel } from '@interface/event/EventManagement';
+import HeroSeoulImage from '../../assets/images/saf-renewal/hero-seoul.jpg';
 
 interface PublicEventPageProps {
   urlSlug: string;
@@ -25,7 +24,7 @@ interface PageSettings {
 }
 
 interface SectionSettings {
-  backgroundStyle?: 'white' | 'soft' | 'navy' | 'gold';
+  backgroundStyle?: 'white' | 'soft' | 'brand-purple' | 'brand-blue' | 'brand-pink' | 'brand-gradient' | 'lavender' | 'blue' | 'mint' | 'rose' | 'peach' | 'gold' | 'slate' | 'navy';
   width?: 'normal' | 'wide';
   spacing?: 'compact' | 'normal' | 'spacious';
 }
@@ -43,6 +42,23 @@ const THEME_COLOR_MAP: Record<string, string> = {
   gold: '#b88900',
   gray: '#475569',
 };
+
+const assetSrc = (asset: string | { src?: string }) => (typeof asset === 'string' ? asset : asset.src ?? '');
+
+const eventNavItems = [
+  { label: 'Home', href: '/' },
+  { label: 'Official Events', href: '/events' },
+  { label: 'Program', href: '#program' },
+  { label: 'Speakers', href: '#speakers' },
+  { label: 'Visit Seoul', href: '#visit-seoul' },
+  { label: 'Archives', href: '/past-editions' },
+];
+
+const socialLinks = [
+  { label: 'Artstation', href: '#', icon: 'A' },
+  { label: 'LinkedIn', href: '#', icon: 'in' },
+  { label: 'YouTube', href: '#', icon: 'YT' },
+];
 
 const PublicEventPage: React.FC<PublicEventPageProps> = ({ urlSlug }) => {
   const [page, setPage] = useState<PublicEventPageModel | null>(null);
@@ -77,48 +93,63 @@ const PublicEventPage: React.FC<PublicEventPageProps> = ({ urlSlug }) => {
 
   if (loading) {
     return (
-      <div className="pub-layout">
-        <PublicHeader currentUrl="/events" onNavigate={handleNavigate} />
+      <div className="pub-layout pub-event-renewal saf-renewal-home">
+        <SafEventHeader onNavigate={handleNavigate} />
         <main className="pub-page-content">
-          <section className="pub-section section-text size-medium">
+          <section className="pub-section section-text size-medium pub-event-builder-section">
             <div className="pub-section-inner">Loading event...</div>
           </section>
         </main>
-        <PublicFooter />
+        <SafEventFooter />
       </div>
     );
   }
 
   if (!page) {
     return (
-      <div className="pub-layout">
-        <PublicHeader currentUrl="/events" onNavigate={handleNavigate} />
+      <div className="pub-layout pub-event-renewal saf-renewal-home">
+        <SafEventHeader onNavigate={handleNavigate} />
         <main className="pub-page-content">
-          <section className="pub-section section-text size-medium">
+          <section className="pub-section section-text size-medium pub-event-builder-section">
             <div className="pub-section-inner">
               <h3 className="text-title" style={{ paddingLeft: 0 }}>Event not found</h3>
               <p className="text-content">The event page is not published or the URL is incorrect.</p>
             </div>
           </section>
         </main>
-        <PublicFooter />
+        <SafEventFooter />
       </div>
     );
   }
 
   const heroTitle = page.heroTitle || page.pageTitle || page.eventTitle;
   const heroSubtitle = page.heroSubtitle || page.pageSubtitle || formatEventMeta(page);
+  const fallbackHeroImageUrl = assetSrc(HeroSeoulImage);
+  const heroImageUrl = page.heroImageUrl || fallbackHeroImageUrl;
+  const heroTheme = page.heroImageUrl ? theme : { ...theme, heroBackgroundType: 'image' as const };
+  const primarySection = navSections.find((section) => section.sectionType === 'program') ?? navSections[0];
+  const primarySectionLabel = primarySection?.sectionType === 'program'
+    ? 'View Program'
+    : `View ${primarySection?.navLabel || primarySection?.title || 'Details'}`;
 
   return (
-    <div className="pub-layout">
-      <PublicHeader currentUrl="/events" onNavigate={handleNavigate} />
+    <div className="pub-layout pub-event-renewal saf-renewal-home">
+      <SafEventHeader onNavigate={handleNavigate} />
       <main className="pub-page-content">
-        <section className="pub-section section-hero size-medium pub-event-builder-hero" style={buildHeroStyle(theme, page.heroImageUrl)}>
-          <div className="hero-content pub-event-hero-content">
-            <h2 className="hero-title">{heroTitle}</h2>
-            {heroSubtitle && <p className="hero-subtitle">{heroSubtitle}</p>}
+        <section className="pub-section pub-event-builder-hero saf-event-detail-hero" style={buildHeroStyle(heroTheme, heroImageUrl)}>
+          <div className="saf-renewal-shell saf-event-detail-hero-inner">
+            <div className="hero-content pub-event-hero-content saf-event-detail-hero-copy">
+              <p className="saf-event-detail-eyebrow">Official Event</p>
+              <h1 className="hero-title">{heroTitle}</h1>
+              {heroSubtitle && <p className="hero-subtitle">{heroSubtitle}</p>}
+              {primarySection && (
+                <a className="saf-event-detail-hero-cta" href={`#${primarySection.anchorId || primarySection.sectionKey}`}>
+                  {primarySectionLabel}
+                </a>
+              )}
+            </div>
+            <EventHeroInfoCard page={page} settings={pageSettings} />
           </div>
-          <EventHeroInfoCard page={page} settings={pageSettings} />
         </section>
 
         {navSections.length > 0 && (
@@ -131,14 +162,114 @@ const PublicEventPage: React.FC<PublicEventPageProps> = ({ urlSlug }) => {
           </nav>
         )}
 
-        {page.sections.map((section) => (
-          <EventPageSectionRenderer key={section.sectionSeq} section={section} accentColor={accentColor} />
-        ))}
+        <div className="pub-event-detail-body">
+          {page.sections.map((section) => (
+            <EventPageSectionRenderer key={section.sectionSeq} section={section} accentColor={accentColor} />
+          ))}
+        </div>
       </main>
-      <PublicFooter />
+      <SafEventFooter />
     </div>
   );
 };
+
+const SafEventHeader: React.FC<{ onNavigate: (url: string) => void }> = ({ onNavigate }) => {
+  const handleNavClick = (event: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (href.startsWith('#')) return;
+    event.preventDefault();
+    onNavigate(href);
+  };
+
+  return (
+    <header className="saf-renewal-header saf-event-header">
+      <div className="saf-renewal-shell saf-renewal-header-inner">
+        <a className="saf-renewal-brand" href="/" aria-label="Seoul ADR Festival home" onClick={(event) => handleNavClick(event, '/')}>
+          <FestivalLogo />
+        </a>
+        <div className="saf-renewal-header-right">
+          <div className="saf-renewal-social">
+            {socialLinks.map((item) => (
+              <a key={item.label} href={item.href} aria-label={item.label}>
+                <SocialIcon icon={item.icon} />
+              </a>
+            ))}
+          </div>
+          <nav className="saf-renewal-nav" aria-label="Event navigation">
+            {eventNavItems.map((item) => (
+              <a key={item.label} href={item.href} onClick={(event) => handleNavClick(event, item.href)}>
+                {item.label}
+              </a>
+            ))}
+          </nav>
+        </div>
+      </div>
+    </header>
+  );
+};
+
+const SafEventFooter: React.FC = () => (
+  <footer className="saf-renewal-footer saf-event-footer">
+    <div className="saf-renewal-shell">
+      <div className="saf-renewal-footer-brand">
+        <FestivalLogo />
+        <strong>
+          Seoul
+          <br />
+          ADR
+          <br />
+          Festival
+        </strong>
+      </div>
+      <p>
+        Seoul ADR Festival (SAF) is organized by KCAB International.
+        <br />
+        Office Trade Tower, 511 Yeongdong-daero, Gangnam-gu, Seoul
+        <br />
+        Contact: saf@kcab.or.kr
+      </p>
+      <small>&copy; 2026 KCAB International. All rights reserved.</small>
+    </div>
+  </footer>
+);
+
+function SocialIcon({ icon }: { icon: string }) {
+  if (icon === 'A') {
+    return (
+      <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+        <path d="M12 4 4 20h3l1.5-3h7L17 20h3L12 4Zm-2 10 2-4 2 4h-4Z" fill="currentColor" />
+      </svg>
+    );
+  }
+  if (icon === 'in') {
+    return (
+      <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+        <path d="M6.94 7.5a1.94 1.94 0 1 1 0-3.88 1.94 1.94 0 0 1 0 3.88Zm-1.7 1.7h3.4V20h-3.4V9.2Zm6.07 0h3.26v1.5h.04a3.57 3.57 0 0 1 3.21-1.76c3.44 0 4.07 2.26 4.07 5.2V20H18.5v-4.85c0-1.16-.02-2.65-1.62-2.65-1.62 0-1.87 1.27-1.87 2.57V20h-3.39V9.2Z" fill="currentColor" />
+      </svg>
+    );
+  }
+  return (
+    <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+      <path d="M21.6 7.2a2.5 2.5 0 0 0-1.77-1.77C18.24 5 12 5 12 5s-6.24 0-7.83.43A2.5 2.5 0 0 0 2.4 7.2 26.1 26.1 0 0 0 2 12a26.1 26.1 0 0 0 .4 4.8 2.5 2.5 0 0 0 1.77 1.77C5.76 19 12 19 12 19s6.24 0 7.83-.43a2.5 2.5 0 0 0 1.77-1.77A26.1 26.1 0 0 0 22 12a26.1 26.1 0 0 0-.4-4.8ZM10 15V9l5.2 3-5.2 3Z" fill="currentColor" />
+    </svg>
+  );
+}
+
+function FestivalLogo() {
+  return (
+    <span className="saf-renewal-logo" aria-hidden="true">
+      <svg viewBox="0 0 110 60" focusable="false">
+        <path d="M5 20 L55 6 L105 20" />
+        <path d="M9 22 L101 22" />
+        <path d="M14 22 L14 24 L18 24 L18 22 M24 22 L24 24 L28 24 L28 22 M34 22 L34 24 L38 24 L38 22 M44 22 L44 24 L48 24 L48 22 M54 22 L54 24 L58 24 L58 22 M64 22 L64 24 L68 24 L68 22 M74 22 L74 24 L78 24 L78 22 M84 22 L84 24 L88 24 L88 22 M94 22 L94 24 L98 24 L98 22" />
+        <path d="M12 26 L98 26 L98 44 L12 44 Z" fill="none" />
+        <path d="M22 26 L22 44 M32 26 L32 44 M42 26 L42 44 M52 26 L52 44 M62 26 L62 44 M72 26 L72 44 M82 26 L82 44 M92 26 L92 44" />
+        <path d="M12 32 L98 32 M12 38 L98 38" />
+        <path d="M8 44 L102 44 L102 48 L8 48 Z" fill="none" />
+      </svg>
+      <span className="saf-renewal-logo-title">SEOUL ADR FESTIVAL</span>
+    </span>
+  );
+}
 
 const EventHeroInfoCard: React.FC<{ page: PublicEventPageModel; settings: PageSettings }> = ({ page, settings }) => {
   const contact = [settings.contactEmail, settings.contactPhone].filter(Boolean).join(' / ');
@@ -224,6 +355,8 @@ const EventPageSectionRenderer: React.FC<{ section: EventPageSection; accentColo
   }
 
   if (section.sectionType === 'visit_seoul') {
+    const hotelHeading = section.subtitle?.trim().toLowerCase().includes('partner hotel') ? '' : 'Partner Hotels';
+
     return (
       <section id={anchor} className={`pub-section section-text size-medium ${sectionClassName}`} style={sectionStyle}>
         <div className="pub-section-inner">
@@ -232,10 +365,27 @@ const EventPageSectionRenderer: React.FC<{ section: EventPageSection; accentColo
           {section.body && <div className="text-content" dangerouslySetInnerHTML={{ __html: section.body }} />}
           {blocks.length > 0 && (
             <div className="pub-event-subsection">
-              <h4>Partner Hotels</h4>
+              {hotelHeading && <h4>{hotelHeading}</h4>}
               <div className="pub-event-page-card-grid pub-event-hotel-grid">
                 {blocks.map((block) => renderLinkedBlock(block, 'pub-event-page-card pub-event-hotel-card'))}
               </div>
+            </div>
+          )}
+        </div>
+      </section>
+    );
+  }
+
+  if (section.sectionType === 'notice') {
+    return (
+      <section id={anchor} className={`pub-section section-text size-medium ${sectionClassName} pub-event-notice-section`} style={sectionStyle}>
+        <div className="pub-section-inner">
+          <h3 className="text-title">{section.title || 'Notice'}</h3>
+          {section.subtitle && <p className="pub-event-section-subtitle">{section.subtitle}</p>}
+          {section.body && <div className="text-content" dangerouslySetInnerHTML={{ __html: section.body }} />}
+          {blocks.length > 0 && (
+            <div className="pub-event-notice-list">
+              {blocks.map((block) => renderNoticeBlock(block))}
             </div>
           )}
         </div>
@@ -421,25 +571,110 @@ function renderLinkedBlock(block: EventPageBlock, className: string) {
   return <article key={block.blockSeq} className={className}>{content}</article>;
 }
 
+function renderNoticeBlock(block: EventPageBlock) {
+  const content = (
+    <>
+      <div className="pub-event-notice-marker">
+        {block.badgeText || 'Notice'}
+      </div>
+      <div className="pub-event-notice-copy">
+        <h4>{block.title || 'Notice'}</h4>
+        {block.subtitle && <p className="pub-event-page-subtitle">{block.subtitle}</p>}
+        {block.summary && <p>{block.summary}</p>}
+        {block.body && <div className="text-content" dangerouslySetInnerHTML={{ __html: block.body }} />}
+      </div>
+      {block.linkUrl && (
+        <span className="pub-event-notice-action">
+          {block.buttonLabel || 'View Notice'}
+        </span>
+      )}
+    </>
+  );
+
+  if (block.linkUrl) {
+    return (
+      <a key={block.blockSeq} className="pub-event-notice-card" href={block.linkUrl} target={block.linkTarget || '_blank'} rel="noopener noreferrer">
+        {content}
+      </a>
+    );
+  }
+
+  return <article key={block.blockSeq} className="pub-event-notice-card">{content}</article>;
+}
+
 function formatEventMeta(page: PublicEventPageModel) {
-  const parts = [formatDate(page.eventStartDt), page.location].filter(Boolean);
+  const parts = [formatBlockDateRange(page.eventStartDt, page.eventEndDt), page.location].filter(Boolean);
   return parts.join(' | ');
 }
 
 function formatDate(value?: string | null) {
   if (!value) return '';
-  return value.replace('T', ' ').slice(0, 16);
+  const date = parseDateTime(value);
+  if (!date) return value.replace('T', ' ').slice(0, 16);
+  return `${formatDateOnly(date)} ${formatTimeOnly(date)}`;
 }
 
 function formatBlockDateRange(start?: string | null, end?: string | null) {
-  const startText = formatDate(start);
-  const endText = formatDate(end);
+  const startDate = parseDateTime(start);
+  const endDate = parseDateTime(end);
+
+  if (startDate && endDate) {
+    if (isSameDay(startDate, endDate)) {
+      return `${formatDateOnly(startDate)} ${formatTimeOnly(startDate)} - ${formatTimeOnly(endDate)}`;
+    }
+    return `${formatDateOnly(startDate)} ${formatTimeOnly(startDate)} - ${formatDateOnly(endDate)} ${formatTimeOnly(endDate)}`;
+  }
+
+  const startText = startDate ? `${formatDateOnly(startDate)} ${formatTimeOnly(startDate)}` : formatDate(start);
+  const endText = endDate ? `${formatDateOnly(endDate)} ${formatTimeOnly(endDate)}` : formatDate(end);
   if (startText && endText) return `${startText} - ${endText}`;
   return startText || endText;
 }
 
 function formatBlockTime(block: EventPageBlock) {
+  const startDate = parseDateTime(block.startAt);
+  const endDate = parseDateTime(block.endAt);
+
+  if (startDate && endDate) {
+    if (isSameDay(startDate, endDate)) {
+      return `${formatTimeOnly(startDate)} - ${formatTimeOnly(endDate)}`;
+    }
+    return `${formatDateOnly(startDate)} ${formatTimeOnly(startDate)} - ${formatDateOnly(endDate)} ${formatTimeOnly(endDate)}`;
+  }
+
+  if (startDate) return formatTimeOnly(startDate);
+  if (endDate) return formatTimeOnly(endDate);
   return formatBlockDateRange(block.startAt, block.endAt);
+}
+
+function parseDateTime(value?: string | null) {
+  if (!value) return null;
+  const normalized = value.includes('T') ? value : value.replace(' ', 'T');
+  const parsed = new Date(normalized);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function formatDateOnly(date: Date) {
+  return new Intl.DateTimeFormat('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(date);
+}
+
+function formatTimeOnly(date: Date) {
+  return new Intl.DateTimeFormat('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).format(date);
+}
+
+function isSameDay(first: Date, second: Date) {
+  return first.getFullYear() === second.getFullYear()
+    && first.getMonth() === second.getMonth()
+    && first.getDate() === second.getDate();
 }
 
 function parseTheme(themeJson?: unknown): PageTheme {

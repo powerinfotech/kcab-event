@@ -201,6 +201,7 @@
              b.block_seq
             ,b.section_seq
             ,b.parent_block_seq
+            ,b.component_template_seq
             ,b.block_key
             ,b.block_type
             ,b.title
@@ -276,6 +277,7 @@
              b.block_seq
             ,b.section_seq
             ,b.parent_block_seq
+            ,b.component_template_seq
             ,b.block_key
             ,b.block_type
             ,b.title

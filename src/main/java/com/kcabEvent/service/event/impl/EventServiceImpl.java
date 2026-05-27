@@ -13,6 +13,7 @@ import com.kcabEvent.dto.event.EventListDto;
 import com.kcabEvent.dto.event.EventNotificationRecipientDto;
 import com.kcabEvent.dto.event.EventPageBlockDto;
 import com.kcabEvent.dto.event.EventPageComponentCatalogDto;
+import com.kcabEvent.dto.event.EventPageComponentTemplateDto;
 import com.kcabEvent.dto.event.EventPageSectionDto;
 import com.kcabEvent.dto.event.EventPricingDto;
 import com.kcabEvent.dto.event.EventSaveDto;
@@ -61,6 +62,7 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
     private static final String STATUS_PENDING_APPROVAL = "pending_approval";
     private static final String STATUS_PUBLISHED = "published";
     private static final String STATUS_REJECTED = "rejected";
+    private static final String STATUS_CLOSED = "closed";
     private static final String EVENT_TYPE_MAIN = "main";
     private static final String EVENT_TYPE_SIDE = "side";
     private static final String SIDE_EVENT_APPROVED_TEMPLATE_CODE = "side_event_approved";
@@ -345,6 +347,8 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
     @Override
     @Transactional("transactionManager")
     public void deleteEvent(Long eventSeq) {
+        Event event = eventDao.selectEventBySeq(eventSeq);
+        assertEventDeletable(event);
         eventDao.deleteEvent(eventSeq);
     }
 
@@ -353,6 +357,7 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
     public void deleteEvent(Long eventSeq, LoginUser loginUser) {
         Event event = eventDao.selectEventBySeq(eventSeq);
         assertEventAccessible(event, loginUser);
+        assertEventDeletable(event);
         assertEventEditable(event, loginUser);
         eventDao.deleteEvent(eventSeq);
     }
@@ -433,6 +438,9 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
             return;
         }
 
+        List<EventPageComponentTemplateDto> templates = eventDao.selectEventPageComponentTemplates();
+        Map<String, Long> sectionTemplateSeqMap = componentTemplateSeqMap(templates, "section");
+        Map<String, Long> blockTemplateSeqMap = componentTemplateSeqMap(templates, "block");
         for (int i = 0; i < sourceSections.size(); i++) {
             EventPageSectionDto source = sourceSections.get(i);
             if (source == null) {
@@ -443,7 +451,9 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
             String sectionType = defaultText(normalizeKey(source.getSectionType()), "section");
             EventPageSectionDto section = new EventPageSectionDto();
             section.setEventPageSeq(eventPageSeq);
-            section.setComponentTemplateSeq(source.getComponentTemplateSeq());
+            section.setComponentTemplateSeq(source.getComponentTemplateSeq() != null
+                    ? source.getComponentTemplateSeq()
+                    : sectionTemplateSeqMap.get(sectionType));
             section.setSectionKey(defaultBuilderKey(source.getSectionKey(), sectionType, i + 1));
             section.setSectionType(sectionType);
             section.setTitle(trimToNull(source.getTitle()));
@@ -459,11 +469,14 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
             section.setUseYn(normalizeUseYn(source.getUseYn()));
             section.setSettingsJson(defaultJson(source.getSettingsJson()));
             eventDao.insertEventPageSection(section);
-            savePageBlocks(section.getSectionSeq(), sourceSectionSeq, source.getBlocks());
+            savePageBlocks(section.getSectionSeq(), sourceSectionSeq, source.getBlocks(), blockTemplateSeqMap);
         }
     }
 
-    private void savePageBlocks(Long sectionSeq, Long sourceSectionSeq, List<EventPageBlockDto> sourceBlocks) {
+    private void savePageBlocks(Long sectionSeq,
+                                Long sourceSectionSeq,
+                                List<EventPageBlockDto> sourceBlocks,
+                                Map<String, Long> blockTemplateSeqMap) {
         if (sourceBlocks == null || sourceBlocks.isEmpty()) {
             return;
         }
@@ -495,7 +508,7 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
                     stillPending.add(source);
                     continue;
                 }
-                EventPageBlockDto block = normalizeBlockForInsert(source, sectionSeq, sourceSectionSeq, savedBlockSeqMap, i + 1);
+                EventPageBlockDto block = normalizeBlockForInsert(source, sectionSeq, sourceSectionSeq, savedBlockSeqMap, blockTemplateSeqMap, i + 1);
                 eventDao.insertEventPageBlock(block);
                 if (source.getBlockSeq() != null) {
                     savedBlockSeqMap.put(source.getBlockSeq(), block.getBlockSeq());
@@ -504,7 +517,7 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
             }
             if (!progressed) {
                 for (int i = 0; i < stillPending.size(); i++) {
-                    EventPageBlockDto block = normalizeBlockForInsert(stillPending.get(i), sectionSeq, sourceSectionSeq, savedBlockSeqMap, i + 1);
+                    EventPageBlockDto block = normalizeBlockForInsert(stillPending.get(i), sectionSeq, sourceSectionSeq, savedBlockSeqMap, blockTemplateSeqMap, i + 1);
                     block.setParentBlockSeq(null);
                     eventDao.insertEventPageBlock(block);
                 }
@@ -518,11 +531,15 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
                                                       Long sectionSeq,
                                                       Long sourceSectionSeq,
                                                       Map<Long, Long> savedBlockSeqMap,
+                                                      Map<String, Long> blockTemplateSeqMap,
                                                       int sortSeq) {
         String blockType = defaultText(normalizeKey(source.getBlockType()), "card");
         EventPageBlockDto block = new EventPageBlockDto();
         block.setSectionSeq(sectionSeq);
         block.setParentBlockSeq(savedBlockSeqMap.get(source.getParentBlockSeq()));
+        block.setComponentTemplateSeq(source.getComponentTemplateSeq() != null
+                ? source.getComponentTemplateSeq()
+                : blockTemplateSeqMap.get(blockType));
         block.setBlockKey(defaultBuilderKey(source.getBlockKey(), blockType, sortSeq));
         block.setBlockType(blockType);
         block.setTitle(trimToNull(source.getTitle()));
@@ -549,6 +566,26 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
             block.setParentBlockSeq(null);
         }
         return block;
+    }
+
+    private Map<String, Long> componentTemplateSeqMap(List<EventPageComponentTemplateDto> templates, String scope) {
+        Map<String, Long> map = new HashMap<>();
+        if (templates == null || templates.isEmpty()) {
+            return map;
+        }
+
+        String normalizedScope = normalizeKey(scope);
+        for (EventPageComponentTemplateDto template : templates) {
+            if (template == null || template.getComponentTemplateSeq() == null) {
+                continue;
+            }
+            String templateScope = normalizeKey(template.getComponentScope());
+            String componentType = normalizeKey(template.getComponentType());
+            if (normalizedScope.equals(templateScope) && StringUtils.hasText(componentType)) {
+                map.putIfAbsent(componentType, template.getComponentTemplateSeq());
+            }
+        }
+        return map;
     }
 
     private String defaultLanguage(String languageCode) {
@@ -632,6 +669,15 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
         }
         if (!STATUS_DRAFT.equals(event.getStatus()) && !STATUS_PUBLISHED.equals(event.getStatus())) {
             throw new BusinessException("This event can no longer be edited.");
+        }
+    }
+
+    private void assertEventDeletable(Event event) {
+        if (event == null) {
+            throw new BusinessException("Event was not found.");
+        }
+        if (STATUS_CLOSED.equals(normalizeKey(event.getStatus()))) {
+            throw new BusinessException("Closed events cannot be deleted.");
         }
     }
 

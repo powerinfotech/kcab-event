@@ -11,6 +11,7 @@ public class EventPageBlockDto {
     private Long blockSeq;
     private Long sectionSeq;
     private Long parentBlockSeq;
+    private Long componentTemplateSeq;
     private String blockKey;
     private String blockType;
     private String title;

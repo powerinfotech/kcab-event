@@ -311,7 +311,8 @@ export default function SuperEventList() {
   const isRegStartRequiredEmpty = submitAttempted && showRegistrationDates && !regStartValue;
   const isRegEndRequiredEmpty = submitAttempted && showRegistrationDates && !regEndValue;
   const isSlugRequiredEmpty = submitAttempted && isOfficialEvent && !slugValue;
-  const isSlugFormatInvalid = submitAttempted && !!slugValue && !EVENT_SLUG_REGEXP.test(slugValue);
+  const isSlugValueInvalid = !!slugValue && !EVENT_SLUG_REGEXP.test(slugValue);
+  const isSlugFormatInvalid = submitAttempted && isSlugValueInvalid;
   const isSlugInvalid = isSlugRequiredEmpty || isSlugFormatInvalid;
   const canUsePaidPricing = !isOrganizationRole && !isSideEvent;
   const requiredGridClass = (invalid: boolean) => (submitAttempted && invalid ? 'is-required-error' : undefined);
@@ -338,7 +339,10 @@ export default function SuperEventList() {
   );
   const canRequestApproval = isOrganizationRole && !isNew && form.status === 'draft';
   const canEdit = !isLockedByApproval;
-  const canDelete = !isNew && (
+  const isClosedEvent = form.status === 'closed';
+  const canOpenPublicEvent = !isNew && isOfficialEvent;
+  const publicEventPath = slugValue ? `/event/${encodeURIComponent(slugValue)}` : '';
+  const canDelete = !isNew && !isClosedEvent && (
     !isOrganizationRole
       ? form.status !== 'pending_approval' && form.status !== 'rejected'
       : form.status === 'draft'
@@ -1025,6 +1029,10 @@ export default function SuperEventList() {
 
   const handleDeleteSelected = () => {
     if (selectedSeq === null) return;
+    if (isClosedEvent) {
+      message.warning('Closed events cannot be deleted.');
+      return;
+    }
     modal.confirm({
       title: 'Delete Event',
       content: `Do you want to delete "${form.title}"? This action cannot be undone.`,
@@ -1043,6 +1051,19 @@ export default function SuperEventList() {
         }
       },
     });
+  };
+
+  const handleOpenPublicEvent = () => {
+    if (!canOpenPublicEvent) return;
+    if (!slugValue) {
+      message.warning('Please enter and save the event URL key first.');
+      return;
+    }
+    if (isSlugValueInvalid) {
+      message.warning('Please check the event URL key format.');
+      return;
+    }
+    window.open(publicEventPath, '_blank', 'noopener,noreferrer');
   };
 
   const handleExportParticipants = async () => {
@@ -1115,6 +1136,17 @@ export default function SuperEventList() {
               <ArrowLeftOutlined />
               <span>List</span>
             </button>
+            {canOpenPublicEvent && (
+              <button
+                type="button"
+                className="saf-action-btn is-secondary"
+                onClick={handleOpenPublicEvent}
+                disabled={saving || !slugValue || isSlugValueInvalid}
+              >
+                <EyeOutlined />
+                <span>Open</span>
+              </button>
+            )}
             {canDelete && (
               <button type="button" className="saf-action-btn is-danger" onClick={handleDeleteSelected} disabled={saving}>
                 <StopOutlined />
