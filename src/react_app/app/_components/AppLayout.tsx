@@ -7,7 +7,7 @@ import Footer from '@layout/Footer';
 import PublicNotice from '@page/public/PublicNotice';
 import PublicFaq from '@page/public/PublicFaq';
 import PublicEvents from '@page/public/PublicEvents';
-import PublicEventPage from '@page/public/PublicEventPage';
+import PublicEventPage, { PublicEventRegistrationPage } from '@page/public/PublicEventPage';
 import PastEditions, { PastEdition2020, PastEdition2021, PastEdition2022, PastEdition2023, PastEdition2025, PastEdition2025EventDetail } from '@page/PastEditions';
 import SafSignup from '@page/saf/SafSignup';
 import { getUserLoginInfo } from '@api/CommonApi';
@@ -162,7 +162,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     }
     if (currentPath === '/events') return <PublicEvents />;
     if (currentPath.startsWith('/event/')) {
-      const urlSlug = decodeURIComponent(currentPath.replace(/^\/event\//, '').split('/')[0] ?? '');
+      const eventPathParts = currentPath.replace(/^\/event\//, '').split('/');
+      const urlSlug = decodeURIComponent(eventPathParts[0] ?? '');
+      if (eventPathParts[1] === 'register') {
+        return <PublicEventRegistrationPage urlSlug={urlSlug} />;
+      }
       return <PublicEventPage urlSlug={urlSlug} />;
     }
     if (currentPath === '/saf/signup') return <SafSignup />;

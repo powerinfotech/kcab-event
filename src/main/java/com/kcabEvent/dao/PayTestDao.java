@@ -2,6 +2,7 @@ package com.kcabEvent.dao;
 
 import com.kcabEvent.domain.Payment;
 import com.kcabEvent.domain.PaymentIntent;
+import com.kcabEvent.dto.event.EventDiscountCodeDto;
 import com.kcabEvent.dto.paymenttest.PayTestEventOptionDto;
 import com.kcabEvent.dto.paymenttest.PayTestParticipantRequestDto;
 import com.kcabEvent.dto.paymenttest.PayTestPricingOptionDto;
@@ -17,8 +18,21 @@ public interface PayTestDao {
 
     List<PayTestPricingOptionDto> selectPayTestPricingOptions(@Param("eventSeq") Long eventSeq);
 
+    List<PayTestPricingOptionDto> selectPublicRegistrationPricingOptions(@Param("eventSeq") Long eventSeq);
+
+    PayTestParticipantRequestDto selectParticipantByEmail(@Param("email") String email);
+
     PayTestPricingOptionDto selectPayTestPricingForUpdate(@Param("eventSeq") Long eventSeq,
                                                           @Param("eventPricingSeq") Long eventPricingSeq);
+
+    PayTestPricingOptionDto selectPublicRegistrationPricingForUpdate(@Param("eventSeq") Long eventSeq,
+                                                                     @Param("eventPricingSeq") Long eventPricingSeq);
+
+    EventDiscountCodeDto selectPublicRegistrationDiscountCode(@Param("eventSeq") Long eventSeq,
+                                                              @Param("discountCode") String discountCode);
+
+    EventDiscountCodeDto selectPublicRegistrationDiscountCodeForUpdate(@Param("eventSeq") Long eventSeq,
+                                                                       @Param("discountCode") String discountCode);
 
     Long upsertParticipant(PayTestParticipantRequestDto participant);
 

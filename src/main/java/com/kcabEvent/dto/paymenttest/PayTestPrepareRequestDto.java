@@ -13,6 +13,7 @@ public class PayTestPrepareRequestDto {
     private PayTestParticipantRequestDto participant;
     private String paymentMethod;
     private List<String> paymentMethods;
+    private String discountCode;
     private String lang;
     private String callbackBaseUrl;
 }

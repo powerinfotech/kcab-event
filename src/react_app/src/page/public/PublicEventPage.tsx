@@ -1,8 +1,31 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { App, Select } from 'antd';
 import { callGetPublicEventPage } from '@api/event/EventApi';
+import {
+  callGetPublicRegistrationParticipant,
+  callGetPublicRegistrationPaymentResult,
+  callGetPublicRegistrationPricing,
+  callPreparePublicRegistrationPayment,
+  callValidatePublicRegistrationDiscountCode,
+} from '@api/public/PublicRegistrationApi';
 import { EventPageBlock, EventPageSection, PublicEventPage as PublicEventPageModel } from '@interface/event/EventManagement';
+import {
+  PublicRegistrationParticipantRequest,
+  PublicRegistrationDiscountValidationResult,
+  PublicRegistrationPaymentMethodCode,
+  PublicRegistrationPaymentResult,
+  PublicRegistrationPricingOption,
+} from '@interface/public/PublicRegistration';
 import HeroSeoulImage from '../../assets/images/saf-renewal/hero-seoul.jpg';
 import { usePublicNavigate } from '@hook/usePublicNavigate';
+
+declare global {
+  interface Window {
+    EXIMBAY?: {
+      request_pay: (payload: Record<string, unknown>) => void;
+    };
+  }
+}
 
 interface PublicEventPageProps {
   urlSlug: string;
@@ -21,6 +44,7 @@ interface PageSettings {
   contactPhone?: string;
   organizerName?: string;
   infoNote?: string;
+  sourceUrl?: string;
   [key: string]: unknown;
 }
 
@@ -61,6 +85,103 @@ const socialLinks = [
   { label: 'YouTube', href: '#', icon: 'YT' },
 ];
 
+type RegistrationActionType = 'direct' | 'external' | 'none';
+type RegistrationStep = 1 | 2 | 3;
+type ParticipantLookupStatus = 'idle' | 'checking' | 'found' | 'notFound' | 'invalid' | 'error';
+
+const EMPTY_REGISTRATION_PARTICIPANT: PublicRegistrationParticipantRequest = {
+  firstName: '',
+  middleName: '',
+  lastName: '',
+  email: '',
+  organizationName: '',
+  position: '',
+  country: '',
+};
+
+const REGISTRATION_STEPS: Array<{ step: RegistrationStep; label: string; description: string }> = [
+  { step: 1, label: 'Participant', description: 'Your registration details' },
+  { step: 2, label: 'Payment', description: 'Ticket & secure payment' },
+  { step: 3, label: 'Complete', description: 'Registration confirmed' },
+];
+
+const PAYMENT_METHOD_OPTIONS: Array<{
+  value: PublicRegistrationPaymentMethodCode;
+  label: string;
+  brand: string;
+  description: string;
+}> = [
+  { value: 'P000', label: 'Credit Card', brand: 'CARD', description: 'Visa, Mastercard, JCB' },
+  { value: 'P001', label: 'PayPal', brand: 'PayPal', description: 'Pay with PayPal' },
+];
+
+const DEFAULT_PAYMENT_METHOD = PAYMENT_METHOD_OPTIONS[0].value;
+
+const COUNTRY_OPTIONS = [
+  'Korea, Republic of',
+  'United States',
+  'United Kingdom',
+  'Japan',
+  'China',
+  'Singapore',
+  'Hong Kong',
+  'Australia',
+  'Canada',
+  'France',
+  'Germany',
+  'India',
+  'Indonesia',
+  'Malaysia',
+  'Philippines',
+  'Thailand',
+  'Vietnam',
+  'Afghanistan',
+  'Albania',
+  'Algeria',
+  'Argentina',
+  'Austria',
+  'Bangladesh',
+  'Belgium',
+  'Brazil',
+  'Bulgaria',
+  'Cambodia',
+  'Chile',
+  'Colombia',
+  'Croatia',
+  'Czech Republic',
+  'Denmark',
+  'Egypt',
+  'Finland',
+  'Greece',
+  'Hungary',
+  'Ireland',
+  'Israel',
+  'Italy',
+  'Kazakhstan',
+  'Laos',
+  'Mexico',
+  'Mongolia',
+  'Myanmar',
+  'Netherlands',
+  'New Zealand',
+  'Norway',
+  'Pakistan',
+  'Poland',
+  'Portugal',
+  'Qatar',
+  'Romania',
+  'Saudi Arabia',
+  'South Africa',
+  'Spain',
+  'Sri Lanka',
+  'Sweden',
+  'Switzerland',
+  'Taiwan',
+  'Turkey',
+  'United Arab Emirates',
+  'Uzbekistan',
+].map((country) => ({ label: country, value: country }));
+
 const PublicEventPage: React.FC<PublicEventPageProps> = ({ urlSlug }) => {
   const [page, setPage] = useState<PublicEventPageModel | null>(null);
   const [loading, setLoading] = useState(true);
@@ -90,6 +211,19 @@ const PublicEventPage: React.FC<PublicEventPageProps> = ({ urlSlug }) => {
   const pageSettings = useMemo(() => parsePageSettings(page?.settingsJson), [page?.settingsJson]);
   const accentColor = getThemeColor(theme.themeColor);
   const handleNavigate = usePublicNavigate();
+  const registrationActionType = normalizeRegistrationType(page?.registrationType);
+  const externalRegistrationUrl = registrationActionType === 'external' ? page?.registrationUrl?.trim() ?? '' : '';
+  const showRegistrationCta = registrationActionType === 'direct' || !!externalRegistrationUrl;
+
+  const openRegistration = useCallback(() => {
+    if (registrationActionType === 'external') {
+      if (!externalRegistrationUrl) return;
+      window.open(externalRegistrationUrl, '_blank', 'noopener,noreferrer');
+      return;
+    }
+    if (registrationActionType !== 'direct') return;
+    handleNavigate(`/event/${encodeURIComponent(page?.urlSlug || urlSlug)}/register`);
+  }, [externalRegistrationUrl, handleNavigate, page?.urlSlug, registrationActionType, urlSlug]);
 
   if (loading) {
     return (
@@ -148,7 +282,12 @@ const PublicEventPage: React.FC<PublicEventPageProps> = ({ urlSlug }) => {
                 </a>
               )}
             </div>
-            <EventHeroInfoCard page={page} settings={pageSettings} />
+            <EventHeroInfoCard
+              page={page}
+              settings={pageSettings}
+              showRegistrationButton={showRegistrationCta}
+              onRegister={openRegistration}
+            />
           </div>
         </section>
 
@@ -167,6 +306,504 @@ const PublicEventPage: React.FC<PublicEventPageProps> = ({ urlSlug }) => {
             <EventPageSectionRenderer key={section.sectionSeq} section={section} accentColor={accentColor} />
           ))}
         </div>
+      </main>
+      {showRegistrationCta && (
+        <button
+          type="button"
+          className="pub-event-floating-register"
+          aria-label={`Register for ${heroTitle}`}
+          onClick={openRegistration}
+        >
+          Register
+        </button>
+      )}
+      <SafEventFooter />
+    </div>
+  );
+};
+
+export const PublicEventRegistrationPage: React.FC<PublicEventPageProps> = ({ urlSlug }) => {
+  const { message } = App.useApp();
+  const [page, setPage] = useState<PublicEventPageModel | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [registrationStep, setRegistrationStep] = useState<RegistrationStep>(1);
+  const [participant, setParticipant] = useState<PublicRegistrationParticipantRequest>(EMPTY_REGISTRATION_PARTICIPANT);
+  const [pricingList, setPricingList] = useState<PublicRegistrationPricingOption[]>([]);
+  const [selectedPricingSeq, setSelectedPricingSeq] = useState<number | undefined>();
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PublicRegistrationPaymentMethodCode>(DEFAULT_PAYMENT_METHOD);
+  const [discountCodeInput, setDiscountCodeInput] = useState('');
+  const [discountResult, setDiscountResult] = useState<PublicRegistrationDiscountValidationResult | null>(null);
+  const [discountApplying, setDiscountApplying] = useState(false);
+  const [loadingPricing, setLoadingPricing] = useState(false);
+  const [submittingRegistration, setSubmittingRegistration] = useState(false);
+  const [verifyingPayment, setVerifyingPayment] = useState(false);
+  const [participantLookupLoading, setParticipantLookupLoading] = useState(false);
+  const [participantLookupStatus, setParticipantLookupStatus] = useState<ParticipantLookupStatus>('idle');
+  const [latestOrderId, setLatestOrderId] = useState('');
+  const [registrationResult, setRegistrationResult] = useState<PublicRegistrationPaymentResult | null>(null);
+  const verificationRunRef = useRef(0);
+  const participantLookupRunRef = useRef(0);
+  const latestLookupEmailRef = useRef('');
+  const handleNavigate = usePublicNavigate();
+
+  useEffect(() => {
+    let mounted = true;
+    setLoading(true);
+    callGetPublicEventPage(urlSlug)
+      .then((res) => {
+        if (!mounted) return;
+        setPage(res?.item ?? null);
+      })
+      .catch(() => {
+        if (mounted) setPage(null);
+      })
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
+    return () => { mounted = false; };
+  }, [urlSlug]);
+
+  const pageSettings = useMemo(() => parsePageSettings(page?.settingsJson), [page?.settingsJson]);
+  const registrationActionType = normalizeRegistrationType(page?.registrationType);
+  const externalRegistrationUrl = registrationActionType === 'external' ? page?.registrationUrl?.trim() ?? '' : '';
+  const selectedPricing = useMemo(
+    () => pricingList.find((pricing) => pricing.eventPricingSeq === selectedPricingSeq),
+    [pricingList, selectedPricingSeq],
+  );
+  const appliedDiscount = discountResult?.valid ? discountResult : null;
+  const selectedOriginalAmount = selectedPricing ? Number(selectedPricing.amount) : 0;
+  const selectedDiscountAmount = appliedDiscount ? Number(appliedDiscount.discountAmount ?? 0) : 0;
+  const selectedFinalAmount = appliedDiscount
+    ? Number(appliedDiscount.finalAmount ?? Math.max(selectedOriginalAmount - selectedDiscountAmount, 0))
+    : selectedOriginalAmount;
+  const eventPath = `/event/${encodeURIComponent(page?.urlSlug || urlSlug)}`;
+  const backToEvent = useCallback(() => {
+    handleNavigate(eventPath);
+  }, [eventPath, handleNavigate]);
+
+  const fetchRegistrationPricing = useCallback(async () => {
+    if (!page?.eventSeq) return;
+    setLoadingPricing(true);
+    try {
+      const res = await callGetPublicRegistrationPricing(page.eventSeq);
+      const list = res?.item ?? [];
+      setPricingList(list);
+      setSelectedPricingSeq((current) => {
+        if (current && list.some((pricing) => pricing.eventPricingSeq === current)) {
+          return current;
+        }
+        return list[0]?.eventPricingSeq;
+      });
+    } catch {
+      message.error('Failed to load registration pricing.');
+    } finally {
+      setLoadingPricing(false);
+    }
+  }, [message, page?.eventSeq]);
+
+  useEffect(() => {
+    if (registrationActionType === 'direct' && page?.eventSeq) {
+      fetchRegistrationPricing();
+    }
+  }, [fetchRegistrationPricing, page?.eventSeq, registrationActionType]);
+
+  const verifyPublicPayment = useCallback(async (orderId: string) => {
+    if (!orderId) return;
+
+    const runId = verificationRunRef.current + 1;
+    verificationRunRef.current = runId;
+    setVerifyingPayment(true);
+
+    const wait = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
+    for (let attempt = 0; attempt < 12; attempt += 1) {
+      if (attempt > 0) {
+        await wait(2500);
+      }
+      if (verificationRunRef.current !== runId) return;
+
+      try {
+        const res = await callGetPublicRegistrationPaymentResult(orderId);
+        const payment = res?.item ?? null;
+        setRegistrationResult(payment);
+        const status = payment?.status?.toLowerCase();
+        if (status === 'paid' && payment?.paymentSeq) {
+          setVerifyingPayment(false);
+          setRegistrationStep(3);
+          message.success('Registration payment has been confirmed.');
+          return;
+        }
+        if (status === 'failed' || status === 'cancelled') {
+          setVerifyingPayment(false);
+          message.error(payment?.failedReason || 'Payment was not completed.');
+          return;
+        }
+      } catch {
+        if (attempt === 0) {
+          message.warning('Payment result is not ready yet. We will keep checking.');
+        }
+      }
+    }
+
+    if (verificationRunRef.current === runId) {
+      setVerifyingPayment(false);
+      message.warning('Payment window returned, but confirmation is still pending. Please check again shortly.');
+    }
+  }, [message]);
+
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      const data = event.data as { type?: string; orderId?: string };
+      if (data?.type !== 'KCAB_EXIMBAY_RETURN') return;
+      const orderId = data.orderId || latestOrderId;
+      if (!orderId) return;
+      setLatestOrderId(orderId);
+      verifyPublicPayment(orderId);
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [latestOrderId, verifyPublicPayment]);
+
+  const lookupParticipantByEmail = useCallback(async (email: string) => {
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail || !isValidRegistrationEmail(normalizedEmail)) {
+      setParticipantLookupLoading(false);
+      setParticipantLookupStatus(normalizedEmail ? 'invalid' : 'idle');
+      return;
+    }
+
+    const runId = participantLookupRunRef.current + 1;
+    participantLookupRunRef.current = runId;
+    latestLookupEmailRef.current = normalizedEmail;
+    setParticipantLookupLoading(true);
+    setParticipantLookupStatus('checking');
+
+    try {
+      const res = await callGetPublicRegistrationParticipant(normalizedEmail);
+      if (participantLookupRunRef.current !== runId || latestLookupEmailRef.current !== normalizedEmail) {
+        return;
+      }
+      const foundParticipant = res?.item ?? null;
+      if (!foundParticipant?.email) {
+        setParticipantLookupStatus('notFound');
+        return;
+      }
+      setParticipant((current) => {
+        if (current.email.trim().toLowerCase() !== normalizedEmail) {
+          return current;
+        }
+        return {
+          ...current,
+          firstName: foundParticipant.firstName ?? '',
+          middleName: foundParticipant.middleName ?? '',
+          lastName: foundParticipant.lastName ?? '',
+          organizationName: foundParticipant.organizationName ?? '',
+          position: foundParticipant.position ?? '',
+          country: foundParticipant.country ?? '',
+        };
+      });
+      setParticipantLookupStatus('found');
+    } catch {
+      if (participantLookupRunRef.current === runId && latestLookupEmailRef.current === normalizedEmail) {
+        setParticipantLookupStatus('error');
+      }
+    } finally {
+      if (participantLookupRunRef.current === runId && latestLookupEmailRef.current === normalizedEmail) {
+        setParticipantLookupLoading(false);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    const email = participant.email.trim();
+    latestLookupEmailRef.current = email.toLowerCase();
+    if (!email) {
+      setParticipantLookupLoading(false);
+      setParticipantLookupStatus('idle');
+      return undefined;
+    }
+    if (!isValidRegistrationEmail(email)) {
+      setParticipantLookupLoading(false);
+      setParticipantLookupStatus('invalid');
+      return undefined;
+    }
+    const timer = window.setTimeout(() => {
+      lookupParticipantByEmail(email);
+    }, 550);
+    return () => window.clearTimeout(timer);
+  }, [lookupParticipantByEmail, participant.email]);
+
+  const updateParticipant = useCallback((key: keyof PublicRegistrationParticipantRequest, value: string) => {
+    if (key === 'email') {
+      const previousLookupEmail = latestLookupEmailRef.current;
+      latestLookupEmailRef.current = value.trim().toLowerCase();
+      setParticipantLookupLoading(false);
+      setParticipantLookupStatus('idle');
+      setParticipant((prev) => {
+        if (participantLookupStatus === 'found' && value.trim().toLowerCase() !== previousLookupEmail) {
+          return { ...EMPTY_REGISTRATION_PARTICIPANT, email: value };
+        }
+        return { ...prev, email: value };
+      });
+      return;
+    }
+    setParticipant((prev) => ({ ...prev, [key]: value }));
+  }, [participantLookupStatus]);
+
+  const selectPricing = useCallback((value: number | undefined) => {
+    setSelectedPricingSeq(value);
+    setDiscountResult(null);
+  }, []);
+
+  const updateDiscountCodeInput = useCallback((value: string) => {
+    setDiscountCodeInput(value.toUpperCase());
+    setDiscountResult(null);
+  }, []);
+
+  const applyDiscountCode = useCallback(async () => {
+    if (!page?.eventSeq || !selectedPricing) {
+      message.warning('Please select a ticket before applying a discount code.');
+      return;
+    }
+    const code = discountCodeInput.trim().toUpperCase();
+    if (!code) {
+      setDiscountResult({
+        valid: false,
+        status: 'empty',
+        message: 'Enter a discount code.',
+        originalAmount: selectedOriginalAmount,
+        discountAmount: 0,
+        finalAmount: selectedOriginalAmount,
+      });
+      return;
+    }
+    setDiscountApplying(true);
+    try {
+      const res = await callValidatePublicRegistrationDiscountCode({
+        eventSeq: page.eventSeq,
+        eventPricingSeq: selectedPricing.eventPricingSeq,
+        discountCode: code,
+      });
+      const result = res?.item ?? null;
+      setDiscountResult(result);
+      if (result?.valid) {
+        setDiscountCodeInput(result.discountCode || code);
+        message.success(result.message || 'Discount code applied.');
+      } else {
+        message.warning(result?.message || 'This discount code cannot be applied.');
+      }
+    } catch {
+      setDiscountResult({
+        valid: false,
+        status: 'error',
+        message: 'We could not check this discount code. Please try again.',
+        originalAmount: selectedOriginalAmount,
+        discountAmount: 0,
+        finalAmount: selectedOriginalAmount,
+      });
+    } finally {
+      setDiscountApplying(false);
+    }
+  }, [discountCodeInput, message, page?.eventSeq, selectedOriginalAmount, selectedPricing]);
+
+  const clearDiscountCode = useCallback(() => {
+    setDiscountCodeInput('');
+    setDiscountResult(null);
+  }, []);
+
+  const continueToPaymentStep = useCallback(() => {
+    const validationMessage = validateRegistrationParticipant(participant);
+    if (validationMessage) {
+      message.warning(validationMessage);
+      return;
+    }
+    const cleanedParticipant = cleanParticipant(participant);
+    setParticipant(cleanedParticipant);
+    setRegistrationStep(2);
+    setRegistrationResult(null);
+    setLatestOrderId('');
+  }, [message, participant]);
+
+  const startRegistrationPayment = useCallback(async () => {
+    if (!page?.eventSeq) return;
+    const validationMessage = validateRegistrationParticipant(participant);
+    if (validationMessage) {
+      message.warning(validationMessage);
+      setRegistrationStep(1);
+      return;
+    }
+    if (!selectedPricing) {
+      message.warning('Please select a registration type.');
+      return;
+    }
+    const cleanedParticipant = cleanParticipant(participant);
+    setParticipant(cleanedParticipant);
+    setSubmittingRegistration(true);
+    setRegistrationResult(null);
+    try {
+      const res = await callPreparePublicRegistrationPayment({
+        eventSeq: page.eventSeq,
+        eventPricingSeq: selectedPricing.eventPricingSeq,
+        participant: cleanedParticipant,
+        paymentMethod: selectedPaymentMethod,
+        paymentMethods: [selectedPaymentMethod],
+        discountCode: appliedDiscount?.discountCode?.trim() || undefined,
+        lang: 'EN',
+        callbackBaseUrl: window.location.origin,
+      });
+      const prepared = res?.item;
+      if (!prepared) {
+        message.error('Payment preparation failed.');
+        return;
+      }
+      setLatestOrderId(prepared.orderId);
+      setRegistrationResult(prepared.payment ?? null);
+      if (prepared.payment?.status?.toLowerCase() === 'paid' && prepared.payment.paymentSeq) {
+        setRegistrationStep(3);
+        message.success('Registration has been completed.');
+        return;
+      }
+      if (!prepared.sdkUrl || !prepared.eximbayRequest) {
+        message.error('Payment request was not returned.');
+        return;
+      }
+      await loadScript(prepared.sdkUrl);
+      if (!window.EXIMBAY) {
+        message.error('Eximbay SDK is not available.');
+        return;
+      }
+      window.EXIMBAY.request_pay(prepared.eximbayRequest);
+    } catch {
+      message.error('Failed to start Eximbay payment.');
+    } finally {
+      setSubmittingRegistration(false);
+    }
+  }, [appliedDiscount, message, page?.eventSeq, participant, selectedPaymentMethod, selectedPricing]);
+
+  if (loading) {
+    return (
+      <div className="pub-layout pub-event-renewal pub-event-registration-page saf-renewal-home">
+        <SafEventHeader onNavigate={handleNavigate} />
+        <main className="pub-page-content">
+          <section className="pub-event-registration-page-section">
+            <div className="saf-renewal-shell">Loading registration...</div>
+          </section>
+        </main>
+        <SafEventFooter />
+      </div>
+    );
+  }
+
+  if (!page) {
+    return (
+      <div className="pub-layout pub-event-renewal pub-event-registration-page saf-renewal-home">
+        <SafEventHeader onNavigate={handleNavigate} />
+        <main className="pub-page-content">
+          <section className="pub-event-registration-page-section">
+            <div className="saf-renewal-shell pub-event-registration-message">
+              <h1>Registration Not Found</h1>
+              <p>The event page is not published or the URL is incorrect.</p>
+              <button type="button" className="pub-event-registration-primary" onClick={() => handleNavigate('/events')}>
+                View Events
+              </button>
+            </div>
+          </section>
+        </main>
+        <SafEventFooter />
+      </div>
+    );
+  }
+
+  if (registrationActionType !== 'direct') {
+    return (
+      <div className="pub-layout pub-event-renewal pub-event-registration-page saf-renewal-home">
+        <SafEventHeader onNavigate={handleNavigate} />
+        <main className="pub-page-content">
+          <section className="pub-event-registration-page-section">
+            <div className="saf-renewal-shell pub-event-registration-message">
+              <p className="pub-event-registration-kicker">Event Registration</p>
+              <h1>{page.eventTitle}</h1>
+              {registrationActionType === 'external' && externalRegistrationUrl ? (
+                <>
+                  <p>This event uses an external registration page.</p>
+                  <div className="pub-event-registration-actions">
+                    <button type="button" className="pub-event-registration-secondary" onClick={backToEvent}>
+                      Back to Event
+                    </button>
+                    <button
+                      type="button"
+                      className="pub-event-registration-primary"
+                      onClick={() => window.open(externalRegistrationUrl, '_blank', 'noopener,noreferrer')}
+                    >
+                      Open Registration
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p>Registration is not available for this event.</p>
+                  <button type="button" className="pub-event-registration-primary" onClick={backToEvent}>
+                    Back to Event
+                  </button>
+                </>
+              )}
+            </div>
+          </section>
+        </main>
+        <SafEventFooter />
+      </div>
+    );
+  }
+
+  return (
+    <div className="pub-layout pub-event-renewal pub-event-registration-page saf-renewal-home">
+      <SafEventHeader onNavigate={handleNavigate} />
+      <main className="pub-page-content">
+        <section className="pub-event-registration-page-section">
+          <div className="saf-renewal-shell pub-event-registration-shell">
+            <PublicRegistrationMasthead
+              page={page}
+              settings={pageSettings}
+              onBackToEvent={backToEvent}
+            />
+            <PublicRegistrationStepPanel
+              page={page}
+              settings={pageSettings}
+              step={registrationStep}
+              participant={participant}
+              pricingList={pricingList}
+              selectedPricing={selectedPricing}
+              selectedPricingSeq={selectedPricingSeq}
+              selectedPaymentMethod={selectedPaymentMethod}
+              discountCodeInput={discountCodeInput}
+              discountResult={discountResult}
+              discountApplying={discountApplying}
+              discountAmount={selectedDiscountAmount}
+              finalAmount={selectedFinalAmount}
+              loadingPricing={loadingPricing}
+              submitting={submittingRegistration}
+              verifyingPayment={verifyingPayment}
+              participantLookupLoading={participantLookupLoading}
+              participantLookupStatus={participantLookupStatus}
+              latestOrderId={latestOrderId}
+              result={registrationResult}
+              onUpdateParticipant={updateParticipant}
+              onSelectPricing={selectPricing}
+              onSelectPaymentMethod={setSelectedPaymentMethod}
+              onUpdateDiscountCode={updateDiscountCodeInput}
+              onApplyDiscountCode={applyDiscountCode}
+              onClearDiscountCode={clearDiscountCode}
+              onContinueToPayment={continueToPaymentStep}
+              onStartPayment={startRegistrationPayment}
+              onEditInfo={() => setRegistrationStep(1)}
+              onCheckPayment={() => {
+                if (latestOrderId) {
+                  verifyPublicPayment(latestOrderId);
+                }
+              }}
+              onBackToEvent={backToEvent}
+            />
+          </div>
+        </section>
       </main>
       <SafEventFooter />
     </div>
@@ -271,7 +908,12 @@ function FestivalLogo() {
   );
 }
 
-const EventHeroInfoCard: React.FC<{ page: PublicEventPageModel; settings: PageSettings }> = ({ page, settings }) => {
+const EventHeroInfoCard: React.FC<{
+  page: PublicEventPageModel;
+  settings: PageSettings;
+  showRegistrationButton: boolean;
+  onRegister: () => void;
+}> = ({ page, settings, showRegistrationButton, onRegister }) => {
   const contact = [settings.contactEmail, settings.contactPhone].filter(Boolean).join(' / ');
   const registrationStatus = settings.registrationStatusLabel || formatStatusLabel(page.eventStatus);
 
@@ -283,10 +925,10 @@ const EventHeroInfoCard: React.FC<{ page: PublicEventPageModel; settings: PageSe
       {renderHeroInfoRow('Organizer', settings.organizerName)}
       {renderHeroInfoRow('Contact', contact)}
       {settings.infoNote && <p className="pub-event-hero-note">{settings.infoNote}</p>}
-      {page.registrationUrl && (
-        <a className="pub-event-register-link" href={page.registrationUrl} target="_blank" rel="noopener noreferrer">
+      {showRegistrationButton && (
+        <button type="button" className="pub-event-register-link" onClick={onRegister}>
           Register
-        </a>
+        </button>
       )}
     </aside>
   );
@@ -301,6 +943,445 @@ function renderHeroInfoRow(label: string, value?: string | null) {
     </dl>
   );
 }
+
+const PublicRegistrationMasthead: React.FC<{
+  page: PublicEventPageModel;
+  settings: PageSettings;
+  onBackToEvent: () => void;
+}> = ({ page, settings, onBackToEvent }) => {
+  const contact = [settings.contactEmail, settings.contactPhone].filter(Boolean).join(' / ');
+  const heroImageUrl = page.heroImageUrl || assetSrc(HeroSeoulImage);
+  const mastheadSummary = stripHtml(page.eventSummary || '');
+  const mastheadStyle = {
+    '--registration-hero-image': `url("${heroImageUrl}")`,
+  } as React.CSSProperties;
+
+  return (
+    <section className="pub-event-registration-masthead" style={mastheadStyle}>
+      <div className="pub-event-registration-masthead-copy">
+        <p>Official Event Registration</p>
+        <h1>{page.eventTitle}</h1>
+        {mastheadSummary && <span>{mastheadSummary}</span>}
+      </div>
+      <div className="pub-event-registration-masthead-meta">
+        {renderRegistrationMetaItem('Date', formatBlockDateRange(page.eventStartDt, page.eventEndDt))}
+        {renderRegistrationMetaItem('Venue', page.location)}
+        {renderRegistrationMetaItem('Contact', contact || 'saf@kcab.or.kr')}
+      </div>
+      <button type="button" className="pub-event-registration-back" onClick={onBackToEvent}>
+        Back to Event
+      </button>
+    </section>
+  );
+};
+
+function renderRegistrationMetaItem(label: string, value?: string | null) {
+  if (!value) return null;
+  return (
+    <dl className="pub-event-registration-meta-item">
+      <dt>{label}</dt>
+      <dd>{value}</dd>
+    </dl>
+  );
+}
+
+function renderParticipantLookupMessage(loading: boolean, status: ParticipantLookupStatus) {
+  if (loading || status === 'checking') {
+    return <small className="pub-event-registration-email-note">Checking participant information...</small>;
+  }
+  if (status === 'found') {
+    return <small className="pub-event-registration-email-note is-success">Existing participant information was loaded.</small>;
+  }
+  if (status === 'notFound') {
+    return <small className="pub-event-registration-email-note">No existing participant was found. Please continue.</small>;
+  }
+  if (status === 'error') {
+    return <small className="pub-event-registration-email-note is-error">We could not check this email. You can still continue.</small>;
+  }
+  return null;
+}
+
+interface PublicRegistrationStepPanelProps {
+  page: PublicEventPageModel;
+  settings: PageSettings;
+  step: RegistrationStep;
+  participant: PublicRegistrationParticipantRequest;
+  pricingList: PublicRegistrationPricingOption[];
+  selectedPricing?: PublicRegistrationPricingOption;
+  selectedPricingSeq?: number;
+  selectedPaymentMethod: PublicRegistrationPaymentMethodCode;
+  discountCodeInput: string;
+  discountResult: PublicRegistrationDiscountValidationResult | null;
+  discountApplying: boolean;
+  discountAmount: number;
+  finalAmount: number;
+  loadingPricing: boolean;
+  submitting: boolean;
+  verifyingPayment: boolean;
+  participantLookupLoading: boolean;
+  participantLookupStatus: ParticipantLookupStatus;
+  latestOrderId: string;
+  result: PublicRegistrationPaymentResult | null;
+  onUpdateParticipant: (key: keyof PublicRegistrationParticipantRequest, value: string) => void;
+  onSelectPricing: (value: number | undefined) => void;
+  onSelectPaymentMethod: (value: PublicRegistrationPaymentMethodCode) => void;
+  onUpdateDiscountCode: (value: string) => void;
+  onApplyDiscountCode: () => void;
+  onClearDiscountCode: () => void;
+  onContinueToPayment: () => void;
+  onStartPayment: () => void;
+  onEditInfo: () => void;
+  onCheckPayment: () => void;
+  onBackToEvent: () => void;
+}
+
+const PublicRegistrationStepPanel: React.FC<PublicRegistrationStepPanelProps> = ({
+  page,
+  settings,
+  step,
+  participant,
+  pricingList,
+  selectedPricing,
+  selectedPricingSeq,
+  selectedPaymentMethod,
+  discountCodeInput,
+  discountResult,
+  discountApplying,
+  discountAmount,
+  finalAmount,
+  loadingPricing,
+  submitting,
+  verifyingPayment,
+  participantLookupLoading,
+  participantLookupStatus,
+  latestOrderId,
+  result,
+  onUpdateParticipant,
+  onSelectPricing,
+  onSelectPaymentMethod,
+  onUpdateDiscountCode,
+  onApplyDiscountCode,
+  onClearDiscountCode,
+  onContinueToPayment,
+  onStartPayment,
+  onEditInfo,
+  onCheckPayment,
+  onBackToEvent,
+}) => {
+  const contactEmail = settings.contactEmail || 'saf@kcab.or.kr';
+                const resultStatus = result?.status?.toLowerCase();
+                const paymentPending = !!resultStatus && resultStatus !== 'paid' && resultStatus !== 'failed' && resultStatus !== 'cancelled';
+                const hasAppliedDiscount = !!discountResult?.valid;
+                const payableAmount = selectedPricing ? finalAmount : 0;
+  const countryOptions = useMemo(() => {
+    const currentCountry = participant.country?.trim();
+    if (!currentCountry || COUNTRY_OPTIONS.some((option) => option.value === currentCountry)) {
+      return COUNTRY_OPTIONS;
+    }
+    return [{ label: currentCountry, value: currentCountry }, ...COUNTRY_OPTIONS];
+  }, [participant.country]);
+
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    onContinueToPayment();
+  };
+
+  return (
+      <section className="pub-event-registration-panel" aria-labelledby="public-registration-title">
+        <header className="pub-event-registration-head">
+          <div>
+            <p>Registration Details</p>
+            <h2 id="public-registration-title">Complete your registration</h2>
+            <span>Enter your participant information, complete payment, and keep your order ID for event inquiries.</span>
+          </div>
+        </header>
+        <ol className="pub-event-registration-steps" aria-label="Registration steps">
+          {REGISTRATION_STEPS.map((item) => (
+            <li
+              key={item.step}
+              className={[
+                step === item.step ? 'is-active' : '',
+                step > item.step ? 'is-complete' : '',
+              ].filter(Boolean).join(' ')}
+            >
+              <span>{item.step}</span>
+              <strong>{item.label}</strong>
+              <small>{item.description}</small>
+            </li>
+          ))}
+        </ol>
+
+        {step === 1 && (
+          <form className="pub-event-registration-grid is-participant-only" onSubmit={handleSubmit}>
+            <div className="pub-event-registration-form">
+              <div className="pub-event-registration-section-title">
+                <span>Step 1</span>
+                <h3>Participant Information</h3>
+                <p>Please enter the participant details first. Ticket selection and payment will be handled in the next step.</p>
+              </div>
+              <div className="pub-event-registration-fields">
+                <label className="is-wide">
+                  <span>Email *</span>
+                  <input
+                    type="email"
+                    value={participant.email}
+                    autoComplete="email"
+                    onChange={(event) => onUpdateParticipant('email', event.target.value)}
+                  />
+                  {renderParticipantLookupMessage(participantLookupLoading, participantLookupStatus)}
+                </label>
+                <label>
+                  <span>First Name *</span>
+                  <input
+                    value={participant.firstName}
+                    autoComplete="given-name"
+                    onChange={(event) => onUpdateParticipant('firstName', event.target.value)}
+                  />
+                </label>
+                <label>
+                  <span>Middle Name</span>
+                  <input
+                    value={participant.middleName ?? ''}
+                    autoComplete="additional-name"
+                    onChange={(event) => onUpdateParticipant('middleName', event.target.value)}
+                  />
+                </label>
+                <label>
+                  <span>Last Name *</span>
+                  <input
+                    value={participant.lastName}
+                    autoComplete="family-name"
+                    onChange={(event) => onUpdateParticipant('lastName', event.target.value)}
+                  />
+                </label>
+                <label className="is-wide">
+                  <span>Organization</span>
+                  <input
+                    value={participant.organizationName ?? ''}
+                    autoComplete="organization"
+                    onChange={(event) => onUpdateParticipant('organizationName', event.target.value)}
+                  />
+                </label>
+                <label className="is-wide">
+                  <span>Position</span>
+                  <input
+                    value={participant.position ?? ''}
+                    autoComplete="organization-title"
+                    onChange={(event) => onUpdateParticipant('position', event.target.value)}
+                  />
+                </label>
+                <label className="is-wide">
+                  <span>Country</span>
+                  <Select<string>
+                    className="pub-event-registration-country-select"
+                    classNames={{ popup: { root: 'pub-event-registration-country-dropdown' } }}
+                    showSearch
+                    allowClear
+                    value={participant.country?.trim() ? participant.country : undefined}
+                    placeholder="Search country"
+                    options={countryOptions}
+                    optionFilterProp="label"
+                    onChange={(value) => onUpdateParticipant('country', value ?? '')}
+                  />
+                </label>
+              </div>
+              <div className="pub-event-registration-form-actions">
+                <button type="button" className="pub-event-registration-secondary" onClick={onBackToEvent}>
+                  Back to Event
+                </button>
+                <button type="submit" className="pub-event-registration-primary">
+                  Next: Ticket & Payment
+                </button>
+              </div>
+            </div>
+          </form>
+        )}
+
+        {step === 2 && (
+          <div className="pub-event-registration-payment">
+            <div className="pub-event-registration-section-title">
+              <span>Step 2</span>
+              <h3>Select Ticket & Payment</h3>
+              <p>Choose your registration type and payment method, then continue to the secure Eximbay payment window.</p>
+            </div>
+            <div className="pub-event-registration-payment-grid">
+              <aside className="pub-event-registration-summary">
+                <div className="pub-event-registration-section-title">
+                  <span>Registration Type</span>
+                  <h3>Select Ticket</h3>
+                </div>
+                <div className="pub-event-registration-ticket-list" role="radiogroup" aria-label="Registration type">
+                  {loadingPricing && <p className="pub-event-registration-muted">Loading registration options...</p>}
+                  {!loadingPricing && pricingList.length === 0 && (
+                    <p className="pub-event-registration-unavailable">No payable registration option is available for this event.</p>
+                  )}
+                  {pricingList.map((pricing) => {
+                    const selected = selectedPricingSeq === pricing.eventPricingSeq;
+                    return (
+                      <button
+                        type="button"
+                        key={pricing.eventPricingSeq}
+                        className={`pub-event-registration-ticket${selected ? ' is-selected' : ''}`}
+                        aria-pressed={selected}
+                        onClick={() => onSelectPricing(pricing.eventPricingSeq)}
+                      >
+                        <span>{pricing.priceName}</span>
+                        <strong>{formatMoney(pricing.amount, pricing.currencyCode)}</strong>
+                        <small>{pricing.priceType}</small>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="pub-event-registration-methods" role="radiogroup" aria-label="Payment method">
+                  <span>Payment Method</span>
+                  {PAYMENT_METHOD_OPTIONS.map((option) => {
+                    const selected = selectedPaymentMethod === option.value;
+                    return (
+                      <button
+                        type="button"
+                        key={option.value}
+                        className={selected ? 'is-selected' : ''}
+                        aria-pressed={selected}
+                        onClick={() => onSelectPaymentMethod(option.value)}
+                      >
+                        <strong>{option.brand}</strong>
+                        <small>{option.description}</small>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="pub-event-registration-total">
+                  <span>Total</span>
+                  <strong>{selectedPricing ? formatMoney(payableAmount, selectedPricing.currencyCode) : '-'}</strong>
+                  {selectedPricing && hasAppliedDiscount && (
+                    <small>{formatMoney(discountAmount, selectedPricing.currencyCode)} discount applied</small>
+                  )}
+                </div>
+              </aside>
+              <div className="pub-event-registration-payment-side">
+                <div className="pub-event-registration-payment-state">
+                  <span>{submitting ? 'Preparing' : verifyingPayment ? 'Confirming' : paymentPending ? 'Pending' : latestOrderId ? 'Payment Window Open' : 'Ready to Pay'}</span>
+                  <h4>{submitting ? 'Preparing your payment request.' : latestOrderId ? 'Please finish payment in the popup window.' : 'Ready when your ticket and payment method are selected.'}</h4>
+                  <p>{latestOrderId ? 'This page will move to Step 3 automatically after confirmation.' : 'You can still go back and edit participant information before opening Eximbay.'}</p>
+                </div>
+                <div className="pub-event-registration-discount">
+                  <div className="pub-event-registration-discount-head">
+                    <span>Discount Code</span>
+                    {hasAppliedDiscount && <strong>{discountResult?.discountCode}</strong>}
+                  </div>
+                  <div className="pub-event-registration-discount-control">
+                    <input
+                      value={discountCodeInput}
+                      placeholder="Enter discount code"
+                      onChange={(event) => onUpdateDiscountCode(event.target.value)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter') {
+                          event.preventDefault();
+                          onApplyDiscountCode();
+                        }
+                      }}
+                      disabled={submitting || verifyingPayment}
+                    />
+                    <button
+                      type="button"
+                      className="pub-event-registration-secondary"
+                      onClick={onApplyDiscountCode}
+                      disabled={discountApplying || submitting || verifyingPayment || !selectedPricing}
+                    >
+                      {discountApplying ? 'Checking' : 'Apply'}
+                    </button>
+                    {hasAppliedDiscount && (
+                      <button
+                        type="button"
+                        className="pub-event-registration-discount-clear"
+                        onClick={onClearDiscountCode}
+                        disabled={submitting || verifyingPayment}
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                  {discountResult?.message && (
+                    <p className={`pub-event-registration-discount-message ${discountResult.valid ? 'is-success' : 'is-error'}`}>
+                      {discountResult.message}
+                    </p>
+                  )}
+                  {selectedPricing && hasAppliedDiscount && (
+                    <div className="pub-event-registration-discount-lines">
+                      <div>
+                        <span>Subtotal</span>
+                        <strong>{formatMoney(selectedPricing.amount, selectedPricing.currencyCode)}</strong>
+                      </div>
+                      <div>
+                        <span>Discount</span>
+                        <strong>-{formatMoney(discountAmount, selectedPricing.currencyCode)}</strong>
+                      </div>
+                      <div>
+                        <span>New Total</span>
+                        <strong>{formatMoney(payableAmount, selectedPricing.currencyCode)}</strong>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                {result?.failedReason && <p className="pub-event-registration-error">{result.failedReason}</p>}
+                <div className="pub-event-registration-actions">
+                  <button type="button" className="pub-event-registration-secondary" onClick={onEditInfo} disabled={submitting || verifyingPayment}>
+                    Edit Participant
+                  </button>
+                  <button type="button" className="pub-event-registration-primary" onClick={onStartPayment} disabled={submitting || loadingPricing || !selectedPricing}>
+                    {submitting ? 'Preparing Payment' : payableAmount <= 0 && hasAppliedDiscount ? 'Complete Registration' : 'Pay with Eximbay'}
+                  </button>
+                  {latestOrderId && (
+                    <button type="button" className="pub-event-registration-secondary" onClick={onCheckPayment} disabled={submitting || verifyingPayment}>
+                      {verifyingPayment ? 'Checking Payment' : 'Check Payment'}
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {step === 3 && (
+          <div className="pub-event-registration-complete">
+            <span className="pub-event-registration-complete-badge">Confirmed</span>
+            <h3>Registration Complete</h3>
+            <p>
+              Thank you for registering for {page.eventTitle}. Your payment has been confirmed and your participant
+              information has been recorded.
+            </p>
+            <div className="pub-event-registration-result-grid">
+              <div>
+                <span>Participant</span>
+                <strong>{formatParticipantName(participant)}</strong>
+              </div>
+              <div>
+                <span>Email</span>
+                <strong>{participant.email || '-'}</strong>
+              </div>
+              <div>
+                <span>Order ID</span>
+                <strong>{result?.orderId || latestOrderId || '-'}</strong>
+              </div>
+              <div>
+                <span>Payment</span>
+                <strong>{result ? formatMoney(result.amount, result.currency) : selectedPricing ? formatMoney(selectedPricing.amount, selectedPricing.currencyCode) : '-'}</strong>
+              </div>
+            </div>
+            <p className="pub-event-registration-note">
+              Please keep your order ID for inquiries. Event updates or access information may be sent to your registered email address.
+              For changes, contact <a href={`mailto:${contactEmail}`}>{contactEmail}</a>.
+            </p>
+            <button type="button" className="pub-event-registration-primary" onClick={onBackToEvent}>
+              Back to Event
+            </button>
+          </div>
+        )}
+      </section>
+  );
+};
 
 const EventPageSectionRenderer: React.FC<{ section: EventPageSection; accentColor: string }> = ({ section, accentColor }) => {
   const anchor = section.anchorId || section.sectionKey;
@@ -600,6 +1681,87 @@ function renderNoticeBlock(block: EventPageBlock) {
   }
 
   return <article key={block.blockSeq} className="pub-event-notice-card">{content}</article>;
+}
+
+function normalizeRegistrationType(value?: string | null): RegistrationActionType {
+  const normalized = (value || 'none').trim().toLowerCase();
+  if (normalized === 'direct' || normalized === 'external' || normalized === 'none') {
+    return normalized;
+  }
+  return 'none';
+}
+
+function cleanParticipant(participant: PublicRegistrationParticipantRequest): PublicRegistrationParticipantRequest {
+  return {
+    firstName: participant.firstName.trim(),
+    middleName: participant.middleName?.trim() ?? '',
+    lastName: participant.lastName.trim(),
+    email: participant.email.trim().toLowerCase(),
+    organizationName: participant.organizationName?.trim() ?? '',
+    position: participant.position?.trim() ?? '',
+    country: participant.country?.trim() ?? '',
+  };
+}
+
+function validateRegistrationParticipant(participant: PublicRegistrationParticipantRequest) {
+  const cleaned = cleanParticipant(participant);
+  if (!cleaned.firstName || !cleaned.lastName || !cleaned.email) {
+    return 'Please enter first name, last name, and email.';
+  }
+  if (!isValidRegistrationEmail(cleaned.email)) {
+    return 'Please enter a valid email address.';
+  }
+  return '';
+}
+
+function isValidRegistrationEmail(email: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+}
+
+function formatParticipantName(participant: PublicRegistrationParticipantRequest) {
+  return [participant.firstName, participant.middleName, participant.lastName]
+    .filter((value) => value?.trim())
+    .map((value) => value?.trim())
+    .join(' ') || '-';
+}
+
+function formatMoney(amount?: number | string | null, currency?: string | null) {
+  const value = Number(amount ?? 0);
+  const code = currency || 'USD';
+  try {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: code,
+      maximumFractionDigits: code === 'KRW' ? 0 : 2,
+    }).format(Number.isFinite(value) ? value : 0);
+  } catch {
+    return `${code} ${Number.isFinite(value) ? value.toLocaleString() : '0'}`;
+  }
+}
+
+function loadScript(src: string) {
+  return new Promise<void>((resolve, reject) => {
+    if (typeof window === 'undefined') {
+      reject(new Error('Browser is not available.'));
+      return;
+    }
+    if (window.EXIMBAY) {
+      resolve();
+      return;
+    }
+    const existing = document.querySelector(`script[src="${src}"]`) as HTMLScriptElement | null;
+    if (existing) {
+      existing.addEventListener('load', () => resolve(), { once: true });
+      existing.addEventListener('error', () => reject(new Error('Failed to load Eximbay SDK.')), { once: true });
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = src;
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error('Failed to load Eximbay SDK.'));
+    document.head.appendChild(script);
+  });
 }
 
 function formatEventMeta(page: PublicEventPageModel) {

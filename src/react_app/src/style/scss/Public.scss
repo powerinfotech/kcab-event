@@ -1304,12 +1304,15 @@ $pub-header-height-mobile: 60px;
 .pub-event-register-link {
   display: inline-block;
   padding: 12px 32px;
+  border: 0;
   background: $pub-primary;
   color: #fff;
   font-size: 15px;
   font-weight: 600;
+  font-family: inherit;
   border-radius: 4px;
   text-decoration: none;
+  cursor: pointer;
   transition: background 0.2s;
   margin-bottom: 16px;
 
@@ -1922,6 +1925,30 @@ $pub-header-height-mobile: 60px;
   position: absolute;
 }
 
+.pub-event-registration-page {
+  .saf-event-header {
+    background:
+      linear-gradient(180deg, rgba(16, 18, 43, 0.96) 0%, rgba(16, 18, 43, 0.88) 100%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: 0 20px 54px rgba(16, 18, 43, 0.16);
+    backdrop-filter: blur(18px);
+  }
+
+  .saf-renewal-brand,
+  .saf-renewal-nav a,
+  .saf-renewal-social a {
+    color: #fff;
+  }
+
+  .saf-renewal-logo-title {
+    color: #fff;
+  }
+
+  .saf-renewal-social a {
+    background: rgba(255, 255, 255, 0.14);
+  }
+}
+
 .saf-event-detail-hero {
   position: relative;
   min-height: 640px;
@@ -2026,6 +2053,1195 @@ $pub-header-height-mobile: 60px;
     font-weight: 900;
     letter-spacing: 0.08em;
     text-transform: uppercase;
+  }
+}
+
+.pub-event-floating-register {
+  position: fixed;
+  right: max(28px, env(safe-area-inset-right));
+  bottom: max(28px, env(safe-area-inset-bottom));
+  z-index: 160;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 146px;
+  min-height: 52px;
+  padding: 0 26px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(95deg, #315cff 0%, #8b54f6 100%);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 900;
+  font-family: inherit;
+  letter-spacing: 0;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 20px 46px rgba(40, 44, 130, 0.28);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+
+  &:hover {
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 24px 54px rgba(40, 44, 130, 0.36);
+  }
+}
+
+.pub-event-registration-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 240;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px;
+}
+
+.pub-event-registration-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(13, 12, 34, 0.62);
+  backdrop-filter: blur(10px);
+}
+
+.pub-event-registration-panel {
+  position: relative;
+  z-index: 1;
+  width: min(1080px, 100%);
+  max-height: min(880px, calc(100vh - 56px));
+  overflow: auto;
+  padding: 34px;
+  border: 1px solid rgba(31, 39, 72, 0.08);
+  border-radius: 20px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, #ffffff 100%);
+  color: var(--saf-event-ink);
+  box-shadow: 0 24px 70px rgba(14, 16, 39, 0.12);
+}
+
+.pub-event-registration-page {
+  background:
+    linear-gradient(180deg, #f6f4fb 0%, #fbfbfd 48%, #ffffff 100%);
+}
+
+.pub-event-registration-page-section {
+  min-height: calc(100vh - 220px);
+  padding: 132px 0 92px;
+}
+
+.pub-event-registration-shell {
+  display: grid;
+  gap: 22px;
+}
+
+.pub-event-registration-masthead {
+  position: relative;
+  min-height: 316px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 420px);
+  align-items: end;
+  gap: 28px;
+  overflow: hidden;
+  padding: 34px;
+  border-radius: 20px;
+  background-image:
+    linear-gradient(105deg, rgba(15, 21, 45, 0.94) 0%, rgba(32, 37, 72, 0.8) 44%, rgba(76, 62, 123, 0.56) 100%),
+    var(--registration-hero-image);
+  background-position: center;
+  background-size: cover;
+  color: #fff;
+  box-shadow: 0 28px 78px rgba(13, 15, 38, 0.22);
+}
+
+.pub-event-registration-masthead::after {
+  content: '';
+  position: absolute;
+  left: 34px;
+  right: 34px;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(216, 180, 96, 0.8), rgba(255, 255, 255, 0));
+}
+
+.pub-event-registration-masthead-copy {
+  position: relative;
+  z-index: 1;
+  max-width: 720px;
+
+  p {
+    margin: 0 0 14px;
+    color: #e5c985;
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 0;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    margin: 0;
+    color: #fff;
+    font-size: clamp(34px, 5vw, 58px);
+    line-height: 1.03;
+    letter-spacing: 0;
+  }
+
+  span {
+    display: block;
+    max-width: 620px;
+    margin-top: 18px;
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 16px;
+    line-height: 1.65;
+  }
+}
+
+.pub-event-registration-masthead-meta {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 0;
+  padding: 22px 24px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(18px);
+}
+
+.pub-event-registration-meta-item {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 14px;
+  margin: 0;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+
+  &:first-child {
+    padding-top: 0;
+  }
+
+  &:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+
+  dt {
+    color: rgba(229, 201, 133, 0.9);
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+
+  dd {
+    margin: 0;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1.45;
+  }
+}
+
+.pub-event-registration-back {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  z-index: 2;
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+}
+
+.pub-event-registration-page .pub-event-registration-panel {
+  max-height: none;
+  overflow: visible;
+  margin: 0 auto;
+}
+
+.pub-event-registration-message {
+  display: grid;
+  justify-items: start;
+  gap: 16px;
+  padding: 42px;
+  border: 1px solid #ece8fb;
+  border-radius: 18px;
+  background: #fff;
+  color: var(--saf-event-ink);
+  box-shadow: 0 24px 70px rgba(8, 6, 28, 0.14);
+
+  h1 {
+    margin: 0;
+    color: var(--saf-event-ink);
+    font-size: 32px;
+    line-height: 1.2;
+    letter-spacing: 0;
+  }
+
+  p {
+    margin: 0;
+    color: #68647f;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+}
+
+.pub-event-registration-kicker {
+  color: var(--saf-event-purple) !important;
+  font-size: 12px !important;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.pub-event-registration-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid #e5e1f5;
+  border-radius: 999px;
+  background: #f8f6ff;
+  color: #5a5575;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.pub-event-registration-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid rgba(31, 39, 72, 0.08);
+
+  > div {
+    max-width: 760px;
+  }
+
+  p {
+    margin: 0 0 8px;
+    color: var(--saf-event-purple);
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 0;
+    text-transform: uppercase;
+  }
+
+  h2 {
+    margin: 0;
+    color: var(--saf-event-ink);
+    font-size: 30px;
+    line-height: 1.25;
+    letter-spacing: 0;
+  }
+
+  span {
+    display: block;
+    max-width: 680px;
+    margin-top: 10px;
+    color: #68647f;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+}
+
+.pub-event-registration-steps {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  margin: 30px 0;
+  padding: 0;
+  list-style: none;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 18px;
+    right: 18px;
+    top: 18px;
+    height: 1px;
+    background: linear-gradient(90deg, #d9c48b, #ded9f0);
+  }
+
+  li {
+    position: relative;
+    z-index: 1;
+    min-width: 0;
+    flex: 1;
+    display: grid;
+    justify-items: center;
+    gap: 7px;
+    padding: 0 10px;
+    background: transparent;
+    color: #77728f;
+    text-align: center;
+  }
+
+  span {
+    width: 38px;
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 1px solid #ded9f0;
+    background: #fff;
+    color: #8a7b4f;
+    font-size: 13px;
+    font-weight: 900;
+    box-shadow: 0 8px 18px rgba(14, 16, 39, 0.06);
+  }
+
+  strong {
+    color: var(--saf-event-ink);
+    font-size: 14px;
+    line-height: 1.2;
+  }
+
+  small {
+    min-width: 0;
+    color: #77728f;
+    font-size: 12px;
+    line-height: 1.25;
+  }
+
+  .is-active {
+    span {
+      border-color: #d6b86a;
+      background: linear-gradient(135deg, #d8b460 0%, #947437 100%);
+      color: #fff;
+    }
+  }
+
+  .is-complete span {
+    background: #1cba8a;
+    color: #fff;
+  }
+}
+
+.pub-event-registration-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 372px);
+  gap: 24px;
+
+  &.is-participant-only {
+    grid-template-columns: minmax(0, 780px);
+    justify-content: center;
+  }
+}
+
+.pub-event-registration-form,
+.pub-event-registration-summary,
+.pub-event-registration-payment,
+.pub-event-registration-complete {
+  min-width: 0;
+  border: 1px solid rgba(31, 39, 72, 0.08);
+  border-radius: 16px;
+  background: #fff;
+}
+
+.pub-event-registration-form {
+  padding: 28px;
+}
+
+.pub-event-registration-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 26px;
+  padding-top: 20px;
+  border-top: 1px solid #ece8fb;
+}
+
+.pub-event-registration-summary {
+  align-self: start;
+  display: grid;
+  gap: 18px;
+  padding: 24px;
+  background:
+    linear-gradient(180deg, #fffdf7 0%, #ffffff 58%);
+  box-shadow: inset 0 3px 0 #d8b460;
+}
+
+.pub-event-registration-section-title {
+  span {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--saf-event-purple);
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 0;
+    text-transform: uppercase;
+  }
+
+  h3 {
+    margin: 0;
+    color: var(--saf-event-ink);
+    font-size: 23px;
+    line-height: 1.25;
+    letter-spacing: 0;
+  }
+
+  p {
+    margin: 8px 0 0;
+    color: #68647f;
+    font-size: 14px;
+    line-height: 1.55;
+  }
+}
+
+.pub-event-registration-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 26px;
+
+  label {
+    min-width: 0;
+    display: grid;
+    gap: 7px;
+  }
+
+  .is-wide {
+    grid-column: span 3;
+  }
+
+  span {
+    color: #5f5a78;
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  input {
+    width: 100%;
+    min-height: 48px;
+    padding: 0 14px;
+    border: 1px solid #ddd8e8;
+    border-radius: 8px;
+    background: #fdfdff;
+    color: var(--saf-event-ink);
+    font: inherit;
+    font-size: 14px;
+    letter-spacing: 0;
+    outline: 0;
+    transition: border-color 0.16s ease, box-shadow 0.16s ease;
+
+    &:focus {
+      border-color: #d0ab55;
+      box-shadow: 0 0 0 3px rgba(216, 180, 96, 0.18);
+    }
+  }
+
+  .pub-event-registration-country-select {
+    width: 100%;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    border: 1px solid #ddd8e8;
+    border-radius: 8px;
+    background: #fdfdff;
+    transition: border-color 0.16s ease, box-shadow 0.16s ease;
+
+    .ant-select-content {
+      min-width: 0;
+      height: 46px;
+      flex: 1;
+      display: flex;
+      align-items: center;
+    }
+
+    .ant-select-placeholder,
+    .ant-select-value,
+    .ant-select-input {
+      color: var(--saf-event-ink);
+      font: inherit;
+      font-size: 14px;
+      line-height: 46px;
+    }
+
+    .ant-select-input {
+      height: 46px;
+      padding: 0;
+    }
+
+    .ant-select-placeholder {
+      color: #8a869d;
+    }
+
+    .ant-select-suffix {
+      color: #7a758f;
+    }
+
+    .ant-select-selector {
+      min-height: 48px;
+      align-items: center;
+      border-color: #ddd8e8 !important;
+      border-radius: 8px !important;
+      background: #fdfdff !important;
+      box-shadow: none !important;
+      transition: border-color 0.16s ease, box-shadow 0.16s ease;
+    }
+
+    .ant-select-selection-search-input {
+      height: 46px !important;
+      color: var(--saf-event-ink);
+      font: inherit;
+    }
+
+    .ant-select-selection-item,
+    .ant-select-selection-placeholder {
+      color: var(--saf-event-ink);
+      font-size: 14px;
+      line-height: 46px;
+    }
+
+    .ant-select-selection-placeholder {
+      color: #8a869d;
+    }
+
+    &.ant-select-focused,
+    &.ant-select-open,
+    &.ant-select-focused .ant-select-selector {
+      border-color: #d0ab55 !important;
+      box-shadow: 0 0 0 3px rgba(216, 180, 96, 0.18) !important;
+    }
+  }
+}
+
+.pub-event-registration-email-note {
+  min-height: 17px;
+  color: #746f89;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+
+  &.is-success {
+    color: #16845f;
+  }
+
+  &.is-error {
+    color: #b42318;
+  }
+}
+
+.pub-event-registration-country-dropdown {
+  .ant-select-item {
+    min-height: 36px;
+    padding: 8px 12px;
+    color: var(--saf-event-ink, #11132f);
+    font-size: 13px;
+  }
+
+  .ant-select-item-option-selected {
+    background: #fff7e4 !important;
+    color: #7a5b20;
+    font-weight: 800;
+  }
+}
+
+.pub-event-registration-ticket-list,
+.pub-event-registration-methods {
+  display: grid;
+  gap: 10px;
+}
+
+.pub-event-registration-ticket {
+  width: 100%;
+  min-height: 90px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 14px;
+  align-items: center;
+  padding: 16px;
+  border: 1px solid #e5dfcf;
+  border-radius: 12px;
+  background: #fff;
+  color: var(--saf-event-ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  span,
+  small {
+    min-width: 0;
+  }
+
+  span {
+    font-size: 14px;
+    font-weight: 900;
+  }
+
+  strong {
+    color: #8a6c2e;
+    font-size: 17px;
+  }
+
+  small {
+    grid-column: 1 / -1;
+    color: #77728f;
+    font-size: 12px;
+  }
+
+  &.is-selected {
+    border-color: rgba(216, 180, 96, 0.76);
+    background: #fffaf0;
+    box-shadow: inset 0 0 0 1px rgba(216, 180, 96, 0.26);
+  }
+}
+
+.pub-event-registration-muted,
+.pub-event-registration-unavailable,
+.pub-event-registration-error,
+.pub-event-registration-note {
+  margin: 0;
+  color: #68647f;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.pub-event-registration-unavailable,
+.pub-event-registration-error {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #fff2f2;
+  color: #b42318;
+  font-weight: 700;
+}
+
+.pub-event-registration-methods {
+  > span {
+    color: #5f5a78;
+    font-size: 12px;
+    font-weight: 900;
+  }
+
+  button {
+    min-height: 60px;
+    display: grid;
+    grid-template-columns: 76px minmax(0, 1fr);
+    gap: 10px;
+    align-items: center;
+    padding: 10px 12px;
+    border: 1px solid #e4dfef;
+    border-radius: 10px;
+    background: #fff;
+    color: var(--saf-event-ink);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+
+    strong {
+      color: #314066;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    small {
+      color: #77728f;
+      font-size: 12px;
+      line-height: 1.25;
+    }
+
+    &.is-selected {
+      border-color: rgba(49, 92, 255, 0.42);
+      background: #f5f7ff;
+    }
+  }
+}
+
+.pub-event-registration-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #ece8fb;
+
+  span {
+    color: #68647f;
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  strong {
+    color: var(--saf-event-ink);
+    font-size: 22px;
+  }
+
+  small {
+    flex-basis: 100%;
+    color: #3f8061;
+    font-size: 12px;
+    font-weight: 800;
+    text-align: right;
+  }
+}
+
+.pub-event-registration-primary,
+.pub-event-registration-secondary {
+  min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 20px;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 0;
+  cursor: pointer;
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.58;
+  }
+}
+
+.pub-event-registration-primary {
+  border: 0;
+  background: linear-gradient(95deg, #24365f 0%, #315cff 100%);
+  color: #fff;
+  box-shadow: 0 16px 34px rgba(36, 54, 95, 0.22);
+}
+
+.pub-event-registration-secondary {
+  border: 1px solid #ded9f0;
+  background: #fff;
+  color: #5a5575;
+}
+
+.pub-event-registration-payment,
+.pub-event-registration-complete {
+  display: grid;
+  gap: 20px;
+  padding: 30px;
+}
+
+.pub-event-registration-payment-grid {
+  display: grid;
+  grid-template-columns: minmax(300px, 380px) minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+
+.pub-event-registration-payment-side {
+  min-width: 0;
+  display: grid;
+  gap: 16px;
+}
+
+.pub-event-registration-payment-state {
+  padding: 24px;
+  border-radius: 16px;
+  background:
+    linear-gradient(135deg, #f6f8ff 0%, #fffdf7 100%);
+
+  span {
+    display: inline-flex;
+    margin-bottom: 10px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: #fff;
+    color: #8a6c2e;
+    font-size: 12px;
+    font-weight: 900;
+  }
+
+  h4 {
+    margin: 0;
+    color: var(--saf-event-ink);
+    font-size: 20px;
+    letter-spacing: 0;
+  }
+
+  p {
+    margin: 8px 0 0;
+    color: #68647f;
+    font-size: 14px;
+    line-height: 1.55;
+  }
+}
+
+.pub-event-registration-discount {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+  border: 1px solid rgba(49, 64, 102, 0.1);
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 14px 34px rgba(28, 32, 64, 0.06);
+}
+
+.pub-event-registration-discount-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  span {
+    color: #5f5a78;
+    font-size: 12px;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+
+  strong {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    color: #3f8061;
+    font-size: 13px;
+  }
+}
+
+.pub-event-registration-discount-control {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 8px;
+  align-items: center;
+
+  input {
+    width: 100%;
+    min-height: 46px;
+    padding: 0 14px;
+    border: 1px solid #ded9f0;
+    border-radius: 999px;
+    background: #fbfbfd;
+    color: var(--saf-event-ink);
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0;
+    outline: none;
+    text-transform: uppercase;
+
+    &:focus {
+      border-color: rgba(49, 92, 255, 0.46);
+      box-shadow: 0 0 0 4px rgba(49, 92, 255, 0.09);
+    }
+  }
+
+  .pub-event-registration-secondary {
+    min-height: 46px;
+    padding: 0 16px;
+  }
+}
+
+.pub-event-registration-discount-clear {
+  min-height: 40px;
+  padding: 0 4px;
+  border: 0;
+  background: transparent;
+  color: #7a6e9d;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.pub-event-registration-discount-message {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.45;
+
+  &.is-success {
+    background: #edf8f2;
+    color: #276749;
+  }
+
+  &.is-error {
+    background: #fff2f2;
+    color: #b42318;
+  }
+}
+
+.pub-event-registration-discount-lines {
+  display: grid;
+  gap: 8px;
+  padding-top: 2px;
+
+  div {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    color: #68647f;
+    font-size: 13px;
+
+    &:last-child {
+      padding-top: 8px;
+      border-top: 1px solid #ece8fb;
+      color: var(--saf-event-ink);
+      font-weight: 900;
+    }
+  }
+}
+
+.pub-event-registration-result-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+
+  div {
+    min-width: 0;
+    display: grid;
+    gap: 6px;
+    padding: 16px;
+    border: 1px solid rgba(31, 39, 72, 0.08);
+    border-radius: 12px;
+    background: #fbfbfd;
+  }
+
+  span {
+    color: #77728f;
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+
+  strong {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    color: var(--saf-event-ink);
+    font-size: 13px;
+    line-height: 1.35;
+  }
+}
+
+.pub-event-registration-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.pub-event-registration-complete {
+  text-align: center;
+  justify-items: center;
+  background:
+    linear-gradient(180deg, #ffffff 0%, #fffdf7 100%);
+
+  h3 {
+    margin: 0;
+    color: var(--saf-event-ink);
+    font-size: 30px;
+    letter-spacing: 0;
+  }
+
+  p {
+    max-width: 680px;
+    margin: 0;
+    color: #68647f;
+    font-size: 15px;
+    line-height: 1.65;
+  }
+
+  .pub-event-registration-result-grid {
+    width: 100%;
+    text-align: left;
+  }
+
+  a {
+    color: var(--saf-event-purple);
+    font-weight: 800;
+  }
+}
+
+.pub-event-registration-complete-badge {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: #f4ecd4;
+  color: #785b20;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+@media (max-width: 900px) {
+  .pub-event-registration-overlay {
+    padding: 16px;
+  }
+
+  .pub-event-registration-page-section {
+    padding: 128px 0 58px;
+  }
+
+  .pub-event-registration-masthead {
+    grid-template-columns: 1fr;
+    min-height: 360px;
+    padding: 28px;
+  }
+
+  .pub-event-registration-masthead-meta {
+    max-width: 100%;
+  }
+
+  .pub-event-registration-panel {
+    max-height: calc(100vh - 32px);
+    padding: 22px;
+    border-radius: 16px;
+  }
+
+  .pub-event-registration-page .pub-event-registration-panel {
+    max-height: none;
+  }
+
+  .pub-event-registration-head {
+    flex-direction: column;
+
+    h2 {
+      font-size: 24px;
+    }
+  }
+
+  .pub-event-registration-steps {
+    display: grid;
+    grid-template-columns: 1fr;
+
+    &::before {
+      display: none;
+    }
+
+    li {
+      grid-template-columns: 38px minmax(0, 1fr);
+      justify-items: start;
+      text-align: left;
+    }
+
+    span {
+      grid-row: span 2;
+    }
+  }
+
+  .pub-event-registration-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pub-event-registration-payment-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pub-event-registration-fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    .is-wide {
+      grid-column: span 2;
+    }
+  }
+
+  .pub-event-registration-result-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .pub-event-registration-overlay {
+    align-items: stretch;
+    padding: 0;
+  }
+
+  .pub-event-registration-page-section {
+    padding: 112px 16px 42px;
+  }
+
+  .pub-event-registration-masthead {
+    min-height: 420px;
+    padding: 22px;
+    border-radius: 14px;
+  }
+
+  .pub-event-registration-masthead::after {
+    left: 22px;
+    right: 22px;
+  }
+
+  .pub-event-registration-masthead-copy h1 {
+    font-size: 32px;
+  }
+
+  .pub-event-registration-back {
+    top: 16px;
+    right: 16px;
+  }
+
+  .pub-event-registration-meta-item {
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+
+  .pub-event-registration-panel {
+    width: 100%;
+    max-height: 100vh;
+    border-radius: 0;
+    padding: 18px;
+  }
+
+  .pub-event-registration-page .pub-event-registration-panel {
+    max-height: none;
+    border-radius: 14px;
+  }
+
+  .pub-event-registration-close {
+    top: 14px;
+    right: 14px;
+  }
+
+  .pub-event-registration-head {
+    h2 {
+      font-size: 21px;
+    }
+  }
+
+  .pub-event-registration-form,
+  .pub-event-registration-summary,
+  .pub-event-registration-payment,
+  .pub-event-registration-complete {
+    border-radius: 14px;
+  }
+
+  .pub-event-registration-form,
+  .pub-event-registration-summary,
+  .pub-event-registration-payment,
+  .pub-event-registration-complete {
+    padding: 18px;
+  }
+
+  .pub-event-registration-fields,
+  .pub-event-registration-result-grid {
+    grid-template-columns: 1fr;
+
+    .is-wide {
+      grid-column: span 1;
+    }
+  }
+
+  .pub-event-registration-methods button {
+    grid-template-columns: 1fr;
+  }
+
+  .pub-event-registration-discount-control {
+    grid-template-columns: 1fr;
+  }
+
+  .pub-event-registration-actions,
+  .pub-event-registration-form-actions,
+  .pub-event-registration-primary,
+  .pub-event-registration-secondary {
+    width: 100%;
   }
 }
 
@@ -2681,6 +3897,15 @@ $pub-header-height-mobile: 60px;
 @media (max-width: 640px) {
   .saf-event-detail-hero {
     padding-top: 154px;
+  }
+
+  .pub-event-floating-register {
+    right: 16px;
+    bottom: calc(16px + env(safe-area-inset-bottom));
+    min-width: 132px;
+    min-height: 48px;
+    padding: 0 22px;
+    font-size: 14px;
   }
 
   .saf-event-detail-hero-copy .hero-title {

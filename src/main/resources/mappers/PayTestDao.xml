@@ -49,6 +49,43 @@
         ORDER BY ep.sort_seq ASC, ep.event_pricing_seq ASC
     </select>
 
+    <select id="selectPublicRegistrationPricingOptions" resultType="com.kcabEvent.dto.paymenttest.PayTestPricingOptionDto">
+        SELECT
+             ep.event_pricing_seq
+            ,ep.event_seq
+            ,ep.price_type
+            ,ep.price_name
+            ,ep.currency_code
+            ,ep.amount
+            ,ep.sales_start_at
+            ,ep.sales_end_at
+            ,COALESCE(payment_usage.sold_count, 0) AS sold_count
+        FROM event.event_pricing ep
+        INNER JOIN event.events e
+            ON e.event_seq = ep.event_seq
+           AND e.deleted_at IS NULL
+           AND e.is_paid IS TRUE
+           AND LOWER(COALESCE(e.registration_type, 'direct')) = 'direct'
+           AND EXISTS (
+               SELECT 1
+                 FROM event.event_pages pg
+                WHERE pg.event_seq = e.event_seq
+                  AND pg.deleted_at IS NULL
+                  AND pg.use_yn = 'Y'
+                  AND pg.page_status = 'published'
+           )
+        LEFT JOIN LATERAL (
+            SELECT COUNT(*) FILTER (WHERE p.status = 'paid') AS sold_count
+              FROM event.payments p
+             WHERE p.event_pricing_seq = ep.event_pricing_seq
+        ) payment_usage ON TRUE
+        WHERE ep.event_seq = #{eventSeq}
+          AND ep.deleted_at IS NULL
+          AND ep.use_yn = 'Y'
+          AND ep.currency_code IN ('USD', 'KRW')
+        ORDER BY ep.sort_seq ASC, ep.event_pricing_seq ASC
+    </select>
+
     <select id="selectPayTestPricingForUpdate" resultType="com.kcabEvent.dto.paymenttest.PayTestPricingOptionDto">
         SELECT
              ep.event_pricing_seq
@@ -71,6 +108,118 @@
           AND ep.use_yn = 'Y'
           AND ep.currency_code IN ('USD', 'KRW')
         FOR UPDATE
+    </select>
+
+    <select id="selectPublicRegistrationPricingForUpdate" resultType="com.kcabEvent.dto.paymenttest.PayTestPricingOptionDto">
+        SELECT
+             ep.event_pricing_seq
+            ,ep.event_seq
+            ,ep.price_type
+            ,ep.price_name
+            ,ep.currency_code
+            ,ep.amount
+            ,ep.sales_start_at
+            ,ep.sales_end_at
+        FROM event.event_pricing ep
+        INNER JOIN event.events e
+            ON e.event_seq = ep.event_seq
+           AND e.deleted_at IS NULL
+           AND e.is_paid IS TRUE
+           AND LOWER(COALESCE(e.registration_type, 'direct')) = 'direct'
+           AND EXISTS (
+               SELECT 1
+                 FROM event.event_pages pg
+                WHERE pg.event_seq = e.event_seq
+                  AND pg.deleted_at IS NULL
+                  AND pg.use_yn = 'Y'
+                  AND pg.page_status = 'published'
+           )
+        WHERE ep.event_seq = #{eventSeq}
+          AND ep.event_pricing_seq = #{eventPricingSeq}
+          AND ep.deleted_at IS NULL
+          AND ep.use_yn = 'Y'
+          AND ep.currency_code IN ('USD', 'KRW')
+        FOR UPDATE
+    </select>
+
+    <select id="selectPublicRegistrationDiscountCode" resultType="com.kcabEvent.dto.event.EventDiscountCodeDto">
+        SELECT
+             dc.discount_code_seq
+            ,dc.event_seq
+            ,dc.discount_code
+            ,dc.discount_type
+            ,dc.discount_value
+            ,dc.currency_code
+            ,dc.applies_to_price_type
+            ,dc.usage_limit
+            ,COALESCE(payment_usage.used_count, 0) AS used_count
+            ,COALESCE(payment_usage.payment_count, 0) AS payment_count
+            ,dc.valid_from_at
+            ,dc.valid_to_at
+            ,dc.use_yn
+            ,dc.sort_seq
+        FROM event.event_discount_codes dc
+        LEFT JOIN LATERAL (
+            SELECT
+                 COUNT(*) FILTER (WHERE p.status = 'paid') AS used_count
+                ,COUNT(*) AS payment_count
+            FROM event.payments p
+            WHERE p.event_seq = dc.event_seq
+              AND p.discount_code_seq = dc.discount_code_seq
+        ) payment_usage ON TRUE
+        WHERE dc.event_seq = #{eventSeq}
+          AND UPPER(dc.discount_code) = UPPER(#{discountCode})
+          AND dc.deleted_at IS NULL
+        ORDER BY dc.discount_code_seq DESC
+        LIMIT 1
+    </select>
+
+    <select id="selectPublicRegistrationDiscountCodeForUpdate" resultType="com.kcabEvent.dto.event.EventDiscountCodeDto">
+        SELECT
+             dc.discount_code_seq
+            ,dc.event_seq
+            ,dc.discount_code
+            ,dc.discount_type
+            ,dc.discount_value
+            ,dc.currency_code
+            ,dc.applies_to_price_type
+            ,dc.usage_limit
+            ,COALESCE(payment_usage.used_count, 0) AS used_count
+            ,COALESCE(payment_usage.payment_count, 0) AS payment_count
+            ,dc.valid_from_at
+            ,dc.valid_to_at
+            ,dc.use_yn
+            ,dc.sort_seq
+        FROM event.event_discount_codes dc
+        LEFT JOIN LATERAL (
+            SELECT
+                 COUNT(*) FILTER (WHERE p.status = 'paid') AS used_count
+                ,COUNT(*) AS payment_count
+            FROM event.payments p
+            WHERE p.event_seq = dc.event_seq
+              AND p.discount_code_seq = dc.discount_code_seq
+        ) payment_usage ON TRUE
+        WHERE dc.event_seq = #{eventSeq}
+          AND UPPER(dc.discount_code) = UPPER(#{discountCode})
+          AND dc.deleted_at IS NULL
+        ORDER BY dc.discount_code_seq DESC
+        LIMIT 1
+        FOR UPDATE OF dc
+    </select>
+
+    <select id="selectParticipantByEmail" resultType="com.kcabEvent.dto.paymenttest.PayTestParticipantRequestDto">
+        SELECT
+             LOWER(p.email) AS email
+            ,p.first_name
+            ,p.middle_name
+            ,p.last_name
+            ,p.organization_name
+            ,p.position
+            ,p.country
+        FROM event.participants p
+        WHERE LOWER(p.email) = LOWER(#{email})
+        ORDER BY p.updated_at DESC NULLS LAST, p.participant_seq DESC
+        LIMIT 1
     </select>
 
     <select id="upsertParticipant" parameterType="com.kcabEvent.dto.paymenttest.PayTestParticipantRequestDto" resultType="long">
@@ -187,7 +336,7 @@
             ,currency
             ,payment_method
             ,status
-            ,raw_response
+            ,raw_response::text AS raw_response
             ,event_seq
             ,event_pricing_seq
             ,original_amount
@@ -258,6 +407,7 @@
             ,installment_months
             ,event_pricing_seq
             ,original_amount
+            ,discount_code_seq
             ,discount_amount
             ,refunded_amount
             ,created_by
@@ -294,6 +444,7 @@
             ,#{installmentMonths,jdbcType=INTEGER}
             ,#{eventPricingSeq}
             ,#{originalAmount}
+            ,#{discountCodeSeq,jdbcType=BIGINT}
             ,COALESCE(#{discountAmount,jdbcType=NUMERIC}, 0)
             ,COALESCE(#{refundedAmount,jdbcType=NUMERIC}, 0)
             ,#{createdBy}
@@ -322,6 +473,7 @@
             ,payer_country
             ,event_pricing_seq
             ,original_amount
+            ,discount_code_seq
             ,discount_amount
             ,refunded_amount
             ,created_by
@@ -368,6 +520,7 @@
             ,payer_country          = #{payerCountry,jdbcType=VARCHAR}
             ,event_pricing_seq      = #{eventPricingSeq}
             ,original_amount        = #{originalAmount}
+            ,discount_code_seq      = #{discountCodeSeq,jdbcType=BIGINT}
             ,discount_amount        = COALESCE(#{discountAmount,jdbcType=NUMERIC}, 0)
             ,refunded_amount        = COALESCE(#{refundedAmount,jdbcType=NUMERIC}, 0)
             ,cancelled_at           = NULL
@@ -410,6 +563,7 @@
             ,payer_country          = #{payerCountry,jdbcType=VARCHAR}
             ,event_pricing_seq      = #{eventPricingSeq}
             ,original_amount        = #{originalAmount}
+            ,discount_code_seq      = #{discountCodeSeq,jdbcType=BIGINT}
             ,discount_amount        = COALESCE(#{discountAmount,jdbcType=NUMERIC}, 0)
             ,refunded_amount        = COALESCE(#{refundedAmount,jdbcType=NUMERIC}, 0)
             ,updated_by             = #{updatedBy,jdbcType=BIGINT}
@@ -438,6 +592,7 @@
             ,payer_country
             ,event_pricing_seq
             ,original_amount
+            ,discount_code_seq
             ,discount_amount
             ,refunded_amount
             ,created_by
@@ -468,6 +623,7 @@
             ,payer_country
             ,event_pricing_seq
             ,original_amount
+            ,discount_code_seq
             ,discount_amount
             ,refunded_amount
             ,created_by

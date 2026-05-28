@@ -114,6 +114,17 @@ public class EximbayPaymentClient {
         }
     }
 
+    public Map<String, Object> fromJsonMap(String value) {
+        if (value == null || value.isBlank()) {
+            return Map.of();
+        }
+        try {
+            return objectMapper.readValue(value, new TypeReference<>() {});
+        } catch (Exception e) {
+            throw new BusinessException("Failed to parse Eximbay payload.");
+        }
+    }
+
     public String formatAmount(BigDecimal amount) {
         if (amount == null) {
             return "0";

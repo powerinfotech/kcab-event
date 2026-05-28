@@ -624,143 +624,144 @@ export default function SuperEventList() {
     setDiscountUsageModal({ open: false, loading: false, code: '', items: [] });
   };
 
+  const focusValidationTarget = (target: string) => {
+    window.setTimeout(() => {
+      const escapedTarget = window.CSS?.escape ? window.CSS.escape(target) : target.replace(/"/g, '\\"');
+      const container = document.querySelector<HTMLElement>(`[data-validation-target="${escapedTarget}"]`)
+        ?? document.querySelector<HTMLElement>('.is-required-error, .is-invalid');
+      if (!container) return;
+
+      container.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+      window.setTimeout(() => {
+        const focusable = container.matches('input, select, textarea, button, [contenteditable="true"]')
+          ? container
+          : container.querySelector<HTMLElement>('input, select, textarea, button, [contenteditable="true"], .ql-editor');
+        focusable?.focus({ preventScroll: true });
+        if (focusable instanceof HTMLInputElement) {
+          focusable.select();
+        }
+      }, 260);
+    }, 0);
+  };
+
+  const warnAndFocus = (warningMessage: string, target: string) => {
+    message.warning(warningMessage);
+    focusValidationTarget(target);
+    return false;
+  };
+
   const validateForm = () => {
     if (!titleValue) {
-      message.warning('Please enter the event name.');
-      return false;
+      return warnAndFocus('Please enter the event name.', 'event-title');
     }
     if (!form.eventType) {
-      message.warning('Please select the event type.');
-      return false;
+      return warnAndFocus('Please select the event type.', 'event-type');
     }
     if (isOfficialEvent && !slugValue) {
-      message.warning('Please enter the event URL key.');
-      return false;
+      return warnAndFocus('Please enter the event URL key.', 'event-slug');
     }
     if (slugValue && !EVENT_SLUG_REGEXP.test(slugValue)) {
-      message.warning('Event URL key can only contain lowercase letters, numbers, and hyphens.');
-      return false;
+      return warnAndFocus('Event URL key can only contain lowercase letters, numbers, and hyphens.', 'event-slug');
     }
     if (!locationValue) {
-      message.warning('Please enter the venue.');
-      return false;
+      return warnAndFocus('Please enter the venue.', 'event-location');
     }
     if (isSideEvent && !hasContent) {
-      message.warning('Please enter the description.');
-      return false;
+      return warnAndFocus('Please enter the description.', 'event-description');
     }
     if (!startValue || !endValue) {
-      message.warning('Please enter the start and end dates.');
-      return false;
+      return warnAndFocus('Please enter the start and end dates.', !startValue ? 'event-start' : 'event-end');
     }
     if (startValue > endValue) {
-      message.warning('End date/time must be on or after the start date/time.');
-      return false;
+      return warnAndFocus('End date/time must be on or after the start date/time.', 'event-end');
     }
     // 참가신청 일시 검증: 'none'이 아니면 시작/종료 둘 다 필수
     if (showRegistrationDates) {
       if (!regStartValue || !regEndValue) {
-        message.warning('Please enter both registration start and end date/time.');
-        return false;
+        return warnAndFocus(
+          'Please enter both registration start and end date/time.',
+          !regStartValue ? 'registration-start' : 'registration-end',
+        );
       }
       if (regStartValue > regEndValue) {
-        message.warning('Registration end must be on or after registration start.');
-        return false;
+        return warnAndFocus('Registration end must be on or after registration start.', 'registration-end');
       }
       if (startValue && regEndValue > startValue) {
-        message.warning('Registration must close on or before the event start.');
-        return false;
+        return warnAndFocus('Registration must close on or before the event start.', 'registration-end');
       }
     }
     if (isExternalRegistration) {
       if (!registrationUrlValue) {
-        message.warning('Please enter the external registration URL.');
-        return false;
+        return warnAndFocus('Please enter the external registration URL.', 'registration-url');
       }
       if (!URL_REGEXP.test(registrationUrlValue)) {
-        message.warning('Please enter a valid registration URL.');
-        return false;
+        return warnAndFocus('Please enter a valid registration URL.', 'registration-url');
       }
     }
     if (form.maxParticipants !== null && form.maxParticipants !== undefined && form.maxParticipants < 0) {
-      message.warning('Max participants must be 0 or greater.');
-      return false;
+      return warnAndFocus('Max participants must be 0 or greater.', 'max-participants');
     }
     if (form.isPaid && isSideEvent) {
-      message.warning('Side events must be free.');
-      return false;
+      return warnAndFocus('Side events must be free.', 'event-type');
     }
     if (form.isPaid) {
       const pricingList = form.pricingList ?? [];
       if (!pricingList.length) {
-        message.warning('Please add at least one pricing tier.');
-        return false;
+        return warnAndFocus('Please add at least one pricing tier.', 'pricing-add');
       }
-      for (const pricing of pricingList) {
+      for (let index = 0; index < pricingList.length; index += 1) {
+        const pricing = pricingList[index];
         if (!pricing.priceType) {
-          message.warning('Please select a pricing type.');
-          return false;
+          return warnAndFocus('Please select a pricing type.', `pricing-${index}-type`);
         }
         if (!pricing.priceName?.trim()) {
-          message.warning('Please enter a pricing name.');
-          return false;
+          return warnAndFocus('Please enter a pricing name.', `pricing-${index}-name`);
         }
         if (!pricing.currencyCode?.trim()) {
-          message.warning('Please select a currency.');
-          return false;
+          return warnAndFocus('Please select a currency.', `pricing-${index}-currency`);
         }
         if (pricing.amount === null || pricing.amount === undefined || Number(pricing.amount) <= 0) {
-          message.warning('Pricing amount must be greater than 0.');
-          return false;
+          return warnAndFocus('Pricing amount must be greater than 0.', `pricing-${index}-amount`);
         }
         if ((pricing.salesStartAt ?? '') && (pricing.salesEndAt ?? '') && String(pricing.salesStartAt) > String(pricing.salesEndAt)) {
-          message.warning('Pricing sales end must be on or after sales start.');
-          return false;
+          return warnAndFocus('Pricing sales end must be on or after sales start.', `pricing-${index}-sales-end`);
         }
       }
 
       const priceTypes = new Set(pricingList.map((pricing) => pricing.priceType).filter(Boolean));
       const discountCodes = form.discountCodes ?? [];
       const uniqueDiscountCodes = new Set<string>();
-      for (const discount of discountCodes) {
+      for (let index = 0; index < discountCodes.length; index += 1) {
+        const discount = discountCodes[index];
         const code = discount.discountCode?.trim().toUpperCase() ?? '';
         if (!code) {
-          message.warning('Please enter a discount code.');
-          return false;
+          return warnAndFocus('Please enter a discount code.', `discount-${index}-code`);
         }
         if (uniqueDiscountCodes.has(code)) {
-          message.warning('Discount codes must be unique per event.');
-          return false;
+          return warnAndFocus('Discount codes must be unique per event.', `discount-${index}-code`);
         }
         uniqueDiscountCodes.add(code);
         if (!discount.discountType) {
-          message.warning('Please select a discount type.');
-          return false;
+          return warnAndFocus('Please select a discount type.', `discount-${index}-type`);
         }
         if (discount.discountValue === null || discount.discountValue === undefined || Number(discount.discountValue) <= 0) {
-          message.warning('Discount value must be greater than 0.');
-          return false;
+          return warnAndFocus('Discount value must be greater than 0.', `discount-${index}-value`);
         }
         if (discount.discountType === 'percent' && Number(discount.discountValue) > 100) {
-          message.warning('Percent discount cannot exceed 100.');
-          return false;
+          return warnAndFocus('Percent discount cannot exceed 100.', `discount-${index}-value`);
         }
         const discountCurrency = (discount.currencyCode ?? '').trim().toUpperCase();
         if (discount.discountType === 'amount' && !CURRENCY_OPTIONS.includes(discountCurrency)) {
-          message.warning('Please select a discount currency.');
-          return false;
+          return warnAndFocus('Please select a discount currency.', `discount-${index}-currency`);
         }
         if (discount.appliesToPriceType && !priceTypes.has(discount.appliesToPriceType)) {
-          message.warning('Discount code applies to a pricing type that does not exist.');
-          return false;
+          return warnAndFocus('Discount code applies to a pricing type that does not exist.', `discount-${index}-applies`);
         }
         if (discount.usageLimit !== null && discount.usageLimit !== undefined && discount.usageLimit < 0) {
-          message.warning('Usage limit must be 0 or greater.');
-          return false;
+          return warnAndFocus('Usage limit must be 0 or greater.', `discount-${index}-usage-limit`);
         }
         if ((discount.validFromAt ?? '') && (discount.validToAt ?? '') && String(discount.validFromAt) > String(discount.validToAt)) {
-          message.warning('Discount valid-to date must be on or after valid-from date.');
-          return false;
+          return warnAndFocus('Discount valid-to date must be on or after valid-from date.', `discount-${index}-valid-to`);
         }
       }
     }
@@ -1203,7 +1204,7 @@ export default function SuperEventList() {
           <section className="saf-panel">
             <PanelTitle title="Basic Information" subtitle="Based on the events table." />
             <div className="saf-form-grid">
-              <Field label="Event Name *" invalid={isRequiredEmpty(form.title)} wide>
+              <Field label="Event Name *" invalid={isRequiredEmpty(form.title)} validationTarget="event-title" wide>
                 <input
                   value={form.title}
                   disabled={!canEdit}
@@ -1211,7 +1212,7 @@ export default function SuperEventList() {
                   placeholder="e.g., Seoul International Arbitration Conference 2026"
                 />
               </Field>
-              <Field label={`Event URL Key${isOfficialEvent ? ' *' : ''}`} invalid={isSlugInvalid} wide>
+              <Field label={`Event URL Key${isOfficialEvent ? ' *' : ''}`} invalid={isSlugInvalid} validationTarget="event-slug" wide>
                 <input
                   value={form.slug ?? ''}
                   disabled={!canEdit}
@@ -1219,7 +1220,7 @@ export default function SuperEventList() {
                   placeholder="event1"
                 />
               </Field>
-              <Field label="Event Type *" invalid={isRequiredEmpty(form.eventType)}>
+              <Field label="Event Type *" invalid={isRequiredEmpty(form.eventType)} validationTarget="event-type">
                 <select
                   value={form.eventType}
                   disabled={!canEdit || isOrganizationRole}
@@ -1235,7 +1236,7 @@ export default function SuperEventList() {
                   <span className={`saf-status is-${detailStatusTone}`}>{detailStatusLabel}</span>
                 </div>
               </Field>
-              <Field label="Start Date *" invalid={isRequiredEmpty(form.eventStartDt) || isDateRangeInvalid}>
+              <Field label="Start Date *" invalid={isRequiredEmpty(form.eventStartDt) || isDateRangeInvalid} validationTarget="event-start">
                 <DatePicker
                   showTime={{ format: 'HH:mm' }}
                   format="YYYY-MM-DD HH:mm"
@@ -1248,7 +1249,7 @@ export default function SuperEventList() {
                   onChange={(d) => updateForm('eventStartDt', fromDayjs(d))}
                 />
               </Field>
-              <Field label="End Date *" invalid={isRequiredEmpty(form.eventEndDt) || isDateRangeInvalid}>
+              <Field label="End Date *" invalid={isRequiredEmpty(form.eventEndDt) || isDateRangeInvalid} validationTarget="event-end">
                 <DatePicker
                   showTime={{ format: 'HH:mm' }}
                   format="YYYY-MM-DD HH:mm"
@@ -1261,7 +1262,7 @@ export default function SuperEventList() {
                   onChange={(d) => updateForm('eventEndDt', fromDayjs(d))}
                 />
               </Field>
-              <Field label="Registration Type *" wide>
+              <Field label="Registration Type *" validationTarget="registration-type" wide>
                 <select
                   value={form.registrationType}
                   disabled={!canEdit}
@@ -1283,7 +1284,7 @@ export default function SuperEventList() {
                 </select>
               </Field>
               {isExternalRegistration && (
-                <Field label="Registration URL *" invalid={isUrlInvalid} wide>
+                <Field label="Registration URL *" invalid={isUrlInvalid} validationTarget="registration-url" wide>
                   <input
                     value={form.registrationUrl ?? ''}
                     disabled={!canEdit}
@@ -1293,7 +1294,7 @@ export default function SuperEventList() {
                 </Field>
               )}
               {showRegistrationDates && (
-                <Field label="Registration Open *" invalid={isRegStartRequiredEmpty || isRegRangeInvalid}>
+                <Field label="Registration Open *" invalid={isRegStartRequiredEmpty || isRegRangeInvalid} validationTarget="registration-start">
                   <DatePicker
                     showTime={{ format: 'HH:mm' }}
                     format="YYYY-MM-DD HH:mm"
@@ -1308,7 +1309,7 @@ export default function SuperEventList() {
                 </Field>
               )}
               {showRegistrationDates && (
-                <Field label="Registration Close *" invalid={isRegEndRequiredEmpty || isRegRangeInvalid || isRegAfterEventInvalid}>
+                <Field label="Registration Close *" invalid={isRegEndRequiredEmpty || isRegRangeInvalid || isRegAfterEventInvalid} validationTarget="registration-end">
                   <DatePicker
                     showTime={{ format: 'HH:mm' }}
                     format="YYYY-MM-DD HH:mm"
@@ -1322,7 +1323,11 @@ export default function SuperEventList() {
                   />
                 </Field>
               )}
-              <Field label="Max Participants">
+              <Field
+                label="Max Participants"
+                invalid={submitAttempted && form.maxParticipants !== null && form.maxParticipants !== undefined && form.maxParticipants < 0}
+                validationTarget="max-participants"
+              >
                 <input
                   type="number"
                   min={0}
@@ -1332,7 +1337,7 @@ export default function SuperEventList() {
                   placeholder="e.g., 300"
                 />
               </Field>
-              <Field label="Pricing">
+              <Field label="Pricing" validationTarget="pricing-mode">
                 <select
                   value={form.isPaid ? 'Y' : 'N'}
                   disabled={!canEdit || !canUsePaidPricing}
@@ -1342,7 +1347,7 @@ export default function SuperEventList() {
                   <option value="Y">Paid</option>
                 </select>
               </Field>
-              <Field label="Venue *" invalid={isRequiredEmpty(form.location)} wide>
+              <Field label="Venue *" invalid={isRequiredEmpty(form.location)} validationTarget="event-location" wide>
                 <input
                   value={form.location ?? ''}
                   disabled={!canEdit}
@@ -1376,7 +1381,10 @@ export default function SuperEventList() {
           {isSideEvent && (
             <section className="saf-panel saf-event-description-panel">
               <PanelTitle title="Description *" subtitle="Detailed event content displayed on the public page." />
-              <div className={`saf-event-description-editor${isContentRequiredEmpty ? ' is-invalid' : ''}`}>
+              <div
+                className={`saf-event-description-editor${isContentRequiredEmpty ? ' is-invalid' : ''}`}
+                data-validation-target="event-description"
+              >
                 <CustomRichEditor
                   key={selectedSeq ?? 'new'}
                   value={form.description ?? form.content ?? ''}
@@ -1407,7 +1415,12 @@ export default function SuperEventList() {
               <div className="saf-panel-title-row">
                 <PanelTitle title="Pricing Tiers" subtitle="Early Bird, Regular, Student, and Member pricing for this event." />
                 {canEdit && (
-                  <button type="button" className="saf-action-btn is-secondary" onClick={addPricingRow}>
+                  <button
+                    type="button"
+                    className="saf-action-btn is-secondary"
+                    data-validation-target="pricing-add"
+                    onClick={addPricingRow}
+                  >
                     <PlusOutlined />
                     <span>Add Price</span>
                   </button>
@@ -1437,6 +1450,7 @@ export default function SuperEventList() {
                           <select
                             value={pricing.priceType || ''}
                             className={requiredGridClass(isMissingText(pricing.priceType))}
+                            data-validation-target={`pricing-${index}-type`}
                             aria-invalid={submitAttempted && isMissingText(pricing.priceType)}
                             disabled={!canEdit || locked}
                             title={locked ? 'This price type has payment history and cannot be changed.' : undefined}
@@ -1452,6 +1466,7 @@ export default function SuperEventList() {
                           <input
                             value={pricing.priceName ?? ''}
                             className={requiredGridClass(isMissingText(pricing.priceName))}
+                            data-validation-target={`pricing-${index}-name`}
                             aria-invalid={submitAttempted && isMissingText(pricing.priceName)}
                             disabled={!canEdit}
                             onChange={(e) => updatePricingRow(index, { priceName: e.target.value })}
@@ -1462,6 +1477,7 @@ export default function SuperEventList() {
                           <select
                             value={pricing.currencyCode || ''}
                             className={requiredGridClass(isMissingText(pricing.currencyCode))}
+                            data-validation-target={`pricing-${index}-currency`}
                             aria-invalid={submitAttempted && isMissingText(pricing.currencyCode)}
                             disabled={!canEdit}
                             onChange={(e) => updatePricingRow(index, { currencyCode: e.target.value })}
@@ -1478,6 +1494,7 @@ export default function SuperEventList() {
                             inputMode="decimal"
                             value={pricingAmountDrafts[getPricingAmountKey(pricing, index)] ?? formatPricingAmount(pricing.amount)}
                             className={requiredGridClass(isInvalidPositiveAmount(pricing.amount))}
+                            data-validation-target={`pricing-${index}-amount`}
                             aria-invalid={submitAttempted && isInvalidPositiveAmount(pricing.amount)}
                             disabled={!canEdit}
                             onChange={(e) => updatePricingAmountInput(index, pricing, e.target.value)}
@@ -1498,16 +1515,18 @@ export default function SuperEventList() {
                           />
                         </td>
                         <td>
-                          <DatePicker
-                            showTime={{ format: 'HH:mm' }}
-                            format="YYYY-MM-DD HH:mm"
-                            minuteStep={5}
-                            needConfirm={false}
-                            style={{ width: '100%' }}
-                            value={toDayjs(pricing.salesEndAt)}
-                            disabled={!canEdit}
-                            onChange={(d) => updatePricingRow(index, { salesEndAt: fromDayjs(d) })}
-                          />
+                          <div data-validation-target={`pricing-${index}-sales-end`}>
+                            <DatePicker
+                              showTime={{ format: 'HH:mm' }}
+                              format="YYYY-MM-DD HH:mm"
+                              minuteStep={5}
+                              needConfirm={false}
+                              style={{ width: '100%' }}
+                              value={toDayjs(pricing.salesEndAt)}
+                              disabled={!canEdit}
+                              onChange={(d) => updatePricingRow(index, { salesEndAt: fromDayjs(d) })}
+                            />
+                          </div>
                         </td>
                         <td>
                           <select
@@ -1581,12 +1600,15 @@ export default function SuperEventList() {
                   <tbody>
                     {(form.discountCodes ?? []).map((discount, index) => {
                       const locked = isDiscountCodeLocked(discount);
+                      const appliesToInvalid = !!discount.appliesToPriceType
+                        && !discountPriceTypeOptions.some((option) => option.value === discount.appliesToPriceType);
                       return (
                       <tr key={discount.discountCodeSeq ?? `discount-${index}`}>
                         <td>
                           <input
                             value={discount.discountCode ?? ''}
                             className={requiredGridClass(isMissingText(discount.discountCode))}
+                            data-validation-target={`discount-${index}-code`}
                             aria-invalid={submitAttempted && isMissingText(discount.discountCode)}
                             disabled={!canEdit || locked}
                             title={locked ? 'This discount code has usage history and cannot be changed.' : undefined}
@@ -1598,6 +1620,7 @@ export default function SuperEventList() {
                           <select
                             value={discount.discountType || ''}
                             className={requiredGridClass(isMissingText(discount.discountType))}
+                            data-validation-target={`discount-${index}-type`}
                             aria-invalid={submitAttempted && isMissingText(discount.discountType)}
                             disabled={!canEdit}
                             onChange={(e) => updateDiscountType(index, e.target.value)}
@@ -1615,6 +1638,7 @@ export default function SuperEventList() {
                             step="0.01"
                             value={discount.discountValue ?? ''}
                             className={requiredGridClass(isDiscountValueInvalid(discount))}
+                            data-validation-target={`discount-${index}-value`}
                             aria-invalid={submitAttempted && isDiscountValueInvalid(discount)}
                             disabled={!canEdit}
                             onChange={(e) => updateDiscountCodeRow(index, { discountValue: e.target.value === '' ? null : Number(e.target.value) })}
@@ -1625,6 +1649,7 @@ export default function SuperEventList() {
                           <select
                             value={discount.discountType === 'amount' ? (discount.currencyCode || '') : ''}
                             className={requiredGridClass(isDiscountCurrencyInvalid(discount))}
+                            data-validation-target={`discount-${index}-currency`}
                             aria-invalid={submitAttempted && isDiscountCurrencyInvalid(discount)}
                             disabled={!canEdit || discount.discountType !== 'amount'}
                             onChange={(e) => updateDiscountCodeRow(index, { currencyCode: e.target.value })}
@@ -1638,6 +1663,9 @@ export default function SuperEventList() {
                         <td>
                           <select
                             value={discount.appliesToPriceType ?? ''}
+                            className={requiredGridClass(appliesToInvalid)}
+                            data-validation-target={`discount-${index}-applies`}
+                            aria-invalid={submitAttempted && appliesToInvalid}
                             disabled={!canEdit}
                             onChange={(e) => updateDiscountCodeRow(index, { appliesToPriceType: e.target.value })}
                           >
@@ -1652,6 +1680,9 @@ export default function SuperEventList() {
                             type="number"
                             min={0}
                             value={discount.usageLimit ?? ''}
+                            className={requiredGridClass(discount.usageLimit !== null && discount.usageLimit !== undefined && discount.usageLimit < 0)}
+                            data-validation-target={`discount-${index}-usage-limit`}
+                            aria-invalid={submitAttempted && discount.usageLimit !== null && discount.usageLimit !== undefined && discount.usageLimit < 0}
                             disabled={!canEdit}
                             onChange={(e) => updateDiscountCodeRow(index, { usageLimit: e.target.value === '' ? null : Number(e.target.value) })}
                             placeholder="No limit"
@@ -1670,16 +1701,18 @@ export default function SuperEventList() {
                           />
                         </td>
                         <td>
-                          <DatePicker
-                            showTime={{ format: 'HH:mm' }}
-                            format="YYYY-MM-DD HH:mm"
-                            minuteStep={5}
-                            needConfirm={false}
-                            style={{ width: '100%' }}
-                            value={toDayjs(discount.validToAt)}
-                            disabled={!canEdit}
-                            onChange={(d) => updateDiscountCodeRow(index, { validToAt: fromDayjs(d) })}
-                          />
+                          <div data-validation-target={`discount-${index}-valid-to`}>
+                            <DatePicker
+                              showTime={{ format: 'HH:mm' }}
+                              format="YYYY-MM-DD HH:mm"
+                              minuteStep={5}
+                              needConfirm={false}
+                              style={{ width: '100%' }}
+                              value={toDayjs(discount.validToAt)}
+                              disabled={!canEdit}
+                              onChange={(d) => updateDiscountCodeRow(index, { validToAt: fromDayjs(d) })}
+                            />
+                          </div>
                         </td>
                         <td>
                           <select
@@ -2268,16 +2301,21 @@ function Field({
   children,
   wide,
   invalid,
+  validationTarget,
 }: {
   label: string;
   children: React.ReactNode;
   wide?: boolean;
   invalid?: boolean;
+  validationTarget?: string;
 }) {
   const required = label.endsWith(' *');
   const labelText = required ? label.slice(0, -2) : label;
   return (
-    <label className={`saf-form-field ${wide ? 'is-wide' : ''} ${invalid ? 'is-invalid' : ''}`}>
+    <label
+      className={`saf-form-field ${wide ? 'is-wide' : ''} ${invalid ? 'is-invalid' : ''}`}
+      data-validation-target={validationTarget}
+    >
       <span>
         {labelText}
         {required && <em className="saf-required-mark">*</em>}
