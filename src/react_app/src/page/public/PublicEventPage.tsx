@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { callGetPublicEventPage } from '@api/event/EventApi';
 import { EventPageBlock, EventPageSection, PublicEventPage as PublicEventPageModel } from '@interface/event/EventManagement';
 import HeroSeoulImage from '../../assets/images/saf-renewal/hero-seoul.jpg';
+import { usePublicNavigate } from '@hook/usePublicNavigate';
 
 interface PublicEventPageProps {
   urlSlug: string;
@@ -88,8 +89,7 @@ const PublicEventPage: React.FC<PublicEventPageProps> = ({ urlSlug }) => {
   const theme = useMemo(() => parseTheme(page?.themeJson), [page?.themeJson]);
   const pageSettings = useMemo(() => parsePageSettings(page?.settingsJson), [page?.settingsJson]);
   const accentColor = getThemeColor(theme.themeColor);
-
-  const handleNavigate = (url: string) => { window.location.href = url; };
+  const handleNavigate = usePublicNavigate();
 
   if (loading) {
     return (

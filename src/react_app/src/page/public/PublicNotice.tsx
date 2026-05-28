@@ -7,11 +7,13 @@ import {
   NoticeNewsDetail,
   NoticeNewsListItem,
 } from '@interface/admin/NoticeNews';
+import { usePublicNavigate } from '@hook/usePublicNavigate';
 
 const PublicNotice: React.FC = () => {
   const [noticeList, setNoticeList] = useState<NoticeNewsListItem[]>([]);
   const [selected, setSelected] = useState<NoticeNewsDetail | null>(null);
   const [searchText, setSearchText] = useState('');
+  const handleNavigate = usePublicNavigate();
 
   useEffect(() => {
     callGetPublicNoticeNewsList().then((r) => { if (r?.item) setNoticeList(r.item); });
@@ -27,8 +29,6 @@ const PublicNotice: React.FC = () => {
   };
 
   const handleBack = () => setSelected(null);
-
-  const handleNavigate = (url: string) => { window.location.href = url; };
 
   if (selected) {
     return (

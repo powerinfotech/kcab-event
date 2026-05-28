@@ -3,11 +3,13 @@ import PublicHeader from './components/PublicHeader';
 import PublicFooter from './components/PublicFooter';
 import { callGetPublicFaqList } from '@api/faq/FaqApi';
 import { FaqItem } from '@interface/faq/FaqManagement';
+import { usePublicNavigate } from '@hook/usePublicNavigate';
 
 const PublicFaq: React.FC = () => {
   const [faqList, setFaqList] = useState<FaqItem[]>([]);
   const [openIdx, setOpenIdx] = useState<number | null>(null);
   const [activeCategory, setActiveCategory] = useState<string>('');
+  const handleNavigate = usePublicNavigate();
 
   useEffect(() => {
     callGetPublicFaqList().then((r) => { if (r?.item) setFaqList(r.item); });
@@ -15,8 +17,6 @@ const PublicFaq: React.FC = () => {
 
   const categories = Array.from(new Set(faqList.filter((f) => f.category).map((f) => f.category)));
   const filtered = faqList.filter((f) => f.useYn === 'Y' && (!activeCategory || f.category === activeCategory));
-
-  const handleNavigate = (url: string) => { window.location.href = url; };
 
   return (
     <div className="pub-layout">

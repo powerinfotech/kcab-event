@@ -3,11 +3,13 @@ import PublicHeader from './components/PublicHeader';
 import PublicFooter from './components/PublicFooter';
 import { callGetPublicEventList, callGetPublicEventDetail } from '@api/event/EventApi';
 import { EventListItem, EventDetail, EVENT_STATUS_LABELS, EventStatus } from '@interface/event/EventManagement';
+import { usePublicNavigate } from '@hook/usePublicNavigate';
 
 const PublicEvents: React.FC = () => {
   const [eventList, setEventList] = useState<EventListItem[]>([]);
   const [selected, setSelected] = useState<EventDetail | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('');
+  const handleNavigate = usePublicNavigate();
 
   useEffect(() => {
     callGetPublicEventList().then((r) => { if (r?.item) setEventList(r.item); });
@@ -26,8 +28,6 @@ const PublicEvents: React.FC = () => {
   };
 
   const handleBack = () => setSelected(null);
-  const handleNavigate = (url: string) => { window.location.href = url; };
-
   if (selected) {
     const statusLabel = EVENT_STATUS_LABELS[selected.status as EventStatus] ?? selected.status;
     return (

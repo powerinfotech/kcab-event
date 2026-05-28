@@ -3,6 +3,7 @@ import { callGetPublicGalleryList, resolveGalleryImageUrl } from '@api/gallery/G
 import { GalleryImage, GalleryListItem } from '@interface/admin/Gallery';
 import PublicFooter from './components/PublicFooter';
 import PublicHeader from './components/PublicHeader';
+import { usePublicNavigate } from '@hook/usePublicNavigate';
 
 interface SelectedImage {
   gallery: GalleryListItem;
@@ -13,6 +14,7 @@ export default function PublicGallery() {
   const [items, setItems] = useState<GalleryListItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedImage, setSelectedImage] = useState<SelectedImage | null>(null);
+  const handleNavigate = usePublicNavigate();
 
   useEffect(() => {
     setLoading(true);
@@ -34,10 +36,6 @@ export default function PublicGallery() {
     () => Object.keys(grouped).map(Number).sort((a, b) => b - a),
     [grouped],
   );
-
-  const handleNavigate = (url: string) => {
-    window.location.href = url;
-  };
 
   return (
     <div className="pub-layout">

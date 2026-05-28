@@ -10,26 +10,41 @@ export const metadata: Metadata = {
 };
 
 const restoreFromCacheScript = `
-function recoverSpecialRoute() {
+function getExpectedRouteRootSelector(path) {
+  if (path === '/') return '.saf-renewal-home';
+  if (path === '/login' || path === '/admin/login') return '.saf-login-page';
+  if (path === '/admin/signup') return '.saf-signup-page';
+  if (path.indexOf('/event/') === 0) return '.pub-event-renewal';
+  if (path === '/events' || path === '/notice' || path === '/faq' || path === '/gallery') return '.pub-layout';
+  if (path.indexOf('/past-editions') === 0) return '.saf-past-home, .saf-renewal-home';
+  return '';
+}
+
+function recoverRouteFromBlankRoot() {
   var path = window.location.pathname;
-  var isSpecialRoute = path === '/login' || path === '/admin/login' || path === '/admin/signup';
-  if (!isSpecialRoute) return;
+  var expectedRootSelector = getExpectedRouteRootSelector(path);
+  if (!expectedRootSelector) return;
+
   window.setTimeout(function () {
-    var hasRouteRoot = document.querySelector('.saf-login-page, .saf-signup-page');
+    var hasRouteRoot = document.querySelector(expectedRootSelector);
+    var appRoot = document.querySelector('.ant-app');
+    var isBlankAppRoot = appRoot && appRoot.innerHTML.trim().length === 0;
     var storageKey = 'kcab-route-recover:' + path;
-    if (hasRouteRoot) {
+    if (hasRouteRoot && !isBlankAppRoot) {
       sessionStorage.removeItem(storageKey);
       return;
     }
+
     if (sessionStorage.getItem(storageKey) === '1') return;
     sessionStorage.setItem(storageKey, '1');
     window.location.reload();
   }, 500);
 }
 
-window.addEventListener('popstate', recoverSpecialRoute);
-window.addEventListener('pageshow', recoverSpecialRoute);
-window.addEventListener('load', recoverSpecialRoute);
+window.addEventListener('popstate', recoverRouteFromBlankRoot);
+window.addEventListener('pageshow', recoverRouteFromBlankRoot);
+window.addEventListener('load', recoverRouteFromBlankRoot);
+window.addEventListener('unload', function () {});
 `;
 
 export default function RootLayout({
