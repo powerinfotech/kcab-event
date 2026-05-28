@@ -795,6 +795,7 @@ export const PublicEventRegistrationPage: React.FC<PublicEventPageProps> = ({ ur
               onContinueToPayment={continueToPaymentStep}
               onStartPayment={startRegistrationPayment}
               onEditInfo={() => setRegistrationStep(1)}
+              onPreviewStep={setRegistrationStep}
               onCheckPayment={() => {
                 if (latestOrderId) {
                   verifyPublicPayment(latestOrderId);
@@ -1031,6 +1032,7 @@ interface PublicRegistrationStepPanelProps {
   onContinueToPayment: () => void;
   onStartPayment: () => void;
   onEditInfo: () => void;
+  onPreviewStep: (step: RegistrationStep) => void;
   onCheckPayment: () => void;
   onBackToEvent: () => void;
 }
@@ -1065,14 +1067,15 @@ const PublicRegistrationStepPanel: React.FC<PublicRegistrationStepPanelProps> = 
   onContinueToPayment,
   onStartPayment,
   onEditInfo,
+  onPreviewStep,
   onCheckPayment,
   onBackToEvent,
 }) => {
   const contactEmail = settings.contactEmail || 'saf@kcab.or.kr';
-                const resultStatus = result?.status?.toLowerCase();
-                const paymentPending = !!resultStatus && resultStatus !== 'paid' && resultStatus !== 'failed' && resultStatus !== 'cancelled';
-                const hasAppliedDiscount = !!discountResult?.valid;
-                const payableAmount = selectedPricing ? finalAmount : 0;
+  const resultStatus = result?.status?.toLowerCase();
+  const paymentPending = !!resultStatus && resultStatus !== 'paid' && resultStatus !== 'failed' && resultStatus !== 'cancelled';
+  const hasAppliedDiscount = !!discountResult?.valid;
+  const payableAmount = selectedPricing ? finalAmount : 0;
   const countryOptions = useMemo(() => {
     const currentCountry = participant.country?.trim();
     if (!currentCountry || COUNTRY_OPTIONS.some((option) => option.value === currentCountry)) {
@@ -1092,7 +1095,23 @@ const PublicRegistrationStepPanel: React.FC<PublicRegistrationStepPanelProps> = 
           <div>
             <p>Registration Details</p>
             <h2 id="public-registration-title">Complete your registration</h2>
-            <span>Enter your participant information, complete payment, and keep your order ID for event inquiries.</span>
+            <span>Enter your participant information, choose your ticket, and complete payment in the secure window.</span>
+          </div>
+          <div className="pub-event-registration-preview">
+            <span>Design Preview</span>
+            <div>
+              {REGISTRATION_STEPS.map((item) => (
+                <button
+                  type="button"
+                  key={item.step}
+                  className={step === item.step ? 'is-active' : ''}
+                  aria-pressed={step === item.step}
+                  onClick={() => onPreviewStep(item.step)}
+                >
+                  Step {item.step}
+                </button>
+              ))}
+            </div>
           </div>
         </header>
         <ol className="pub-event-registration-steps" aria-label="Registration steps">
@@ -1352,27 +1371,9 @@ const PublicRegistrationStepPanel: React.FC<PublicRegistrationStepPanelProps> = 
               Thank you for registering for {page.eventTitle}. Your payment has been confirmed and your participant
               information has been recorded.
             </p>
-            <div className="pub-event-registration-result-grid">
-              <div>
-                <span>Participant</span>
-                <strong>{formatParticipantName(participant)}</strong>
-              </div>
-              <div>
-                <span>Email</span>
-                <strong>{participant.email || '-'}</strong>
-              </div>
-              <div>
-                <span>Order ID</span>
-                <strong>{result?.orderId || latestOrderId || '-'}</strong>
-              </div>
-              <div>
-                <span>Payment</span>
-                <strong>{result ? formatMoney(result.amount, result.currency) : selectedPricing ? formatMoney(selectedPricing.amount, selectedPricing.currencyCode) : '-'}</strong>
-              </div>
-            </div>
             <p className="pub-event-registration-note">
-              Please keep your order ID for inquiries. Event updates or access information may be sent to your registered email address.
-              For changes, contact <a href={`mailto:${contactEmail}`}>{contactEmail}</a>.
+              Event updates or access information may be sent to your registered email address.
+              For registration changes or questions, contact <a href={`mailto:${contactEmail}`}>{contactEmail}</a>.
             </p>
             <button type="button" className="pub-event-registration-primary" onClick={onBackToEvent}>
               Back to Event
@@ -1716,13 +1717,6 @@ function validateRegistrationParticipant(participant: PublicRegistrationParticip
 
 function isValidRegistrationEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
-}
-
-function formatParticipantName(participant: PublicRegistrationParticipantRequest) {
-  return [participant.firstName, participant.middleName, participant.lastName]
-    .filter((value) => value?.trim())
-    .map((value) => value?.trim())
-    .join(' ') || '-';
 }
 
 function formatMoney(amount?: number | string | null, currency?: string | null) {
