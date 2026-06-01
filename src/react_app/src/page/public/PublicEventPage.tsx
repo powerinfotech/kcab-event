@@ -1547,6 +1547,7 @@ function renderProgramSession(block: EventPageBlock) {
         {block.speakerNames && <p className="pub-event-program-speakers">{block.speakerNames}</p>}
         {moderator && <p className="pub-event-program-speakers">Moderator: {moderator}</p>}
         {block.venueName && <p className="pub-event-program-venue">{block.venueName}</p>}
+        {block.body && <div className="text-content" dangerouslySetInnerHTML={{ __html: block.body }} />}
         {imageUrls.length > 0 && (
           <div className={`pub-event-program-images is-count-${Math.min(imageUrls.length, 3)}`}>
             {imageUrls.map((imageUrl, index) => (
@@ -1556,7 +1557,6 @@ function renderProgramSession(block: EventPageBlock) {
             ))}
           </div>
         )}
-        {block.body && <div className="text-content" dangerouslySetInnerHTML={{ __html: block.body }} />}
       </div>
     </article>
   );

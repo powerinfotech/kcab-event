@@ -2083,6 +2083,7 @@ const PreviewProgramSession: React.FC<{ block: EventPageBlock; imageUrls: string
         {block.speakerNames && <p>{block.speakerNames}</p>}
         {moderator && <p>Moderator: {moderator}</p>}
         {block.venueName && <span>{block.venueName}</span>}
+        {block.body && <div className="saf-builder-preview-copy is-rich" dangerouslySetInnerHTML={{ __html: block.body }} />}
         {imageUrls.length > 0 && (
           <div className={`saf-builder-preview-session-images is-count-${Math.min(imageUrls.length, 3)}`}>
             {imageUrls.map((imageUrl, index) => (
@@ -2092,7 +2093,6 @@ const PreviewProgramSession: React.FC<{ block: EventPageBlock; imageUrls: string
             ))}
           </div>
         )}
-        {block.body && <div className="saf-builder-preview-copy is-rich" dangerouslySetInnerHTML={{ __html: block.body }} />}
       </div>
     </article>
   );
