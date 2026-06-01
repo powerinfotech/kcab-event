@@ -10,6 +10,7 @@ import React, { useEffect, useState } from 'react';
 import { useSetAtom } from 'jotai';
 import { currentPathAtom, pushPath } from '@atom/currentPathAtom';
 import HeroSeoulImage from '../assets/images/saf-renewal/hero-seoul.jpg';
+import { saf2024EventDetails } from './Saf2024EventDetails';
 import { saf2025EventDetails } from './Saf2025EventDetails';
 
 interface PastEdition {
@@ -174,7 +175,12 @@ const editions: PastEdition[] = [
     badge: 'Latest',
     detailPath: '/past-editions/2025',
   },
-  { year: 2024, dateRange: 'Oct 28 - Nov 1, 2024', theme: 'ADR Reborn' },
+  {
+    year: 2024,
+    dateRange: 'Oct 28 - Nov 1, 2024',
+    theme: 'ADR Reborn',
+    detailPath: '/past-editions/2024',
+  },
   {
     year: 2023,
     dateRange: 'Oct 30 - Nov 3, 2023',
@@ -222,6 +228,362 @@ const editions: PastEdition[] = [
     year: 2015,
     dateRange: 'Nov 2 - Nov 6, 2015',
     archiveUrl: '/archives/SAF2015.pdf',
+  },
+];
+
+const saf2024Days: SafArchiveDay[] = [
+  {
+    label: 'Mon',
+    date: 'October 28',
+    events: [
+      {
+        time: '09:00 - 11:30',
+        title: 'Commercial, cultural and legal challenges in cross-border construction projects',
+        eventType: 'Partner Event',
+        hostedBy: 'SCL Korea - SCL HK - Secretariat - rosenblatt - Yoon & Yang - BAE, KIM & LEE',
+        sourceHref: 'https://www.seouladrfestival.com/복제-mon-yoon-yang',
+        hosts: [],
+      },
+      {
+        time: '11:00 - 13:00',
+        title: 'Delay and Delay Damage Claims in Construction Projects',
+        eventType: 'Partner Event',
+        hostedBy: 'Yulchon - Crown Office Chambers - Yendall Hunter',
+        sourceHref: 'https://www.seouladrfestival.com/mon-yulchoon-yendallhunter',
+        hosts: [],
+      },
+      {
+        time: '12:30 - 14:30',
+        title: 'New and Renewable Energy Landscape in Korea and Beyond – Current Issues in Project Development and Dispute Resolution',
+        eventType: 'Partner Event',
+        hostedBy: 'Yoon & Yang - Al Tamimi & Co. - 39 Essex Chambers',
+        sourceHref: 'https://www.seouladrfestival.com/복제-tue-dis',
+        hosts: [],
+      },
+      {
+        time: '15:00 - 17:00',
+        title: 'Innovating Justice: How Tech is Shaping the Future of Arbitration & International Law',
+        eventType: 'Partner Event',
+        hostedBy: 'Jus Mundi - Yulchon',
+        sourceHref: 'https://www.seouladrfestival.com/mon-jusmundi-yulchon',
+        hosts: [],
+      },
+      {
+        time: '16:00 - 17:30',
+        title: 'Arbitrating Private Equity Disputes',
+        eventType: 'Partner Event',
+        hostedBy: 'Kim & Chang - Debevoise & Plimpton',
+        sourceHref: 'https://www.seouladrfestival.com/mon-kim-chang-debevoise-plimpton',
+        hosts: [],
+      },
+      {
+        time: '16:00 - 18:30',
+        title: 'Beyond the courtroom: Insider strategies to tip the scales in your favour',
+        eventType: 'Partner Event',
+        hostedBy: 'HKA - Lee & Ko - Yulchon - Clifford Chance - Al Tamimi & Co.',
+        sourceHref: 'https://www.seouladrfestival.com/hka-lee-ko-yulchonandcliffordchance',
+        hosts: [],
+      },
+      {
+        time: '19:00 - 21:00',
+        title: 'Seoul ADR Festival: Welcome Reception',
+        eventType: 'Official Event',
+        hostedBy: 'KCAB International',
+        hosts: [],
+      },
+      {
+        time: '20:00 - 22:00',
+        title: 'Baker McKenzie KL Partners Drinks Reception',
+        eventType: 'Partner Event',
+        hostedBy: 'Baker McKenzie & KL Partners',
+        sourceHref: 'https://www.seouladrfestival.com/mon-bakermckenzie',
+        hosts: [],
+      },
+    ],
+  },
+  {
+    label: 'Tue',
+    date: 'October 29',
+    events: [
+      {
+        time: '07:30 - 09:15',
+        title: 'HKA Charity Walk and Breakfast',
+        eventType: 'Partner Event',
+        hostedBy: 'HKA - Campaign for Greener Arbitrations',
+        sourceHref: 'https://www.seouladrfestival.com/tue-hka',
+        hosts: [],
+      },
+      {
+        time: '09:00 - 12:00',
+        title: 'The Art of Cross-Examination: Mock Proceedings and a Discussion on Effective Cross-Examination',
+        eventType: 'Partner Event',
+        hostedBy: 'SIAC - YSIAC',
+        sourceHref: 'https://www.seouladrfestival.com/tue-siac-ysiac',
+        hosts: [],
+      },
+      {
+        time: '09:30 - 16:30',
+        title: '2024 KMOJ - UNCITRAL ADR Special Session',
+        eventType: 'Partner Event',
+        hostedBy: 'Ministry of Justice of Korea - UNCITRAL',
+        summary: 'Invitation only',
+        sourceHref: 'https://www.seouladrfestival.com/tue-uncitral-ministryofjustice',
+        hosts: [],
+      },
+      {
+        time: '10:00 - 12:30',
+        title: '에너지 전환 시대의 새로운 법적 과제',
+        eventType: 'Partner Event',
+        hostedBy: 'Kim & Chang - KCCI',
+        sourceHref: 'https://www.seouladrfestival.com/tue-kim-chang-kcci',
+        hosts: [],
+      },
+      {
+        time: '10:30 - 12:00',
+        title: 'Navigating Enforcement Proceedings: Practical Strategies, Tips, and Pitfalls from Leading Cases',
+        eventType: 'Partner Event',
+        hostedBy: 'BAE, KIM & LEE',
+        sourceHref: 'https://www.seouladrfestival.com/baekim-lee',
+        hosts: [],
+      },
+      {
+        time: '11:00 - 12:00',
+        title: 'Construction Arbitration Around the Globe',
+        eventType: 'Partner Event',
+        hostedBy: 'Covington & Burling',
+        sourceHref: 'https://www.seouladrfestival.com/복제-tue-siac-ysiac',
+        hosts: [],
+      },
+      {
+        time: '13:00 - 16:00',
+        title: 'Skills Workshop: Tools and Ingredients for a Successful Settlement',
+        eventType: 'Partner Event',
+        hostedBy: 'Jipyong - SIMC',
+        sourceHref: 'https://www.seouladrfestival.com/tue-jipyong-simc',
+        hosts: [],
+      },
+      {
+        time: '14:00 - 15:30',
+        title: 'Arbitral Procedures - How creative have we been and can we go further?',
+        eventType: 'Partner Event',
+        hostedBy: 'HKIAC - Yulchon',
+        sourceHref: 'https://www.seouladrfestival.com/tue-hkiac-yulchon',
+        hosts: [],
+      },
+      {
+        time: '15:00 - 17:00',
+        title: 'DIS@SAF: To be, or not to be sandwiched - The new DIS Supplementary Rules for Third-Party Notices',
+        eventType: 'Partner Event',
+        hostedBy: 'German Arbitration Institute (DIS)',
+        sourceHref: 'https://www.seouladrfestival.com/tue-dis',
+        hosts: [],
+      },
+      {
+        time: '16:30 - 18:00',
+        title: 'Pitfalls to avoid when doing business in India',
+        eventType: 'Partner Event',
+        hostedBy: 'Shin & Kim - Secretariat - 39 Essex Chambers - Quinn Emanuel - Indian Chamber of Commerce in Korea (ICCK)',
+        sourceHref: 'https://www.seouladrfestival.com/tue-shin-kim',
+        hosts: [],
+      },
+      {
+        time: '15:00 - 18:00',
+        title: 'Lee & Ko - HSF',
+        eventType: 'Partner Event',
+        hostedBy: 'Lee & Ko - HSF',
+        hosts: [],
+      },
+      {
+        time: '18:00 - 20:00',
+        title: 'Seoul ADR Festival: Gala Dinner',
+        eventType: 'Official Event',
+        hostedBy: 'KCAB International',
+        summary: 'By invitation only',
+        hosts: [],
+      },
+      {
+        time: '19:00 - 21:00',
+        title: 'The Lee & Ko Dinner',
+        eventType: 'Partner Event',
+        hostedBy: 'Lee & Ko',
+        sourceHref: 'https://www.seouladrfestival.com/복제-thu-icc-1',
+        hosts: [],
+      },
+      {
+        time: '19:00 - 22:00',
+        title: 'Yulchon Private Dinner & Yacht Cruise',
+        eventType: 'Partner Event',
+        hostedBy: 'Yulchon',
+        summary: 'Invitation only',
+        sourceHref: 'https://www.seouladrfestival.com/tue-yulchon',
+        hosts: [],
+      },
+      {
+        time: '20:00 -',
+        title: 'CMS Cocktail Reception',
+        eventType: 'Partner Event',
+        hostedBy: 'CMS',
+        sourceHref: 'https://www.seouladrfestival.com/복제-tue-yulchon',
+        hosts: [],
+      },
+    ],
+  },
+  {
+    label: 'Wed',
+    date: 'October 30',
+    events: [
+      {
+        time: '09:00 - 18:00',
+        title: 'Seoul ADR Festival: The 13th Asia-Pacific ADR Conference',
+        eventType: 'Official Event',
+        hostedBy: 'KCAB International',
+        summary: 'ADR Reborn: Dynamics of Renewed Asian ADR Landscape',
+        sourceHref: 'https://www.seouladrfestival.com/adr-conference-2024',
+        hosts: [],
+      },
+      {
+        time: '16:00 - 18:30',
+        title: 'A deep dive into renewable energy-disputes in the Asia Pacific region and the IBA’s revised Guidelines on Conflicts of Interest',
+        eventType: 'Partner Event',
+        hostedBy: 'IBA Asia Pacific Arbitration Group',
+        sourceHref: 'https://www.seouladrfestival.com/wed-iba',
+        hosts: [],
+      },
+      {
+        time: '19:00 - 22:00',
+        title: 'Peter & Kim K-Arts Concert',
+        eventType: 'Partner Event',
+        hostedBy: 'Peter & Kim',
+        sourceHref: 'https://www.seouladrfestival.com/wed-peter-kim',
+        hosts: [],
+      },
+      {
+        time: '19:00 - 21:00',
+        title: 'Past, Present and Future of Arbitration in Asia: Diversity and Inclusion',
+        eventType: 'Partner Event',
+        hostedBy: 'Women’s Interest Committee',
+        sourceHref: 'https://www.seouladrfestival.com/복제-tue-shin-kim',
+        hosts: [],
+      },
+    ],
+  },
+  {
+    label: 'Thu',
+    date: 'October 31',
+    events: [
+      {
+        time: '09:30 - 12:00',
+        title: 'Challenging Arbitration Awards in Singapore & South Korea',
+        eventType: 'Partner Event',
+        hostedBy: 'Kim & Chang - SCMA Seoul Breakfast Conference 2024',
+        summary: 'A review of recent Singaporean and Korean arbitration decisions',
+        sourceHref: 'https://www.seouladrfestival.com/thu-kim-chang-scma',
+        hosts: [],
+      },
+      {
+        time: '09:00 - 18:00',
+        title: 'GAR Live: Seoul',
+        eventType: 'Partner Event',
+        hostedBy: 'Global Arbitration Review',
+        sourceHref: 'https://events.globalarbitrationreview.com/event/GARSEOUL2024/websitePage:2e8a6cb7-917e-405c-83ff-8a8b14d1855f',
+        hosts: [],
+      },
+      {
+        time: '11:30 - 13:30',
+        title: 'ICC Potluck Event: The New Cross-Cultural Playbook for Global Arbitration',
+        eventType: 'Partner Event',
+        hostedBy: 'ICC - Yulchon - Lee & Ko',
+        sourceHref: 'https://www.seouladrfestival.com/복제-fri-limnexus-svamc-steve',
+        hosts: [],
+      },
+      {
+        time: '15:00 - 18:00',
+        title: 'Insights from the Institution - interactive panel discussion and a conversation with the LCIA Director General',
+        eventType: 'Partner Event',
+        hostedBy: 'LCIA - Kim & Chang',
+        sourceHref: 'https://www.seouladrfestival.com/복제-thu-icc',
+        hosts: [],
+      },
+      {
+        time: '16:30 - 18:00',
+        title: 'Enforcement and Setting Aside of Arbitral Awards',
+        eventType: 'Partner Event',
+        hostedBy: 'IHCF-KOCIA',
+        sourceHref: 'https://www.seouladrfestival.com/thu-ihcf-kocia',
+        hosts: [],
+      },
+      {
+        time: '17:00 - 18:30',
+        title: 'Agricultural Trade Matters: “Beefing Up” the Australia-Korea Commercial Relationship',
+        eventType: 'Partner Event',
+        hostedBy: 'ACICA - Peter & Kim',
+        sourceHref: 'https://www.seouladrfestival.com/thu-acica-peter-kim',
+        hosts: [],
+      },
+      {
+        time: '18:00 - 21:00',
+        title: 'Fireside Chat with Clients',
+        eventType: 'Partner Event',
+        hostedBy: 'Jipyong - Mori Hamada & Matsumoto - Matson, Driscoll & Damico - Oppenheim Law Firm',
+        sourceHref: 'https://www.seouladrfestival.com/tue-jipyong',
+        hosts: [],
+      },
+      {
+        time: '18:00 - 21:30',
+        title: 'YIAG Meet & Mingle in Korea',
+        eventType: 'Partner Event',
+        hostedBy: 'YIAG - Kim & Chang - KOCIA',
+        sourceHref: 'https://www.seouladrfestival.com/tue-yiag',
+        hosts: [],
+      },
+    ],
+  },
+  {
+    label: 'Fri',
+    date: 'November 1',
+    events: [
+      {
+        time: '09:00 - 10:30',
+        title: 'Navigating the use of AI in Arbitration: Practical Scenarios, Ethical Issues, and Best Practices',
+        eventType: 'Partner Event',
+        hostedBy: 'LimNexus - SVAMC - Stevenson, Wong & Co - California Arbitration',
+        sourceHref: 'https://www.seouladrfestival.com/fri-limnexus-svamc-steve',
+        hosts: [],
+      },
+      {
+        time: '10:00 - 14:00',
+        title: 'TPF(Third-Party Funding) Utilization for Cross-border Disputes',
+        eventType: 'Partner Event',
+        hostedBy: 'LITIG Equity Partners',
+        summary: 'Lunch seminar',
+        sourceHref: 'https://www.seouladrfestival.com/fri-litig',
+        hosts: [],
+      },
+      {
+        time: '11:30 - 14:00',
+        title: 'Public International Law: Emerging and Future Disputes',
+        eventType: 'Partner Event',
+        hostedBy: 'Watson Farley & Williams',
+        sourceHref: 'https://www.seouladrfestival.com/fri-watsonfarley-williams',
+        hosts: [],
+      },
+      {
+        time: '14:00 - 16:00',
+        title: 'Witnessing Conferencing: The Idea, Methods and Practice',
+        eventType: 'Partner Event',
+        hostedBy: 'Peter & Kim - Clifford Chance - WilmerHale',
+        sourceHref: 'https://www.seouladrfestival.com/fir-peterkim',
+        hosts: [],
+      },
+      {
+        time: '16:00 - 18:00',
+        title: 'Expert Evidence Can Make or Break Your Case – Proven Strategies to Win!',
+        eventType: 'Partner Event',
+        hostedBy: 'Dentons Lee - Dentons Rodyk',
+        sourceHref: 'https://www.seouladrfestival.com/fri-dentonslee',
+        hosts: [],
+      },
+    ],
   },
 ];
 
@@ -1796,9 +2158,24 @@ const compactArchiveDate = (date: string) => date.replace('October', 'Oct').repl
 const archiveNavDateLabel = (year: number, date: string, totalDays: number) => (
   year === 2025 || totalDays !== 6 ? compactArchiveDate(date) : date
 );
-const saf2025SourcePrefix = 'https://www.seouladrfestival.com/';
 
-const saf2025EventSlugFromHref = (href: string) => {
+interface SafArchiveEventDetailContent {
+  contactInfo?: string[];
+  images?: Array<{ src: string; alt: string }>;
+  registerHref?: string;
+  sections?: Array<{ title: string; lines: string[] }>;
+}
+
+interface SafArchiveEventMatch {
+  day: SafArchiveDay;
+  detail?: SafArchiveEventDetailContent;
+  event: SafArchiveEvent;
+  slug: string;
+}
+
+const safSourcePrefix = 'https://www.seouladrfestival.com/';
+
+const safEventSlugFromHref = (href: string) => {
   const cleanHref = href.split('?')[0].replace(/\/+$/, '');
   const rawSlug = cleanHref.slice(cleanHref.lastIndexOf('/') + 1);
   try {
@@ -1808,22 +2185,35 @@ const saf2025EventSlugFromHref = (href: string) => {
   }
 };
 
+const isMigratedSaf2024Source = (href?: string) => (
+  !!href
+  && href.startsWith(safSourcePrefix)
+  && !href.endsWith('/2024mon')
+  && href.replace(/\/+$/, '') !== safSourcePrefix.replace(/\/+$/, '')
+);
+
 const isMigratedSaf2025Source = (href?: string) => (
   !!href
-  && href.startsWith(saf2025SourcePrefix)
+  && href.startsWith(safSourcePrefix)
   && (href.includes('/side/') || href.endsWith('/welcome-reception'))
 );
 
-const saf2025InternalEventHref = (href: string) => (
-  `/past-editions/2025/events/${encodeURIComponent(saf2025EventSlugFromHref(href))}`
+const safInternalEventHref = (year: number, href: string) => (
+  `/past-editions/${year}/events/${encodeURIComponent(safEventSlugFromHref(href))}`
 );
 
 const resolveArchiveSourceHref = (year: number, href?: string) => {
   if (!href) return '';
-  return year === 2025 && isMigratedSaf2025Source(href) ? saf2025InternalEventHref(href) : href;
+  if (year === 2024 && isMigratedSaf2024Source(href)) return safInternalEventHref(2024, href);
+  if (year === 2025 && isMigratedSaf2025Source(href)) return safInternalEventHref(2025, href);
+  return href;
 };
 
-const findSaf2025EventBySlug = (slug: string) => {
+const findSafEventBySlug = (
+  slug: string,
+  days: SafArchiveDay[],
+  details: Record<string, SafArchiveEventDetailContent>,
+): SafArchiveEventMatch | null => {
   const decodedSlug = (() => {
     try {
       return decodeURIComponent(slug);
@@ -1832,15 +2222,15 @@ const findSaf2025EventBySlug = (slug: string) => {
     }
   })();
 
-  for (const day of saf2025Days) {
+  for (const day of days) {
     const event = day.events.find((item) => (
-      item.sourceHref && saf2025EventSlugFromHref(item.sourceHref) === decodedSlug
+      item.sourceHref && safEventSlugFromHref(item.sourceHref) === decodedSlug
     ));
     if (event) {
       return {
         day,
         event,
-        detail: saf2025EventDetails[decodedSlug],
+        detail: details[decodedSlug],
         slug: decodedSlug,
       };
     }
@@ -1848,6 +2238,14 @@ const findSaf2025EventBySlug = (slug: string) => {
 
   return null;
 };
+
+const findSaf2024EventBySlug = (slug: string) => (
+  findSafEventBySlug(slug, saf2024Days, saf2024EventDetails)
+);
+
+const findSaf2025EventBySlug = (slug: string) => (
+  findSafEventBySlug(slug, saf2025Days, saf2025EventDetails)
+);
 
 export default function PastEditions() {
   const setCurrentPath = useSetAtom(currentPathAtom);
@@ -2074,6 +2472,20 @@ export function PastEdition2020() {
   );
 }
 
+export function PastEdition2024() {
+  return (
+    <PastEditionDetail
+      year={2024}
+      theme="ADR Reborn"
+      dateRange="28 October to 1 November"
+      visualDateRange="28 Oct-1 Nov"
+      intro="Seoul ADR Festival 2024 ran from 28 October to 1 November in Korea Standard Time. This archive brings the original tabbed calendar and its Read More event pages into one local SAF timeline."
+      dayMetricLabel="calendar days"
+      days={saf2024Days}
+    />
+  );
+}
+
 export function PastEdition2025() {
   return (
     <PastEditionDetail
@@ -2139,9 +2551,38 @@ interface PastEditionDetailProps {
   days: SafArchiveDay[];
 }
 
+export function PastEdition2024EventDetail({ slug }: { slug: string }) {
+  return (
+    <PastEditionArchiveEventDetail
+      year={2024}
+      slug={slug}
+      findEvent={findSaf2024EventBySlug}
+    />
+  );
+}
+
 export function PastEdition2025EventDetail({ slug }: { slug: string }) {
+  return (
+    <PastEditionArchiveEventDetail
+      year={2025}
+      slug={slug}
+      findEvent={findSaf2025EventBySlug}
+    />
+  );
+}
+
+function PastEditionArchiveEventDetail({
+  year,
+  slug,
+  findEvent,
+}: {
+  year: number;
+  slug: string;
+  findEvent: (slug: string) => SafArchiveEventMatch | null;
+}) {
   const setCurrentPath = useSetAtom(currentPathAtom);
-  const matched = findSaf2025EventBySlug(slug);
+  const matched = findEvent(slug);
+  const archiveHref = `/past-editions/${year}`;
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -2166,11 +2607,11 @@ export function PastEdition2025EventDetail({ slug }: { slug: string }) {
         </header>
         <main className="saf-archive-event-detail-main">
           <section className="saf-renewal-shell saf-archive-event-detail-empty">
-            <a href="/past-editions/2025" className="saf-archive-back-link" onClick={(e) => handleNavClick(e, '/past-editions/2025')}>
-              Back to SAF 2025
+            <a href={archiveHref} className="saf-archive-back-link" onClick={(e) => handleNavClick(e, archiveHref)}>
+              Back to SAF {year}
             </a>
             <h1>Event not found</h1>
-            <p>The selected SAF 2025 event could not be found.</p>
+            <p>The selected SAF {year} event could not be found.</p>
           </section>
         </main>
       </div>
@@ -2217,10 +2658,10 @@ export function PastEdition2025EventDetail({ slug }: { slug: string }) {
       <main className="saf-archive-event-detail-main">
         <section className="saf-archive-event-detail-hero">
           <div className="saf-renewal-shell saf-archive-event-detail-hero-inner">
-            <a href="/past-editions/2025" className="saf-archive-back-link" onClick={(e) => handleNavClick(e, '/past-editions/2025')}>
-              Back to SAF 2025
+            <a href={archiveHref} className="saf-archive-back-link" onClick={(e) => handleNavClick(e, archiveHref)}>
+              Back to SAF {year}
             </a>
-            <p className="saf-renewal-eyebrow">SAF 2025 · {event.eventType ?? 'Event'}</p>
+            <p className="saf-renewal-eyebrow">SAF {year} · {event.eventType ?? 'Event'}</p>
             <h1>{event.title}</h1>
             <div className="saf-archive-event-detail-actions">
               {registerHref && (
