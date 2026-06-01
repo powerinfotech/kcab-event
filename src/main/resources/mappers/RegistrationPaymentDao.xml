@@ -1,55 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.kcabEvent.dao.PayTestDao">
+<mapper namespace="com.kcabEvent.dao.RegistrationPaymentDao">
 
-    <select id="selectPayTestEvents" resultType="com.kcabEvent.dto.paymenttest.PayTestEventOptionDto">
-        SELECT
-             e.event_seq
-            ,e.title
-            ,e.event_type
-            ,e.start_at   AS event_start_dt
-            ,e.end_at     AS event_end_dt
-            ,e.venue_name AS location
-        FROM event.events e
-        WHERE e.deleted_at IS NULL
-          AND e.status = 'published'
-          AND e.is_paid IS TRUE
-          AND EXISTS (
-              SELECT 1
-                FROM event.event_pricing ep
-               WHERE ep.event_seq = e.event_seq
-                 AND ep.deleted_at IS NULL
-                 AND ep.use_yn = 'Y'
-                 AND ep.currency_code IN ('USD', 'KRW')
-          )
-        ORDER BY e.start_at DESC NULLS LAST, e.event_seq DESC
-    </select>
-
-    <select id="selectPayTestPricingOptions" resultType="com.kcabEvent.dto.paymenttest.PayTestPricingOptionDto">
-        SELECT
-             ep.event_pricing_seq
-            ,ep.event_seq
-            ,ep.price_type
-            ,ep.price_name
-            ,ep.currency_code
-            ,ep.amount
-            ,ep.sales_start_at
-            ,ep.sales_end_at
-            ,COALESCE(payment_usage.sold_count, 0) AS sold_count
-        FROM event.event_pricing ep
-        LEFT JOIN LATERAL (
-            SELECT COUNT(*) FILTER (WHERE p.status = 'paid') AS sold_count
-              FROM event.payments p
-             WHERE p.event_pricing_seq = ep.event_pricing_seq
-        ) payment_usage ON TRUE
-        WHERE ep.event_seq = #{eventSeq}
-          AND ep.deleted_at IS NULL
-          AND ep.use_yn = 'Y'
-          AND ep.currency_code IN ('USD', 'KRW')
-        ORDER BY ep.sort_seq ASC, ep.event_pricing_seq ASC
-    </select>
-
-    <select id="selectPublicRegistrationPricingOptions" resultType="com.kcabEvent.dto.paymenttest.PayTestPricingOptionDto">
+    <select id="selectPublicRegistrationPricingOptions" resultType="com.kcabEvent.dto.registrationpayment.RegistrationPaymentPricingOptionDto">
         SELECT
              ep.event_pricing_seq
             ,ep.event_seq
@@ -86,31 +39,7 @@
         ORDER BY ep.sort_seq ASC, ep.event_pricing_seq ASC
     </select>
 
-    <select id="selectPayTestPricingForUpdate" resultType="com.kcabEvent.dto.paymenttest.PayTestPricingOptionDto">
-        SELECT
-             ep.event_pricing_seq
-            ,ep.event_seq
-            ,ep.price_type
-            ,ep.price_name
-            ,ep.currency_code
-            ,ep.amount
-            ,ep.sales_start_at
-            ,ep.sales_end_at
-        FROM event.event_pricing ep
-        INNER JOIN event.events e
-            ON e.event_seq = ep.event_seq
-           AND e.deleted_at IS NULL
-           AND e.status = 'published'
-           AND e.is_paid IS TRUE
-        WHERE ep.event_seq = #{eventSeq}
-          AND ep.event_pricing_seq = #{eventPricingSeq}
-          AND ep.deleted_at IS NULL
-          AND ep.use_yn = 'Y'
-          AND ep.currency_code IN ('USD', 'KRW')
-        FOR UPDATE
-    </select>
-
-    <select id="selectPublicRegistrationPricingForUpdate" resultType="com.kcabEvent.dto.paymenttest.PayTestPricingOptionDto">
+    <select id="selectPublicRegistrationPricingForUpdate" resultType="com.kcabEvent.dto.registrationpayment.RegistrationPaymentPricingOptionDto">
         SELECT
              ep.event_pricing_seq
             ,ep.event_seq
@@ -207,7 +136,7 @@
         FOR UPDATE OF dc
     </select>
 
-    <select id="selectParticipantByEmail" resultType="com.kcabEvent.dto.paymenttest.PayTestParticipantRequestDto">
+    <select id="selectParticipantByEmail" resultType="com.kcabEvent.dto.registrationpayment.RegistrationPaymentParticipantRequestDto">
         SELECT
              LOWER(p.email) AS email
             ,p.first_name
@@ -222,7 +151,7 @@
         LIMIT 1
     </select>
 
-    <select id="upsertParticipant" parameterType="com.kcabEvent.dto.paymenttest.PayTestParticipantRequestDto" resultType="long">
+    <select id="upsertParticipant" parameterType="com.kcabEvent.dto.registrationpayment.RegistrationPaymentParticipantRequestDto" resultType="long">
         INSERT INTO event.participants (
              email
             ,first_name
@@ -659,7 +588,7 @@
         WHERE pg_order_id = #{pgOrderId}
     </update>
 
-    <select id="selectPayTestResultByOrderId" resultType="com.kcabEvent.dto.paymenttest.PayTestResultDto">
+    <select id="selectRegistrationPaymentResultByOrderId" resultType="com.kcabEvent.dto.registrationpayment.RegistrationPaymentResultDto">
         SELECT
              p.payment_seq
             ,p.pg_order_id AS order_id
@@ -682,7 +611,7 @@
         WHERE p.pg_order_id = #{orderId}
     </select>
 
-    <select id="selectPayTestIntentResultByOrderId" resultType="com.kcabEvent.dto.paymenttest.PayTestResultDto">
+    <select id="selectRegistrationPaymentIntentResultByOrderId" resultType="com.kcabEvent.dto.registrationpayment.RegistrationPaymentResultDto">
         SELECT
              pi.payment_seq
             ,pi.pg_order_id AS order_id

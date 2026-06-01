@@ -1,4 +1,4 @@
-package com.kcabEvent.dto.paymenttest;
+package com.kcabEvent.dto.registrationpayment;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 
 @Getter
 @Setter
-public class PayTestDiscountValidationResponseDto {
+public class RegistrationPaymentDiscountValidationResponseDto {
     private boolean valid;
     private String status;
     private String message;

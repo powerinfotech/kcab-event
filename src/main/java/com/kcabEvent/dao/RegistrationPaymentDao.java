@@ -3,29 +3,21 @@ package com.kcabEvent.dao;
 import com.kcabEvent.domain.Payment;
 import com.kcabEvent.domain.PaymentIntent;
 import com.kcabEvent.dto.event.EventDiscountCodeDto;
-import com.kcabEvent.dto.paymenttest.PayTestEventOptionDto;
-import com.kcabEvent.dto.paymenttest.PayTestParticipantRequestDto;
-import com.kcabEvent.dto.paymenttest.PayTestPricingOptionDto;
-import com.kcabEvent.dto.paymenttest.PayTestResultDto;
+import com.kcabEvent.dto.registrationpayment.RegistrationPaymentParticipantRequestDto;
+import com.kcabEvent.dto.registrationpayment.RegistrationPaymentPricingOptionDto;
+import com.kcabEvent.dto.registrationpayment.RegistrationPaymentResultDto;
 import org.apache.ibatis.annotations.Param;
 import org.egovframe.rte.psl.dataaccess.mapper.EgovMapper;
 
 import java.util.List;
 
-@EgovMapper("payTestDao")
-public interface PayTestDao {
-    List<PayTestEventOptionDto> selectPayTestEvents();
+@EgovMapper("registrationPaymentDao")
+public interface RegistrationPaymentDao {
+    List<RegistrationPaymentPricingOptionDto> selectPublicRegistrationPricingOptions(@Param("eventSeq") Long eventSeq);
 
-    List<PayTestPricingOptionDto> selectPayTestPricingOptions(@Param("eventSeq") Long eventSeq);
+    RegistrationPaymentParticipantRequestDto selectParticipantByEmail(@Param("email") String email);
 
-    List<PayTestPricingOptionDto> selectPublicRegistrationPricingOptions(@Param("eventSeq") Long eventSeq);
-
-    PayTestParticipantRequestDto selectParticipantByEmail(@Param("email") String email);
-
-    PayTestPricingOptionDto selectPayTestPricingForUpdate(@Param("eventSeq") Long eventSeq,
-                                                          @Param("eventPricingSeq") Long eventPricingSeq);
-
-    PayTestPricingOptionDto selectPublicRegistrationPricingForUpdate(@Param("eventSeq") Long eventSeq,
+    RegistrationPaymentPricingOptionDto selectPublicRegistrationPricingForUpdate(@Param("eventSeq") Long eventSeq,
                                                                      @Param("eventPricingSeq") Long eventPricingSeq);
 
     EventDiscountCodeDto selectPublicRegistrationDiscountCode(@Param("eventSeq") Long eventSeq,
@@ -34,7 +26,7 @@ public interface PayTestDao {
     EventDiscountCodeDto selectPublicRegistrationDiscountCodeForUpdate(@Param("eventSeq") Long eventSeq,
                                                                        @Param("discountCode") String discountCode);
 
-    Long upsertParticipant(PayTestParticipantRequestDto participant);
+    Long upsertParticipant(RegistrationPaymentParticipantRequestDto participant);
 
     Long upsertEventParticipant(@Param("eventSeq") Long eventSeq,
                                 @Param("participantSeq") Long participantSeq);
@@ -61,7 +53,7 @@ public interface PayTestDao {
 
     int updatePaymentFromCallback(Payment payment);
 
-    PayTestResultDto selectPayTestResultByOrderId(@Param("orderId") String orderId);
+    RegistrationPaymentResultDto selectRegistrationPaymentResultByOrderId(@Param("orderId") String orderId);
 
-    PayTestResultDto selectPayTestIntentResultByOrderId(@Param("orderId") String orderId);
+    RegistrationPaymentResultDto selectRegistrationPaymentIntentResultByOrderId(@Param("orderId") String orderId);
 }

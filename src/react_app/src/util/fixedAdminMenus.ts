@@ -41,7 +41,6 @@ export function getFixedAdminMenuInfo(admYn?: string): MenuInfo[] {
       menu(111, 'Create Event', '/events/new', 'admin/EventEditor', 3, 2),
       menu(130, 'Participant Management', '/participants', 'admin/Participants', 4),
       menu(140, 'Payment Management', '/payments', 'admin/Payments', 5),
-      menu(145, 'Pay Test', '/pay-test', 'admin/PayTest', 6),
       menu(150, 'Email CMS', '/email-cms/registration-confirm', 'admin/EmailCms', 7),
       menu(155, 'Email History', '/email-logs', 'admin/EmailLogHistory', 8),
       menu(158, 'Notice & News', '/notice-news', 'admin/NoticeNews', 9),

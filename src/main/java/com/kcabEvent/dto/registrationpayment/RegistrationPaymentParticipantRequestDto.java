@@ -1,11 +1,11 @@
-package com.kcabEvent.dto.paymenttest;
+package com.kcabEvent.dto.registrationpayment;
 
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class PayTestParticipantRequestDto {
+public class RegistrationPaymentParticipantRequestDto {
     private String email;
     private String firstName;
     private String middleName;

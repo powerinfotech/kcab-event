@@ -1,21 +1,19 @@
 package com.kcabEvent.service.payment.impl;
 
-import com.kcabEvent.dao.PayTestDao;
+import com.kcabEvent.dao.RegistrationPaymentDao;
 import com.kcabEvent.domain.Payment;
 import com.kcabEvent.domain.PaymentIntent;
-import com.kcabEvent.dto.common.LoginUser;
 import com.kcabEvent.dto.event.EventDiscountCodeDto;
-import com.kcabEvent.dto.paymenttest.PayTestDiscountValidationRequestDto;
-import com.kcabEvent.dto.paymenttest.PayTestDiscountValidationResponseDto;
-import com.kcabEvent.dto.paymenttest.PayTestEventOptionDto;
-import com.kcabEvent.dto.paymenttest.PayTestParticipantRequestDto;
-import com.kcabEvent.dto.paymenttest.PayTestPrepareRequestDto;
-import com.kcabEvent.dto.paymenttest.PayTestPrepareResponseDto;
-import com.kcabEvent.dto.paymenttest.PayTestPricingOptionDto;
-import com.kcabEvent.dto.paymenttest.PayTestResultDto;
+import com.kcabEvent.dto.registrationpayment.RegistrationPaymentDiscountValidationRequestDto;
+import com.kcabEvent.dto.registrationpayment.RegistrationPaymentDiscountValidationResponseDto;
+import com.kcabEvent.dto.registrationpayment.RegistrationPaymentParticipantRequestDto;
+import com.kcabEvent.dto.registrationpayment.RegistrationPaymentPrepareRequestDto;
+import com.kcabEvent.dto.registrationpayment.RegistrationPaymentPrepareResponseDto;
+import com.kcabEvent.dto.registrationpayment.RegistrationPaymentPricingOptionDto;
+import com.kcabEvent.dto.registrationpayment.RegistrationPaymentResultDto;
 import com.kcabEvent.exception.custom.BusinessException;
 import com.kcabEvent.service.payment.EximbayPaymentClient;
-import com.kcabEvent.service.payment.PayTestService;
+import com.kcabEvent.service.payment.RegistrationPaymentService;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import org.egovframe.rte.fdl.cmmn.EgovAbstractServiceImpl;
@@ -40,13 +38,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
-@Service("payTestService")
-public class PayTestServiceImpl extends EgovAbstractServiceImpl implements PayTestService {
+@Service("registrationPaymentService")
+public class RegistrationPaymentServiceImpl extends EgovAbstractServiceImpl implements RegistrationPaymentService {
 
     private static final DateTimeFormatter ORDER_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
     private static final DateTimeFormatter EXIMBAY_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
-    private static final String ADMIN_PAY_TEST_STATUS_PATH = "/api/public/pay-test/eximbay/status";
-    private static final String ADMIN_PAY_TEST_RETURN_PATH = "/api/public/pay-test/eximbay/return";
     private static final String PUBLIC_REGISTRATION_STATUS_PATH = "/api/public/registration/payment/eximbay/status";
     private static final String PUBLIC_REGISTRATION_RETURN_PATH = "/api/public/registration/payment/eximbay/return";
     private static final Set<String> ALLOWED_PAYMENT_METHODS = Set.of("P000", "P001", "P302", "P015");
@@ -58,42 +54,25 @@ public class PayTestServiceImpl extends EgovAbstractServiceImpl implements PayTe
             "P129", "P130"
     );
 
-    @Resource(name = "payTestDao")
-    private PayTestDao payTestDao;
+    @Resource(name = "registrationPaymentDao")
+    private RegistrationPaymentDao registrationPaymentDao;
 
     private final EximbayPaymentClient eximbayPaymentClient;
 
-    public PayTestServiceImpl(EximbayPaymentClient eximbayPaymentClient) {
+    public RegistrationPaymentServiceImpl(EximbayPaymentClient eximbayPaymentClient) {
         this.eximbayPaymentClient = eximbayPaymentClient;
     }
 
     @Override
-    public List<PayTestEventOptionDto> selectPayTestEvents(LoginUser loginUser) {
-        assertAdmin(loginUser);
-        List<PayTestEventOptionDto> events = payTestDao.selectPayTestEvents();
-        for (PayTestEventOptionDto event : events) {
-            event.setPricingList(payTestDao.selectPayTestPricingOptions(event.getEventSeq()));
-        }
-        return events;
-    }
-
-    @Override
-    @Transactional
-    public PayTestPrepareResponseDto preparePayment(PayTestPrepareRequestDto request, LoginUser loginUser) {
-        assertAdmin(loginUser);
-        return preparePaymentInternal(request, loginUser, false);
-    }
-
-    @Override
-    public List<PayTestPricingOptionDto> selectPublicRegistrationPricingOptions(Long eventSeq) {
+    public List<RegistrationPaymentPricingOptionDto> selectPublicRegistrationPricingOptions(Long eventSeq) {
         if (eventSeq == null) {
             throw new BusinessException("Event is required.");
         }
-        return payTestDao.selectPublicRegistrationPricingOptions(eventSeq);
+        return registrationPaymentDao.selectPublicRegistrationPricingOptions(eventSeq);
     }
 
     @Override
-    public PayTestParticipantRequestDto selectPublicRegistrationParticipant(String email) {
+    public RegistrationPaymentParticipantRequestDto selectPublicRegistrationParticipant(String email) {
         if (!StringUtils.hasText(email)) {
             return null;
         }
@@ -101,15 +80,15 @@ public class PayTestServiceImpl extends EgovAbstractServiceImpl implements PayTe
         if (!normalizedEmail.contains("@")) {
             throw new BusinessException("Please enter a valid participant email.");
         }
-        return payTestDao.selectParticipantByEmail(normalizedEmail);
+        return registrationPaymentDao.selectParticipantByEmail(normalizedEmail);
     }
 
     @Override
-    public PayTestDiscountValidationResponseDto validatePublicRegistrationDiscountCode(PayTestDiscountValidationRequestDto request) {
+    public RegistrationPaymentDiscountValidationResponseDto validatePublicRegistrationDiscountCode(RegistrationPaymentDiscountValidationRequestDto request) {
         if (request == null || request.getEventSeq() == null || request.getEventPricingSeq() == null) {
             return emptyDiscountResponse(null, null, "Please select a ticket before applying a discount code.");
         }
-        PayTestPricingOptionDto pricing = payTestDao.selectPublicRegistrationPricingOptions(request.getEventSeq()).stream()
+        RegistrationPaymentPricingOptionDto pricing = registrationPaymentDao.selectPublicRegistrationPricingOptions(request.getEventSeq()).stream()
                 .filter(option -> request.getEventPricingSeq().equals(option.getEventPricingSeq()))
                 .findFirst()
                 .orElse(null);
@@ -121,50 +100,42 @@ public class PayTestServiceImpl extends EgovAbstractServiceImpl implements PayTe
 
     @Override
     @Transactional
-    public PayTestPrepareResponseDto preparePublicRegistrationPayment(PayTestPrepareRequestDto request) {
-        return preparePaymentInternal(request, null, true);
+    public RegistrationPaymentPrepareResponseDto preparePublicRegistrationPayment(RegistrationPaymentPrepareRequestDto request) {
+        return preparePaymentInternal(request);
     }
 
-    private PayTestPrepareResponseDto preparePaymentInternal(PayTestPrepareRequestDto request,
-                                                             LoginUser loginUser,
-                                                             boolean publicRegistration) {
+    private RegistrationPaymentPrepareResponseDto preparePaymentInternal(RegistrationPaymentPrepareRequestDto request) {
         validatePrepareRequest(request);
 
-        PayTestPricingOptionDto pricing = publicRegistration
-                ? payTestDao.selectPublicRegistrationPricingForUpdate(request.getEventSeq(), request.getEventPricingSeq())
-                : payTestDao.selectPayTestPricingForUpdate(request.getEventSeq(), request.getEventPricingSeq());
+        RegistrationPaymentPricingOptionDto pricing = registrationPaymentDao.selectPublicRegistrationPricingForUpdate(
+                request.getEventSeq(),
+                request.getEventPricingSeq()
+        );
         if (pricing == null) {
-            String message = publicRegistration
-                    ? "Selected registration pricing is not available."
-                    : "Selected pricing is not available for payment testing.";
-            throw new BusinessException(message);
+            throw new BusinessException("Selected registration pricing is not available.");
         }
 
-        PayTestParticipantRequestDto participant = request.getParticipant();
+        RegistrationPaymentParticipantRequestDto participant = request.getParticipant();
         participant.setEmail(participant.getEmail().toLowerCase(Locale.ROOT));
 
         String orderId = buildOrderId();
         String callbackBaseUrl = normalizeCallbackBaseUrl(request.getCallbackBaseUrl());
-        String statusPath = publicRegistration ? PUBLIC_REGISTRATION_STATUS_PATH : ADMIN_PAY_TEST_STATUS_PATH;
-        String returnPath = publicRegistration ? PUBLIC_REGISTRATION_RETURN_PATH : ADMIN_PAY_TEST_RETURN_PATH;
-        String statusUrl = callbackBaseUrl + statusPath;
-        String returnUrl = callbackBaseUrl + returnPath + "?merchant_order_id=" + orderId;
+        String statusUrl = callbackBaseUrl + PUBLIC_REGISTRATION_STATUS_PATH;
+        String returnUrl = callbackBaseUrl + PUBLIC_REGISTRATION_RETURN_PATH + "?merchant_order_id=" + orderId;
         String lang = normalizeLang(request.getLang());
         List<String> paymentMethods = normalizePaymentMethods(request);
         String payerName = fullName(participant);
-        Long userSeq = loginUser != null && loginUser.getUserSeq() != null ? loginUser.getUserSeq().longValue() : null;
-        DiscountApplication discount = publicRegistration && StringUtils.hasText(request.getDiscountCode())
+        DiscountApplication discount = StringUtils.hasText(request.getDiscountCode())
                 ? resolveDiscountCode(request.getDiscountCode(), pricing, true, true)
                 : noDiscount(pricing);
         BigDecimal payableAmount = discount.finalAmount();
 
-        if (publicRegistration && payableAmount.compareTo(BigDecimal.ZERO) <= 0) {
+        if (payableAmount.compareTo(BigDecimal.ZERO) <= 0) {
             return completeFreePublicRegistration(
                     orderId,
                     pricing,
                     participant,
                     payerName,
-                    userSeq,
                     discount
             );
         }
@@ -179,7 +150,7 @@ public class PayTestServiceImpl extends EgovAbstractServiceImpl implements PayTe
                 returnUrl,
                 lang,
                 paymentMethods,
-                publicRegistration ? "KCAB_PUBLIC_REGISTRATION" : "KCAB_PAY_TEST"
+                "KCAB_PUBLIC_REGISTRATION"
         );
         Map<String, Object> readyResponse = eximbayPaymentClient.ready(eximbayRequest);
         requireSuccess(readyResponse, "Failed to prepare Eximbay payment.");
@@ -211,27 +182,24 @@ public class PayTestServiceImpl extends EgovAbstractServiceImpl implements PayTe
         intent.setLastName(participant.getLastName());
         intent.setOrganizationName(participant.getOrganizationName());
         intent.setPosition(participant.getPosition());
-        intent.setCreatedBy(userSeq);
-        intent.setUpdatedBy(userSeq);
-        payTestDao.insertPaymentIntent(intent);
+        registrationPaymentDao.insertPaymentIntent(intent);
 
-        PayTestPrepareResponseDto response = new PayTestPrepareResponseDto();
+        RegistrationPaymentPrepareResponseDto response = new RegistrationPaymentPrepareResponseDto();
         response.setPaymentSeq(null);
         response.setOrderId(orderId);
         response.setSdkUrl(eximbayPaymentClient.getSdkUrl());
         response.setEximbayRequest(eximbayRequest);
-        response.setPayment(payTestDao.selectPayTestIntentResultByOrderId(orderId));
+        response.setPayment(registrationPaymentDao.selectRegistrationPaymentIntentResultByOrderId(orderId));
         return response;
     }
 
-    private PayTestPrepareResponseDto completeFreePublicRegistration(String orderId,
-                                                                     PayTestPricingOptionDto pricing,
-                                                                     PayTestParticipantRequestDto participant,
+    private RegistrationPaymentPrepareResponseDto completeFreePublicRegistration(String orderId,
+                                                                     RegistrationPaymentPricingOptionDto pricing,
+                                                                     RegistrationPaymentParticipantRequestDto participant,
                                                                      String payerName,
-                                                                     Long userSeq,
                                                                      DiscountApplication discount) {
-        Long participantSeq = payTestDao.upsertParticipant(participant);
-        Long eventParticipantSeq = payTestDao.upsertEventParticipant(pricing.getEventSeq(), participantSeq);
+        Long participantSeq = registrationPaymentDao.upsertParticipant(participant);
+        Long eventParticipantSeq = registrationPaymentDao.upsertEventParticipant(pricing.getEventSeq(), participantSeq);
 
         Payment payment = new Payment();
         payment.setPgProvider("discount");
@@ -259,50 +227,41 @@ public class PayTestServiceImpl extends EgovAbstractServiceImpl implements PayTe
         payment.setDiscountCodeSeq(discount.discountCodeSeq());
         payment.setDiscountAmount(discount.discountAmount());
         payment.setRefundedAmount(BigDecimal.ZERO);
-        payment.setCreatedBy(userSeq);
-        payment.setUpdatedBy(userSeq);
-
-        Payment existingPayment = payTestDao.selectPaymentByRegistrationForUpdate(
+        Payment existingPayment = registrationPaymentDao.selectPaymentByRegistrationForUpdate(
                 payment.getEventSeq(),
                 payment.getEventPricingSeq(),
                 payment.getParticipantSeq()
         );
         if (existingPayment == null) {
-            payTestDao.insertPayment(payment);
+            registrationPaymentDao.insertPayment(payment);
         } else {
             payment.setPaymentSeq(existingPayment.getPaymentSeq());
-            payTestDao.updatePaymentFromCallbackBySeq(payment);
+            registrationPaymentDao.updatePaymentFromCallbackBySeq(payment);
         }
 
-        PayTestPrepareResponseDto response = new PayTestPrepareResponseDto();
+        RegistrationPaymentPrepareResponseDto response = new RegistrationPaymentPrepareResponseDto();
         response.setPaymentSeq(payment.getPaymentSeq());
         response.setOrderId(orderId);
-        response.setPayment(payTestDao.selectPayTestResultByOrderId(orderId));
+        response.setPayment(registrationPaymentDao.selectRegistrationPaymentResultByOrderId(orderId));
         return response;
     }
 
     @Override
-    public PayTestResultDto selectResult(String orderId, LoginUser loginUser) {
-        assertAdmin(loginUser);
+    public RegistrationPaymentResultDto selectPublicRegistrationPaymentResult(String orderId) {
         return selectResultInternal(orderId);
     }
 
-    @Override
-    public PayTestResultDto selectPublicRegistrationPaymentResult(String orderId) {
-        return selectResultInternal(orderId);
-    }
-
-    private PayTestResultDto selectResultInternal(String orderId) {
+    private RegistrationPaymentResultDto selectResultInternal(String orderId) {
         if (!StringUtils.hasText(orderId)) {
             throw new BusinessException("Order ID is required.");
         }
         String trimmedOrderId = orderId.trim();
-        PayTestResultDto result = payTestDao.selectPayTestResultByOrderId(trimmedOrderId);
+        RegistrationPaymentResultDto result = registrationPaymentDao.selectRegistrationPaymentResultByOrderId(trimmedOrderId);
         if (result == null) {
-            result = payTestDao.selectPayTestIntentResultByOrderId(trimmedOrderId);
+            result = registrationPaymentDao.selectRegistrationPaymentIntentResultByOrderId(trimmedOrderId);
         }
         if (result == null) {
-            throw new BusinessException("Payment test order was not found.");
+            throw new BusinessException("Registration payment order was not found.");
         }
         return result;
     }
@@ -316,8 +275,8 @@ public class PayTestServiceImpl extends EgovAbstractServiceImpl implements PayTe
             return "IGNORED";
         }
 
-        Payment current = payTestDao.selectPaymentByOrderIdForUpdate(orderId);
-        PaymentIntent intent = current == null ? payTestDao.selectPaymentIntentByOrderIdForUpdate(orderId) : null;
+        Payment current = registrationPaymentDao.selectPaymentByOrderIdForUpdate(orderId);
+        PaymentIntent intent = current == null ? registrationPaymentDao.selectPaymentIntentByOrderIdForUpdate(orderId) : null;
         if (current == null && intent == null) {
             return "UNKNOWN_ORDER";
         }
@@ -330,34 +289,34 @@ public class PayTestServiceImpl extends EgovAbstractServiceImpl implements PayTe
 
         if (current != null) {
             Payment update = buildPaymentUpdateFromCallback(current, params, verifyResponse, success);
-            payTestDao.updatePaymentFromCallback(update);
+            registrationPaymentDao.updatePaymentFromCallback(update);
             return "OK";
         }
 
         if (!success) {
             PaymentIntent failedIntent = buildPaymentIntentStatusUpdate(intent, null, params, verifyResponse, "failed");
-            payTestDao.updatePaymentIntentStatus(failedIntent);
+            registrationPaymentDao.updatePaymentIntentStatus(failedIntent);
             return "OK";
         }
 
-        PayTestParticipantRequestDto participant = buildParticipantRequest(intent);
-        Long participantSeq = payTestDao.upsertParticipant(participant);
-        Long eventParticipantSeq = payTestDao.upsertEventParticipant(intent.getEventSeq(), participantSeq);
+        RegistrationPaymentParticipantRequestDto participant = buildParticipantRequest(intent);
+        Long participantSeq = registrationPaymentDao.upsertParticipant(participant);
+        Long eventParticipantSeq = registrationPaymentDao.upsertEventParticipant(intent.getEventSeq(), participantSeq);
         Payment payment = buildPaymentFromIntent(intent, eventParticipantSeq, participantSeq, params, verifyResponse);
-        Payment existingPayment = payTestDao.selectPaymentByRegistrationForUpdate(
+        Payment existingPayment = registrationPaymentDao.selectPaymentByRegistrationForUpdate(
                 payment.getEventSeq(),
                 payment.getEventPricingSeq(),
                 payment.getParticipantSeq()
         );
         if (existingPayment == null) {
-            payTestDao.insertPayment(payment);
+            registrationPaymentDao.insertPayment(payment);
         } else {
             payment.setPaymentSeq(existingPayment.getPaymentSeq());
-            payTestDao.updatePaymentFromCallbackBySeq(payment);
+            registrationPaymentDao.updatePaymentFromCallbackBySeq(payment);
         }
 
         PaymentIntent paidIntent = buildPaymentIntentStatusUpdate(intent, payment.getPaymentSeq(), params, verifyResponse, "paid");
-        payTestDao.updatePaymentIntentStatus(paidIntent);
+        registrationPaymentDao.updatePaymentIntentStatus(paidIntent);
         return "OK";
     }
 
@@ -391,8 +350,8 @@ public class PayTestServiceImpl extends EgovAbstractServiceImpl implements PayTe
         return update;
     }
 
-    private PayTestParticipantRequestDto buildParticipantRequest(PaymentIntent intent) {
-        PayTestParticipantRequestDto participant = new PayTestParticipantRequestDto();
+    private RegistrationPaymentParticipantRequestDto buildParticipantRequest(PaymentIntent intent) {
+        RegistrationPaymentParticipantRequestDto participant = new RegistrationPaymentParticipantRequestDto();
         participant.setEmail(intent.getPayerEmail().toLowerCase(Locale.ROOT));
         participant.setFirstName(intent.getFirstName());
         participant.setMiddleName(intent.getMiddleName());
@@ -461,9 +420,9 @@ public class PayTestServiceImpl extends EgovAbstractServiceImpl implements PayTe
         )));
     }
 
-    private DiscountApplication noDiscount(PayTestPricingOptionDto pricing) {
+    private DiscountApplication noDiscount(RegistrationPaymentPricingOptionDto pricing) {
         BigDecimal originalAmount = normalizeMoney(pricing.getAmount(), pricing.getCurrencyCode());
-        PayTestDiscountValidationResponseDto response = new PayTestDiscountValidationResponseDto();
+        RegistrationPaymentDiscountValidationResponseDto response = new RegistrationPaymentDiscountValidationResponseDto();
         response.setValid(false);
         response.setStatus("none");
         response.setMessage("");
@@ -474,7 +433,7 @@ public class PayTestServiceImpl extends EgovAbstractServiceImpl implements PayTe
     }
 
     private DiscountApplication resolveDiscountCode(String rawDiscountCode,
-                                                    PayTestPricingOptionDto pricing,
+                                                    RegistrationPaymentPricingOptionDto pricing,
                                                     boolean lock,
                                                     boolean throwOnInvalid) {
         BigDecimal originalAmount = normalizeMoney(pricing.getAmount(), pricing.getCurrencyCode());
@@ -484,8 +443,8 @@ public class PayTestServiceImpl extends EgovAbstractServiceImpl implements PayTe
         }
 
         EventDiscountCodeDto discount = lock
-                ? payTestDao.selectPublicRegistrationDiscountCodeForUpdate(pricing.getEventSeq(), discountCode)
-                : payTestDao.selectPublicRegistrationDiscountCode(pricing.getEventSeq(), discountCode);
+                ? registrationPaymentDao.selectPublicRegistrationDiscountCodeForUpdate(pricing.getEventSeq(), discountCode)
+                : registrationPaymentDao.selectPublicRegistrationDiscountCode(pricing.getEventSeq(), discountCode);
         if (discount == null) {
             return invalidDiscount(pricing, discountCode, "not_found", "This discount code does not exist for this event.", throwOnInvalid);
         }
@@ -529,7 +488,7 @@ public class PayTestServiceImpl extends EgovAbstractServiceImpl implements PayTe
         }
         finalAmount = normalizeMoney(finalAmount, pricing.getCurrencyCode());
 
-        PayTestDiscountValidationResponseDto response = new PayTestDiscountValidationResponseDto();
+        RegistrationPaymentDiscountValidationResponseDto response = new RegistrationPaymentDiscountValidationResponseDto();
         response.setValid(true);
         response.setStatus("applied");
         response.setMessage("Discount code applied.");
@@ -546,7 +505,7 @@ public class PayTestServiceImpl extends EgovAbstractServiceImpl implements PayTe
         return new DiscountApplication(response, discount.getDiscountCodeSeq(), discountAmount, finalAmount);
     }
 
-    private DiscountApplication invalidDiscount(PayTestPricingOptionDto pricing,
+    private DiscountApplication invalidDiscount(RegistrationPaymentPricingOptionDto pricing,
                                                 String discountCode,
                                                 String status,
                                                 String message,
@@ -555,20 +514,20 @@ public class PayTestServiceImpl extends EgovAbstractServiceImpl implements PayTe
             throw new BusinessException(message);
         }
         BigDecimal originalAmount = normalizeMoney(pricing.getAmount(), pricing.getCurrencyCode());
-        PayTestDiscountValidationResponseDto response = emptyDiscountResponse(originalAmount, pricing.getCurrencyCode(), message);
+        RegistrationPaymentDiscountValidationResponseDto response = emptyDiscountResponse(originalAmount, pricing.getCurrencyCode(), message);
         response.setStatus(status);
         response.setDiscountCode(discountCode);
         return new DiscountApplication(response, null, BigDecimal.ZERO.setScale(currencyScale(pricing.getCurrencyCode()), RoundingMode.HALF_UP), originalAmount);
     }
 
-    private PayTestDiscountValidationResponseDto emptyDiscountResponse(BigDecimal originalAmount,
+    private RegistrationPaymentDiscountValidationResponseDto emptyDiscountResponse(BigDecimal originalAmount,
                                                                        String currencyCode,
                                                                        String message) {
         String currency = StringUtils.hasText(currencyCode) ? currencyCode : "USD";
         BigDecimal normalizedOriginal = originalAmount != null
                 ? normalizeMoney(originalAmount, currency)
                 : BigDecimal.ZERO.setScale(currencyScale(currency), RoundingMode.HALF_UP);
-        PayTestDiscountValidationResponseDto response = new PayTestDiscountValidationResponseDto();
+        RegistrationPaymentDiscountValidationResponseDto response = new RegistrationPaymentDiscountValidationResponseDto();
         response.setValid(false);
         response.setStatus("empty");
         response.setMessage(message);
@@ -578,7 +537,7 @@ public class PayTestServiceImpl extends EgovAbstractServiceImpl implements PayTe
         return response;
     }
 
-    private BigDecimal calculateDiscountAmount(EventDiscountCodeDto discount, PayTestPricingOptionDto pricing) {
+    private BigDecimal calculateDiscountAmount(EventDiscountCodeDto discount, RegistrationPaymentPricingOptionDto pricing) {
         BigDecimal originalAmount = normalizeMoney(pricing.getAmount(), pricing.getCurrencyCode());
         BigDecimal discountValue = discount.getDiscountValue() == null ? BigDecimal.ZERO : discount.getDiscountValue();
         BigDecimal discountAmount;
@@ -626,7 +585,7 @@ public class PayTestServiceImpl extends EgovAbstractServiceImpl implements PayTe
         return null;
     }
 
-    private record DiscountApplication(PayTestDiscountValidationResponseDto response,
+    private record DiscountApplication(RegistrationPaymentDiscountValidationResponseDto response,
                                        Long discountCodeSeq,
                                        BigDecimal discountAmount,
                                        BigDecimal finalAmount) {
@@ -646,14 +605,14 @@ public class PayTestServiceImpl extends EgovAbstractServiceImpl implements PayTe
         }
     }
 
-    private void validatePrepareRequest(PayTestPrepareRequestDto request) {
+    private void validatePrepareRequest(RegistrationPaymentPrepareRequestDto request) {
         if (request == null) {
-            throw new BusinessException("Payment test request is required.");
+            throw new BusinessException("Registration payment request is required.");
         }
         if (request.getEventSeq() == null || request.getEventPricingSeq() == null) {
             throw new BusinessException("Please select an event and pricing.");
         }
-        PayTestParticipantRequestDto participant = request.getParticipant();
+        RegistrationPaymentParticipantRequestDto participant = request.getParticipant();
         if (participant == null) {
             throw new BusinessException("Participant information is required.");
         }
@@ -670,7 +629,7 @@ public class PayTestServiceImpl extends EgovAbstractServiceImpl implements PayTe
     }
 
     private Map<String, Object> buildEximbayRequest(String orderId,
-                                                    PayTestPricingOptionDto pricing,
+                                                    RegistrationPaymentPricingOptionDto pricing,
                                                     BigDecimal payableAmount,
                                                     String payerName,
                                                     String email,
@@ -730,7 +689,7 @@ public class PayTestServiceImpl extends EgovAbstractServiceImpl implements PayTe
 
     private String normalizeCallbackBaseUrl(String value) {
         if (!StringUtils.hasText(value)) {
-            throw new BusinessException("Callback base URL is required for Eximbay testing.");
+            throw new BusinessException("Callback base URL is required for Eximbay payment.");
         }
         String text = value.trim().replaceAll("/+$", "");
         if (!text.startsWith("http://") && !text.startsWith("https://")) {
@@ -747,7 +706,7 @@ public class PayTestServiceImpl extends EgovAbstractServiceImpl implements PayTe
         return value.length() > 2 ? value.substring(0, 2) : value;
     }
 
-    private List<String> normalizePaymentMethods(PayTestPrepareRequestDto request) {
+    private List<String> normalizePaymentMethods(RegistrationPaymentPrepareRequestDto request) {
         LinkedHashSet<String> methods = new LinkedHashSet<>();
         if (request.getPaymentMethods() != null) {
             for (String method : request.getPaymentMethods()) {
@@ -803,7 +762,7 @@ public class PayTestServiceImpl extends EgovAbstractServiceImpl implements PayTe
                 && CARD_PAYMENT_METHODS.contains(paymentMethod.trim().toUpperCase(Locale.ROOT));
     }
 
-    private String fullName(PayTestParticipantRequestDto participant) {
+    private String fullName(RegistrationPaymentParticipantRequestDto participant) {
         return java.util.stream.Stream.of(participant.getFirstName(), participant.getMiddleName(), participant.getLastName())
                 .filter(StringUtils::hasText)
                 .map(String::trim)
@@ -907,12 +866,4 @@ public class PayTestServiceImpl extends EgovAbstractServiceImpl implements PayTe
         return value == null ? null : String.valueOf(value);
     }
 
-    private void assertAdmin(LoginUser loginUser) {
-        if (loginUser == null || !"Y".equals(loginUser.getAdmYn())) {
-            throw new BusinessException("Only administrators can use Pay Test.");
-        }
-        if (loginUser.getUserSeq() == null) {
-            throw new BusinessException("Login session is invalid.");
-        }
-    }
 }

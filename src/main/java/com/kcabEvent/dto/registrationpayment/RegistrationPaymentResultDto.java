@@ -1,4 +1,4 @@
-package com.kcabEvent.dto.paymenttest;
+package com.kcabEvent.dto.registrationpayment;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
-public class PayTestResultDto {
+public class RegistrationPaymentResultDto {
     private Long paymentSeq;
     private String orderId;
     private String status;

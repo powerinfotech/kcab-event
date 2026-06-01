@@ -1,14 +1,14 @@
 package com.kcabEvent.controller.payment;
 
 import com.kcabEvent.dto.common.ApiResponse;
-import com.kcabEvent.dto.paymenttest.PayTestDiscountValidationRequestDto;
-import com.kcabEvent.dto.paymenttest.PayTestDiscountValidationResponseDto;
-import com.kcabEvent.dto.paymenttest.PayTestParticipantRequestDto;
-import com.kcabEvent.dto.paymenttest.PayTestPrepareRequestDto;
-import com.kcabEvent.dto.paymenttest.PayTestPrepareResponseDto;
-import com.kcabEvent.dto.paymenttest.PayTestPricingOptionDto;
-import com.kcabEvent.dto.paymenttest.PayTestResultDto;
-import com.kcabEvent.service.payment.PayTestService;
+import com.kcabEvent.dto.registrationpayment.RegistrationPaymentDiscountValidationRequestDto;
+import com.kcabEvent.dto.registrationpayment.RegistrationPaymentDiscountValidationResponseDto;
+import com.kcabEvent.dto.registrationpayment.RegistrationPaymentParticipantRequestDto;
+import com.kcabEvent.dto.registrationpayment.RegistrationPaymentPrepareRequestDto;
+import com.kcabEvent.dto.registrationpayment.RegistrationPaymentPrepareResponseDto;
+import com.kcabEvent.dto.registrationpayment.RegistrationPaymentPricingOptionDto;
+import com.kcabEvent.dto.registrationpayment.RegistrationPaymentResultDto;
+import com.kcabEvent.service.payment.RegistrationPaymentService;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.MediaType;
@@ -27,33 +27,33 @@ import java.util.List;
 @RestController
 public class PublicRegistrationPaymentController {
 
-    @Resource(name = "payTestService")
-    private PayTestService payTestService;
+    @Resource(name = "registrationPaymentService")
+    private RegistrationPaymentService registrationPaymentService;
 
     @GetMapping("/api/public/registration/pricing")
-    public ApiResponse<List<PayTestPricingOptionDto>> selectPricing(@RequestParam Long eventSeq) {
-        return ApiResponse.ok(payTestService.selectPublicRegistrationPricingOptions(eventSeq));
+    public ApiResponse<List<RegistrationPaymentPricingOptionDto>> selectPricing(@RequestParam Long eventSeq) {
+        return ApiResponse.ok(registrationPaymentService.selectPublicRegistrationPricingOptions(eventSeq));
     }
 
     @GetMapping("/api/public/registration/participant")
-    public ApiResponse<PayTestParticipantRequestDto> selectParticipant(@RequestParam String email) {
-        return ApiResponse.ok(payTestService.selectPublicRegistrationParticipant(email));
+    public ApiResponse<RegistrationPaymentParticipantRequestDto> selectParticipant(@RequestParam String email) {
+        return ApiResponse.ok(registrationPaymentService.selectPublicRegistrationParticipant(email));
     }
 
     @PostMapping("/api/public/registration/discount/validate")
-    public ApiResponse<PayTestDiscountValidationResponseDto> validateDiscount(
-            @RequestBody PayTestDiscountValidationRequestDto request) {
-        return ApiResponse.ok(payTestService.validatePublicRegistrationDiscountCode(request));
+    public ApiResponse<RegistrationPaymentDiscountValidationResponseDto> validateDiscount(
+            @RequestBody RegistrationPaymentDiscountValidationRequestDto request) {
+        return ApiResponse.ok(registrationPaymentService.validatePublicRegistrationDiscountCode(request));
     }
 
     @PostMapping("/api/public/registration/payment/prepare")
-    public ApiResponse<PayTestPrepareResponseDto> preparePayment(@RequestBody PayTestPrepareRequestDto request) {
-        return ApiResponse.ok(payTestService.preparePublicRegistrationPayment(request));
+    public ApiResponse<RegistrationPaymentPrepareResponseDto> preparePayment(@RequestBody RegistrationPaymentPrepareRequestDto request) {
+        return ApiResponse.ok(registrationPaymentService.preparePublicRegistrationPayment(request));
     }
 
     @GetMapping("/api/public/registration/payment/result")
-    public ApiResponse<PayTestResultDto> selectResult(@RequestParam String orderId) {
-        return ApiResponse.ok(payTestService.selectPublicRegistrationPaymentResult(orderId));
+    public ApiResponse<RegistrationPaymentResultDto> selectResult(@RequestParam String orderId) {
+        return ApiResponse.ok(registrationPaymentService.selectPublicRegistrationPaymentResult(orderId));
     }
 
     @RequestMapping(
@@ -61,7 +61,7 @@ public class PublicRegistrationPaymentController {
             method = {RequestMethod.GET, RequestMethod.POST}
     )
     public ResponseEntity<String> eximbayStatus(HttpServletRequest request) {
-        return ResponseEntity.ok(payTestService.processEximbayStatus(request));
+        return ResponseEntity.ok(registrationPaymentService.processEximbayStatus(request));
     }
 
     @RequestMapping(
