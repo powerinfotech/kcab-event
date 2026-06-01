@@ -1525,14 +1525,15 @@ function renderProgramSession(block: EventPageBlock) {
   const sessionType = getProgramSessionType(content);
   const moderator = typeof content.moderator === 'string' ? content.moderator : '';
   const dayLabel = typeof content.dayLabel === 'string' ? content.dayLabel : '';
+  const imageUrls = getProgramImageUrls(block);
 
   return (
-    <article className={`pub-event-program-session is-${sessionType}`} key={block.blockSeq}>
+    <article className={`pub-event-program-session is-${sessionType}${imageUrls.length ? ' has-images' : ''}`} key={block.blockSeq}>
       <div className="pub-event-program-time">
         {dayLabel && <span>{dayLabel}</span>}
         {formatBlockTime(block)}
       </div>
-      <div>
+      <div className="pub-event-program-main">
         <span className="pub-event-program-type">{getProgramSessionTypeLabel(sessionType)}</span>
         {block.linkUrl ? (
           <h5>
@@ -1546,6 +1547,15 @@ function renderProgramSession(block: EventPageBlock) {
         {block.speakerNames && <p className="pub-event-program-speakers">{block.speakerNames}</p>}
         {moderator && <p className="pub-event-program-speakers">Moderator: {moderator}</p>}
         {block.venueName && <p className="pub-event-program-venue">{block.venueName}</p>}
+        {imageUrls.length > 0 && (
+          <div className={`pub-event-program-images is-count-${Math.min(imageUrls.length, 3)}`}>
+            {imageUrls.map((imageUrl, index) => (
+              <figure className="pub-event-program-image-frame" key={`${imageUrl}-${index}`}>
+                <img className="pub-event-program-image" src={imageUrl} alt={`${block.title || 'Program session'} host logo ${index + 1}`} />
+              </figure>
+            ))}
+          </div>
+        )}
         {block.body && <div className="text-content" dangerouslySetInnerHTML={{ __html: block.body }} />}
       </div>
     </article>
@@ -1901,6 +1911,36 @@ function getBlockImageUrl(block: EventPageBlock) {
   const content = parseBlockContent(block.contentJson);
   const externalImageUrl = typeof content.imageUrl === 'string' ? content.imageUrl : '';
   return block.imageUrl || externalImageUrl;
+}
+
+function parseImageUrlsText(value: string) {
+  return value
+    .split(/\r?\n/)
+    .map((url) => url.trim())
+    .filter(Boolean);
+}
+
+function normalizeImageUrlList(value: unknown) {
+  if (Array.isArray(value)) {
+    return value
+      .filter((url): url is string => typeof url === 'string')
+      .map((url) => url.trim())
+      .filter(Boolean);
+  }
+  if (typeof value === 'string') {
+    return parseImageUrlsText(value);
+  }
+  return [];
+}
+
+function getProgramImageUrls(block: EventPageBlock) {
+  const content = parseBlockContent(block.contentJson);
+  const externalImageUrl = typeof content.imageUrl === 'string' ? content.imageUrl : '';
+  return Array.from(new Set([
+    block.imageUrl || '',
+    externalImageUrl,
+    ...normalizeImageUrlList(content.imageUrls),
+  ].map((url) => url.trim()).filter(Boolean)));
 }
 
 function getOrganizationGroup(block: EventPageBlock) {

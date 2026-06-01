@@ -4631,6 +4631,34 @@
   }
 }
 
+.saf-session-visual-images {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(56px, 1fr));
+  gap: 6px;
+  margin-top: 5px;
+
+  i {
+    min-width: 0;
+    aspect-ratio: 16 / 9;
+    border: 1px solid rgba(123, 84, 246, .18);
+    border-radius: 9px;
+    background:
+      linear-gradient(90deg, transparent 18%, rgba(255, 255, 255, .86) 18% 82%, transparent 82%),
+      linear-gradient(180deg, transparent 38%, rgba(255, 255, 255, .72) 38% 62%, transparent 62%),
+      linear-gradient(135deg, rgba(49, 92, 255, .18), rgba(223, 85, 231, .18)),
+      linear-gradient(145deg, #fff 0%, #f3efff 100%);
+  }
+
+  &.is-count-1 {
+    grid-template-columns: minmax(70px, 104px);
+  }
+
+  &.is-count-2 {
+    grid-template-columns: repeat(2, minmax(64px, 92px));
+  }
+}
+
 .saf-visual-link-note {
   width: fit-content;
   margin: 0 auto;
@@ -6000,6 +6028,61 @@
     margin: 12px 0 0;
     font-size: 14px;
     line-height: 1.7;
+  }
+}
+
+.saf-builder-preview-session-images {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(132px, 172px));
+  justify-content: start;
+  gap: 12px;
+  margin-top: 16px;
+
+  &.is-count-1 {
+    grid-template-columns: minmax(156px, 220px);
+  }
+
+  &.is-count-2 {
+    grid-template-columns: repeat(2, minmax(132px, 172px));
+  }
+
+  figure {
+    min-width: 0;
+    overflow: hidden;
+    margin: 0;
+    border: 1px solid rgba(123, 84, 246, .14);
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 12px 28px rgba(21, 19, 64, .08);
+  }
+
+  img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    box-sizing: border-box;
+    padding: 14px;
+    object-fit: contain;
+  }
+}
+
+.saf-builder-preview-session-images.is-count-1 figure {
+  min-width: 0;
+}
+
+.saf-builder-preview-session-images.is-count-2 figure {
+  min-width: 0;
+}
+
+@media (max-width: 640px) {
+  .saf-builder-preview-session-images,
+  .saf-builder-preview-session-images.is-count-2,
+  .saf-builder-preview-session-images.is-count-3 {
+    grid-template-columns: repeat(auto-fit, minmax(124px, 1fr));
+  }
+
+  .saf-builder-preview-session-images.is-count-1 {
+    grid-template-columns: minmax(148px, 190px);
   }
 }
 

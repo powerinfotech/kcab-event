@@ -1332,6 +1332,12 @@ const ProgramSessionGuide: React.FC<{ block?: EventPageBlock }> = ({ block }) =>
   const moderator = typeof content.moderator === 'string' ? content.moderator : '';
   const timeText = block ? formatPreviewBlockTime(block) || 'TBD' : 'TBD';
   const titleText = block?.title || 'Session';
+  const imageCount = Math.min(
+    4,
+    (block?.imageFileSeq ? 1 : 0)
+      + (typeof content.imageUrl === 'string' && content.imageUrl.trim() ? 1 : 0)
+      + normalizeImageUrlList(content.imageUrls).length,
+  );
 
   return (
     <aside className="saf-visual-guide saf-session-guide" aria-label="세션 화면 예시">
@@ -1354,6 +1360,14 @@ const ProgramSessionGuide: React.FC<{ block?: EventPageBlock }> = ({ block }) =>
             <p>{moderator ? `Moderator: ${moderator}` : 'Moderator: 좌장 이름'}</p>
             <span>{block?.venueName || '장소'}</span>
             {block?.body && <small>설명 문구</small>}
+            {imageCount > 0 && (
+              <div className={`saf-session-visual-images is-count-${Math.min(imageCount, 3)}`}>
+                {Array.from({ length: imageCount }).map((_, index) => (
+                  <i key={index} />
+                ))}
+                <VisualPin label="호스트 로고" />
+              </div>
+            )}
             <VisualPin label="형태/제목" />
             <VisualPin label="발표자/좌장/장소" />
           </div>
@@ -1380,6 +1394,8 @@ function renderItemFields(
     const sessionType = typeof programContent.sessionType === 'string' ? programContent.sessionType : 'session';
     const moderator = typeof programContent.moderator === 'string' ? programContent.moderator : '';
     const dayLabel = typeof programContent.dayLabel === 'string' ? programContent.dayLabel : '';
+    const programImageUrl = typeof programContent.imageUrl === 'string' ? programContent.imageUrl : '';
+    const programImageUrlsText = normalizeImageUrlList(programContent.imageUrls).join('\n');
     const updateProgramTrack = (track: string) => {
       onUpdate({
         subtitle: track,
@@ -1388,6 +1404,9 @@ function renderItemFields(
     };
     const updateProgramContent = (patch: Record<string, unknown>) => {
       onUpdate({ contentJson: JSON.stringify({ ...programContent, ...patch }) });
+    };
+    const updateProgramImageUrls = (value: string) => {
+      updateProgramContent({ imageUrls: parseImageUrlsText(value) });
     };
 
     return (
@@ -1450,6 +1469,34 @@ function renderItemFields(
             value={block.linkUrl ?? ''}
             disabled={!canEdit}
             onChange={(e) => onUpdate({ linkUrl: e.target.value, linkTarget: '_blank' })}
+          />
+        </label>
+        <div className="saf-simple-file-field is-wide">
+          <span>호스트/기관 로고</span>
+          <CustomFile
+            fileList={imageFiles}
+            onFileListChange={onImageFilesChange}
+            isEditable={canEdit}
+            maxCount={1}
+            accept="image/*"
+          />
+        </div>
+        <label className="is-wide">
+          <span>대표 호스트 로고 주소(선택)</span>
+          <input
+            value={programImageUrl}
+            disabled={!canEdit}
+            onChange={(e) => updateProgramContent({ imageUrl: e.target.value })}
+            placeholder="https://..."
+          />
+        </label>
+        <label className="is-wide">
+          <span>추가 호스트 로고 주소(선택, 줄바꿈)</span>
+          <textarea
+            value={programImageUrlsText}
+            disabled={!canEdit}
+            onChange={(e) => updateProgramImageUrls(e.target.value)}
+            placeholder={'https://...\nhttps://...'}
           />
         </label>
         <label className="is-wide">
@@ -1803,7 +1850,7 @@ const PreviewSection: React.FC<{
     return (
       <section id={`preview-${section.sectionSeq}`} className={sectionClassName}>
         <PreviewSectionTitle section={section} />
-        <PreviewProgramGroups blocks={blocks} />
+        <PreviewProgramGroups blocks={blocks} blockImageFiles={blockImageFiles} />
       </section>
     );
   }
@@ -1986,7 +2033,10 @@ const PreviewOrganizationLogo: React.FC<{ block: EventPageBlock; imageUrl?: stri
   </article>
 );
 
-const PreviewProgramGroups: React.FC<{ blocks: EventPageBlock[] }> = ({ blocks }) => {
+const PreviewProgramGroups: React.FC<{
+  blocks: EventPageBlock[];
+  blockImageFiles: Record<number, FileDetailType[]>;
+}> = ({ blocks, blockImageFiles }) => {
   const groups = groupProgramBlocks(blocks);
 
   return (
@@ -1994,21 +2044,27 @@ const PreviewProgramGroups: React.FC<{ blocks: EventPageBlock[] }> = ({ blocks }
       {groups.map(([track, sessions]) => (
         <div key={track} className="saf-builder-preview-program-track">
           <h3><span>{track}</span></h3>
-          {sessions.map((block) => <PreviewProgramSession key={block.blockSeq} block={block} />)}
+          {sessions.map((block) => (
+            <PreviewProgramSession
+              key={block.blockSeq}
+              block={block}
+              imageUrls={getProgramPreviewImageUrls(block, blockImageFiles)}
+            />
+          ))}
         </div>
       ))}
     </div>
   );
 };
 
-const PreviewProgramSession: React.FC<{ block: EventPageBlock }> = ({ block }) => {
+const PreviewProgramSession: React.FC<{ block: EventPageBlock; imageUrls: string[] }> = ({ block, imageUrls }) => {
   const content = parseBlockContent(block.contentJson);
   const sessionType = getProgramSessionTypeLabel(content);
   const moderator = typeof content.moderator === 'string' ? content.moderator : '';
   const dayLabel = typeof content.dayLabel === 'string' ? content.dayLabel : '';
 
   return (
-    <article className={`saf-builder-preview-session is-${getProgramSessionTypeValue(content)}`}>
+    <article className={`saf-builder-preview-session is-${getProgramSessionTypeValue(content)}${imageUrls.length ? ' has-images' : ''}`}>
       <time>
         {dayLabel && <span>{dayLabel}</span>}
         {formatPreviewBlockTime(block) || 'TBD'}
@@ -2027,6 +2083,15 @@ const PreviewProgramSession: React.FC<{ block: EventPageBlock }> = ({ block }) =
         {block.speakerNames && <p>{block.speakerNames}</p>}
         {moderator && <p>Moderator: {moderator}</p>}
         {block.venueName && <span>{block.venueName}</span>}
+        {imageUrls.length > 0 && (
+          <div className={`saf-builder-preview-session-images is-count-${Math.min(imageUrls.length, 3)}`}>
+            {imageUrls.map((imageUrl, index) => (
+              <figure key={`${imageUrl}-${index}`}>
+                <img src={imageUrl} alt={`${block.title || 'Session'} host logo ${index + 1}`} />
+              </figure>
+            ))}
+          </div>
+        )}
         {block.body && <div className="saf-builder-preview-copy is-rich" dangerouslySetInnerHTML={{ __html: block.body }} />}
       </div>
     </article>
@@ -2485,11 +2550,46 @@ function getFilePreviewUrl(files?: FileDetailType[]) {
   return file?.fileUrl || file?.filePath || '';
 }
 
+function parseImageUrlsText(value: string) {
+  return value
+    .split(/\r?\n/)
+    .map((url) => url.trim())
+    .filter(Boolean);
+}
+
+function normalizeImageUrlList(value: unknown) {
+  if (Array.isArray(value)) {
+    return value
+      .filter((url): url is string => typeof url === 'string')
+      .map((url) => url.trim())
+      .filter(Boolean);
+  }
+  if (typeof value === 'string') {
+    return parseImageUrlsText(value);
+  }
+  return [];
+}
+
+function uniqueImageUrls(urls: string[]) {
+  return Array.from(new Set(urls.map((url) => url.trim()).filter(Boolean)));
+}
+
 function getBlockPreviewImageUrl(block: EventPageBlock, blockImageFiles: Record<number, FileDetailType[]>) {
   const uploadedImageUrl = getFilePreviewUrl(blockImageFiles[block.blockSeq]);
   if (uploadedImageUrl) return uploadedImageUrl;
   const content = parseBlockContent(block.contentJson);
   return typeof content.imageUrl === 'string' ? content.imageUrl : '';
+}
+
+function getProgramPreviewImageUrls(block: EventPageBlock, blockImageFiles: Record<number, FileDetailType[]>) {
+  const content = parseBlockContent(block.contentJson);
+  const uploadedImageUrl = getFilePreviewUrl(blockImageFiles[block.blockSeq]);
+  const externalImageUrl = typeof content.imageUrl === 'string' ? content.imageUrl : '';
+  return uniqueImageUrls([
+    uploadedImageUrl,
+    externalImageUrl,
+    ...normalizeImageUrlList(content.imageUrls),
+  ]);
 }
 
 function toDatetimeInput(value?: string | null) {
