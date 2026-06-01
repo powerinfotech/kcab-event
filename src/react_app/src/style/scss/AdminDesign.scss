@@ -1159,7 +1159,7 @@
     z-index: 1;
   }
 
-  span {
+  > div:first-child > span {
     color: var(--saf-purple-2, #9586f2);
     font-size: 12px;
     font-weight: 800;
