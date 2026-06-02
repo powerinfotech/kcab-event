@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { App } from 'antd';
 import {
   ArrowDownOutlined,
   ArrowUpOutlined,
+  CopyOutlined,
   DeleteOutlined,
   EyeOutlined,
   PlusOutlined,
@@ -12,6 +13,7 @@ import {
   SaveOutlined,
 } from '@ant-design/icons';
 import {
+  callGetEventList,
   callGetEventPageBuilder,
   callGetEventPageBuilderCatalog,
   callSaveEventPageBuilder,
@@ -19,6 +21,7 @@ import {
 import { callGetFileList, callSaveFiles, UPLOAD_CONTEXT, type UploadContext } from '@api/CommonApi';
 import CustomFile, { FileDetailType } from '@component/upload/CustomFile';
 import {
+  EventListItem,
   EventPageBlock,
   EventPageComponentCatalog,
   EventPageSection,
@@ -29,6 +32,10 @@ import HeroSeoulImage from '../../assets/images/saf-renewal/hero-seoul.jpg';
 interface OfficialEventPageBuilderProps {
   eventSeq: number | null;
   canEdit: boolean;
+}
+
+export interface OfficialEventPageBuilderHandle {
+  save: (options?: { silentSuccess?: boolean }) => Promise<boolean>;
 }
 
 interface SectionPreset {
@@ -214,7 +221,7 @@ const SECTION_PRESETS: SectionPreset[] = [
   },
 ];
 
-const OfficialEventPageBuilder: React.FC<OfficialEventPageBuilderProps> = ({ eventSeq, canEdit }) => {
+const OfficialEventPageBuilder = React.forwardRef<OfficialEventPageBuilderHandle, OfficialEventPageBuilderProps>(({ eventSeq, canEdit }, ref) => {
   const { message } = App.useApp();
   const tempSeqRef = useRef(-1);
   const previewShellRef = useRef<HTMLDivElement>(null);
@@ -237,6 +244,11 @@ const OfficialEventPageBuilder: React.FC<OfficialEventPageBuilderProps> = ({ eve
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewDragging, setPreviewDragging] = useState(false);
   const [previewPosition, setPreviewPosition] = useState<{ left: number; top: number } | null>(null);
+  const [copyPanelOpen, setCopyPanelOpen] = useState(false);
+  const [copySourceEvents, setCopySourceEvents] = useState<EventListItem[]>([]);
+  const [copySourceEventSeq, setCopySourceEventSeq] = useState<number | null>(null);
+  const [copySourceLoading, setCopySourceLoading] = useState(false);
+  const [copyingPage, setCopyingPage] = useState(false);
   const [heroFiles, setHeroFiles] = useState<FileDetailType[]>([]);
   const [blockImageFiles, setBlockImageFiles] = useState<Record<number, FileDetailType[]>>({});
 
@@ -347,6 +359,65 @@ const OfficialEventPageBuilder: React.FC<OfficialEventPageBuilderProps> = ({ eve
     return value;
   };
 
+  const loadCopySourceEvents = async () => {
+    if (!eventSeq) return;
+    setCopySourceLoading(true);
+    try {
+      const res = await callGetEventList({ eventType: 'main' });
+      const nextEvents = (res?.item ?? [])
+        .filter((item) => item.eventSeq !== eventSeq)
+        .sort((a, b) => Number(new Date(b.eventStartDt || 0)) - Number(new Date(a.eventStartDt || 0)));
+      setCopySourceEvents(nextEvents);
+      setCopySourceEventSeq((prev) => (
+        prev && nextEvents.some((item) => item.eventSeq === prev)
+          ? prev
+          : (nextEvents[0]?.eventSeq ?? null)
+      ));
+    } catch (err: any) {
+      setCopySourceEvents([]);
+      setCopySourceEventSeq(null);
+      message.error(err?.response?.data?.message ?? '복사할 행사 목록을 불러오지 못했습니다.');
+    } finally {
+      setCopySourceLoading(false);
+    }
+  };
+
+  const openCopyPanel = () => {
+    if (!canEdit || !eventSeq) return;
+    setCopyPanelOpen(true);
+    void loadCopySourceEvents();
+  };
+
+  const applyCopiedPageBuilder = async () => {
+    if (!page || !eventSeq || !copySourceEventSeq) return;
+
+    setCopyingPage(true);
+    try {
+      const res = await callGetEventPageBuilder(copySourceEventSeq);
+      const sourcePage = ensureSimpleSections(
+        normalizePage(res?.item ?? null, copySourceEventSeq),
+        catalog,
+        nextTempSeq,
+      );
+      const copiedPage = ensureSimpleSections(
+        createCopiedPageForCurrentEvent(sourcePage, page, eventSeq),
+        catalog,
+        nextTempSeq,
+      );
+      const nextImages = await loadPageImageFiles(copiedPage);
+      setPage(copiedPage);
+      setHeroFiles(nextImages.heroFiles);
+      setBlockImageFiles(nextImages.blockImageFiles);
+      setActiveSectionSeq(copiedPage.sections[0]?.sectionSeq ?? null);
+      setCopyPanelOpen(false);
+      message.success('기존 행사 꾸미기를 현재 행사에 복사했습니다. 저장을 눌러 반영해주세요.');
+    } catch (err: any) {
+      message.error(err?.response?.data?.message ?? '기존 행사 꾸미기 복사에 실패했습니다.');
+    } finally {
+      setCopyingPage(false);
+    }
+  };
+
   useEffect(() => {
     let mounted = true;
     const load = async () => {
@@ -354,6 +425,8 @@ const OfficialEventPageBuilder: React.FC<OfficialEventPageBuilderProps> = ({ eve
         setPage(null);
         setActiveSectionSeq(null);
         setPreviewOpen(false);
+        setCopyPanelOpen(false);
+        setCopySourceEventSeq(null);
         setHeroFiles([]);
         setBlockImageFiles({});
         return;
@@ -387,6 +460,12 @@ const OfficialEventPageBuilder: React.FC<OfficialEventPageBuilderProps> = ({ eve
     load();
     return () => { mounted = false; };
   }, [eventSeq, message]);
+
+  useEffect(() => {
+    setCopyPanelOpen(false);
+    setCopySourceEvents([]);
+    setCopySourceEventSeq(null);
+  }, [eventSeq]);
 
   useEffect(() => () => {
     if (previewScrollFrameRef.current !== null && typeof window !== 'undefined') {
@@ -514,11 +593,11 @@ const OfficialEventPageBuilder: React.FC<OfficialEventPageBuilderProps> = ({ eve
     updateSection(sectionSeq, { blocks: resequenceBlocks(nextBlocks) });
   };
 
-  const saveBuilder = async () => {
-    if (!page || !eventSeq) return;
+  const saveBuilder = async (options?: { silentSuccess?: boolean }) => {
+    if (!page || !eventSeq) return false;
     if (!page.pageTitle?.trim()) {
       message.warning('Please enter the page title.');
-      return;
+      return false;
     }
 
     setSaving(true);
@@ -538,13 +617,21 @@ const OfficialEventPageBuilder: React.FC<OfficialEventPageBuilderProps> = ({ eve
       setHeroFiles(nextImages.heroFiles);
       setBlockImageFiles(nextImages.blockImageFiles);
       setActiveSectionSeq(nextPage.sections[0]?.sectionSeq ?? null);
-      message.success('행사 페이지가 저장되었습니다.');
+      if (!options?.silentSuccess) {
+        message.success('행사 페이지가 저장되었습니다.');
+      }
+      return true;
     } catch (err: any) {
       message.error(err?.response?.data?.message ?? '행사 페이지 저장에 실패했습니다.');
+      return false;
     } finally {
       setSaving(false);
     }
   };
+
+  useImperativeHandle(ref, () => ({
+    save: saveBuilder,
+  }), [saveBuilder]);
 
   if (!eventSeq) {
     return (
@@ -682,7 +769,62 @@ const OfficialEventPageBuilder: React.FC<OfficialEventPageBuilderProps> = ({ eve
                 <h3>상단 화면 꾸미기</h3>
                 <p>대표 이미지와 색상을 선택하면 화면에 자동으로 반영됩니다.</p>
               </div>
+              {canEdit && (
+                <button
+                  type="button"
+                  className="saf-action-btn is-secondary saf-copy-builder-open"
+                  onClick={openCopyPanel}
+                  disabled={saving || loading || copyingPage}
+                >
+                  <CopyOutlined />
+                  <span>기존 행사 꾸미기 복사</span>
+                </button>
+              )}
             </div>
+            {copyPanelOpen && (
+              <div className="saf-copy-builder-panel">
+                <div>
+                  <strong>기존 행사 선택</strong>
+                  <p>선택한 행사에서 페이지 제목, 상단 문구, 대표 이미지, 색상, 행사 정보 카드, 화면 구성을 모두 가져옵니다.</p>
+                </div>
+                <div className="saf-copy-builder-controls">
+                  <select
+                    value={copySourceEventSeq ?? ''}
+                    disabled={copySourceLoading || copyingPage}
+                    onChange={(e) => setCopySourceEventSeq(e.target.value ? Number(e.target.value) : null)}
+                  >
+                    {copySourceLoading ? (
+                      <option value="">행사 목록을 불러오는 중입니다...</option>
+                    ) : copySourceEvents.length ? (
+                      copySourceEvents.map((item) => (
+                        <option key={item.eventSeq} value={item.eventSeq}>
+                          {item.title} {formatCopySourceEventMeta(item)}
+                        </option>
+                      ))
+                    ) : (
+                      <option value="">복사할 수 있는 기존 공식 행사가 없습니다.</option>
+                    )}
+                  </select>
+                  <button
+                    type="button"
+                    className="saf-action-btn is-primary"
+                    onClick={applyCopiedPageBuilder}
+                    disabled={!copySourceEventSeq || copySourceLoading || copyingPage}
+                  >
+                    <CopyOutlined />
+                    <span>{copyingPage ? '복사 중' : '복사 적용'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="saf-action-btn is-secondary"
+                    onClick={() => setCopyPanelOpen(false)}
+                    disabled={copyingPage}
+                  >
+                    <span>취소</span>
+                  </button>
+                </div>
+              </div>
+            )}
             <div className="saf-simple-form">
               <label>
                 <span>상단 배경</span>
@@ -848,7 +990,9 @@ const OfficialEventPageBuilder: React.FC<OfficialEventPageBuilderProps> = ({ eve
       )}
     </section>
   );
-};
+});
+
+OfficialEventPageBuilder.displayName = 'OfficialEventPageBuilder';
 
 const BuilderHeader: React.FC<{
   canEdit: boolean;
@@ -2194,6 +2338,41 @@ function normalizePage(page: PublicEventPage | null, eventSeq: number): PublicEv
   };
 }
 
+function createCopiedPageForCurrentEvent(
+  sourcePage: PublicEventPage,
+  currentPage: PublicEventPage,
+  targetEventSeq: number,
+): PublicEventPage {
+  return {
+    ...sourcePage,
+    eventPageSeq: currentPage.eventPageSeq ?? 0,
+    eventSeq: targetEventSeq,
+    languageCode: currentPage.languageCode || sourcePage.languageCode || 'en',
+    urlSlug: currentPage.urlSlug || '',
+    pageStatus: currentPage.pageStatus || 'draft',
+    pageTitle: sourcePage.pageTitle || sourcePage.eventTitle || currentPage.pageTitle || '',
+    pageSubtitle: sourcePage.pageSubtitle || '',
+    heroTitle: sourcePage.heroTitle || sourcePage.eventTitle || currentPage.heroTitle || '',
+    heroSubtitle: sourcePage.heroSubtitle || sourcePage.eventSummary || currentPage.heroSubtitle || '',
+    settingsJson: sourcePage.settingsJson || '{}',
+    publishedAt: currentPage.publishedAt ?? null,
+    eventTitle: currentPage.eventTitle || '',
+    eventSummary: currentPage.eventSummary || '',
+    eventStartDt: currentPage.eventStartDt || '',
+    eventEndDt: currentPage.eventEndDt || '',
+    location: currentPage.location || '',
+    registrationType: currentPage.registrationType || 'none',
+    registrationUrl: currentPage.registrationUrl || '',
+    eventStatus: currentPage.eventStatus || '',
+    eventType: currentPage.eventType || 'main',
+    sections: sourcePage.sections.map((section) => ({
+      ...section,
+      eventPageSeq: currentPage.eventPageSeq ?? 0,
+      blocks: (section.blocks ?? []).map((block) => ({ ...block })),
+    })),
+  };
+}
+
 function ensureSimpleSections(
   page: PublicEventPage,
   catalog: EventPageComponentCatalog,
@@ -2626,6 +2805,12 @@ function resolvePreviewSectionSeq(page: PublicEventPage, requestedSeq: number) {
 function formatPreviewEventMeta(page: PublicEventPage) {
   const parts = [formatPreviewDateRange(page.eventStartDt, page.eventEndDt), page.location].filter(Boolean);
   return parts.join(' | ');
+}
+
+function formatCopySourceEventMeta(event: EventListItem) {
+  const parts = [formatPreviewDateRange(event.eventStartDt, event.eventEndDt), formatStatusLabel(event.status)]
+    .filter(Boolean);
+  return parts.length ? `(${parts.join(' | ')})` : '';
 }
 
 function formatPreviewDate(value?: string | null) {
