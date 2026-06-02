@@ -57,7 +57,7 @@ import {
   RegistrationType,
 } from '@interface/event/EventManagement';
 import AdminGridPagination, { useClientGridPagination } from './AdminGridPagination';
-import OfficialEventPageBuilder from './OfficialEventPageBuilder';
+import OfficialEventPageBuilder, { type OfficialEventPageBuilderHandle } from './OfficialEventPageBuilder';
 import type { ParticipantListItem } from '@interface/admin/ParticipantManagement';
 
 /** Status 멀티 셀렉트 옵션 (빈 항목 없이 실제 상태값만) */
@@ -278,6 +278,7 @@ export default function SuperEventList() {
   const [saving, setSaving] = useState(false);
   const [submitAttempted, setSubmitAttempted] = useState(false);
   const [pricingAmountDrafts, setPricingAmountDrafts] = useState<Record<string, string>>({});
+  const officialPageBuilderRef = useRef<OfficialEventPageBuilderHandle>(null);
   const [discountUsageModal, setDiscountUsageModal] = useState<{
     open: boolean;
     loading: boolean;
@@ -859,7 +860,13 @@ export default function SuperEventList() {
 
       // 3) 행사 저장
       const eventRes = await callSaveEvent(buildSaveParam(resolvedEmailHeaderImageSeq, resolvedAttSeq));
-      message.success(isNew ? 'Event has been registered.' : 'Event information has been saved.');
+      if (!isNew && isOfficialEvent && officialPageBuilderRef.current) {
+        const pageSaved = await officialPageBuilderRef.current.save({ silentSuccess: true });
+        if (!pageSaved) {
+          throw new Error('Official event page save failed.');
+        }
+      }
+      message.success(isNew ? 'Event has been registered.' : 'Event information and official page have been saved.');
       await fetchEvents();
       if (isNew) {
         const savedEventSeq = Number(eventRes?.item);
@@ -1402,6 +1409,7 @@ export default function SuperEventList() {
 
         {isOfficialEvent && (
           <OfficialEventPageBuilder
+            ref={officialPageBuilderRef}
             eventSeq={isNew ? null : selectedSeq}
             canEdit={canEdit}
           />
