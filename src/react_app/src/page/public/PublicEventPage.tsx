@@ -18,6 +18,7 @@ import {
 } from '@interface/public/PublicRegistration';
 import HeroSeoulImage from '../../assets/images/saf-renewal/hero-seoul.jpg';
 import { usePublicNavigate } from '@hook/usePublicNavigate';
+import BusinessFooterInfo from './components/BusinessFooterInfo';
 
 declare global {
   interface Window {
@@ -865,6 +866,7 @@ const SafEventFooter: React.FC = () => (
         <br />
         Contact: saf@kcab.or.kr
       </p>
+      <BusinessFooterInfo />
       <small>&copy; 2026 KCAB International. All rights reserved.</small>
     </div>
   </footer>

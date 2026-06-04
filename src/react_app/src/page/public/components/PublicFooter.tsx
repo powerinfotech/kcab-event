@@ -1,4 +1,5 @@
 import React from 'react';
+import BusinessFooterInfo from './BusinessFooterInfo';
 
 const PublicFooter: React.FC = () => {
   return (
@@ -10,6 +11,7 @@ const PublicFooter: React.FC = () => {
             Korean Commercial Arbitration Board<br />
             606 Teheran-ro, Gangnam-gu, Seoul, Korea
           </div>
+          <BusinessFooterInfo />
           <div className="pub-footer-copyright">
             &copy; {new Date().getFullYear()} KCAB INTERNATIONAL. All Rights Reserved.
           </div>

@@ -251,6 +251,59 @@ $pub-header-height-mobile: 60px;
   }
 }
 
+.kcab-business-footer {
+  margin-top: 22px;
+  max-width: 980px;
+  color: rgba(255, 255, 255, 0.82);
+
+  .kcab-business-footer-title {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    padding: 5px 11px;
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.13);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: 0;
+  }
+
+  .kcab-business-footer-lines {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px 14px;
+    margin-top: 12px;
+    font-size: 13px;
+    line-height: 1.7;
+    letter-spacing: 0;
+  }
+
+  span,
+  a {
+    color: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    letter-spacing: 0;
+  }
+
+  a:hover {
+    color: #fff;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+}
+
+.pub-footer .kcab-business-footer {
+  color: rgba(255, 255, 255, 0.68);
+}
+
+.saf-renewal-footer .kcab-business-footer {
+  color: rgba(255, 255, 255, 0.9);
+}
+
 // ============================================
 // Section Common
 // ============================================

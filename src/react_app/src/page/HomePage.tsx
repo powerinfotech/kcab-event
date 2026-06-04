@@ -39,6 +39,7 @@ import SponsorUncitralLogo from '../assets/images/saf-renewal/sponsors/uncitral.
 import SponsorVanguardLogo from '../assets/images/saf-renewal/sponsors/vanguard.png';
 import SponsorYendallHunterLogo from '../assets/images/saf-renewal/sponsors/yendall-hunter.png';
 import SponsorYoonYangLogo from '../assets/images/saf-renewal/sponsors/yoon-yang.png';
+import BusinessFooterInfo from './public/components/BusinessFooterInfo';
 
 const POPUP_DISMISS_COOKIE_PREFIX = 'popup_dismissed_';
 
@@ -463,6 +464,7 @@ export default function HomePage() {
             <br />
             Contact: saf@kcab.or.kr
           </p>
+          <BusinessFooterInfo />
           <small>© 2026 KCAB International. All rights reserved.</small>
         </div>
       </footer>

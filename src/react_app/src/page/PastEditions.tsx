@@ -12,6 +12,7 @@ import { currentPathAtom, pushPath } from '@atom/currentPathAtom';
 import HeroSeoulImage from '../assets/images/saf-renewal/hero-seoul.jpg';
 import { saf2024EventDetails } from './Saf2024EventDetails';
 import { saf2025EventDetails } from './Saf2025EventDetails';
+import BusinessFooterInfo from './public/components/BusinessFooterInfo';
 
 interface PastEdition {
   year: number;
@@ -2453,6 +2454,7 @@ export default function PastEditions() {
             <br />
             Contact: saf@kcab.or.kr
           </p>
+          <BusinessFooterInfo />
           <small>© 2026 KCAB International. All rights reserved.</small>
         </div>
       </footer>
@@ -2777,6 +2779,7 @@ function PastEditionArchiveEventDetail({
             <br />
             Contact: saf@kcab.or.kr
           </p>
+          <BusinessFooterInfo />
           <small>© 2026 KCAB International. All rights reserved.</small>
         </div>
       </footer>
@@ -3094,6 +3097,7 @@ function PastEditionDetail({
             <br />
             Contact: saf@kcab.or.kr
           </p>
+          <BusinessFooterInfo />
           <small>© 2026 KCAB International. All rights reserved.</small>
         </div>
       </footer>
