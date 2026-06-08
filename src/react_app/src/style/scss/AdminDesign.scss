@@ -3842,6 +3842,7 @@
 
 .saf-event-participants-panel {
   margin-top: 16px;
+  min-width: 0;
 }
 
 .saf-event-pricing-panel {
@@ -6425,6 +6426,65 @@
   }
 }
 
+.saf-registration-fields-panel {
+  .saf-registration-fields-table-wrap {
+    overflow-x: auto;
+  }
+
+  .saf-registration-fields-table {
+    min-width: 760px;
+
+    th:nth-child(2),
+    th:nth-child(3),
+    td:nth-child(2),
+    td:nth-child(3) {
+      width: 130px;
+      text-align: center;
+    }
+
+    td:first-child {
+      min-width: 190px;
+    }
+
+    input[type='text'] {
+      width: 100%;
+      min-height: 36px;
+      border: 1px solid #d8e0ea;
+      border-radius: 6px;
+      padding: 8px 10px;
+      color: #182235;
+      background: #fff;
+    }
+  }
+
+  .saf-registration-field-lock {
+    display: inline-flex;
+    margin-left: 8px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: #f1eefb;
+    color: #6a4bb8;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .saf-switch-cell {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: #56657a;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+
+    input {
+      width: 16px;
+      height: 16px;
+      accent-color: #7d5bd6;
+    }
+  }
+}
+
 .saf-pricing-table-wrap {
   overflow-x: auto;
 }
@@ -6625,56 +6685,29 @@
   }
 }
 
+.saf-event-participants-table-wrap {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+}
+
 .saf-event-participants-table {
+  min-width: max-content;
   table-layout: fixed;
 
-  th:nth-child(1) { width: 14%; }
-  th:nth-child(2) { width: 21%; }
-  th:nth-child(3) { width: 17%; }
-  th:nth-child(4) { width: 13%; }
-  th:nth-child(5) { width: 11%; }
-  th:nth-child(6) { width: 11%; text-align: center; }
-  th:nth-child(7) { width: 13%; }
-
-  &.is-paid {
-    th:nth-child(1) { width: 13%; }
-    th:nth-child(2) { width: 19%; }
-    th:nth-child(3) { width: 15%; }
-    th:nth-child(4) { width: 11%; }
-    th:nth-child(5) { width: 9%; }
-    th:nth-child(6) { width: 12%; text-align: left; }
-    th:nth-child(7) { width: 9%; text-align: center; }
-    th:nth-child(8) { width: 12%; }
-  }
-
+  th,
   td {
-    min-width: 0;
-  }
-
-  td:nth-child(2),
-  td:nth-child(3),
-  td:nth-child(4),
-  td:nth-child(5) {
-    overflow: hidden;
-    text-overflow: ellipsis;
     white-space: nowrap;
   }
 
-  td:nth-child(6) {
-    text-align: center;
+  th {
+    line-height: 1.25;
   }
 
-  &.is-paid {
-    td:nth-child(6) {
-      overflow: hidden;
-      text-align: left;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    td:nth-child(7) {
-      text-align: center;
-    }
+  td {
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 

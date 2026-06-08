@@ -16,6 +16,7 @@ import com.kcabEvent.dto.event.EventPageComponentCatalogDto;
 import com.kcabEvent.dto.event.EventPageComponentTemplateDto;
 import com.kcabEvent.dto.event.EventPageSectionDto;
 import com.kcabEvent.dto.event.EventPricingDto;
+import com.kcabEvent.dto.event.EventRegistrationFieldDto;
 import com.kcabEvent.dto.event.EventSaveDto;
 import com.kcabEvent.dto.event.PublicEventPageDto;
 import com.kcabEvent.exception.custom.BusinessException;
@@ -65,11 +66,25 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
     private static final String STATUS_CLOSED = "closed";
     private static final String EVENT_TYPE_MAIN = "main";
     private static final String EVENT_TYPE_SIDE = "side";
+    private static final String REGISTRATION_FIELD_EMAIL = "email";
     private static final String SIDE_EVENT_APPROVED_TEMPLATE_CODE = "side_event_approved";
     private static final String SIDE_EVENT_REJECTED_TEMPLATE_CODE = "side_event_rejected";
     private static final String DEFAULT_APPROVAL_COMMENT = "Your event page is ready to be published.";
     private static final DateTimeFormatter EVENT_DATE_FORMATTER = DateTimeFormatter.ofPattern("MMMM d, yyyy", Locale.ENGLISH);
     private static final DateTimeFormatter EVENT_TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
+    private static final Set<String> REGISTRATION_FIELD_CODES = Set.of(
+            "email",
+            "first_name",
+            "middle_name",
+            "last_name",
+            "phone",
+            "organization_name",
+            "position",
+            "address",
+            "city",
+            "nationality",
+            "residence_country"
+    );
 
     @Resource(name = "eventDao")
     private EventDao eventDao;
@@ -102,8 +117,10 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
 
     @Override
     public Event selectEventBySeq(Long eventSeq) {
+        ensureParticipantRegistrationSchema();
         Event event = eventDao.selectEventBySeq(eventSeq);
         loadPricingDetails(event, false);
+        loadRegistrationFields(event);
         return event;
     }
 
@@ -114,12 +131,14 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
         }
 
         String normalizedSlug = urlSlug.trim().toLowerCase(Locale.ROOT);
+        ensureParticipantRegistrationSchema();
         PublicEventPageDto page = eventDao.selectPublishedEventPageBySlug(normalizedSlug);
         if (page == null) {
             return null;
         }
 
         loadPageSections(page, false);
+        page.setRegistrationFields(resolveRegistrationFields(page.getEventSeq()));
         return page;
     }
 
@@ -178,9 +197,11 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
 
     @Override
     public Event selectEventBySeq(Long eventSeq, LoginUser loginUser) {
+        ensureParticipantRegistrationSchema();
         Event event = eventDao.selectEventBySeq(eventSeq);
         assertEventAccessible(event, loginUser);
         loadPricingDetails(event, true);
+        loadRegistrationFields(event);
         return event;
     }
 
@@ -198,6 +219,7 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
     @Override
     @Transactional("transactionManager")
     public Long saveEvent(EventSaveDto saveDto, LoginUser loginUser) {
+        ensureParticipantRegistrationSchema();
         Long userSeq = getLoginUserSeq(loginUser);
         boolean admin = isAdmin(loginUser);
         Long organizationSeq = resolveScopedOrganizationSeq(loginUser);
@@ -273,6 +295,9 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
             eventDao.updateEvent(event);
         }
         savePricingDetails(event.getEventSeq(), saveDto, userSeq, Boolean.TRUE.equals(event.getIsPaid()));
+        if (EVENT_TYPE_MAIN.equals(event.getEventType())) {
+            saveRegistrationFields(event.getEventSeq(), saveDto.getRegistrationFields(), userSeq);
+        }
         return event.getEventSeq();
     }
 
@@ -719,6 +744,114 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
         } else {
             event.setDiscountCodes(List.of());
         }
+    }
+
+    private void loadRegistrationFields(Event event) {
+        if (event == null) {
+            return;
+        }
+        event.setRegistrationFields(resolveRegistrationFields(event.getEventSeq()));
+    }
+
+    private List<EventRegistrationFieldDto> resolveRegistrationFields(Long eventSeq) {
+        List<EventRegistrationFieldDto> savedFields = eventSeq == null
+                ? List.of()
+                : eventDao.selectEventRegistrationFields(eventSeq);
+        if (savedFields == null || savedFields.isEmpty()) {
+            return defaultRegistrationFields();
+        }
+        return normalizeRegistrationFields(savedFields);
+    }
+
+    private void saveRegistrationFields(Long eventSeq, List<EventRegistrationFieldDto> sourceFields, Long userSeq) {
+        List<EventRegistrationFieldDto> fields = normalizeRegistrationFields(sourceFields);
+        for (EventRegistrationFieldDto field : fields) {
+            eventDao.upsertEventRegistrationField(eventSeq, field, userSeq);
+        }
+    }
+
+    private List<EventRegistrationFieldDto> normalizeRegistrationFields(List<EventRegistrationFieldDto> sourceFields) {
+        Map<String, EventRegistrationFieldDto> incomingByCode = new HashMap<>();
+        if (sourceFields != null) {
+            for (EventRegistrationFieldDto field : sourceFields) {
+                if (field == null || !StringUtils.hasText(field.getFieldCode())) {
+                    continue;
+                }
+                String fieldCode = normalizeRegistrationFieldCode(field.getFieldCode());
+                if (REGISTRATION_FIELD_CODES.contains(fieldCode)) {
+                    incomingByCode.put(fieldCode, field);
+                }
+            }
+        }
+
+        List<EventRegistrationFieldDto> defaults = defaultRegistrationFields();
+        List<EventRegistrationFieldDto> normalized = new ArrayList<>();
+        for (int i = 0; i < defaults.size(); i++) {
+            EventRegistrationFieldDto defaultField = defaults.get(i);
+            EventRegistrationFieldDto incoming = incomingByCode.get(defaultField.getFieldCode());
+            EventRegistrationFieldDto target = new EventRegistrationFieldDto();
+            target.setRegistrationFieldSeq(incoming != null ? incoming.getRegistrationFieldSeq() : defaultField.getRegistrationFieldSeq());
+            target.setEventSeq(incoming != null ? incoming.getEventSeq() : defaultField.getEventSeq());
+            target.setFieldCode(defaultField.getFieldCode());
+            target.setFieldLabel(StringUtils.hasText(incoming != null ? incoming.getFieldLabel() : null)
+                    ? incoming.getFieldLabel().trim()
+                    : defaultField.getFieldLabel());
+            boolean enabled = "Y".equalsIgnoreCase(incoming != null ? incoming.getEnabledYn() : defaultField.getEnabledYn());
+            boolean required = "Y".equalsIgnoreCase(incoming != null ? incoming.getRequiredYn() : defaultField.getRequiredYn());
+            if (REGISTRATION_FIELD_EMAIL.equals(target.getFieldCode())) {
+                enabled = true;
+                required = true;
+            }
+            if (!enabled) {
+                required = false;
+            }
+            target.setEnabledYn(enabled ? "Y" : "N");
+            target.setRequiredYn(required ? "Y" : "N");
+            target.setSortSeq(i + 1);
+            normalized.add(target);
+        }
+        return normalized;
+    }
+
+    private String normalizeRegistrationFieldCode(String fieldCode) {
+        return fieldCode == null ? "" : fieldCode.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private List<EventRegistrationFieldDto> defaultRegistrationFields() {
+        List<EventRegistrationFieldDto> fields = new ArrayList<>();
+        fields.add(registrationField("email", "Email", "Y", "Y", 1));
+        fields.add(registrationField("first_name", "First Name", "Y", "Y", 2));
+        fields.add(registrationField("middle_name", "Middle Name", "Y", "N", 3));
+        fields.add(registrationField("last_name", "Last Name", "Y", "Y", 4));
+        fields.add(registrationField("phone", "Phone Number", "N", "N", 5));
+        fields.add(registrationField("organization_name", "Company Name", "Y", "N", 6));
+        fields.add(registrationField("position", "Position", "Y", "N", 7));
+        fields.add(registrationField("address", "Address", "N", "N", 8));
+        fields.add(registrationField("city", "City", "N", "N", 9));
+        fields.add(registrationField("nationality", "Nationality", "N", "N", 10));
+        fields.add(registrationField("residence_country", "Country of Residence", "Y", "N", 11));
+        return fields;
+    }
+
+    private EventRegistrationFieldDto registrationField(String code, String label, String enabledYn, String requiredYn, int sortSeq) {
+        EventRegistrationFieldDto field = new EventRegistrationFieldDto();
+        field.setFieldCode(code);
+        field.setFieldLabel(label);
+        field.setEnabledYn(enabledYn);
+        field.setRequiredYn(requiredYn);
+        field.setSortSeq(sortSeq);
+        return field;
+    }
+
+    private void ensureParticipantRegistrationSchema() {
+        eventDao.ensureParticipantsPhoneColumn();
+        eventDao.ensureParticipantsAddressColumn();
+        eventDao.ensureParticipantsCityColumn();
+        eventDao.ensureParticipantsNationalityColumn();
+        eventDao.ensureParticipantsResidenceCountryColumn();
+        eventDao.backfillParticipantsResidenceCountry();
+        eventDao.ensureEventRegistrationFieldsTable();
+        eventDao.ensureEventParticipantProfilesTable();
     }
 
     private void savePricingDetails(Long eventSeq, EventSaveDto saveDto, Long userSeq, boolean isPaid) {

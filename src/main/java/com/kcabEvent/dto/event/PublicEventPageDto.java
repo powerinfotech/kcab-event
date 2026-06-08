@@ -37,4 +37,5 @@ public class PublicEventPageDto {
     private String eventType;
 
     private List<EventPageSectionDto> sections = new ArrayList<>();
+    private List<EventRegistrationFieldDto> registrationFields = new ArrayList<>();
 }

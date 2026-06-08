@@ -43,6 +43,7 @@ export interface EventDetail {
   isPaid: boolean | null;
   pricingList: EventPricingItem[];
   discountCodes: EventDiscountCodeItem[];
+  registrationFields?: EventRegistrationFieldItem[];
   rgstUserSeq: number;
   rgstDateTime: string;
   uptDateTime: string;
@@ -74,6 +75,7 @@ export interface EventSaveRequest {
   isPaid?: boolean | null;
   pricingList?: EventPricingItem[];
   discountCodes?: EventDiscountCodeItem[];
+  registrationFields?: EventRegistrationFieldItem[];
 }
 
 export interface EventPageBlock {
@@ -153,6 +155,17 @@ export interface PublicEventPage {
   eventStatus?: string | null;
   eventType?: string | null;
   sections: EventPageSection[];
+  registrationFields?: EventRegistrationFieldItem[];
+}
+
+export interface EventRegistrationFieldItem {
+  registrationFieldSeq?: number | null;
+  eventSeq?: number | null;
+  fieldCode: string;
+  fieldLabel: string;
+  enabledYn: 'Y' | 'N' | string;
+  requiredYn: 'Y' | 'N' | string;
+  sortSeq?: number | null;
 }
 
 export interface EventPageComponentCategory {

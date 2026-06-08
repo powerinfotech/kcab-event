@@ -31,6 +31,11 @@ public interface RegistrationPaymentDao {
     Long upsertEventParticipant(@Param("eventSeq") Long eventSeq,
                                 @Param("participantSeq") Long participantSeq);
 
+    void upsertEventParticipantProfile(@Param("eventParticipantSeq") Long eventParticipantSeq,
+                                       @Param("eventSeq") Long eventSeq,
+                                       @Param("participantSeq") Long participantSeq,
+                                       @Param("participant") RegistrationPaymentParticipantRequestDto participant);
+
     void insertPaymentIntent(PaymentIntent paymentIntent);
 
     PaymentIntent selectPaymentIntentByOrderIdForUpdate(@Param("orderId") String orderId);

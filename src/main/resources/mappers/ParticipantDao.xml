@@ -10,6 +10,11 @@
             ,p.organization_name
             ,p.position
             ,p.country
+            ,p.phone
+            ,p.address
+            ,p.city
+            ,p.nationality
+            ,COALESCE(p.residence_country, p.country) AS residence_country
             ,COALESCE(pc.total_event_count, 0) AS total_event_count
             ,ep.event_participant_seq
             ,ep.event_seq

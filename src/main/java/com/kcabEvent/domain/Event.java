@@ -5,6 +5,7 @@ import lombok.Setter;
 
 import com.kcabEvent.dto.event.EventDiscountCodeDto;
 import com.kcabEvent.dto.event.EventPricingDto;
+import com.kcabEvent.dto.event.EventRegistrationFieldDto;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -47,6 +48,7 @@ public class Event {
     private Boolean isPaid;
     private List<EventPricingDto> pricingList;
     private List<EventDiscountCodeDto> discountCodes;
+    private List<EventRegistrationFieldDto> registrationFields;
     private Long rgstUserSeq;
     private LocalDateTime rgstDateTime;
     private Long uptUserSeq;

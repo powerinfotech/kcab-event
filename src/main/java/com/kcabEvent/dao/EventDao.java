@@ -10,6 +10,7 @@ import com.kcabEvent.dto.event.EventPageComponentCategoryDto;
 import com.kcabEvent.dto.event.EventPageComponentTemplateDto;
 import com.kcabEvent.dto.event.EventPageSectionDto;
 import com.kcabEvent.dto.event.EventPricingDto;
+import com.kcabEvent.dto.event.EventRegistrationFieldDto;
 import com.kcabEvent.dto.event.PublicEventPageDto;
 import org.apache.ibatis.annotations.Param;
 import org.egovframe.rte.psl.dataaccess.mapper.EgovMapper;
@@ -63,6 +64,8 @@ public interface EventDao {
 
     List<EventDiscountCodeDto> selectEventDiscountCodeList(@Param("eventSeq") Long eventSeq);
 
+    List<EventRegistrationFieldDto> selectEventRegistrationFields(@Param("eventSeq") Long eventSeq);
+
     EventDiscountCodeDto selectEventDiscountCodeBySeq(@Param("discountCodeSeq") Long discountCodeSeq);
 
     List<DiscountCodeUsageDto> selectDiscountCodeUsage(@Param("discountCodeSeq") Long discountCodeSeq);
@@ -94,6 +97,26 @@ public interface EventDao {
 
     void updateEventDiscountCode(@Param("discountCode") EventDiscountCodeDto discountCode,
                                  @Param("userSeq") Long userSeq);
+
+    void upsertEventRegistrationField(@Param("eventSeq") Long eventSeq,
+                                      @Param("field") EventRegistrationFieldDto field,
+                                      @Param("userSeq") Long userSeq);
+
+    void ensureParticipantsPhoneColumn();
+
+    void ensureParticipantsAddressColumn();
+
+    void ensureParticipantsCityColumn();
+
+    void ensureParticipantsNationalityColumn();
+
+    void ensureParticipantsResidenceCountryColumn();
+
+    void backfillParticipantsResidenceCountry();
+
+    void ensureEventRegistrationFieldsTable();
+
+    void ensureEventParticipantProfilesTable();
 
     int updateEventStatus(@Param("eventSeq") Long eventSeq,
                           @Param("status") String status,

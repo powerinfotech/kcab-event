@@ -1,9 +1,11 @@
 package com.kcabEvent.service.payment.impl;
 
+import com.kcabEvent.dao.EventDao;
 import com.kcabEvent.dao.RegistrationPaymentDao;
 import com.kcabEvent.domain.Payment;
 import com.kcabEvent.domain.PaymentIntent;
 import com.kcabEvent.dto.event.EventDiscountCodeDto;
+import com.kcabEvent.dto.event.EventRegistrationFieldDto;
 import com.kcabEvent.dto.registrationpayment.RegistrationPaymentDiscountValidationRequestDto;
 import com.kcabEvent.dto.registrationpayment.RegistrationPaymentDiscountValidationResponseDto;
 import com.kcabEvent.dto.registrationpayment.RegistrationPaymentParticipantRequestDto;
@@ -57,6 +59,9 @@ public class RegistrationPaymentServiceImpl extends EgovAbstractServiceImpl impl
     @Resource(name = "registrationPaymentDao")
     private RegistrationPaymentDao registrationPaymentDao;
 
+    @Resource(name = "eventDao")
+    private EventDao eventDao;
+
     private final EximbayPaymentClient eximbayPaymentClient;
 
     public RegistrationPaymentServiceImpl(EximbayPaymentClient eximbayPaymentClient) {
@@ -76,6 +81,7 @@ public class RegistrationPaymentServiceImpl extends EgovAbstractServiceImpl impl
         if (!StringUtils.hasText(email)) {
             return null;
         }
+        ensureParticipantRegistrationSchema();
         String normalizedEmail = email.trim().toLowerCase(Locale.ROOT);
         if (!normalizedEmail.contains("@")) {
             throw new BusinessException("Please enter a valid participant email.");
@@ -167,7 +173,8 @@ public class RegistrationPaymentServiceImpl extends EgovAbstractServiceImpl impl
         intent.setRawResponse(eximbayPaymentClient.toJson(Map.of(
                 "readyRequest", eximbayRequest,
                 "readyResponse", readyResponse,
-                "discount", discount.rawData()
+                "discount", discount.rawData(),
+                "participant", participantRawData(participant)
         )));
         intent.setEventSeq(pricing.getEventSeq());
         intent.setEventPricingSeq(pricing.getEventPricingSeq());
@@ -200,6 +207,7 @@ public class RegistrationPaymentServiceImpl extends EgovAbstractServiceImpl impl
                                                                      DiscountApplication discount) {
         Long participantSeq = registrationPaymentDao.upsertParticipant(participant);
         Long eventParticipantSeq = registrationPaymentDao.upsertEventParticipant(pricing.getEventSeq(), participantSeq);
+        registrationPaymentDao.upsertEventParticipantProfile(eventParticipantSeq, pricing.getEventSeq(), participantSeq, participant);
 
         Payment payment = new Payment();
         payment.setPgProvider("discount");
@@ -212,7 +220,8 @@ public class RegistrationPaymentServiceImpl extends EgovAbstractServiceImpl impl
         payment.setPaidAt(LocalDateTime.now());
         payment.setRawResponse(eximbayPaymentClient.toJson(Map.of(
                 "flow", "KCAB_PUBLIC_REGISTRATION_FREE",
-                "discount", discount.rawData()
+                "discount", discount.rawData(),
+                "participant", participantRawData(participant)
         )));
         payment.setVerifiedAt(LocalDateTime.now());
         payment.setWebhookReceivedAt(LocalDateTime.now());
@@ -302,6 +311,7 @@ public class RegistrationPaymentServiceImpl extends EgovAbstractServiceImpl impl
         RegistrationPaymentParticipantRequestDto participant = buildParticipantRequest(intent);
         Long participantSeq = registrationPaymentDao.upsertParticipant(participant);
         Long eventParticipantSeq = registrationPaymentDao.upsertEventParticipant(intent.getEventSeq(), participantSeq);
+        registrationPaymentDao.upsertEventParticipantProfile(eventParticipantSeq, intent.getEventSeq(), participantSeq, participant);
         Payment payment = buildPaymentFromIntent(intent, eventParticipantSeq, participantSeq, params, verifyResponse);
         Payment existingPayment = registrationPaymentDao.selectPaymentByRegistrationForUpdate(
                 payment.getEventSeq(),
@@ -351,14 +361,21 @@ public class RegistrationPaymentServiceImpl extends EgovAbstractServiceImpl impl
     }
 
     private RegistrationPaymentParticipantRequestDto buildParticipantRequest(PaymentIntent intent) {
+        Map<String, Object> raw = eximbayPaymentClient.fromJsonMap(intent.getRawResponse());
+        Map<String, Object> savedParticipant = eximbayPaymentClient.asMap(raw.get("participant"));
         RegistrationPaymentParticipantRequestDto participant = new RegistrationPaymentParticipantRequestDto();
-        participant.setEmail(intent.getPayerEmail().toLowerCase(Locale.ROOT));
-        participant.setFirstName(intent.getFirstName());
-        participant.setMiddleName(intent.getMiddleName());
-        participant.setLastName(intent.getLastName());
-        participant.setOrganizationName(intent.getOrganizationName());
-        participant.setPosition(intent.getPosition());
-        participant.setCountry(intent.getPayerCountry());
+        participant.setEmail(defaultText(stringValue(savedParticipant.get("email")), intent.getPayerEmail()).toLowerCase(Locale.ROOT));
+        participant.setFirstName(defaultText(stringValue(savedParticipant.get("firstName")), intent.getFirstName()));
+        participant.setMiddleName(defaultText(stringValue(savedParticipant.get("middleName")), intent.getMiddleName()));
+        participant.setLastName(defaultText(stringValue(savedParticipant.get("lastName")), intent.getLastName()));
+        participant.setOrganizationName(defaultText(stringValue(savedParticipant.get("organizationName")), intent.getOrganizationName()));
+        participant.setPosition(defaultText(stringValue(savedParticipant.get("position")), intent.getPosition()));
+        participant.setPhone(stringValue(savedParticipant.get("phone")));
+        participant.setAddress(stringValue(savedParticipant.get("address")));
+        participant.setCity(stringValue(savedParticipant.get("city")));
+        participant.setNationality(stringValue(savedParticipant.get("nationality")));
+        participant.setResidenceCountry(defaultText(stringValue(savedParticipant.get("residenceCountry")), intent.getPayerCountry()));
+        participant.setCountry(participant.getResidenceCountry());
         return participant;
     }
 
@@ -616,16 +633,133 @@ public class RegistrationPaymentServiceImpl extends EgovAbstractServiceImpl impl
         if (participant == null) {
             throw new BusinessException("Participant information is required.");
         }
-        if (!StringUtils.hasText(participant.getEmail())
-                || !StringUtils.hasText(participant.getFirstName())
-                || !StringUtils.hasText(participant.getLastName())) {
-            throw new BusinessException("Participant first name, last name, and email are required.");
-        }
-        String email = participant.getEmail().trim();
+        ensureParticipantRegistrationSchema();
+        normalizeParticipantText(participant);
+        List<EventRegistrationFieldDto> fields = resolveRegistrationFields(request.getEventSeq());
+
+        String email = participant.getEmail();
         if (!email.contains("@")) {
             throw new BusinessException("Please enter a valid participant email.");
         }
-        participant.setEmail(email);
+        for (EventRegistrationFieldDto field : fields) {
+            if (!"Y".equalsIgnoreCase(field.getEnabledYn()) || !"Y".equalsIgnoreCase(field.getRequiredYn())) {
+                continue;
+            }
+            if (!StringUtils.hasText(participantValue(participant, field.getFieldCode()))) {
+                throw new BusinessException(field.getFieldLabel() + " is required.");
+            }
+        }
+        sanitizeDisabledParticipantFields(participant, fields);
+        participant.setEmail(email.toLowerCase(Locale.ROOT));
+    }
+
+    private void normalizeParticipantText(RegistrationPaymentParticipantRequestDto participant) {
+        participant.setEmail(trimToEmpty(participant.getEmail()).toLowerCase(Locale.ROOT));
+        participant.setFirstName(trimToEmpty(participant.getFirstName()));
+        participant.setMiddleName(trimToEmpty(participant.getMiddleName()));
+        participant.setLastName(trimToEmpty(participant.getLastName()));
+        participant.setPhone(trimToEmpty(participant.getPhone()));
+        participant.setOrganizationName(trimToEmpty(participant.getOrganizationName()));
+        participant.setPosition(trimToEmpty(participant.getPosition()));
+        participant.setAddress(trimToEmpty(participant.getAddress()));
+        participant.setCity(trimToEmpty(participant.getCity()));
+        participant.setNationality(trimToEmpty(participant.getNationality()));
+        String residenceCountry = StringUtils.hasText(participant.getResidenceCountry())
+                ? participant.getResidenceCountry()
+                : participant.getCountry();
+        participant.setResidenceCountry(trimToEmpty(residenceCountry));
+        participant.setCountry(participant.getResidenceCountry());
+    }
+
+    private void sanitizeDisabledParticipantFields(RegistrationPaymentParticipantRequestDto participant,
+                                                   List<EventRegistrationFieldDto> fields) {
+        Set<String> enabledCodes = new LinkedHashSet<>();
+        for (EventRegistrationFieldDto field : fields) {
+            if ("Y".equalsIgnoreCase(field.getEnabledYn())) {
+                enabledCodes.add(field.getFieldCode());
+            }
+        }
+        if (!enabledCodes.contains("first_name")) participant.setFirstName("");
+        if (!enabledCodes.contains("middle_name")) participant.setMiddleName("");
+        if (!enabledCodes.contains("last_name")) participant.setLastName("");
+        if (!enabledCodes.contains("phone")) participant.setPhone("");
+        if (!enabledCodes.contains("organization_name")) participant.setOrganizationName("");
+        if (!enabledCodes.contains("position")) participant.setPosition("");
+        if (!enabledCodes.contains("address")) participant.setAddress("");
+        if (!enabledCodes.contains("city")) participant.setCity("");
+        if (!enabledCodes.contains("nationality")) participant.setNationality("");
+        if (!enabledCodes.contains("residence_country")) {
+            participant.setResidenceCountry("");
+            participant.setCountry("");
+        }
+    }
+
+    private String participantValue(RegistrationPaymentParticipantRequestDto participant, String fieldCode) {
+        return switch (String.valueOf(fieldCode)) {
+            case "email" -> participant.getEmail();
+            case "first_name" -> participant.getFirstName();
+            case "middle_name" -> participant.getMiddleName();
+            case "last_name" -> participant.getLastName();
+            case "phone" -> participant.getPhone();
+            case "organization_name" -> participant.getOrganizationName();
+            case "position" -> participant.getPosition();
+            case "address" -> participant.getAddress();
+            case "city" -> participant.getCity();
+            case "nationality" -> participant.getNationality();
+            case "residence_country" -> participant.getResidenceCountry();
+            default -> "";
+        };
+    }
+
+    private List<EventRegistrationFieldDto> resolveRegistrationFields(Long eventSeq) {
+        List<EventRegistrationFieldDto> fields = eventDao.selectEventRegistrationFields(eventSeq);
+        if (fields == null || fields.isEmpty()) {
+            return defaultRegistrationFields();
+        }
+        for (EventRegistrationFieldDto field : fields) {
+            if ("email".equals(field.getFieldCode())) {
+                field.setEnabledYn("Y");
+                field.setRequiredYn("Y");
+            }
+        }
+        return fields;
+    }
+
+    private List<EventRegistrationFieldDto> defaultRegistrationFields() {
+        List<EventRegistrationFieldDto> fields = new ArrayList<>();
+        fields.add(registrationField("email", "Email", "Y", "Y", 1));
+        fields.add(registrationField("first_name", "First Name", "Y", "Y", 2));
+        fields.add(registrationField("middle_name", "Middle Name", "Y", "N", 3));
+        fields.add(registrationField("last_name", "Last Name", "Y", "Y", 4));
+        fields.add(registrationField("phone", "Phone Number", "N", "N", 5));
+        fields.add(registrationField("organization_name", "Company Name", "Y", "N", 6));
+        fields.add(registrationField("position", "Position", "Y", "N", 7));
+        fields.add(registrationField("address", "Address", "N", "N", 8));
+        fields.add(registrationField("city", "City", "N", "N", 9));
+        fields.add(registrationField("nationality", "Nationality", "N", "N", 10));
+        fields.add(registrationField("residence_country", "Country of Residence", "Y", "N", 11));
+        return fields;
+    }
+
+    private EventRegistrationFieldDto registrationField(String code, String label, String enabledYn, String requiredYn, int sortSeq) {
+        EventRegistrationFieldDto field = new EventRegistrationFieldDto();
+        field.setFieldCode(code);
+        field.setFieldLabel(label);
+        field.setEnabledYn(enabledYn);
+        field.setRequiredYn(requiredYn);
+        field.setSortSeq(sortSeq);
+        return field;
+    }
+
+    private void ensureParticipantRegistrationSchema() {
+        eventDao.ensureParticipantsPhoneColumn();
+        eventDao.ensureParticipantsAddressColumn();
+        eventDao.ensureParticipantsCityColumn();
+        eventDao.ensureParticipantsNationalityColumn();
+        eventDao.ensureParticipantsResidenceCountryColumn();
+        eventDao.backfillParticipantsResidenceCountry();
+        eventDao.ensureEventRegistrationFieldsTable();
+        eventDao.ensureEventParticipantProfilesTable();
     }
 
     private Map<String, Object> buildEximbayRequest(String orderId,
@@ -859,6 +993,30 @@ public class RegistrationPaymentServiceImpl extends EgovAbstractServiceImpl impl
 
     private String defaultText(String value, String defaultValue) {
         return StringUtils.hasText(value) ? value : defaultValue;
+    }
+
+    private String trimToEmpty(String value) {
+        return value == null ? "" : value.trim();
+    }
+
+    private String stringValue(Object value) {
+        return value == null ? null : String.valueOf(value);
+    }
+
+    private Map<String, Object> participantRawData(RegistrationPaymentParticipantRequestDto participant) {
+        Map<String, Object> data = new LinkedHashMap<>();
+        data.put("email", participant.getEmail());
+        data.put("firstName", participant.getFirstName());
+        data.put("middleName", participant.getMiddleName());
+        data.put("lastName", participant.getLastName());
+        data.put("phone", participant.getPhone());
+        data.put("organizationName", participant.getOrganizationName());
+        data.put("position", participant.getPosition());
+        data.put("address", participant.getAddress());
+        data.put("city", participant.getCity());
+        data.put("nationality", participant.getNationality());
+        data.put("residenceCountry", participant.getResidenceCountry());
+        return data;
     }
 
     private String responseText(Map<String, Object> response, String key) {

@@ -259,7 +259,11 @@ export default function Participants() {
       const columns: ExcelColumnDef[] = [
         { headerName: 'Name', dataIndex: 'fullName', width: 18 },
         { headerName: 'Email', dataIndex: 'email', width: 28 },
-        { headerName: 'Country', dataIndex: 'country', width: 14 },
+        { headerName: 'Phone', dataIndex: 'phone', width: 18 },
+        { headerName: 'Address', dataIndex: 'address', width: 36 },
+        { headerName: 'City', dataIndex: 'city', width: 16 },
+        { headerName: 'Nationality', dataIndex: 'nationality', width: 18 },
+        { headerName: 'Residence Country', dataIndex: 'residenceCountry', width: 20 },
         { headerName: 'Organization', dataIndex: 'organizationName', width: 22 },
         { headerName: 'Position', dataIndex: 'position', width: 16 },
         { headerName: 'Event Count', dataIndex: 'eventCount', width: 12 },
@@ -269,7 +273,11 @@ export default function Participants() {
       const rows = participants.map((participant) => ({
         fullName: participant.fullName || '',
         email: participant.email || '',
-        country: participant.country || '',
+        phone: participant.phone || '',
+        address: participant.address || '',
+        city: participant.city || '',
+        nationality: participant.nationality || '',
+        residenceCountry: participant.residenceCountry || participant.country || '',
         organizationName: participant.organizationName || '',
         position: participant.position || '',
         eventCount: participant.eventCount ?? 0,
@@ -386,9 +394,13 @@ export default function Participants() {
             <dl className="saf-participant-meta">
               <div><dt>Name</dt><dd>{selectedParticipant.fullName || '-'}</dd></div>
               <div><dt>Email</dt><dd>{selectedParticipant.email || '-'}</dd></div>
+              <div><dt>Phone</dt><dd>{selectedParticipant.phone || '-'}</dd></div>
               <div><dt>Organization</dt><dd>{selectedParticipant.organizationName || '-'}</dd></div>
               <div><dt>Position</dt><dd>{selectedParticipant.position || '-'}</dd></div>
-              <div><dt>Country</dt><dd>{selectedParticipant.country || '-'}</dd></div>
+              <div><dt>Address</dt><dd>{selectedParticipant.address || '-'}</dd></div>
+              <div><dt>City</dt><dd>{selectedParticipant.city || '-'}</dd></div>
+              <div><dt>Nationality</dt><dd>{selectedParticipant.nationality || '-'}</dd></div>
+              <div><dt>Residence Country</dt><dd>{selectedParticipant.residenceCountry || selectedParticipant.country || '-'}</dd></div>
               <div><dt>Latest Registration</dt><dd>{formatDateTime(selectedParticipant.latestRegisteredAt)}</dd></div>
             </dl>
           </section>
@@ -548,7 +560,9 @@ export default function Participants() {
             <tr>
               <th>Name</th>
               <th>Email</th>
-              <th>Country</th>
+              <th>Phone</th>
+              <th>Nationality</th>
+              <th>Residence</th>
               <th>Organization</th>
               <th>Participating Events</th>
               <th>Event Count</th>
@@ -563,7 +577,9 @@ export default function Participants() {
                   <span className="saf-participant-position">{participant.position || '-'}</span>
                 </td>
                 <td>{participant.email}</td>
-                <td>{participant.country || '-'}</td>
+                <td>{participant.phone || '-'}</td>
+                <td>{participant.nationality || '-'}</td>
+                <td>{participant.residenceCountry || participant.country || '-'}</td>
                 <td>{participant.organizationName || '-'}</td>
                 <td>{renderEventSummary(participant.events)}</td>
                 <td>{participant.eventCount ?? 0}</td>
@@ -572,7 +588,7 @@ export default function Participants() {
             ))}
             {!participants.length && (
               <tr>
-                <td colSpan={7} className="saf-participant-empty">
+                <td colSpan={9} className="saf-participant-empty">
                   <TeamOutlined />
                   <span>{loading ? 'Loading...' : 'No participants found.'}</span>
                 </td>

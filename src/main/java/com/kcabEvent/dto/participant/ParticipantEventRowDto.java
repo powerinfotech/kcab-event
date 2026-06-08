@@ -15,6 +15,11 @@ public class ParticipantEventRowDto {
     private String organizationName;
     private String position;
     private String country;
+    private String phone;
+    private String address;
+    private String city;
+    private String nationality;
+    private String residenceCountry;
     private Integer totalEventCount;
     private Long eventParticipantSeq;
     private Long eventSeq;

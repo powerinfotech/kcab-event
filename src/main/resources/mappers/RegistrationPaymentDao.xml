@@ -145,6 +145,11 @@
             ,p.organization_name
             ,p.position
             ,p.country
+            ,p.phone
+            ,p.address
+            ,p.city
+            ,p.nationality
+            ,COALESCE(p.residence_country, p.country) AS residence_country
         FROM event.participants p
         WHERE LOWER(p.email) = LOWER(#{email})
         ORDER BY p.updated_at DESC NULLS LAST, p.participant_seq DESC
@@ -152,7 +157,7 @@
     </select>
 
     <select id="upsertParticipant" parameterType="com.kcabEvent.dto.registrationpayment.RegistrationPaymentParticipantRequestDto" resultType="long">
-        INSERT INTO event.participants (
+        INSERT INTO event.participants AS current_participant (
              email
             ,first_name
             ,middle_name
@@ -160,6 +165,11 @@
             ,organization_name
             ,position
             ,country
+            ,phone
+            ,address
+            ,city
+            ,nationality
+            ,residence_country
         ) VALUES (
              LOWER(#{email})
             ,#{firstName}
@@ -167,15 +177,25 @@
             ,#{lastName}
             ,NULLIF(#{organizationName,jdbcType=VARCHAR}, '')
             ,NULLIF(#{position,jdbcType=VARCHAR}, '')
-            ,NULLIF(#{country,jdbcType=VARCHAR}, '')
+            ,NULLIF(COALESCE(#{country,jdbcType=VARCHAR}, #{residenceCountry,jdbcType=VARCHAR}), '')
+            ,NULLIF(#{phone,jdbcType=VARCHAR}, '')
+            ,NULLIF(#{address,jdbcType=VARCHAR}, '')
+            ,NULLIF(#{city,jdbcType=VARCHAR}, '')
+            ,NULLIF(#{nationality,jdbcType=VARCHAR}, '')
+            ,NULLIF(COALESCE(#{residenceCountry,jdbcType=VARCHAR}, #{country,jdbcType=VARCHAR}), '')
         )
         ON CONFLICT (email) DO UPDATE
-        SET  first_name        = EXCLUDED.first_name
-            ,middle_name       = EXCLUDED.middle_name
-            ,last_name         = EXCLUDED.last_name
-            ,organization_name = EXCLUDED.organization_name
-            ,position          = EXCLUDED.position
-            ,country           = EXCLUDED.country
+        SET  first_name        = COALESCE(EXCLUDED.first_name, current_participant.first_name)
+            ,middle_name       = COALESCE(EXCLUDED.middle_name, current_participant.middle_name)
+            ,last_name         = COALESCE(EXCLUDED.last_name, current_participant.last_name)
+            ,organization_name = COALESCE(EXCLUDED.organization_name, current_participant.organization_name)
+            ,position          = COALESCE(EXCLUDED.position, current_participant.position)
+            ,country           = COALESCE(EXCLUDED.country, current_participant.country)
+            ,phone             = COALESCE(EXCLUDED.phone, current_participant.phone)
+            ,address           = COALESCE(EXCLUDED.address, current_participant.address)
+            ,city              = COALESCE(EXCLUDED.city, current_participant.city)
+            ,nationality       = COALESCE(EXCLUDED.nationality, current_participant.nationality)
+            ,residence_country = COALESCE(EXCLUDED.residence_country, current_participant.residence_country)
             ,updated_at        = now()
         RETURNING participant_seq
     </select>
@@ -202,6 +222,55 @@
             ,cancel_reason = NULL
         RETURNING event_participant_seq
     </select>
+
+    <insert id="upsertEventParticipantProfile">
+        INSERT INTO event.event_participant_profiles (
+             event_participant_seq
+            ,event_seq
+            ,participant_seq
+            ,email
+            ,first_name
+            ,middle_name
+            ,last_name
+            ,phone
+            ,organization_name
+            ,position
+            ,address
+            ,city
+            ,nationality
+            ,residence_country
+        ) VALUES (
+             #{eventParticipantSeq}
+            ,#{eventSeq}
+            ,#{participantSeq}
+            ,LOWER(#{participant.email})
+            ,NULLIF(#{participant.firstName,jdbcType=VARCHAR}, '')
+            ,NULLIF(#{participant.middleName,jdbcType=VARCHAR}, '')
+            ,NULLIF(#{participant.lastName,jdbcType=VARCHAR}, '')
+            ,NULLIF(#{participant.phone,jdbcType=VARCHAR}, '')
+            ,NULLIF(#{participant.organizationName,jdbcType=VARCHAR}, '')
+            ,NULLIF(#{participant.position,jdbcType=VARCHAR}, '')
+            ,NULLIF(#{participant.address,jdbcType=VARCHAR}, '')
+            ,NULLIF(#{participant.city,jdbcType=VARCHAR}, '')
+            ,NULLIF(#{participant.nationality,jdbcType=VARCHAR}, '')
+            ,NULLIF(COALESCE(#{participant.residenceCountry,jdbcType=VARCHAR}, #{participant.country,jdbcType=VARCHAR}), '')
+        )
+        ON CONFLICT (event_participant_seq) DO UPDATE
+        SET  event_seq = EXCLUDED.event_seq
+            ,participant_seq = EXCLUDED.participant_seq
+            ,email = EXCLUDED.email
+            ,first_name = EXCLUDED.first_name
+            ,middle_name = EXCLUDED.middle_name
+            ,last_name = EXCLUDED.last_name
+            ,phone = EXCLUDED.phone
+            ,organization_name = EXCLUDED.organization_name
+            ,position = EXCLUDED.position
+            ,address = EXCLUDED.address
+            ,city = EXCLUDED.city
+            ,nationality = EXCLUDED.nationality
+            ,residence_country = EXCLUDED.residence_country
+            ,updated_at = CURRENT_TIMESTAMP
+    </insert>
 
     <insert id="insertPaymentIntent" parameterType="com.kcabEvent.domain.PaymentIntent" useGeneratedKeys="true" keyProperty="paymentIntentSeq" keyColumn="payment_intent_seq">
         INSERT INTO event.payment_intents (

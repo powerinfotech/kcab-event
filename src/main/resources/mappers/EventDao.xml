@@ -2,6 +2,76 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.kcabEvent.dao.EventDao">
 
+    <update id="ensureParticipantsPhoneColumn">
+        ALTER TABLE event.participants
+        ADD COLUMN IF NOT EXISTS phone VARCHAR(80)
+    </update>
+
+    <update id="ensureParticipantsAddressColumn">
+        ALTER TABLE event.participants
+        ADD COLUMN IF NOT EXISTS address TEXT
+    </update>
+
+    <update id="ensureParticipantsCityColumn">
+        ALTER TABLE event.participants
+        ADD COLUMN IF NOT EXISTS city VARCHAR(120)
+    </update>
+
+    <update id="ensureParticipantsNationalityColumn">
+        ALTER TABLE event.participants
+        ADD COLUMN IF NOT EXISTS nationality VARCHAR(120)
+    </update>
+
+    <update id="ensureParticipantsResidenceCountryColumn">
+        ALTER TABLE event.participants
+        ADD COLUMN IF NOT EXISTS residence_country VARCHAR(120)
+    </update>
+
+    <update id="backfillParticipantsResidenceCountry">
+        UPDATE event.participants
+        SET residence_country = country
+        WHERE residence_country IS NULL
+          AND country IS NOT NULL
+    </update>
+
+    <update id="ensureEventRegistrationFieldsTable">
+        CREATE TABLE IF NOT EXISTS event.event_registration_fields (
+             registration_field_seq BIGSERIAL PRIMARY KEY
+            ,event_seq BIGINT NOT NULL REFERENCES event.events(event_seq) ON DELETE CASCADE
+            ,field_code VARCHAR(50) NOT NULL
+            ,field_label VARCHAR(120) NOT NULL
+            ,enabled_yn CHAR(1) NOT NULL DEFAULT 'Y'
+            ,required_yn CHAR(1) NOT NULL DEFAULT 'N'
+            ,sort_seq INTEGER NOT NULL DEFAULT 0
+            ,created_by BIGINT
+            ,created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            ,updated_by BIGINT
+            ,updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            ,CONSTRAINT event_registration_fields_event_code_key UNIQUE (event_seq, field_code)
+        )
+    </update>
+
+    <update id="ensureEventParticipantProfilesTable">
+        CREATE TABLE IF NOT EXISTS event.event_participant_profiles (
+             event_participant_seq BIGINT PRIMARY KEY REFERENCES event.event_participants(event_participant_seq) ON DELETE CASCADE
+            ,event_seq BIGINT NOT NULL REFERENCES event.events(event_seq) ON DELETE CASCADE
+            ,participant_seq BIGINT NOT NULL REFERENCES event.participants(participant_seq) ON DELETE CASCADE
+            ,email VARCHAR(320) NOT NULL
+            ,first_name VARCHAR(120)
+            ,middle_name VARCHAR(120)
+            ,last_name VARCHAR(120)
+            ,phone VARCHAR(80)
+            ,organization_name VARCHAR(255)
+            ,position VARCHAR(255)
+            ,address TEXT
+            ,city VARCHAR(120)
+            ,nationality VARCHAR(120)
+            ,residence_country VARCHAR(120)
+            ,submitted_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            ,updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+    </update>
+
     <select id="selectEventList" resultType="com.kcabEvent.dto.event.EventListDto">
         SELECT
              e.event_seq
@@ -609,6 +679,20 @@
         ORDER BY dc.sort_seq ASC, dc.discount_code_seq ASC
     </select>
 
+    <select id="selectEventRegistrationFields" resultType="com.kcabEvent.dto.event.EventRegistrationFieldDto">
+        SELECT
+             registration_field_seq
+            ,event_seq
+            ,field_code
+            ,field_label
+            ,enabled_yn
+            ,required_yn
+            ,sort_seq
+        FROM event.event_registration_fields
+        WHERE event_seq = #{eventSeq}
+        ORDER BY sort_seq ASC, registration_field_seq ASC
+    </select>
+
     <select id="selectEventDiscountCodeBySeq" resultType="com.kcabEvent.dto.event.EventDiscountCodeDto">
         SELECT
              dc.discount_code_seq
@@ -870,6 +954,35 @@
           AND event_seq = #{discountCode.eventSeq}
           AND deleted_at IS NULL
     </update>
+
+    <insert id="upsertEventRegistrationField">
+        INSERT INTO event.event_registration_fields (
+             event_seq
+            ,field_code
+            ,field_label
+            ,enabled_yn
+            ,required_yn
+            ,sort_seq
+            ,created_by
+            ,updated_by
+        ) VALUES (
+             #{eventSeq}
+            ,#{field.fieldCode}
+            ,#{field.fieldLabel}
+            ,COALESCE(NULLIF(#{field.enabledYn,jdbcType=VARCHAR}, ''), 'Y')
+            ,COALESCE(NULLIF(#{field.requiredYn,jdbcType=VARCHAR}, ''), 'N')
+            ,COALESCE(#{field.sortSeq,jdbcType=INTEGER}, 0)
+            ,#{userSeq}
+            ,#{userSeq}
+        )
+        ON CONFLICT ON CONSTRAINT event_registration_fields_event_code_key DO UPDATE
+        SET  field_label = EXCLUDED.field_label
+            ,enabled_yn = EXCLUDED.enabled_yn
+            ,required_yn = EXCLUDED.required_yn
+            ,sort_seq = EXCLUDED.sort_seq
+            ,updated_by = #{userSeq}
+            ,updated_at = CURRENT_TIMESTAMP
+    </insert>
 
     <update id="updateEventStatus">
         UPDATE event.events

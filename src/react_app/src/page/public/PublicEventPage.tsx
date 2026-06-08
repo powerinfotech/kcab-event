@@ -8,7 +8,7 @@ import {
   callPreparePublicRegistrationPayment,
   callValidatePublicRegistrationDiscountCode,
 } from '@api/public/PublicRegistrationApi';
-import { EventPageBlock, EventPageSection, PublicEventPage as PublicEventPageModel } from '@interface/event/EventManagement';
+import { EventPageBlock, EventPageSection, EventRegistrationFieldItem, PublicEventPage as PublicEventPageModel } from '@interface/event/EventManagement';
 import {
   PublicRegistrationParticipantRequest,
   PublicRegistrationDiscountValidationResult,
@@ -98,6 +98,11 @@ const EMPTY_REGISTRATION_PARTICIPANT: PublicRegistrationParticipantRequest = {
   organizationName: '',
   position: '',
   country: '',
+  phone: '',
+  address: '',
+  city: '',
+  nationality: '',
+  residenceCountry: '',
 };
 
 const REGISTRATION_STEPS: Array<{ step: RegistrationStep; label: string; description: string }> = [
@@ -182,6 +187,36 @@ const COUNTRY_OPTIONS = [
   'United Arab Emirates',
   'Uzbekistan',
 ].map((country) => ({ label: country, value: country }));
+
+const DEFAULT_REGISTRATION_FIELDS: EventRegistrationFieldItem[] = [
+  { fieldCode: 'email', fieldLabel: 'Email', enabledYn: 'Y', requiredYn: 'Y', sortSeq: 1 },
+  { fieldCode: 'first_name', fieldLabel: 'First Name', enabledYn: 'Y', requiredYn: 'Y', sortSeq: 2 },
+  { fieldCode: 'middle_name', fieldLabel: 'Middle Name', enabledYn: 'Y', requiredYn: 'N', sortSeq: 3 },
+  { fieldCode: 'last_name', fieldLabel: 'Last Name', enabledYn: 'Y', requiredYn: 'Y', sortSeq: 4 },
+  { fieldCode: 'organization_name', fieldLabel: 'Company Name', enabledYn: 'Y', requiredYn: 'N', sortSeq: 6 },
+  { fieldCode: 'position', fieldLabel: 'Position', enabledYn: 'Y', requiredYn: 'N', sortSeq: 7 },
+  { fieldCode: 'residence_country', fieldLabel: 'Country of Residence', enabledYn: 'Y', requiredYn: 'N', sortSeq: 11 },
+];
+
+const REGISTRATION_FIELD_INPUTS: Record<string, {
+  key: keyof PublicRegistrationParticipantRequest;
+  autoComplete?: string;
+  half?: boolean;
+  wide?: boolean;
+  select?: boolean;
+}> = {
+  email: { key: 'email', autoComplete: 'email', wide: true },
+  first_name: { key: 'firstName', autoComplete: 'given-name' },
+  middle_name: { key: 'middleName', autoComplete: 'additional-name' },
+  last_name: { key: 'lastName', autoComplete: 'family-name' },
+  phone: { key: 'phone', autoComplete: 'tel', wide: true },
+  organization_name: { key: 'organizationName', autoComplete: 'organization', wide: true },
+  position: { key: 'position', autoComplete: 'organization-title', wide: true },
+  address: { key: 'address', autoComplete: 'street-address', wide: true },
+  city: { key: 'city', autoComplete: 'address-level2', half: true },
+  nationality: { key: 'nationality', select: true, half: true },
+  residence_country: { key: 'residenceCountry', select: true, wide: true },
+};
 
 const PublicEventPage: React.FC<PublicEventPageProps> = ({ urlSlug }) => {
   const [page, setPage] = useState<PublicEventPageModel | null>(null);
@@ -499,7 +534,12 @@ export const PublicEventRegistrationPage: React.FC<PublicEventPageProps> = ({ ur
           lastName: foundParticipant.lastName ?? '',
           organizationName: foundParticipant.organizationName ?? '',
           position: foundParticipant.position ?? '',
-          country: foundParticipant.country ?? '',
+          country: foundParticipant.country ?? foundParticipant.residenceCountry ?? '',
+          phone: foundParticipant.phone ?? '',
+          address: foundParticipant.address ?? '',
+          city: foundParticipant.city ?? '',
+          nationality: foundParticipant.nationality ?? '',
+          residenceCountry: foundParticipant.residenceCountry ?? foundParticipant.country ?? '',
         };
       });
       setParticipantLookupStatus('found');
@@ -612,21 +652,21 @@ export const PublicEventRegistrationPage: React.FC<PublicEventPageProps> = ({ ur
   }, []);
 
   const continueToPaymentStep = useCallback(() => {
-    const validationMessage = validateRegistrationParticipant(participant);
+    const validationMessage = validateRegistrationParticipant(participant, page?.registrationFields);
     if (validationMessage) {
       message.warning(validationMessage);
       return;
     }
-    const cleanedParticipant = cleanParticipant(participant);
+    const cleanedParticipant = cleanParticipant(participant, page?.registrationFields);
     setParticipant(cleanedParticipant);
     setRegistrationStep(2);
     setRegistrationResult(null);
     setLatestOrderId('');
-  }, [message, participant]);
+  }, [message, page?.registrationFields, participant]);
 
   const startRegistrationPayment = useCallback(async () => {
     if (!page?.eventSeq) return;
-    const validationMessage = validateRegistrationParticipant(participant);
+    const validationMessage = validateRegistrationParticipant(participant, page?.registrationFields);
     if (validationMessage) {
       message.warning(validationMessage);
       setRegistrationStep(1);
@@ -636,7 +676,7 @@ export const PublicEventRegistrationPage: React.FC<PublicEventPageProps> = ({ ur
       message.warning('Please select a registration type.');
       return;
     }
-    const cleanedParticipant = cleanParticipant(participant);
+    const cleanedParticipant = cleanParticipant(participant, page?.registrationFields);
     setParticipant(cleanedParticipant);
     setSubmittingRegistration(true);
     setRegistrationResult(null);
@@ -678,7 +718,7 @@ export const PublicEventRegistrationPage: React.FC<PublicEventPageProps> = ({ ur
     } finally {
       setSubmittingRegistration(false);
     }
-  }, [appliedDiscount, message, page?.eventSeq, participant, selectedPaymentMethod, selectedPricing]);
+  }, [appliedDiscount, message, page?.eventSeq, page?.registrationFields, participant, selectedPaymentMethod, selectedPricing]);
 
   if (loading) {
     return (
@@ -1078,13 +1118,20 @@ const PublicRegistrationStepPanel: React.FC<PublicRegistrationStepPanelProps> = 
   const paymentPending = !!resultStatus && resultStatus !== 'paid' && resultStatus !== 'failed' && resultStatus !== 'cancelled';
   const hasAppliedDiscount = !!discountResult?.valid;
   const payableAmount = selectedPricing ? finalAmount : 0;
+  const registrationFields = useMemo(() => resolvePublicRegistrationFields(page.registrationFields), [page.registrationFields]);
   const countryOptions = useMemo(() => {
-    const currentCountry = participant.country?.trim();
-    if (!currentCountry || COUNTRY_OPTIONS.some((option) => option.value === currentCountry)) {
+    const customCountries = [participant.country, participant.residenceCountry, participant.nationality]
+      .map((value) => value?.trim())
+      .filter((value): value is string => !!value && !COUNTRY_OPTIONS.some((option) => option.value === value));
+    if (!customCountries.length) {
       return COUNTRY_OPTIONS;
     }
-    return [{ label: currentCountry, value: currentCountry }, ...COUNTRY_OPTIONS];
-  }, [participant.country]);
+    const uniqueCustomCountries = Array.from(new Set(customCountries));
+    return [
+      ...uniqueCustomCountries.map((value) => ({ label: value, value })),
+      ...COUNTRY_OPTIONS,
+    ];
+  }, [participant.country, participant.nationality, participant.residenceCountry]);
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -1141,70 +1188,46 @@ const PublicRegistrationStepPanel: React.FC<PublicRegistrationStepPanelProps> = 
                 <p>Please enter the participant details first. Ticket selection and payment will be handled in the next step.</p>
               </div>
               <div className="pub-event-registration-fields">
-                <label className="is-wide">
-                  <span>Email *</span>
-                  <input
-                    type="email"
-                    value={participant.email}
-                    autoComplete="email"
-                    onChange={(event) => onUpdateParticipant('email', event.target.value)}
-                  />
-                  {renderParticipantLookupMessage(participantLookupLoading, participantLookupStatus)}
-                </label>
-                <label>
-                  <span>First Name *</span>
-                  <input
-                    value={participant.firstName}
-                    autoComplete="given-name"
-                    onChange={(event) => onUpdateParticipant('firstName', event.target.value)}
-                  />
-                </label>
-                <label>
-                  <span>Middle Name</span>
-                  <input
-                    value={participant.middleName ?? ''}
-                    autoComplete="additional-name"
-                    onChange={(event) => onUpdateParticipant('middleName', event.target.value)}
-                  />
-                </label>
-                <label>
-                  <span>Last Name *</span>
-                  <input
-                    value={participant.lastName}
-                    autoComplete="family-name"
-                    onChange={(event) => onUpdateParticipant('lastName', event.target.value)}
-                  />
-                </label>
-                <label className="is-wide">
-                  <span>Organization</span>
-                  <input
-                    value={participant.organizationName ?? ''}
-                    autoComplete="organization"
-                    onChange={(event) => onUpdateParticipant('organizationName', event.target.value)}
-                  />
-                </label>
-                <label className="is-wide">
-                  <span>Position</span>
-                  <input
-                    value={participant.position ?? ''}
-                    autoComplete="organization-title"
-                    onChange={(event) => onUpdateParticipant('position', event.target.value)}
-                  />
-                </label>
-                <label className="is-wide">
-                  <span>Country</span>
-                  <Select<string>
-                    className="pub-event-registration-country-select"
-                    classNames={{ popup: { root: 'pub-event-registration-country-dropdown' } }}
-                    showSearch
-                    allowClear
-                    value={participant.country?.trim() ? participant.country : undefined}
-                    placeholder="Search country"
-                    options={countryOptions}
-                    optionFilterProp="label"
-                    onChange={(value) => onUpdateParticipant('country', value ?? '')}
-                  />
-                </label>
+                {registrationFields.map((field) => {
+                  const inputConfig = REGISTRATION_FIELD_INPUTS[field.fieldCode];
+                  if (!inputConfig) return null;
+                  const value = participant[inputConfig.key] ?? '';
+                  const label = `${field.fieldLabel}${field.requiredYn === 'Y' ? ' *' : ''}`;
+                  const fieldClassName = [
+                    inputConfig.half ? 'is-half' : '',
+                    inputConfig.wide ? 'is-wide' : '',
+                  ].filter(Boolean).join(' ') || undefined;
+                  if (inputConfig.select) {
+                    return (
+                      <label key={field.fieldCode} className={fieldClassName}>
+                        <span>{label}</span>
+                        <Select<string>
+                          className="pub-event-registration-country-select"
+                          classNames={{ popup: { root: 'pub-event-registration-country-dropdown' } }}
+                          showSearch
+                          allowClear
+                          value={String(value).trim() ? String(value) : undefined}
+                          placeholder="Search country"
+                          options={countryOptions}
+                          optionFilterProp="label"
+                          onChange={(nextValue) => onUpdateParticipant(inputConfig.key, nextValue ?? '')}
+                        />
+                      </label>
+                    );
+                  }
+                  return (
+                    <label key={field.fieldCode} className={fieldClassName}>
+                      <span>{label}</span>
+                      <input
+                        type={field.fieldCode === 'email' ? 'email' : 'text'}
+                        value={String(value)}
+                        autoComplete={inputConfig.autoComplete}
+                        onChange={(event) => onUpdateParticipant(inputConfig.key, event.target.value)}
+                      />
+                      {field.fieldCode === 'email' && renderParticipantLookupMessage(participantLookupLoading, participantLookupStatus)}
+                    </label>
+                  );
+                })}
               </div>
               <div className="pub-event-registration-form-actions">
                 <button type="button" className="pub-event-registration-secondary" onClick={onBackToEvent}>
@@ -1704,22 +1727,54 @@ function normalizeRegistrationType(value?: string | null): RegistrationActionTyp
   return 'none';
 }
 
-function cleanParticipant(participant: PublicRegistrationParticipantRequest): PublicRegistrationParticipantRequest {
-  return {
-    firstName: participant.firstName.trim(),
-    middleName: participant.middleName?.trim() ?? '',
-    lastName: participant.lastName.trim(),
-    email: participant.email.trim().toLowerCase(),
-    organizationName: participant.organizationName?.trim() ?? '',
-    position: participant.position?.trim() ?? '',
-    country: participant.country?.trim() ?? '',
-  };
+function resolvePublicRegistrationFields(fields?: EventRegistrationFieldItem[] | null): EventRegistrationFieldItem[] {
+  const configured = fields?.length ? fields : DEFAULT_REGISTRATION_FIELDS;
+  return configured
+    .filter((field) => field.enabledYn === 'Y' && REGISTRATION_FIELD_INPUTS[field.fieldCode])
+    .map((field, index) => ({
+      ...field,
+      fieldLabel: field.fieldLabel || DEFAULT_REGISTRATION_FIELDS.find((item) => item.fieldCode === field.fieldCode)?.fieldLabel || field.fieldCode,
+      requiredYn: field.fieldCode === 'email' ? 'Y' : field.requiredYn,
+      sortSeq: field.sortSeq ?? index + 1,
+    }))
+    .sort((a, b) => (a.sortSeq ?? 0) - (b.sortSeq ?? 0));
 }
 
-function validateRegistrationParticipant(participant: PublicRegistrationParticipantRequest) {
-  const cleaned = cleanParticipant(participant);
-  if (!cleaned.firstName || !cleaned.lastName || !cleaned.email) {
-    return 'Please enter first name, last name, and email.';
+function cleanParticipant(
+  participant: PublicRegistrationParticipantRequest,
+  fields?: EventRegistrationFieldItem[] | null,
+): PublicRegistrationParticipantRequest {
+  const enabledCodes = new Set(resolvePublicRegistrationFields(fields).map((field) => field.fieldCode));
+  const cleaned: PublicRegistrationParticipantRequest = {
+    firstName: enabledCodes.has('first_name') ? participant.firstName.trim() : '',
+    middleName: enabledCodes.has('middle_name') ? participant.middleName?.trim() ?? '' : '',
+    lastName: enabledCodes.has('last_name') ? participant.lastName.trim() : '',
+    email: participant.email.trim().toLowerCase(),
+    organizationName: enabledCodes.has('organization_name') ? participant.organizationName?.trim() ?? '' : '',
+    position: enabledCodes.has('position') ? participant.position?.trim() ?? '' : '',
+    phone: enabledCodes.has('phone') ? participant.phone?.trim() ?? '' : '',
+    address: enabledCodes.has('address') ? participant.address?.trim() ?? '' : '',
+    city: enabledCodes.has('city') ? participant.city?.trim() ?? '' : '',
+    nationality: enabledCodes.has('nationality') ? participant.nationality?.trim() ?? '' : '',
+    residenceCountry: enabledCodes.has('residence_country') ? participant.residenceCountry?.trim() ?? participant.country?.trim() ?? '' : '',
+    country: enabledCodes.has('residence_country') ? participant.residenceCountry?.trim() ?? participant.country?.trim() ?? '' : '',
+  };
+  return cleaned;
+}
+
+function validateRegistrationParticipant(
+  participant: PublicRegistrationParticipantRequest,
+  fields?: EventRegistrationFieldItem[] | null,
+) {
+  const activeFields = resolvePublicRegistrationFields(fields);
+  const cleaned = cleanParticipant(participant, fields);
+  for (const field of activeFields) {
+    if (field.requiredYn !== 'Y') continue;
+    const inputConfig = REGISTRATION_FIELD_INPUTS[field.fieldCode];
+    const value = inputConfig ? cleaned[inputConfig.key] : '';
+    if (!String(value ?? '').trim()) {
+      return `Please enter ${field.fieldLabel}.`;
+    }
   }
   if (!isValidRegistrationEmail(cleaned.email)) {
     return 'Please enter a valid email address.';

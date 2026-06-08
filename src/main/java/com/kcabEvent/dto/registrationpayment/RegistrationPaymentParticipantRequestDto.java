@@ -13,4 +13,9 @@ public class RegistrationPaymentParticipantRequestDto {
     private String organizationName;
     private String position;
     private String country;
+    private String phone;
+    private String address;
+    private String city;
+    private String nationality;
+    private String residenceCountry;
 }

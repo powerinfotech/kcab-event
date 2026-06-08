@@ -43,4 +43,5 @@ public class EventSaveDto {
     private Boolean isPaid;
     private List<EventPricingDto> pricingList;
     private List<EventDiscountCodeDto> discountCodes;
+    private List<EventRegistrationFieldDto> registrationFields;
 }

@@ -52,6 +52,7 @@ import {
   EventDetail,
   EventListItem,
   EventPricingItem,
+  EventRegistrationFieldItem,
   EventSaveRequest,
   REGISTRATION_TYPE_LABELS,
   RegistrationType,
@@ -87,6 +88,26 @@ const REGISTRATION_TYPE_OPTIONS: Array<{ value: RegistrationType; label: string 
   { value: 'none', label: REGISTRATION_TYPE_LABELS.none },
 ];
 
+const REGISTRATION_FIELD_DEFINITIONS: Array<{
+  fieldCode: string;
+  fieldLabel: string;
+  locked?: boolean;
+  defaultEnabledYn: 'Y' | 'N';
+  defaultRequiredYn: 'Y' | 'N';
+}> = [
+  { fieldCode: 'email', fieldLabel: 'Email', locked: true, defaultEnabledYn: 'Y', defaultRequiredYn: 'Y' },
+  { fieldCode: 'first_name', fieldLabel: 'First Name', defaultEnabledYn: 'Y', defaultRequiredYn: 'Y' },
+  { fieldCode: 'middle_name', fieldLabel: 'Middle Name', defaultEnabledYn: 'Y', defaultRequiredYn: 'N' },
+  { fieldCode: 'last_name', fieldLabel: 'Last Name', defaultEnabledYn: 'Y', defaultRequiredYn: 'Y' },
+  { fieldCode: 'phone', fieldLabel: 'Phone Number', defaultEnabledYn: 'N', defaultRequiredYn: 'N' },
+  { fieldCode: 'organization_name', fieldLabel: 'Company Name', defaultEnabledYn: 'Y', defaultRequiredYn: 'N' },
+  { fieldCode: 'position', fieldLabel: 'Position', defaultEnabledYn: 'Y', defaultRequiredYn: 'N' },
+  { fieldCode: 'address', fieldLabel: 'Address', defaultEnabledYn: 'N', defaultRequiredYn: 'N' },
+  { fieldCode: 'city', fieldLabel: 'City', defaultEnabledYn: 'N', defaultRequiredYn: 'N' },
+  { fieldCode: 'nationality', fieldLabel: 'Nationality', defaultEnabledYn: 'N', defaultRequiredYn: 'N' },
+  { fieldCode: 'residence_country', fieldLabel: 'Country of Residence', defaultEnabledYn: 'Y', defaultRequiredYn: 'N' },
+];
+
 const PRICE_TYPE_OPTIONS: Array<{ value: string; label: string }> = [
   { value: 'early_bird', label: 'Early Bird' },
   { value: 'regular', label: 'Regular' },
@@ -108,26 +129,73 @@ const EVENT_EDITOR_TEXT_COLOR_OPTIONS: RichEditorTextColorOption[] = [
   { label: 'Yellow', value: '#facc15' },
 ];
 
-const EVENT_PARTICIPANT_EXCEL_COLUMNS: ExcelColumnDef[] = [
-  { headerName: 'Name', dataIndex: 'name', width: 24 },
-  { headerName: 'Email', dataIndex: 'email', width: 34 },
-  { headerName: 'Organization', dataIndex: 'organization', width: 30 },
-  { headerName: 'Position', dataIndex: 'position', width: 22 },
-  { headerName: 'Country', dataIndex: 'country', width: 18 },
-  { headerName: 'Status', dataIndex: 'status', width: 18 },
-  { headerName: 'Registered At', dataIndex: 'registeredAt', width: 22 },
-];
+type EventParticipantRegistration = ParticipantListItem['events'][number] | undefined;
 
-const EVENT_PARTICIPANT_PAID_EXCEL_COLUMNS: ExcelColumnDef[] = [
-  { headerName: 'Name', dataIndex: 'name', width: 24 },
-  { headerName: 'Email', dataIndex: 'email', width: 34 },
-  { headerName: 'Organization', dataIndex: 'organization', width: 30 },
-  { headerName: 'Position', dataIndex: 'position', width: 22 },
-  { headerName: 'Country', dataIndex: 'country', width: 18 },
-  { headerName: 'Payment Name', dataIndex: 'paymentName', width: 22 },
-  { headerName: 'Status', dataIndex: 'status', width: 18 },
-  { headerName: 'Registered At', dataIndex: 'registeredAt', width: 22 },
-];
+type EventParticipantColumn = {
+  key: string;
+  headerName: string;
+  dataIndex: string;
+  width: number;
+  searchLabel?: string;
+  render: (participant: ParticipantListItem, registration: EventParticipantRegistration) => React.ReactNode;
+  value: (participant: ParticipantListItem, registration: EventParticipantRegistration) => string;
+};
+
+const PARTICIPANT_FIELD_COLUMN_DEFINITIONS: Record<string, Omit<EventParticipantColumn, 'render'> & {
+  render?: EventParticipantColumn['render'];
+}> = {
+  phone: {
+    key: 'phone',
+    headerName: 'Phone',
+    dataIndex: 'phone',
+    width: 18,
+    value: (participant) => participant.phone || '',
+  },
+  organization_name: {
+    key: 'organization',
+    headerName: 'Organization',
+    dataIndex: 'organization',
+    width: 30,
+    searchLabel: 'organization',
+    value: (participant) => participant.organizationName || '',
+  },
+  position: {
+    key: 'position',
+    headerName: 'Position',
+    dataIndex: 'position',
+    width: 22,
+    value: (participant) => participant.position || '',
+  },
+  address: {
+    key: 'address',
+    headerName: 'Address',
+    dataIndex: 'address',
+    width: 34,
+    value: (participant) => participant.address || '',
+  },
+  city: {
+    key: 'city',
+    headerName: 'City',
+    dataIndex: 'city',
+    width: 18,
+    value: (participant) => participant.city || '',
+  },
+  nationality: {
+    key: 'nationality',
+    headerName: 'Nationality',
+    dataIndex: 'nationality',
+    width: 18,
+    value: (participant) => participant.nationality || '',
+  },
+  residence_country: {
+    key: 'residenceCountry',
+    headerName: 'Residence',
+    dataIndex: 'residenceCountry',
+    width: 20,
+    searchLabel: 'residence',
+    value: (participant) => participant.residenceCountry || participant.country || '',
+  },
+};
 
 const URL_REGEXP = /^(https?:\/\/)[^\s]+$/i;
 const EVENT_SLUG_REGEXP = /^[a-z0-9]([a-z0-9-]{0,198}[a-z0-9])?$/;
@@ -135,6 +203,7 @@ const DASHBOARD_EVENT_DETAIL_KEY = 'saf.admin.dashboardEventSeq';
 const PARTICIPANT_DETAIL_KEY = 'saf.admin.participantDetailSeq';
 const PARTICIPANT_DETAIL_ITEM_KEY = 'saf.admin.participantDetailItem';
 const PARTICIPANT_RETURN_PATH_KEY = 'saf.admin.participantReturnPath';
+const PARTICIPANT_TABLE_COLUMN_WIDTH_SCALE = 8;
 
 const emptyDetail: EventDetail = {
   eventSeq: 0,
@@ -162,6 +231,7 @@ const emptyDetail: EventDetail = {
   isPaid: false,
   pricingList: [],
   discountCodes: [],
+  registrationFields: [],
   rgstUserSeq: 0,
   rgstDateTime: '',
   uptDateTime: '',
@@ -254,6 +324,106 @@ function createDiscountCodeRow(sortSeq: number): EventDiscountCodeItem {
     useYn: 'Y',
     sortSeq,
   };
+}
+
+function createDefaultRegistrationFields(): EventRegistrationFieldItem[] {
+  return REGISTRATION_FIELD_DEFINITIONS.map((definition, index) => ({
+    fieldCode: definition.fieldCode,
+    fieldLabel: definition.fieldLabel,
+    enabledYn: definition.defaultEnabledYn,
+    requiredYn: definition.defaultRequiredYn,
+    sortSeq: index + 1,
+  }));
+}
+
+function normalizeRegistrationFields(fields?: EventRegistrationFieldItem[] | null): EventRegistrationFieldItem[] {
+  const byCode = new Map((fields ?? []).map((field) => [field.fieldCode, field]));
+  return REGISTRATION_FIELD_DEFINITIONS.map((definition, index) => {
+    const current = byCode.get(definition.fieldCode);
+    const enabledYn = definition.locked ? 'Y' : (current?.enabledYn === 'N' ? 'N' : (current?.enabledYn ?? definition.defaultEnabledYn));
+    const requiredYn = definition.locked ? 'Y' : (current ? (current.requiredYn === 'Y' ? 'Y' : 'N') : definition.defaultRequiredYn);
+    return {
+      registrationFieldSeq: current?.registrationFieldSeq ?? null,
+      eventSeq: current?.eventSeq ?? null,
+      fieldCode: definition.fieldCode,
+      fieldLabel: current?.fieldLabel?.trim() || definition.fieldLabel,
+      enabledYn,
+      requiredYn: enabledYn === 'Y' ? requiredYn : 'N',
+      sortSeq: index + 1,
+    };
+  });
+}
+
+function buildEventParticipantColumns(
+  registrationFields?: EventRegistrationFieldItem[] | null,
+  showPaymentNameColumn = false,
+): EventParticipantColumn[] {
+  const selectedFieldColumns = normalizeRegistrationFields(registrationFields)
+    .filter((field) => field.enabledYn === 'Y')
+    .map((field) => ({ field, column: PARTICIPANT_FIELD_COLUMN_DEFINITIONS[field.fieldCode] }))
+    .filter((item): item is { field: EventRegistrationFieldItem; column: NonNullable<typeof item.column> } => !!item.column)
+    .reduce<EventParticipantColumn[]>((columns, { field, column }) => {
+      if (columns.some((item) => item.key === column.key)) return columns;
+      columns.push({
+        ...column,
+        headerName: field.fieldLabel?.trim() || column.headerName,
+        render: column.render ?? ((participant, registration) => column.value(participant, registration) || '-'),
+      });
+      return columns;
+    }, []);
+
+  return [
+    {
+      key: 'name',
+      headerName: 'Name',
+      dataIndex: 'name',
+      width: 24,
+      value: (participant) => participant.fullName || '',
+      render: (participant) => <strong>{participant.fullName || '-'}</strong>,
+    },
+    {
+      key: 'email',
+      headerName: 'Email',
+      dataIndex: 'email',
+      width: 34,
+      value: (participant) => participant.email || '',
+      render: (participant) => participant.email || '-',
+    },
+    ...selectedFieldColumns,
+    ...(showPaymentNameColumn ? [{
+      key: 'paymentName',
+      headerName: 'Payment Name',
+      dataIndex: 'paymentName',
+      width: 22,
+      searchLabel: 'payment name',
+      value: (_participant, registration) => registration?.paymentName || '',
+      render: (_participant, registration) => registration?.paymentName || '-',
+    } satisfies EventParticipantColumn] : []),
+    {
+      key: 'status',
+      headerName: 'Status',
+      dataIndex: 'status',
+      width: 18,
+      value: (_participant, registration) => formatParticipationStatusText(registration?.status),
+      render: (_participant, registration) => renderParticipationStatus(registration?.status),
+    },
+    {
+      key: 'registeredAt',
+      headerName: 'Registered At',
+      dataIndex: 'registeredAt',
+      width: 22,
+      searchLabel: 'registered date',
+      value: (_participant, registration) => formatDateTime(registration?.registeredAt),
+      render: (_participant, registration) => formatDateTime(registration?.registeredAt),
+    },
+  ];
+}
+
+function buildParticipantSearchPlaceholder(columns: EventParticipantColumn[]): string {
+  const labels = columns
+    .filter((column) => column.key !== 'status' && column.key !== 'registeredAt')
+    .map((column) => column.searchLabel ?? column.headerName.toLowerCase());
+  return `Search by ${labels.join(', ')}`;
 }
 
 export default function SuperEventList() {
@@ -353,17 +523,36 @@ export default function SuperEventList() {
     () => events.find((event) => event.eventSeq === selectedSeq),
     [selectedSeq, events],
   );
+  const showPaymentNameColumn = !!form.isPaid;
+  const eventParticipantColumns = useMemo(
+    () => buildEventParticipantColumns(form.registrationFields, showPaymentNameColumn),
+    [form.registrationFields, showPaymentNameColumn],
+  );
+  const eventParticipantExcelColumns = useMemo<ExcelColumnDef[]>(
+    () => eventParticipantColumns.map(({ headerName, dataIndex, width }) => ({ headerName, dataIndex, width })),
+    [eventParticipantColumns],
+  );
+  const eventParticipantSearchPlaceholder = useMemo(
+    () => buildParticipantSearchPlaceholder(eventParticipantColumns),
+    [eventParticipantColumns],
+  );
+  const eventParticipantTableMinWidth = useMemo(
+    () => Math.max(
+      760,
+      eventParticipantColumns.reduce((total, column) => total + column.width * PARTICIPANT_TABLE_COLUMN_WIDTH_SCALE, 0),
+    ),
+    [eventParticipantColumns],
+  );
   const filteredEventParticipants = useMemo(() => {
     const searchKeyword = eventParticipantKeyword.trim().toLowerCase();
     if (!searchKeyword) return eventParticipants;
-    return eventParticipants.filter((participant) => participantMatchesKeyword(participant, searchKeyword));
-  }, [eventParticipantKeyword, eventParticipants]);
+    return eventParticipants.filter((participant) => participantMatchesKeyword(participant, searchKeyword, eventParticipantColumns));
+  }, [eventParticipantColumns, eventParticipantKeyword, eventParticipants]);
   const participantSubtitle = eventParticipantKeyword.trim()
     ? `${filteredEventParticipants.length} of ${eventParticipants.length} participant(s) matched.`
     : `${eventParticipants.length} participant(s) registered for this event.`;
   const eventPagination = useClientGridPagination(events);
   const eventParticipantPagination = useClientGridPagination(filteredEventParticipants);
-  const showPaymentNameColumn = !!form.isPaid;
 
   const fetchEvents = async () => {
     setLoading(true);
@@ -396,6 +585,7 @@ export default function SuperEventList() {
         content: detail?.content ?? description,
         pricingList: detail?.pricingList ?? [],
         discountCodes: detail?.discountCodes ?? [],
+        registrationFields: normalizeRegistrationFields(detail?.registrationFields),
       };
       if (merged.eventType === 'side') {
         merged.isPaid = false;
@@ -470,6 +660,25 @@ export default function SuperEventList() {
 
   const updateForm = <K extends keyof EventDetail>(key: K, value: EventDetail[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const updateRegistrationField = (fieldCode: string, patch: Partial<EventRegistrationFieldItem>) => {
+    setForm((prev) => ({
+      ...prev,
+      registrationFields: normalizeRegistrationFields(prev.registrationFields).map((field) => {
+        if (field.fieldCode !== fieldCode) return field;
+        const definition = REGISTRATION_FIELD_DEFINITIONS.find((item) => item.fieldCode === fieldCode);
+        const locked = !!definition?.locked;
+        const nextEnabledYn = locked ? 'Y' : (patch.enabledYn ?? field.enabledYn);
+        const nextRequiredYn = locked ? 'Y' : (nextEnabledYn === 'Y' ? (patch.requiredYn ?? field.requiredYn) : 'N');
+        return {
+          ...field,
+          ...patch,
+          enabledYn: nextEnabledYn,
+          requiredYn: nextRequiredYn,
+        };
+      }),
+    }));
   };
 
   const updatePricingMode = (isPaid: boolean) => {
@@ -826,6 +1035,7 @@ export default function SuperEventList() {
     isPaid: isSideEvent ? false : (form.isPaid ?? false),
     pricingList: normalizePricingForSave(),
     discountCodes: normalizeDiscountCodesForSave(),
+    registrationFields: isOfficialEvent ? normalizeRegistrationFields(form.registrationFields) : [],
   });
 
   const persist = async () => {
@@ -1082,8 +1292,8 @@ export default function SuperEventList() {
 
     try {
       await callExcelDownload(
-        showPaymentNameColumn ? EVENT_PARTICIPANT_PAID_EXCEL_COLUMNS : EVENT_PARTICIPANT_EXCEL_COLUMNS,
-        buildParticipantExcelRows(filteredEventParticipants),
+        eventParticipantExcelColumns,
+        buildParticipantExcelRows(filteredEventParticipants, eventParticipantColumns),
         `${sanitizeFileName(form.title || 'event')}_participants`,
       );
       message.success('Participant list has been exported.');
@@ -1109,6 +1319,7 @@ export default function SuperEventList() {
       ...emptyDetail,
       status: isOrganizationRole ? 'draft' : 'published',
       eventType: isOrganizationRole ? 'side' : 'main',
+      registrationFields: createDefaultRegistrationFields(),
     });
     setAttachmentFiles([]);
     setEventParticipants([]);
@@ -1384,6 +1595,72 @@ export default function SuperEventList() {
               </Field>
             </div>
           </section>
+
+          {isOfficialEvent && (
+            <section className="saf-panel saf-registration-fields-panel">
+              <PanelTitle
+                title="Participant Form Fields"
+                subtitle="Choose which fields are collected on the public registration page. Email is always required."
+              />
+              <div className="saf-registration-fields-table-wrap">
+                <table className="saf-table saf-registration-fields-table">
+                  <thead>
+                    <tr>
+                      <th>Field</th>
+                      <th>Collect</th>
+                      <th>Required</th>
+                      <th>Public Label</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {normalizeRegistrationFields(form.registrationFields).map((field) => {
+                      const definition = REGISTRATION_FIELD_DEFINITIONS.find((item) => item.fieldCode === field.fieldCode);
+                      const locked = !!definition?.locked;
+                      const enabled = field.enabledYn === 'Y';
+                      return (
+                        <tr key={field.fieldCode}>
+                          <td>
+                            <strong>{definition?.fieldLabel ?? field.fieldLabel}</strong>
+                            {locked && <span className="saf-registration-field-lock">Always on</span>}
+                          </td>
+                          <td>
+                            <label className="saf-switch-cell">
+                              <input
+                                type="checkbox"
+                                checked={enabled}
+                                disabled={!canEdit || locked}
+                                onChange={(event) => updateRegistrationField(field.fieldCode, { enabledYn: event.target.checked ? 'Y' : 'N' })}
+                              />
+                              <span>{enabled ? 'On' : 'Off'}</span>
+                            </label>
+                          </td>
+                          <td>
+                            <label className="saf-switch-cell">
+                              <input
+                                type="checkbox"
+                                checked={field.requiredYn === 'Y'}
+                                disabled={!canEdit || locked || !enabled}
+                                onChange={(event) => updateRegistrationField(field.fieldCode, { requiredYn: event.target.checked ? 'Y' : 'N' })}
+                              />
+                              <span>{field.requiredYn === 'Y' ? 'Required' : 'Optional'}</span>
+                            </label>
+                          </td>
+                          <td>
+                            <input
+                              value={field.fieldLabel}
+                              disabled={!canEdit}
+                              onChange={(event) => updateRegistrationField(field.fieldCode, { fieldLabel: event.target.value })}
+                              placeholder={definition?.fieldLabel ?? 'Label'}
+                            />
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          )}
 
           {isSideEvent && (
             <section className="saf-panel saf-event-description-panel">
@@ -1799,23 +2076,26 @@ export default function SuperEventList() {
                 <SearchOutlined />
                 <input
                   value={eventParticipantKeyword}
-                  placeholder={`Search by name, email, organization, position, country${showPaymentNameColumn ? ', or payment name' : ''}`}
+                  placeholder={eventParticipantSearchPlaceholder}
                   onChange={(event) => setEventParticipantKeyword(event.target.value)}
                 />
               </div>
             </div>
-            <div className="saf-table-wrap">
-              <table className={`saf-table saf-event-participants-table${showPaymentNameColumn ? ' is-paid' : ''}`}>
+            <div className="saf-table-wrap saf-event-participants-table-wrap">
+              <table
+                className={`saf-table saf-event-participants-table${showPaymentNameColumn ? ' is-paid' : ''}`}
+                style={{ minWidth: eventParticipantTableMinWidth }}
+              >
+                <colgroup>
+                  {eventParticipantColumns.map((column) => (
+                    <col key={column.key} style={{ width: `${column.width * PARTICIPANT_TABLE_COLUMN_WIDTH_SCALE}px` }} />
+                  ))}
+                </colgroup>
                 <thead>
                   <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Organization</th>
-                    <th>Position</th>
-                    <th>Country</th>
-                    {showPaymentNameColumn && <th>Payment Name</th>}
-                    <th>Status</th>
-                    <th>Registered At</th>
+                    {eventParticipantColumns.map((column) => (
+                      <th key={column.key}>{column.headerName}</th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
@@ -1834,20 +2114,15 @@ export default function SuperEventList() {
                           }
                         }}
                       >
-                        <td><strong>{participant.fullName || '-'}</strong></td>
-                        <td>{participant.email}</td>
-                        <td>{participant.organizationName || '-'}</td>
-                        <td>{participant.position || '-'}</td>
-                        <td>{participant.country || '-'}</td>
-                        {showPaymentNameColumn && <td>{registration?.paymentName || '-'}</td>}
-                        <td>{renderParticipationStatus(registration?.status)}</td>
-                        <td>{formatDateTime(registration?.registeredAt)}</td>
+                        {eventParticipantColumns.map((column) => (
+                          <td key={column.key}>{column.render(participant, registration)}</td>
+                        ))}
                       </tr>
                     );
                   })}
                   {!filteredEventParticipants.length && (
                     <tr>
-                      <td colSpan={showPaymentNameColumn ? 8 : 7} className="saf-event-empty">
+                      <td colSpan={eventParticipantColumns.length} className="saf-event-empty">
                         <CalendarOutlined />
                         <span>
                           {participantsLoading
@@ -2051,19 +2326,13 @@ function formatParticipationStatusText(status?: string | null): string {
   return statusLabels[value] ?? value.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
-function buildParticipantExcelRows(participants: ParticipantListItem[]) {
+function buildParticipantExcelRows(participants: ParticipantListItem[], columns: EventParticipantColumn[]) {
   return participants.map((participant) => {
     const registration = participant.events[0];
-    return {
-      name: participant.fullName || '',
-      email: participant.email || '',
-      organization: participant.organizationName || '',
-      position: participant.position || '',
-      country: participant.country || '',
-      paymentName: registration?.paymentName || '',
-      status: formatParticipationStatusText(registration?.status),
-      registeredAt: formatDateTime(registration?.registeredAt),
-    };
+    return columns.reduce<Record<string, string>>((row, column) => {
+      row[column.dataIndex] = column.value(participant, registration);
+      return row;
+    }, {});
   });
 }
 
@@ -2074,18 +2343,9 @@ function sanitizeFileName(value: string): string {
     .slice(0, 80);
 }
 
-function participantMatchesKeyword(participant: ParticipantListItem, keyword: string): boolean {
+function participantMatchesKeyword(participant: ParticipantListItem, keyword: string, columns: EventParticipantColumn[]): boolean {
   const registration = participant.events[0];
-  return [
-    participant.fullName,
-    participant.email,
-    participant.organizationName,
-    participant.position,
-    participant.country,
-    registration?.paymentName,
-    formatParticipationStatusText(registration?.status),
-    formatDateTime(registration?.registeredAt),
-  ].some((value) => (value ?? '').toLowerCase().includes(keyword));
+  return columns.some((column) => column.value(participant, registration).toLowerCase().includes(keyword));
 }
 
 function renderParticipationStatus(status?: string | null) {

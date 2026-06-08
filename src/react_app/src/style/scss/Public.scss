@@ -2687,18 +2687,23 @@ $pub-header-height-mobile: 60px;
 
 .pub-event-registration-fields {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 18px;
   margin-top: 30px;
 
   label {
     min-width: 0;
     display: grid;
+    grid-column: span 2;
     gap: 7px;
   }
 
-  .is-wide {
+  .is-half {
     grid-column: span 3;
+  }
+
+  .is-wide {
+    grid-column: span 6;
   }
 
   span {
@@ -3350,6 +3355,11 @@ $pub-header-height-mobile: 60px;
   .pub-event-registration-fields {
     grid-template-columns: repeat(2, minmax(0, 1fr));
 
+    label,
+    .is-half {
+      grid-column: span 1;
+    }
+
     .is-wide {
       grid-column: span 2;
     }
@@ -3440,6 +3450,8 @@ $pub-header-height-mobile: 60px;
   .pub-event-registration-result-grid {
     grid-template-columns: 1fr;
 
+    label,
+    .is-half,
     .is-wide {
       grid-column: span 1;
     }

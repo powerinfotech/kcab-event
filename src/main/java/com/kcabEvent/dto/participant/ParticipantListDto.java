@@ -18,6 +18,11 @@ public class ParticipantListDto {
     private String organizationName;
     private String position;
     private String country;
+    private String phone;
+    private String address;
+    private String city;
+    private String nationality;
+    private String residenceCountry;
     private Integer eventCount = 0;
     private String statusSummary;
     private LocalDateTime latestRegisteredAt;

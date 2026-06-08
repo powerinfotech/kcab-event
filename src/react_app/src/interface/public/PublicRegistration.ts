@@ -18,6 +18,11 @@ export interface PublicRegistrationParticipantRequest {
   organizationName?: string;
   position?: string;
   country?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  nationality?: string;
+  residenceCountry?: string;
 }
 
 export type PublicRegistrationPaymentMethodCode = 'P000' | 'P001';

@@ -29,6 +29,11 @@ export interface ParticipantListItem {
   organizationName: string | null;
   position: string | null;
   country: string | null;
+  phone?: string | null;
+  address?: string | null;
+  city?: string | null;
+  nationality?: string | null;
+  residenceCountry?: string | null;
   eventCount: number;
   statusSummary: string;
   latestRegisteredAt: string | null;

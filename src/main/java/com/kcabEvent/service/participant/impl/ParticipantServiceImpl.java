@@ -1,5 +1,6 @@
 package com.kcabEvent.service.participant.impl;
 
+import com.kcabEvent.dao.EventDao;
 import com.kcabEvent.dao.ParticipantDao;
 import com.kcabEvent.dao.SafOrganizationDao;
 import com.kcabEvent.dto.common.LoginUser;
@@ -31,6 +32,9 @@ public class ParticipantServiceImpl extends EgovAbstractServiceImpl implements P
     @Resource(name = "participantDao")
     private ParticipantDao participantDao;
 
+    @Resource(name = "eventDao")
+    private EventDao eventDao;
+
     @Resource(name = "safOrganizationDao")
     private SafOrganizationDao safOrganizationDao;
 
@@ -44,6 +48,7 @@ public class ParticipantServiceImpl extends EgovAbstractServiceImpl implements P
             List<String> statuses,
             LoginUser loginUser
     ) {
+        ensureParticipantRegistrationSchema();
         ParticipantSearchDto searchDto = new ParticipantSearchDto();
         searchDto.setKeyword(StringUtils.hasText(keyword) ? keyword.trim() : null);
         searchDto.setEventSeqs(eventSeqs == null || eventSeqs.isEmpty() ? null : eventSeqs);
@@ -61,6 +66,11 @@ public class ParticipantServiceImpl extends EgovAbstractServiceImpl implements P
                 dto.setOrganizationName(row.getOrganizationName());
                 dto.setPosition(row.getPosition());
                 dto.setCountry(row.getCountry());
+                dto.setPhone(row.getPhone());
+                dto.setAddress(row.getAddress());
+                dto.setCity(row.getCity());
+                dto.setNationality(row.getNationality());
+                dto.setResidenceCountry(row.getResidenceCountry());
                 dto.setEventCount(row.getTotalEventCount());
                 return dto;
             });
@@ -149,6 +159,17 @@ public class ParticipantServiceImpl extends EgovAbstractServiceImpl implements P
             return null;
         }
         return value.trim().toUpperCase();
+    }
+
+    private void ensureParticipantRegistrationSchema() {
+        eventDao.ensureParticipantsPhoneColumn();
+        eventDao.ensureParticipantsAddressColumn();
+        eventDao.ensureParticipantsCityColumn();
+        eventDao.ensureParticipantsNationalityColumn();
+        eventDao.ensureParticipantsResidenceCountryColumn();
+        eventDao.backfillParticipantsResidenceCountry();
+        eventDao.ensureEventRegistrationFieldsTable();
+        eventDao.ensureEventParticipantProfilesTable();
     }
 
     private Long resolveScopedOrganizationSeq(LoginUser loginUser) {
