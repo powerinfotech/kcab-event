@@ -1,18 +1,21 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { BookOutlined, SafetyCertificateOutlined, TeamOutlined } from '@ant-design/icons';
 import { useSetAtom } from 'jotai';
 import { currentPathAtom, pushPath } from '@atom/currentPathAtom';
 import { callGetPublicPopupList } from '@api/popup/PopupApi';
 import { PopupItem } from '@interface/popup/PopupManagement';
 import MainPopupOverlay from '@component/popup/MainPopupOverlay';
-import HeroSeoulImage from '../assets/images/saf-renewal/hero-seoul.jpg';
-import SeoulBannerImage from '../assets/images/saf-renewal/seoul-banner.jpg';
+import HeroSeoulImage from '../assets/images/saf-renewal/hero-seoul-figma.jpg';
+import StatementPatternImage from '../assets/images/saf-renewal/statement-pattern-figma.jpg';
 import GalleryConferenceImage from '../assets/images/saf-renewal/gallery-conference.jpg';
 import GalleryReceptionImage from '../assets/images/saf-renewal/gallery-reception.jpg';
 import GalleryNetworkImage from '../assets/images/saf-renewal/gallery-network.jpg';
 import GalleryAudienceImage from '../assets/images/saf-renewal/gallery-audience.jpg';
+import GalleryNetworkingFigmaImage from '../assets/images/saf-renewal/gallery-networking-figma.jpg';
+import GalleryCollaborationFigmaImage from '../assets/images/saf-renewal/gallery-collaboration-figma.jpg';
+import GalleryKnowledgeFigmaImage from '../assets/images/saf-renewal/gallery-knowledge-figma.jpg';
+import GalleryTrendsFigmaCardImage from '../assets/images/saf-renewal/gallery-trends-figma-card.jpg';
 import SponsorAnalysisGroupLogo from '../assets/images/saf-renewal/sponsors/analysis-group.png';
 import SponsorAsiaBusinessLawJournalLogo from '../assets/images/saf-renewal/sponsors/asia-business-law-journal.png';
 import SponsorBaeKimLeeLogo from '../assets/images/saf-renewal/sponsors/bae-kim-lee.png';
@@ -84,7 +87,16 @@ function SocialIcon({ icon }: { icon: string }) {
 
 const navItems = [
   { label: 'Home', href: '/' },
-  { label: 'Partners', href: '#partners' },
+  {
+    label: 'Partners',
+    href: '#partners',
+    children: [
+      { label: 'Organizer', href: '#partners' },
+      { label: 'Sponsors', href: '#partners' },
+      { label: 'Supporters', href: '#partners' },
+      { label: 'Media Partners', href: '#partners', featured: true },
+    ],
+  },
   { label: 'Official Events', href: '/events' },
   { label: 'Calendar', href: '#program' },
   { label: 'Visit Seoul', href: '#visit' },
@@ -101,40 +113,45 @@ const socialLinks = [
 const expectationCards = [
   {
     no: '01',
-    title: 'Conference',
-    desc: 'Global ADR leaders',
-    image: GalleryConferenceImage,
+    title: 'Networking',
+    desc: 'Connect with global ADR leaders',
+    image: GalleryNetworkingFigmaImage,
   },
   {
     no: '02',
-    title: 'Networking',
-    desc: 'Lifelong connections',
-    image: GalleryReceptionImage,
+    title: 'Collaboration',
+    desc: 'Cross-border partnerships',
+    image: GalleryCollaborationFigmaImage,
   },
   {
     no: '03',
-    title: 'Collaboration',
-    desc: 'Cross-border partnerships',
-    image: GalleryNetworkImage,
+    title: 'Knowledge',
+    desc: 'Insights from top practitioners',
+    image: GalleryKnowledgeFigmaImage,
   },
   {
     no: '04',
-    title: 'Knowledge',
-    desc: 'Insights from top practitioners',
-    image: GalleryAudienceImage,
+    title: 'Trends',
+    desc: 'Shaping the future of arbitration',
+    image: GalleryTrendsFigmaCardImage,
+    precomposed: true,
   },
 ];
 
 const recapStats = [
-  { value: '1,500+', label: 'Attendees' },
+  { value: '1,500+', label: 'Participants' },
   { value: '40+', label: 'Jurisdictions' },
-  { value: '120+', label: 'Sessions' },
+  { value: '60', label: 'Sessions' },
+  { value: '10', label: 'Years' },
+  { value: '120+', label: 'Sessions Held' },
+  { value: '8K+', label: 'Alumni' },
 ];
 
 const journeyCards = [
   { year: '2022', image: GalleryConferenceImage },
-  { year: '2023', image: GalleryNetworkImage },
-  { year: '2024', image: GalleryAudienceImage },
+  { year: '2023', image: GalleryReceptionImage },
+  { year: '2024', image: GalleryNetworkImage },
+  { year: '2025', image: GalleryAudienceImage },
 ];
 
 const sponsorGroups = [
@@ -202,12 +219,24 @@ const sponsorGroups = [
 
 export default function HomePage() {
   const [popups, setPopups] = useState<PopupItem[]>([]);
+  const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const setCurrentPath = useSetAtom(currentPathAtom);
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-    if (!href.startsWith('/') || href.includes('#')) return;
-    e.preventDefault();
-    pushPath(href, setCurrentPath);
+    setActiveMenu(null);
+    setMobileMenuOpen(false);
+    if (href.startsWith('/') && !href.includes('#')) {
+      e.preventDefault();
+      pushPath(href, setCurrentPath);
+    }
+  };
+
+  const handleHeaderBlur = (event: React.FocusEvent<HTMLElement>) => {
+    const nextTarget = event.relatedTarget;
+    if (!nextTarget || !event.currentTarget.contains(nextTarget as Node)) {
+      setActiveMenu(null);
+    }
   };
 
   useEffect(() => {
@@ -243,30 +272,79 @@ export default function HomePage() {
 
   return (
     <div className="saf-renewal-home">
-      <header className="saf-renewal-header">
+      <header
+        className={`saf-renewal-header${activeMenu ? ' is-menu-open' : ''}${mobileMenuOpen ? ' is-mobile-menu-open is-menu-open' : ''}`}
+        onMouseLeave={() => setActiveMenu(null)}
+        onBlur={handleHeaderBlur}
+      >
         <div className="saf-renewal-shell saf-renewal-header-inner">
           <a className="saf-renewal-brand" href="/" aria-label="Seoul ADR Festival home">
             <FestivalLogo />
+            <span className="saf-renewal-brand-wordmark">
+              Seoul
+              <br />
+              ADR
+              <br />
+              Festival
+            </span>
           </a>
-          <div className="saf-renewal-header-right">
-            <div className="saf-renewal-social">
-              {socialLinks.map((item) => (
-                <a key={item.label} href={item.href} aria-label={item.label}>
-                  <SocialIcon icon={item.icon} />
-                </a>
-              ))}
-            </div>
-            <nav className="saf-renewal-nav" aria-label="Main navigation">
-              {navItems.map((item) => (
-                <a
+          <button
+            className="saf-renewal-menu-toggle"
+            type="button"
+            aria-label={mobileMenuOpen ? 'Close main menu' : 'Open main menu'}
+            aria-expanded={mobileMenuOpen}
+            onClick={() => setMobileMenuOpen((prev) => !prev)}
+          >
+            <span />
+            <span />
+            <span />
+          </button>
+          <nav className="saf-renewal-nav" aria-label="Main navigation">
+            {navItems.map((item) => {
+              const hasChildren = Boolean(item.children?.length);
+              const isActive = activeMenu === item.label;
+              return (
+                <div
+                  className={`saf-renewal-nav-item${isActive ? ' is-active' : ''}${hasChildren ? ' has-submenu' : ''}`}
                   key={item.label}
-                  href={item.href}
-                  onClick={(e) => handleNavClick(e, item.href)}
+                  onMouseEnter={() => setActiveMenu(hasChildren ? item.label : null)}
+                  onFocus={() => {
+                    if (hasChildren) setActiveMenu(item.label);
+                  }}
                 >
-                  {item.label}
-                </a>
-              ))}
-            </nav>
+                  <a
+                    href={item.href}
+                    aria-haspopup={hasChildren ? 'true' : undefined}
+                    aria-expanded={hasChildren ? isActive || mobileMenuOpen : undefined}
+                    onClick={(e) => handleNavClick(e, item.href)}
+                  >
+                    {item.label}
+                  </a>
+                  {hasChildren && (
+                    <div className="saf-renewal-menu-panel" role="menu">
+                      {item.children?.map((child) => (
+                        <a
+                          className={child.featured ? 'is-featured' : undefined}
+                          href={child.href}
+                          key={child.label}
+                          role="menuitem"
+                          onClick={(e) => handleNavClick(e, child.href)}
+                        >
+                          {child.label}
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </nav>
+          <div className="saf-renewal-social" aria-label="Social links">
+            {socialLinks.map((item) => (
+              <a key={item.label} href={item.href} aria-label={item.label}>
+                <SocialIcon icon={item.icon} />
+              </a>
+            ))}
           </div>
         </div>
       </header>
@@ -279,31 +357,28 @@ export default function HomePage() {
           <div className="saf-renewal-sunset-hero-overlay" aria-hidden="true" />
           <div className="saf-renewal-sunset-hero-inner">
             <div className="saf-renewal-sunset-hero-content">
-              <p className="saf-renewal-sunset-eyebrow">26 — 30 October 2026 · Seoul</p>
               <h1 className="saf-renewal-sunset-title">
-                Unveiling
+                Seoul
                 <br />
-                Excellence
+                ADR
                 <br />
-                <span>in Arbitration.</span>
+                Festival 2026
               </h1>
+              <p className="saf-renewal-sunset-date">26-30 October 2026</p>
               <div className="saf-renewal-sunset-meta">
-                <div className="saf-renewal-sunset-pager" aria-hidden="true">
-                  <span className="saf-renewal-sunset-pager-arrow">←</span>
-                  <span className="saf-renewal-sunset-pager-num">01</span>
-                  <span className="saf-renewal-sunset-pager-sep">/</span>
-                  <span className="saf-renewal-sunset-pager-num">03</span>
-                  <span className="saf-renewal-sunset-pager-arrow">→</span>
-                </div>
-                <p className="saf-renewal-sunset-copy">
-                  The Seoul ADR Festival brings together leading arbitrators, practitioners,
-                  and industry experts from across the Asia-Pacific region for five days of
-                  dialogue, collaboration, and discovery.
-                </p>
+                <button type="button" className="saf-renewal-sunset-arrow" aria-label="Previous hero slide">
+                  ←
+                </button>
+                <span className="saf-renewal-sunset-pager-num">01</span>
+                <span className="saf-renewal-sunset-pager-sep">/</span>
+                <span className="saf-renewal-sunset-pager-num">03</span>
+                <button type="button" className="saf-renewal-sunset-arrow" aria-label="Next hero slide">
+                  →
+                </button>
               </div>
-              <a className="saf-renewal-sunset-cta" href="#program">
-                Explore Program
-                <span aria-hidden="true">→</span>
+              <a className="saf-renewal-hero-readmore" href="#program">
+                Read More
+                <span aria-hidden="true">›</span>
               </a>
             </div>
           </div>
@@ -326,7 +401,10 @@ export default function HomePage() {
             </div>
             <div className="saf-renewal-expect-grid">
               {expectationCards.map((card) => (
-                <article className="saf-renewal-expect-card" key={card.title}>
+                <article
+                  className={`saf-renewal-expect-card${card.precomposed ? ' is-precomposed' : ''}`}
+                  key={card.title}
+                >
                   <div
                     className="saf-renewal-expect-card-media"
                     style={{ backgroundImage: `url(${assetSrc(card.image)})` }}
@@ -345,15 +423,15 @@ export default function HomePage() {
 
         <section
           className="saf-renewal-statement"
-          style={{ backgroundImage: `url(${assetSrc(SeoulBannerImage)})` }}
+          style={{ backgroundImage: `url(${assetSrc(StatementPatternImage)})` }}
         >
-          <div className="saf-renewal-statement-overlay" aria-hidden="true" />
           <div className="saf-renewal-shell saf-renewal-statement-inner">
-            <p className="saf-renewal-statement-kicker">A New Chapter Begins</p>
             <h2 className="saf-renewal-statement-title">
-              Seoul ADR Festival will become a cornerstone
+              Seoul ADR Festival will become
               <br />
-              of the international arbitration calendar.
+              a cornerstone of the international
+              <br />
+              arbitration calendar.
             </h2>
             <a className="saf-renewal-statement-cta" href="/events" aria-label="View official events">
               <span aria-hidden="true">↗</span>
@@ -362,35 +440,42 @@ export default function HomePage() {
         </section>
 
         <section className="saf-renewal-recap">
-          <div className="saf-renewal-shell saf-renewal-recap-grid">
-            <article className="saf-renewal-recap-card">
-              <span>SAF 2025 Recap</span>
-              <div>
-                <small>27-31 October</small>
-                <small>Seoul · Korea</small>
-              </div>
-            </article>
-            <div className="saf-renewal-recap-copy">
+          <div className="saf-renewal-shell">
+            <div className="saf-renewal-recap-heading">
               <span className="saf-renewal-recap-kicker">Looking Back</span>
               <h2>
                 A landmark year,
                 <br />
                 a decade in the making.
               </h2>
-              <p>
-                Held over five days in October 2025, SAF gathered more than
-                1,500 practitioners from over 40 jurisdictions. The ADR Conference
-                anchored a week of seminars, gatherings and cultural side events at
-                the centre of international dispute resolution.
-              </p>
-              <dl>
-                {recapStats.map((stat) => (
-                  <div key={stat.label}>
-                    <dt>{stat.value}</dt>
-                    <dd>{stat.label}</dd>
-                  </div>
-                ))}
-              </dl>
+            </div>
+            <div className="saf-renewal-recap-grid">
+              <article className="saf-renewal-recap-card">
+                <span>Recap</span>
+                <strong>Seoul ADR Festival 2025</strong>
+                <a href="/past-editions/2025" onClick={(e) => handleNavClick(e, '/past-editions/2025')}>
+                  Watch Highlights
+                </a>
+              </article>
+              <div className="saf-renewal-recap-copy">
+                <p>
+                  The 2025 edition convened over <strong>1,500 participants from 40+ jurisdictions</strong>,
+                  marking a defining moment for the region's dispute resolution community.
+                </p>
+                <p>
+                  Building on that momentum, SAF 2026 will go further — broadening voices,
+                  deepening dialogue, and elevating the standard for cross-border practice.
+                  The latest chapter in a journey ten years in the making.
+                </p>
+                <dl>
+                  {recapStats.map((stat) => (
+                    <div key={stat.label}>
+                      <dt>{stat.value}</dt>
+                      <dd>{stat.label}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
             </div>
           </div>
         </section>
@@ -398,17 +483,12 @@ export default function HomePage() {
         <section className="saf-renewal-journey">
           <div className="saf-renewal-shell">
             <div className="saf-renewal-journey-heading">
-              <span>Est. 2013</span>
-              <h2>
-                A Decade of Dialogue
-              </h2>
-              <p>
-                To celebrate its 13th anniversary, SAF returns to Seoul this October
-                with a renewed programme, new partners and a wider stage for the next
-                generation of ADR practitioners.
-              </p>
+              <span>A Decade of Dialogue</span>
             </div>
             <div className="saf-renewal-journey-grid">
+              <button type="button" className="saf-renewal-journey-arrow" aria-label="Previous gallery image">
+                ‹
+              </button>
               {journeyCards.map((card) => (
                 <article
                   className="saf-renewal-journey-card"
@@ -418,6 +498,9 @@ export default function HomePage() {
                   <span>{card.year}</span>
                 </article>
               ))}
+              <button type="button" className="saf-renewal-journey-arrow is-next" aria-label="Next gallery image">
+                ›
+              </button>
             </div>
           </div>
         </section>
@@ -447,15 +530,24 @@ export default function HomePage() {
 
       <footer className="saf-renewal-footer">
         <div className="saf-renewal-shell">
-          <div className="saf-renewal-footer-brand">
-            <FestivalLogo />
-            <strong>
-              Seoul
-              <br />
-              ADR
-              <br />
-              Festival
-            </strong>
+          <div className="saf-renewal-footer-top">
+            <div className="saf-renewal-footer-brand">
+              <FestivalLogo />
+              <strong>
+                Seoul
+                <br />
+                ADR
+                <br />
+                Festival
+              </strong>
+            </div>
+            <a
+              className="saf-renewal-footer-privacy"
+              href="#privacy"
+              onClick={(e) => handleNavClick(e, '#privacy')}
+            >
+              Privacy
+            </a>
           </div>
           <p>
             Seoul ADR Festival (SAF) is organized by KCAB International.
@@ -466,6 +558,13 @@ export default function HomePage() {
           </p>
           <BusinessFooterInfo />
           <small>© 2026 KCAB International. All rights reserved.</small>
+          <div className="saf-renewal-footer-social" aria-label="Social links">
+            {socialLinks.map((item) => (
+              <a key={item.label} href={item.href} aria-label={item.label}>
+                <SocialIcon icon={item.icon} />
+              </a>
+            ))}
+          </div>
         </div>
       </footer>
 
