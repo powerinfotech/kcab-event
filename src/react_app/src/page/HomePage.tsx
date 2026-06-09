@@ -92,12 +92,18 @@ const navItems = [
     href: '#partners',
     children: [
       { label: 'Organizer', href: '#partners' },
-      { label: 'Sponsors', href: '#partners' },
-      { label: 'Supporters', href: '#partners' },
+      { label: 'Sponsors', href: '/sponsors-2025' },
+      { label: 'Supporters', href: '/supporters' },
       { label: 'Media Partners', href: '#partners', featured: true },
     ],
   },
-  { label: 'Official Events', href: '/events' },
+  {
+    label: 'Official Events',
+    href: '/events',
+    children: [
+      { label: 'Register', href: '/event/asia-civil-law-summit-demo/register' },
+    ],
+  },
   { label: 'Calendar', href: '#program' },
   { label: 'Visit Seoul', href: '#visit' },
   { label: 'Archives', href: '/past-editions' },

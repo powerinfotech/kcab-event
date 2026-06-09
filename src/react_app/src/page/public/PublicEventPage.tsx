@@ -73,11 +73,27 @@ const assetSrc = (asset: string | { src?: string }) => (typeof asset === 'string
 
 const eventNavItems = [
   { label: 'Home', href: '/' },
-  { label: 'Official Events', href: '/events' },
-  { label: 'Program', href: '#program' },
-  { label: 'Speakers', href: '#speakers' },
-  { label: 'Visit Seoul', href: '#visit-seoul' },
+  {
+    label: 'Partners',
+    href: '#partners',
+    children: [
+      { label: 'Organizer', href: '/#partners' },
+      { label: 'Sponsors', href: '/sponsors-2025' },
+      { label: 'Supporters', href: '/supporters' },
+      { label: 'Media Partners', href: '/#partners', featured: true },
+    ],
+  },
+  {
+    label: 'Official Events',
+    href: '/events',
+    children: [
+      { label: 'Register', href: '/event/asia-civil-law-summit-demo/register' },
+    ],
+  },
+  { label: 'Calendar', href: '/#program' },
+  { label: 'Visit Seoul', href: '/#visit' },
   { label: 'Archives', href: '/past-editions' },
+  { label: 'Contact', href: '/#contact' },
 ];
 
 const socialLinks = [
@@ -106,9 +122,9 @@ const EMPTY_REGISTRATION_PARTICIPANT: PublicRegistrationParticipantRequest = {
 };
 
 const REGISTRATION_STEPS: Array<{ step: RegistrationStep; label: string; description: string }> = [
-  { step: 1, label: 'Participant', description: 'Your registration details' },
-  { step: 2, label: 'Payment', description: 'Ticket & secure payment' },
-  { step: 3, label: 'Complete', description: 'Registration confirmed' },
+  { step: 1, label: 'Participant Information', description: 'Your registration details' },
+  { step: 2, label: 'Ticket & Payment', description: 'Ticket & secure payment' },
+  { step: 3, label: 'Registration Complete', description: 'Registration confirmed' },
 ];
 
 const PAYMENT_METHOD_OPTIONS: Array<{
@@ -800,12 +816,12 @@ export const PublicEventRegistrationPage: React.FC<PublicEventPageProps> = ({ ur
       <SafEventHeader onNavigate={handleNavigate} />
       <main className="pub-page-content">
         <section className="pub-event-registration-page-section">
+          <PublicRegistrationMasthead
+            page={page}
+            settings={pageSettings}
+            onBackToEvent={backToEvent}
+          />
           <div className="saf-renewal-shell pub-event-registration-shell">
-            <PublicRegistrationMasthead
-              page={page}
-              settings={pageSettings}
-              onBackToEvent={backToEvent}
-            />
             <PublicRegistrationStepPanel
               page={page}
               settings={pageSettings}
@@ -853,33 +869,99 @@ export const PublicEventRegistrationPage: React.FC<PublicEventPageProps> = ({ ur
 };
 
 const SafEventHeader: React.FC<{ onNavigate: (url: string) => void }> = ({ onNavigate }) => {
+  const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   const handleNavClick = (event: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-    if (href.startsWith('#')) return;
-    event.preventDefault();
-    onNavigate(href);
+    setActiveMenu(null);
+    setMobileMenuOpen(false);
+    if (href.startsWith('/') && !href.includes('#')) {
+      event.preventDefault();
+      onNavigate(href);
+    }
+  };
+
+  const handleHeaderBlur = (event: React.FocusEvent<HTMLElement>) => {
+    const nextTarget = event.relatedTarget;
+    if (!nextTarget || !event.currentTarget.contains(nextTarget as Node)) {
+      setActiveMenu(null);
+    }
   };
 
   return (
-    <header className="saf-renewal-header saf-event-header">
+    <header
+      className={`saf-renewal-header saf-event-header${activeMenu ? ' is-menu-open' : ''}${mobileMenuOpen ? ' is-mobile-menu-open is-menu-open' : ''}`}
+      onMouseLeave={() => setActiveMenu(null)}
+      onBlur={handleHeaderBlur}
+    >
       <div className="saf-renewal-shell saf-renewal-header-inner">
         <a className="saf-renewal-brand" href="/" aria-label="Seoul ADR Festival home" onClick={(event) => handleNavClick(event, '/')}>
           <FestivalLogo />
+          <span className="saf-renewal-brand-wordmark">
+            Seoul
+            <br />
+            ADR
+            <br />
+            Festival
+          </span>
         </a>
-        <div className="saf-renewal-header-right">
-          <div className="saf-renewal-social">
-            {socialLinks.map((item) => (
-              <a key={item.label} href={item.href} aria-label={item.label}>
-                <SocialIcon icon={item.icon} />
-              </a>
-            ))}
-          </div>
-          <nav className="saf-renewal-nav" aria-label="Event navigation">
-            {eventNavItems.map((item) => (
-              <a key={item.label} href={item.href} onClick={(event) => handleNavClick(event, item.href)}>
-                {item.label}
-              </a>
-            ))}
-          </nav>
+        <button
+          className="saf-renewal-menu-toggle"
+          type="button"
+          aria-label={mobileMenuOpen ? 'Close main menu' : 'Open main menu'}
+          aria-expanded={mobileMenuOpen}
+          onClick={() => setMobileMenuOpen((prev) => !prev)}
+        >
+          <span />
+          <span />
+          <span />
+        </button>
+        <nav className="saf-renewal-nav" aria-label="Main navigation">
+          {eventNavItems.map((item) => {
+            const hasChildren = Boolean(item.children?.length);
+            const isActive = activeMenu === item.label;
+            return (
+              <div
+                className={`saf-renewal-nav-item${isActive ? ' is-active' : ''}${hasChildren ? ' has-submenu' : ''}`}
+                key={item.label}
+                onMouseEnter={() => setActiveMenu(hasChildren ? item.label : null)}
+                onFocus={() => {
+                  if (hasChildren) setActiveMenu(item.label);
+                }}
+              >
+                <a
+                  href={item.href}
+                  aria-haspopup={hasChildren ? 'true' : undefined}
+                  aria-expanded={hasChildren ? isActive || mobileMenuOpen : undefined}
+                  onClick={(event) => handleNavClick(event, item.href)}
+                >
+                  {item.label}
+                </a>
+                {hasChildren && (
+                  <div className="saf-renewal-menu-panel" role="menu">
+                    {item.children?.map((child) => (
+                      <a
+                        className={child.featured ? 'is-featured' : undefined}
+                        href={child.href}
+                        key={child.label}
+                        role="menuitem"
+                        onClick={(event) => handleNavClick(event, child.href)}
+                      >
+                        {child.label}
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </nav>
+        <div className="saf-renewal-social" aria-label="Social links">
+          {socialLinks.map((item) => (
+            <a key={item.label} href={item.href} aria-label={item.label}>
+              <SocialIcon icon={item.icon} />
+            </a>
+          ))}
         </div>
       </div>
     </header>
@@ -889,15 +971,20 @@ const SafEventHeader: React.FC<{ onNavigate: (url: string) => void }> = ({ onNav
 const SafEventFooter: React.FC = () => (
   <footer className="saf-renewal-footer saf-event-footer">
     <div className="saf-renewal-shell">
-      <div className="saf-renewal-footer-brand">
-        <FestivalLogo />
-        <strong>
-          Seoul
-          <br />
-          ADR
-          <br />
-          Festival
-        </strong>
+      <div className="saf-renewal-footer-top">
+        <div className="saf-renewal-footer-brand">
+          <FestivalLogo />
+          <strong>
+            Seoul
+            <br />
+            ADR
+            <br />
+            Festival
+          </strong>
+        </div>
+        <a className="saf-renewal-footer-privacy" href="#privacy">
+          Privacy
+        </a>
       </div>
       <p>
         Seoul ADR Festival (SAF) is organized by KCAB International.
@@ -908,6 +995,13 @@ const SafEventFooter: React.FC = () => (
       </p>
       <BusinessFooterInfo />
       <small>&copy; 2026 KCAB International. All rights reserved.</small>
+      <div className="saf-renewal-footer-social" aria-label="Social links">
+        {socialLinks.map((item) => (
+          <a key={item.label} href={item.href} aria-label={item.label}>
+            <SocialIcon icon={item.icon} />
+          </a>
+        ))}
+      </div>
     </div>
   </footer>
 );
@@ -994,7 +1088,9 @@ const PublicRegistrationMasthead: React.FC<{
 }> = ({ page, settings, onBackToEvent }) => {
   const contact = [settings.contactEmail, settings.contactPhone].filter(Boolean).join(' / ');
   const heroImageUrl = page.heroImageUrl || assetSrc(HeroSeoulImage);
-  const mastheadSummary = stripHtml(page.eventSummary || '');
+  // Figma sub02_01Registration Mask group: 1줄=날짜/시간, 2줄=장소 (자정 00:00 표기는 생략)
+  const mastheadDate = (formatBlockDateRange(page.eventStartDt, page.eventEndDt) || '').replace(/\s*00:00/g, '');
+  const mastheadVenue = page.location;
   const mastheadStyle = {
     '--registration-hero-image': `url("${heroImageUrl}")`,
   } as React.CSSProperties;
@@ -1004,7 +1100,13 @@ const PublicRegistrationMasthead: React.FC<{
       <div className="pub-event-registration-masthead-copy">
         <p>Official Event Registration</p>
         <h1>{page.eventTitle}</h1>
-        {mastheadSummary && <span>{mastheadSummary}</span>}
+        {(mastheadDate || mastheadVenue) && (
+          <span>
+            {mastheadDate}
+            {mastheadDate && mastheadVenue && <br />}
+            {mastheadVenue}
+          </span>
+        )}
       </div>
       <div className="pub-event-registration-masthead-meta">
         {renderRegistrationMetaItem('Date', formatBlockDateRange(page.eventStartDt, page.eventEndDt))}
@@ -1192,7 +1294,7 @@ const PublicRegistrationStepPanel: React.FC<PublicRegistrationStepPanelProps> = 
                   const inputConfig = REGISTRATION_FIELD_INPUTS[field.fieldCode];
                   if (!inputConfig) return null;
                   const value = participant[inputConfig.key] ?? '';
-                  const label = `${field.fieldLabel}${field.requiredYn === 'Y' ? ' *' : ''}`;
+                  const isRequired = field.requiredYn === 'Y';
                   const fieldClassName = [
                     inputConfig.half ? 'is-half' : '',
                     inputConfig.wide ? 'is-wide' : '',
@@ -1200,7 +1302,7 @@ const PublicRegistrationStepPanel: React.FC<PublicRegistrationStepPanelProps> = 
                   if (inputConfig.select) {
                     return (
                       <label key={field.fieldCode} className={fieldClassName}>
-                        <span>{label}</span>
+                        <span>{field.fieldLabel}{isRequired && <em className="pub-event-required">*</em>}</span>
                         <Select<string>
                           className="pub-event-registration-country-select"
                           classNames={{ popup: { root: 'pub-event-registration-country-dropdown' } }}
@@ -1217,7 +1319,7 @@ const PublicRegistrationStepPanel: React.FC<PublicRegistrationStepPanelProps> = 
                   }
                   return (
                     <label key={field.fieldCode} className={fieldClassName}>
-                      <span>{label}</span>
+                      <span>{field.fieldLabel}{isRequired && <em className="pub-event-required">*</em>}</span>
                       <input
                         type={field.fieldCode === 'email' ? 'email' : 'text'}
                         value={String(value)}
@@ -1390,17 +1492,19 @@ const PublicRegistrationStepPanel: React.FC<PublicRegistrationStepPanelProps> = 
 
         {step === 3 && (
           <div className="pub-event-registration-complete">
-            <span className="pub-event-registration-complete-badge">Confirmed</span>
-            <h3>Registration Complete</h3>
-            <p>
-              Thank you for registering for {page.eventTitle}. Your payment has been confirmed and your participant
-              information has been recorded.
-            </p>
-            <p className="pub-event-registration-note">
-              Event updates or access information may be sent to your registered email address.
-              For registration changes or questions, contact <a href={`mailto:${contactEmail}`}>{contactEmail}</a>.
-            </p>
-            <button type="button" className="pub-event-registration-primary" onClick={onBackToEvent}>
+            <div className="pub-event-registration-complete-panel">
+              <span className="pub-event-registration-complete-badge">Confirmed</span>
+              <h3>Registration Complete</h3>
+              <p>
+                Thank you for registering for {page.eventTitle}. Your payment has been confirmed and your participant
+                information has been recorded.
+              </p>
+              <p className="pub-event-registration-note">
+                Event updates or access information may be sent to your registered email address.
+                For registration changes or questions, contact <a href={`mailto:${contactEmail}`}>{contactEmail}</a>.
+              </p>
+            </div>
+            <button type="button" className="pub-event-registration-complete-back" onClick={onBackToEvent}>
               Back to Event
             </button>
           </div>

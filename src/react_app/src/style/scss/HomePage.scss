@@ -2684,3 +2684,287 @@
     font-size: 11px;
   }
 }
+
+/* ===== Sponsors sub page (Figma sub01_Sponsors) ===== */
+.saf-sub-hero {
+  position: relative;
+  min-height: 440px;
+  padding: 180px 0 54px;          // 절대배치된 180px 헤더 영역 확보
+  display: flex;
+  align-items: flex-end;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  isolation: isolate;
+}
+
+.saf-sub-hero-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(20, 18, 48, 0.5) 0%,
+    rgba(20, 18, 48, 0.32) 45%,
+    rgba(20, 18, 48, 0.66) 100%
+  );
+}
+
+.saf-sub-hero-inner {
+  position: relative;
+  z-index: 1;
+  width: min(calc(100% - (var(--saf-home-left) * 2)), 1170px);
+  margin-left: var(--saf-home-left);
+  margin-right: 0;
+  color: #fff;
+}
+
+.saf-sub-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.82);
+
+  a {
+    color: rgba(255, 255, 255, 0.82);
+    text-decoration: none;
+    transition: color 0.15s ease;
+
+    &:hover {
+      color: #fff;
+    }
+  }
+
+  .saf-sub-breadcrumb-home {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .saf-sub-breadcrumb-home svg {
+    width: 15px;
+    height: 15px;
+    display: block;
+  }
+
+  // 점 구분자 (Figma sub01_Sponsors: 작은 흰 점, '›' 대체)
+  .saf-sub-breadcrumb-sep {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.6);
+    flex: 0 0 auto;
+  }
+
+  span[aria-hidden] {
+    opacity: 0.7;
+  }
+
+  .is-current {
+    color: #fff;
+  }
+}
+
+.saf-sub-hero-title {
+  margin: 14px 0 0;
+  font-size: 54px;
+  line-height: 1.1;
+  font-weight: 900;
+  color: #fff;
+}
+
+.saf-sponsors-list {
+  position: relative;
+  overflow: hidden;
+
+  .saf-renewal-shell {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+.saf-sponsors-blob {
+  position: absolute;
+  top: 36px;
+  right: -40px;
+  z-index: 0;
+  width: 360px;
+  height: 320px;
+  pointer-events: none;
+  background:
+    radial-gradient(60% 60% at 35% 40%, rgba(123, 97, 255, 0.5), transparent 70%),
+    radial-gradient(55% 55% at 70% 55%, rgba(223, 85, 231, 0.42), transparent 72%),
+    radial-gradient(50% 50% at 55% 78%, rgba(49, 92, 255, 0.38), transparent 70%);
+  filter: blur(22px);
+  opacity: 0.85;
+}
+
+.saf-sponsors-list .saf-sponsors-intro {
+  margin-bottom: 42px;
+
+  h2 {
+    max-width: none;
+    margin: 0 0 16px;
+    text-align: left;
+    font-size: 32px;
+    line-height: 1.2;
+    font-weight: 900;
+    color: var(--saf-ink);
+  }
+
+  p {
+    max-width: 680px;
+    margin: 0;
+    color: var(--saf-muted);
+    font-size: 15px;
+    line-height: 1.7;
+  }
+}
+
+/* Sponsors / Supporters 공통: 블롭을 Figma 리본 PNG(img)로 배치 (Group 1321318564) */
+.saf-sponsors-page .saf-sponsors-blob {
+  top: 0;
+  right: 110px;          // Figma: 우측 끝에서 안쪽(여백 있음), 화면 밖으로 흘리지 않음
+  width: 600px;
+  height: auto;
+  background: none;
+  filter: none;
+  opacity: 0.9;
+}
+
+/* Sponsors 전용: Figma sub01_Sponsors 2열 그리드 + 큰 로고 (Supporters 3열은 그대로 둠) */
+.saf-sponsors-page:not(.saf-supporters-page) {
+  /* 등급 제목: Figma = 17px/600, #1C1C62, 자간 -0.33, 아래 전체폭 보라 그라데이션 구분선 */
+  .saf-renewal-sponsor-title {
+    display: block;
+    margin-bottom: 28px;
+
+    span {
+      min-width: 0;
+      color: #1c1c62;
+      font-weight: 600;
+      letter-spacing: -0.33px;
+    }
+
+    &::after {
+      display: block;
+      width: 100%;
+      height: 1px;
+      margin-top: 14px;
+      background: linear-gradient(90deg, #a581ff 0%, #bd84ff 100%);
+    }
+  }
+
+  .saf-renewal-logo-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 28px 40px;
+    margin-top: 8px;
+  }
+
+  // 로고 크기 균일화: 모든 로고를 동일한 바운딩 박스(폭/높이 px 상한) 안에서 contain
+  .saf-renewal-sponsor-logo {
+    min-height: 110px;
+
+    img {
+      max-height: 72px;
+      max-width: 190px;
+      object-fit: contain;
+    }
+  }
+
+  // 단일 로고 등급(Welcome Reception / Special)은 가운데 정렬
+  .saf-renewal-sponsor-logo:only-child {
+    grid-column: 1 / -1;
+    justify-self: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .saf-sub-hero {
+    min-height: 300px;
+    padding: 120px 0 32px;
+  }
+
+  .saf-sub-hero-title {
+    font-size: 34px;
+  }
+
+  .saf-sponsors-list .saf-sponsors-intro h2 {
+    font-size: 26px;
+  }
+
+  .saf-sponsors-blob {
+    display: none;
+  }
+
+  .saf-sponsors-page:not(.saf-supporters-page) .saf-renewal-logo-grid {
+    gap: 22px 26px;
+  }
+
+  .saf-sponsors-page:not(.saf-supporters-page) .saf-renewal-sponsor-logo {
+    min-height: 88px;
+
+    img {
+      max-height: 56px;
+      max-width: 140px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .saf-sponsors-page:not(.saf-supporters-page) .saf-renewal-logo-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===== Supporters sub page (Figma sub01_Supporters) ===== */
+.saf-supporters-page {
+  /* 섹션 제목(Frame 1321318547): Figma = 17px/600, #1C1C62, 자간 -0.33, 아래 전체폭 보라 그라데이션 구분선 (Sponsors 화면과 동일) */
+  .saf-renewal-sponsor-title {
+    display: block;
+    margin-bottom: 28px;
+
+    span {
+      min-width: 0;
+      color: #1c1c62;
+      font-weight: 600;
+      letter-spacing: -0.33px;
+    }
+
+    &::after {
+      display: block;
+      width: 100%;
+      height: 1px;
+      margin-top: 14px;
+      background: linear-gradient(90deg, #a581ff 0%, #bd84ff 100%);
+    }
+  }
+
+  .saf-renewal-logo-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 44px 48px;
+    margin-top: 8px;
+  }
+
+  .saf-renewal-sponsor-logo {
+    min-height: 92px;
+
+    img {
+      max-height: 72px;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .saf-supporters-page .saf-renewal-logo-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 30px 26px;
+  }
+}
+
+@media (max-width: 480px) {
+  .saf-supporters-page .saf-renewal-logo-grid {
+    grid-template-columns: 1fr;
+  }
+}
