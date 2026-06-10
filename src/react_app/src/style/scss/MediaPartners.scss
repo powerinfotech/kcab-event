@@ -80,8 +80,7 @@
   .mp-breadcrumb,
   .mp-breadcrumb span,
   .mp-hero-title,
-  .mp-heading,
-  .mp-support-label {
+  .mp-heading {
     font-family: 'Montserrat', 'Onest', 'Open Sans', 'Noto Sans KR', sans-serif;
   }
 }
@@ -1239,7 +1238,7 @@
 
 .mp-blob {
   position: absolute;
-  top: 413px;
+  top: 450px;  // .mp-hero(height 490px) 바닥에서 50px 간격
   right: 8.3%;
   width: min(915px, 47.7%);
   height: auto;
@@ -1259,24 +1258,6 @@
   font-weight: 700;
   line-height: 59px;
   color: #222222;
-}
-
-.mp-support {
-  margin-top: 68px;
-}
-
-.mp-support-label {
-  display: block;
-  font-size: 17px;
-  font-weight: 600;
-  line-height: 20px;
-  color: #1c1c62;
-}
-
-.mp-support-line {
-  margin-top: 19px;
-  height: 1px;
-  background: rgba(34, 34, 34, 0.18);
 }
 
 .mp-logos {

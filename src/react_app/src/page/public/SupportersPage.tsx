@@ -80,7 +80,7 @@ const supporterLogos = [
 
 export default function SupportersPage() {
   return (
-    <main>
+    <main className="mp-main">
         <section
           className="mp-hero"
           style={{ backgroundImage: `url(${assetSrc(SupportersHeroImage)})` }}
@@ -97,8 +97,11 @@ export default function SupportersPage() {
           </div>
         </section>
 
+        {/* organizer와 공통 class(.mp-blob): list(overflow:hidden) 밖 hero의 형제로 두어 잘리지 않게.
+            사이즈/위치는 .mp-blob 공통 규칙(MediaPartners.scss) — .mp-hero 와 50px 간격. */}
+        <img className="mp-blob" src={assetSrc(SupportersBlob)} alt="" aria-hidden="true" />
+
         <section className="saf-renewal-sponsors saf-sponsors-list">
-          <img className="saf-sponsors-blob" src={assetSrc(SupportersBlob)} alt="" aria-hidden="true" />
           <div className="saf-renewal-shell">
             <div className="saf-sponsors-intro">
               <h2>Supporters</h2>

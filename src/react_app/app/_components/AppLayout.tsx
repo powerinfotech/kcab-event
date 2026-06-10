@@ -14,6 +14,7 @@ import PastEditions, { PastEdition2020, PastEdition2021, PastEdition2022, PastEd
 import SafSignup from '@page/saf/SafSignup';
 import SponsorsPage from '@page/public/SponsorsPage';
 import SupportersPage from '@page/public/SupportersPage';
+import HomePage from '@page/HomePage';
 import PublicRenewalLayout from '@page/public/components/PublicRenewalLayout';
 import { getUserLoginInfo } from '@api/CommonApi';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
@@ -46,9 +47,11 @@ function getAdminMenuPath(path: string): string {
  */
 function getPublicShellRoute(
   currentPath: string,
-  children: React.ReactNode,
 ): { className: string; content: React.ReactNode } | null {
-  if (currentPath === '/') return { className: '', content: children };
+  // 홈은 다른 public 라우트와 동일하게 컴포넌트를 직접(eager) 렌더한다.
+  // children(=MainContent)을 거치면 HomePage가 dynamic(ssr:false)로 lazy 로드되어
+  // 첫 프레임에 빈 콘텐츠가 그려지고, absolute 헤더 아래로 footer가 붙어 잠깐 겹쳐 보인다.
+  if (currentPath === '/') return { className: '', content: <HomePage /> };
   if (currentPath === '/organizer') return { className: 'organizer-page', content: <Organizer /> };
   if (currentPath === '/media-partners') {
     return { className: 'media-partners-page', content: <MediaPartners /> };
@@ -188,7 +191,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   if (!isAdminPath) {
-    const publicShellRoute = getPublicShellRoute(currentPath, children);
+    const publicShellRoute = getPublicShellRoute(currentPath);
     if (publicShellRoute) {
       return (
         <PublicRenewalLayout className={publicShellRoute.className}>

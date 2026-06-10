@@ -983,31 +983,36 @@
   padding: 0 0 42px;
 }
 
+/* 섹션 제목 — Home/Organizer/Media Partners/Sponsors/Supporters 공통 단일 디자인.
+   Figma sub01: 17px/600, #1C1C62, 자간 -0.33, 아래 전체폭 보라 그라데이션 구분선. */
 .saf-renewal-sponsor-title {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 20px;
-
-  &::after {
-    content: '';
-    height: 1px;
-    flex: 1;
-    background: rgba(31, 28, 66, 0.22);
-  }
-
-  &::before {
-    display: none;
-  }
+  display: block;
+  margin-bottom: 28px;
 
   span {
     display: block;
-    min-width: 150px;
-    color: #181631;
+    min-width: 0;
+    color: #1c1c62;
     font-size: 17px;
-    font-weight: 850;
+    font-weight: 600;
+    letter-spacing: -0.33px;
     white-space: nowrap;
   }
+
+  &::after {
+    content: '';
+    display: block;
+    width: 100%;
+    height: 1px;
+    margin-top: 14px;
+    background: linear-gradient(90deg, #a581ff 0%, #bd84ff 100%);
+  }
+}
+
+/* organizer/media-partners: 큰 제목(.mp-heading) 아래 간격 유지 (옛 .mp-support margin-top) */
+.organizer-page .saf-renewal-sponsor-title,
+.media-partners-page .saf-renewal-sponsor-title {
+  margin-top: 68px;
 }
 
 .saf-renewal-logo-grid {
@@ -2753,6 +2758,7 @@
   .saf-sub-hero {
     min-height: 360px;
   }
+  // .mp-blob 은 ≤900 에서 공통 규칙(MediaPartners.scss)으로 이미 숨겨진다.
 }
 
 .saf-sub-hero-overlay {
@@ -2841,22 +2847,6 @@
   }
 }
 
-.saf-sponsors-blob {
-  position: absolute;
-  top: 36px;
-  right: -40px;
-  z-index: 0;
-  width: 360px;
-  height: 320px;
-  pointer-events: none;
-  background:
-    radial-gradient(60% 60% at 35% 40%, rgba(123, 97, 255, 0.5), transparent 70%),
-    radial-gradient(55% 55% at 70% 55%, rgba(223, 85, 231, 0.42), transparent 72%),
-    radial-gradient(50% 50% at 55% 78%, rgba(49, 92, 255, 0.38), transparent 70%);
-  filter: blur(22px);
-  opacity: 0.85;
-}
-
 .saf-sponsors-list .saf-sponsors-intro {
   margin-bottom: 42px;
 
@@ -2879,40 +2869,20 @@
   }
 }
 
-/* Sponsors / Supporters 공통: 블롭을 Figma 리본 PNG(img)로 배치 (Group 1321318564) */
-.saf-sponsors-page .saf-sponsors-blob {
-  top: 0;
-  right: 110px;          // Figma: 우측 끝에서 안쪽(여백 있음), 화면 밖으로 흘리지 않음
-  width: 600px;
-  height: auto;
-  background: none;
-  filter: none;
+/* Sponsors / Supporters 의 blob 은 organizer 와 공통 class(.mp-blob)를 사용한다.
+   사이즈·위치·숨김(≤900)은 .mp-blob 공통 규칙(MediaPartners.scss). PNG 리본만 살짝 투명하게 유지. */
+.saf-sponsors-page .mp-blob {
   opacity: 0.9;
+}
+
+/* organizer .mp-body 처럼 섹션 배경을 투명으로 — 흰 배경(셸 루트가 이미 #fff)이
+   blob을 가리지 않고 콘텐츠 뒤로 비치게 한다. (.saf-renewal-shell z-index:1 이 콘텐츠를 blob 위로 올림) */
+.saf-sponsors-page .saf-sponsors-list {
+  background: transparent;
 }
 
 /* Sponsors 전용: Figma sub01_Sponsors 2열 그리드 + 큰 로고 (Supporters 3열은 그대로 둠) */
 .saf-sponsors-page:not(.saf-supporters-page) {
-  /* 등급 제목: Figma = 17px/600, #1C1C62, 자간 -0.33, 아래 전체폭 보라 그라데이션 구분선 */
-  .saf-renewal-sponsor-title {
-    display: block;
-    margin-bottom: 28px;
-
-    span {
-      min-width: 0;
-      color: #1c1c62;
-      font-weight: 600;
-      letter-spacing: -0.33px;
-    }
-
-    &::after {
-      display: block;
-      width: 100%;
-      height: 1px;
-      margin-top: 14px;
-      background: linear-gradient(90deg, #a581ff 0%, #bd84ff 100%);
-    }
-  }
-
   .saf-renewal-logo-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 28px 40px;
@@ -2951,10 +2921,6 @@
     font-size: 26px;
   }
 
-  .saf-sponsors-blob {
-    display: none;
-  }
-
   .saf-sponsors-page:not(.saf-supporters-page) .saf-renewal-logo-grid {
     gap: 22px 26px;
   }
@@ -2977,27 +2943,6 @@
 
 /* ===== Supporters sub page (Figma sub01_Supporters) ===== */
 .saf-supporters-page {
-  /* 섹션 제목(Frame 1321318547): Figma = 17px/600, #1C1C62, 자간 -0.33, 아래 전체폭 보라 그라데이션 구분선 (Sponsors 화면과 동일) */
-  .saf-renewal-sponsor-title {
-    display: block;
-    margin-bottom: 28px;
-
-    span {
-      min-width: 0;
-      color: #1c1c62;
-      font-weight: 600;
-      letter-spacing: -0.33px;
-    }
-
-    &::after {
-      display: block;
-      width: 100%;
-      height: 1px;
-      margin-top: 14px;
-      background: linear-gradient(90deg, #a581ff 0%, #bd84ff 100%);
-    }
-  }
-
   .saf-renewal-logo-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 44px 48px;

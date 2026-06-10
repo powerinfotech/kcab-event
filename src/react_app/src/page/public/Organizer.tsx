@@ -36,9 +36,8 @@ const Organizer: React.FC = () => (
         <div className="saf-renewal-shell">
           <h2 className="mp-heading">Organizer</h2>
 
-          <div className="mp-support">
-            <span className="mp-support-label">Organizer</span>
-            <div className="mp-support-line" aria-hidden="true" />
+          <div className="saf-renewal-sponsor-title">
+            <span>Organizer</span>
           </div>
 
           <div className="mp-logos organizer-logos">

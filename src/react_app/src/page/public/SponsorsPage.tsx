@@ -79,7 +79,7 @@ const sponsorGroups = [
 
 export default function SponsorsPage() {
   return (
-    <main>
+    <main className="mp-main">
         <section
           className="mp-hero"
           style={{ backgroundImage: `url(${assetSrc(SponsorsHeroImage)})` }}
@@ -96,8 +96,11 @@ export default function SponsorsPage() {
           </div>
         </section>
 
+        {/* organizer와 공통 class(.mp-blob): list(overflow:hidden) 밖 hero의 형제로 두어 잘리지 않게.
+            사이즈/위치는 .mp-blob 공통 규칙(MediaPartners.scss) — .mp-hero 와 50px 간격. */}
+        <img className="mp-blob" src={assetSrc(SponsorsBlob)} alt="" aria-hidden="true" />
+
         <section className="saf-renewal-sponsors saf-sponsors-list">
-          <img className="saf-sponsors-blob" src={assetSrc(SponsorsBlob)} alt="" aria-hidden="true" />
           <div className="saf-renewal-shell">
             <div className="saf-sponsors-intro">
               <h2>Sponsors</h2>

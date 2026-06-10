@@ -38,9 +38,8 @@ const MediaPartners: React.FC = () => (
         <div className="saf-renewal-shell">
           <h2 className="mp-heading">Media Partners</h2>
 
-          <div className="mp-support">
-            <span className="mp-support-label">Supporting Organization</span>
-            <div className="mp-support-line" aria-hidden="true" />
+          <div className="saf-renewal-sponsor-title">
+            <span>Supporting Organization</span>
           </div>
 
           <div className="mp-logos">
