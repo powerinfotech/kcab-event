@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSetAtom } from 'jotai';
 import { currentPathAtom, pushPath } from '@atom/currentPathAtom';
+import { useCurrentOfficialEventPath } from '@hook/useCurrentOfficialEventPath';
 import { callGetPublicPopupList } from '@api/popup/PopupApi';
 import { PopupItem } from '@interface/popup/PopupManagement';
 import MainPopupOverlay from '@component/popup/MainPopupOverlay';
@@ -85,19 +86,26 @@ function SocialIcon({ icon }: { icon: string }) {
   );
 }
 
-const navItems = [
+const createNavItems = (officialEventPath: string) => [
   { label: 'Home', href: '/' },
   {
     label: 'Partners',
     href: '#partners',
     children: [
-      { label: 'Organizer', href: '#partners' },
-      { label: 'Sponsors', href: '#partners' },
-      { label: 'Supporters', href: '#partners' },
-      { label: 'Media Partners', href: '#partners', featured: true },
+      { label: 'Organizer', href: '/organizer' },
+      { label: 'Sponsors', href: '/sponsors' },
+      { label: 'Supporters', href: '/supporters' },
+      { label: 'Media Partners', href: '/media-partners', featured: true },
     ],
   },
-  { label: 'Official Events', href: '/events' },
+  {
+    label: 'Official Events',
+    href: officialEventPath,
+    children: [
+      { label: 'Events', href: officialEventPath },
+      { label: 'Register', href: `${officialEventPath}/register`, featured: true },
+    ],
+  },
   { label: 'Calendar', href: '#program' },
   { label: 'Visit Seoul', href: '#visit' },
   { label: 'Archives', href: '/past-editions' },
@@ -222,6 +230,8 @@ export default function HomePage() {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const setCurrentPath = useSetAtom(currentPathAtom);
+  const officialEventPath = useCurrentOfficialEventPath();
+  const navItems = createNavItems(officialEventPath);
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     setActiveMenu(null);
@@ -358,27 +368,32 @@ export default function HomePage() {
           <div className="saf-renewal-sunset-hero-inner">
             <div className="saf-renewal-sunset-hero-content">
               <h1 className="saf-renewal-sunset-title">
-                Seoul
+                Unveiling
                 <br />
-                ADR
+                Excellence
                 <br />
-                Festival 2026
+                in Arbitration.
               </h1>
-              <p className="saf-renewal-sunset-date">26-30 October 2026</p>
+              <p className="saf-renewal-sunset-date">{'26 \u2013 30 October 2026 \u00b7 Seoul'}</p>
+              <p className="saf-renewal-sunset-lede">
+                The Seoul ADR Festival brings together leading arbitrators, practitioners, and industry
+                experts from across the Asia-Pacific region for five days of dialogue, collaboration,
+                and discovery.
+              </p>
               <div className="saf-renewal-sunset-meta">
                 <button type="button" className="saf-renewal-sunset-arrow" aria-label="Previous hero slide">
-                  ←
+                  {'\u2190'}
                 </button>
                 <span className="saf-renewal-sunset-pager-num">01</span>
                 <span className="saf-renewal-sunset-pager-sep">/</span>
                 <span className="saf-renewal-sunset-pager-num">03</span>
                 <button type="button" className="saf-renewal-sunset-arrow" aria-label="Next hero slide">
-                  →
+                  {'\u2192'}
                 </button>
               </div>
               <a className="saf-renewal-hero-readmore" href="#program">
                 Read More
-                <span aria-hidden="true">›</span>
+                <span aria-hidden="true">{'\u203a'}</span>
               </a>
             </div>
           </div>
@@ -433,8 +448,13 @@ export default function HomePage() {
               <br />
               arbitration calendar.
             </h2>
-            <a className="saf-renewal-statement-cta" href="/events" aria-label="View official events">
-              <span aria-hidden="true">↗</span>
+            <a
+              className="saf-renewal-statement-cta"
+              href={officialEventPath}
+              aria-label="View official events"
+              onClick={(e) => handleNavClick(e, officialEventPath)}
+            >
+              <span aria-hidden="true">{'\u2197'}</span>
             </a>
           </div>
         </section>
@@ -463,7 +483,7 @@ export default function HomePage() {
                   marking a defining moment for the region's dispute resolution community.
                 </p>
                 <p>
-                  Building on that momentum, SAF 2026 will go further — broadening voices,
+                  Building on that momentum, SAF 2026 will go further{'\u2014'}broadening voices,
                   deepening dialogue, and elevating the standard for cross-border practice.
                   The latest chapter in a journey ten years in the making.
                 </p>
@@ -487,7 +507,7 @@ export default function HomePage() {
             </div>
             <div className="saf-renewal-journey-grid">
               <button type="button" className="saf-renewal-journey-arrow" aria-label="Previous gallery image">
-                ‹
+                {'\u2039'}
               </button>
               {journeyCards.map((card) => (
                 <article
@@ -499,7 +519,7 @@ export default function HomePage() {
                 </article>
               ))}
               <button type="button" className="saf-renewal-journey-arrow is-next" aria-label="Next gallery image">
-                ›
+                {'\u203a'}
               </button>
             </div>
           </div>
@@ -557,7 +577,7 @@ export default function HomePage() {
             Contact: saf@kcab.or.kr
           </p>
           <BusinessFooterInfo />
-          <small>© 2026 KCAB International. All rights reserved.</small>
+          <small>{'\u00a9'} 2026 KCAB International. All rights reserved.</small>
           <div className="saf-renewal-footer-social" aria-label="Social links">
             {socialLinks.map((item) => (
               <a key={item.label} href={item.href} aria-label={item.label}>

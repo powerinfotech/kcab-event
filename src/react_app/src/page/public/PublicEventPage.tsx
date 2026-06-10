@@ -16,9 +16,12 @@ import {
   PublicRegistrationPaymentResult,
   PublicRegistrationPricingOption,
 } from '@interface/public/PublicRegistration';
-import HeroSeoulImage from '../../assets/images/saf-renewal/hero-seoul.jpg';
+import HeroSeoulImage from '../../assets/images/saf-renewal/official-events-hero-wide-figma.png';
+import VenueFigmaImage from '../../assets/images/saf-renewal/official-events-venue-figma.png';
 import { usePublicNavigate } from '@hook/usePublicNavigate';
 import BusinessFooterInfo from './components/BusinessFooterInfo';
+import PublicRenewalLayout from './components/PublicRenewalLayout';
+import { useCurrentOfficialEventPath } from '@hook/useCurrentOfficialEventPath';
 
 declare global {
   interface Window {
@@ -70,10 +73,11 @@ const THEME_COLOR_MAP: Record<string, string> = {
 };
 
 const assetSrc = (asset: string | { src?: string }) => (typeof asset === 'string' ? asset : asset.src ?? '');
+const officialVenueImageUrl = assetSrc(VenueFigmaImage);
 
-const eventNavItems = [
+const createEventNavItems = (officialEventPath: string) => [
   { label: 'Home', href: '/' },
-  { label: 'Official Events', href: '/events' },
+  { label: 'Official Events', href: officialEventPath },
   { label: 'Program', href: '#program' },
   { label: 'Speakers', href: '#speakers' },
   { label: 'Visit Seoul', href: '#visit-seoul' },
@@ -263,22 +267,19 @@ const PublicEventPage: React.FC<PublicEventPageProps> = ({ urlSlug }) => {
 
   if (loading) {
     return (
-      <div className="pub-layout pub-event-renewal saf-renewal-home">
-        <SafEventHeader onNavigate={handleNavigate} />
+      <PublicRenewalLayout className="official-event-detail-page pub-event-renewal">
         <main className="pub-page-content">
           <section className="pub-section section-text size-medium pub-event-builder-section">
             <div className="pub-section-inner">Loading event...</div>
           </section>
         </main>
-        <SafEventFooter />
-      </div>
+      </PublicRenewalLayout>
     );
   }
 
   if (!page) {
     return (
-      <div className="pub-layout pub-event-renewal saf-renewal-home">
-        <SafEventHeader onNavigate={handleNavigate} />
+      <PublicRenewalLayout className="official-event-detail-page pub-event-renewal">
         <main className="pub-page-content">
           <section className="pub-section section-text size-medium pub-event-builder-section">
             <div className="pub-section-inner">
@@ -287,26 +288,32 @@ const PublicEventPage: React.FC<PublicEventPageProps> = ({ urlSlug }) => {
             </div>
           </section>
         </main>
-        <SafEventFooter />
-      </div>
+      </PublicRenewalLayout>
     );
   }
 
   const heroTitle = page.heroTitle || page.pageTitle || page.eventTitle;
   const heroSubtitle = page.heroSubtitle || page.pageSubtitle || formatEventMeta(page);
   const fallbackHeroImageUrl = assetSrc(HeroSeoulImage);
-  const heroImageUrl = page.heroImageUrl || fallbackHeroImageUrl;
-  const heroTheme = page.heroImageUrl ? theme : { ...theme, heroBackgroundType: 'image' as const };
+  const useFigmaOfficialEventHero = page.urlSlug === 'asia-civil-law-summit-demo';
+  const heroImageUrl = useFigmaOfficialEventHero ? fallbackHeroImageUrl : page.heroImageUrl || fallbackHeroImageUrl;
+  const heroTheme = useFigmaOfficialEventHero || !page.heroImageUrl ? { ...theme, heroBackgroundType: 'image' as const } : theme;
+  const heroStyle = useFigmaOfficialEventHero
+    ? {
+      backgroundImage: `url("${heroImageUrl}")`,
+      backgroundPosition: 'center top',
+      backgroundSize: 'cover',
+    }
+    : buildHeroStyle(heroTheme, heroImageUrl);
   const primarySection = navSections.find((section) => section.sectionType === 'program') ?? navSections[0];
   const primarySectionLabel = primarySection?.sectionType === 'program'
     ? 'View Program'
     : `View ${primarySection?.navLabel || primarySection?.title || 'Details'}`;
 
   return (
-    <div className="pub-layout pub-event-renewal saf-renewal-home">
-      <SafEventHeader onNavigate={handleNavigate} />
+    <PublicRenewalLayout className="official-event-detail-page pub-event-renewal">
       <main className="pub-page-content">
-        <section className="pub-section pub-event-builder-hero saf-event-detail-hero" style={buildHeroStyle(heroTheme, heroImageUrl)}>
+        <section className="pub-section pub-event-builder-hero saf-event-detail-hero" style={heroStyle}>
           <div className="saf-renewal-shell saf-event-detail-hero-inner">
             <div className="hero-content pub-event-hero-content saf-event-detail-hero-copy">
               <p className="saf-event-detail-eyebrow">Official Event</p>
@@ -353,8 +360,7 @@ const PublicEventPage: React.FC<PublicEventPageProps> = ({ urlSlug }) => {
           Register
         </button>
       )}
-      <SafEventFooter />
-    </div>
+    </PublicRenewalLayout>
   );
 };
 
@@ -853,6 +859,8 @@ export const PublicEventRegistrationPage: React.FC<PublicEventPageProps> = ({ ur
 };
 
 const SafEventHeader: React.FC<{ onNavigate: (url: string) => void }> = ({ onNavigate }) => {
+  const officialEventPath = useCurrentOfficialEventPath();
+  const eventNavItems = createEventNavItems(officialEventPath);
   const handleNavClick = (event: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     if (href.startsWith('#')) return;
     event.preventDefault();
@@ -959,20 +967,49 @@ const EventHeroInfoCard: React.FC<{
 }> = ({ page, settings, showRegistrationButton, onRegister }) => {
   const contact = [settings.contactEmail, settings.contactPhone].filter(Boolean).join(' / ');
   const registrationStatus = settings.registrationStatusLabel || formatStatusLabel(page.eventStatus);
+  const eventDate = formatHeroDate(page.eventStartDt, page.eventEndDt);
+  const eventDateMeta = formatHeroDateMeta(page.eventStartDt, page.location);
+  const eventDateDetail = formatHeroDateDetail(page.eventStartDt, page.eventEndDt);
+  const venue = splitVenue(page.location);
 
   return (
-    <aside className="pub-event-hero-info-card">
-      {renderHeroInfoRow('Date', formatBlockDateRange(page.eventStartDt, page.eventEndDt))}
-      {renderHeroInfoRow('Venue', page.location)}
-      {renderHeroInfoRow('Registration', registrationStatus)}
-      {renderHeroInfoRow('Organizer', settings.organizerName)}
-      {renderHeroInfoRow('Contact', contact)}
-      {settings.infoNote && <p className="pub-event-hero-note">{settings.infoNote}</p>}
-      {showRegistrationButton && (
-        <button type="button" className="pub-event-register-link" onClick={onRegister}>
-          Register
-        </button>
-      )}
+    <aside
+      className="pub-event-hero-info-card"
+      style={{
+        background: 'rgba(62, 61, 61, 0.2)',
+        borderRadius: 24,
+        boxShadow: '0 40px 100px -20px rgba(80, 40, 160, 0.55)',
+        backdropFilter: 'blur(94px)',
+        WebkitBackdropFilter: 'blur(94px)',
+      }}
+    >
+      <div className="pub-event-hero-info-main">
+        <div className="pub-event-hero-info-date">
+          <span>Date</span>
+          <strong>{eventDate}</strong>
+          {eventDateMeta && <em>{eventDateMeta}</em>}
+          {eventDateDetail && <small>{eventDateDetail}</small>}
+        </div>
+        <div className="pub-event-hero-info-venue">
+          <span>Venue</span>
+          <strong>{venue.title}</strong>
+          {venue.detail && <small>{venue.detail}</small>}
+        </div>
+        <div className="pub-event-hero-info-action">
+          {showRegistrationButton && (
+            <button type="button" className="pub-event-register-link" onClick={onRegister}>
+              Register
+              <span aria-hidden="true">{'\u2197'}</span>
+            </button>
+          )}
+          <small>{settings.infoNote ? 'Limited seats · Invitation included' : 'Limited seats'}</small>
+        </div>
+      </div>
+      <div className="pub-event-hero-info-sub">
+        {renderHeroInfoRow('Registration', registrationStatus)}
+        {renderHeroInfoRow('Organizer', settings.organizerName)}
+        {renderHeroInfoRow('Contact', contact)}
+      </div>
     </aside>
   );
 };
@@ -985,6 +1022,46 @@ function renderHeroInfoRow(label: string, value?: string | null) {
       <dd>{value}</dd>
     </dl>
   );
+}
+
+function formatHeroDate(start?: string | null, end?: string | null) {
+  const startDate = parseDateTime(start);
+  const endDate = parseDateTime(end);
+  if (!startDate) return 'TBA';
+
+  const month = new Intl.DateTimeFormat('en-US', { month: 'short' }).format(startDate);
+  const startDay = startDate.getDate();
+  if (!endDate || isSameDay(startDate, endDate)) {
+    return `${month} ${startDay}`;
+  }
+
+  const endMonth = new Intl.DateTimeFormat('en-US', { month: 'short' }).format(endDate);
+  const endDay = endDate.getDate();
+  if (startDate.getMonth() === endDate.getMonth()) {
+    return `${month} ${startDay}-${endDay}`;
+  }
+  return `${month} ${startDay}-${endMonth} ${endDay}`;
+}
+
+function formatHeroDateDetail(start?: string | null, end?: string | null) {
+  const range = formatBlockDateRange(start, end);
+  return range ? range.replace(' - ', ' - ') : '';
+}
+
+function formatHeroDateMeta(start?: string | null, location?: string | null) {
+  const date = parseDateTime(start);
+  const year = date ? String(date.getFullYear()) : '';
+  const city = location?.toLowerCase().includes('seoul') ? 'Seoul' : '';
+  return [year, city].filter(Boolean).join(' \u00b7 ');
+}
+
+function splitVenue(location?: string | null) {
+  if (!location) return { title: 'TBA', detail: '' };
+  const [title, ...rest] = location.split(',').map((part) => part.trim()).filter(Boolean);
+  return {
+    title: title || location,
+    detail: rest.join(', '),
+  };
 }
 
 const PublicRegistrationMasthead: React.FC<{
@@ -1416,6 +1493,7 @@ const EventPageSectionRenderer: React.FC<{ section: EventPageSection; accentColo
   const sectionStyle = { '--pub-event-accent': accentColor } as React.CSSProperties;
   const sectionClassName = [
     'pub-event-builder-section',
+    `pub-event-section-${section.sectionType.replace(/_/g, '-')}`,
     `pub-event-bg-${sectionSettings.backgroundStyle || 'white'}`,
     `pub-event-width-${sectionSettings.width || 'normal'}`,
     `pub-event-spacing-${sectionSettings.spacing || 'normal'}`,
@@ -1461,11 +1539,62 @@ const EventPageSectionRenderer: React.FC<{ section: EventPageSection; accentColo
     );
   }
 
+  if (section.sectionType === 'venue') {
+    const venueBlock = blocks.find((block) => block.useYn !== 'N') ?? null;
+    const venueTitle = venueBlock?.title || section.subtitle || section.title || 'Venue';
+    const venueRoom = venueBlock?.subtitle || splitVenue(venueBlock?.venueName || '').detail || '2F Chrysanthemum Room';
+    const venueDescriptionSource = section.body || venueBlock?.body || venueBlock?.summary || '';
+    const venueDescription = getFirstHtmlParagraph(venueDescriptionSource);
+    const plainVenueText = stripHtml(`${section.body || ''} ${venueBlock?.body || ''}`);
+    const address = plainVenueText.match(/(?:Address:\s*)?([^.]*(?:Teheran|Gangnam|Seoul)[^.]*)\.?/i)?.[1]?.trim()
+      || venueBlock?.venueName
+      || '521 Teheran-ro, Gangnam-gu, Seoul';
+
+    return (
+      <section
+        id={anchor}
+        className={`pub-section section-text size-medium ${sectionClassName} pub-event-venue-section`}
+        style={{
+          ...sectionStyle,
+          '--oe-venue-bg': `url("${officialVenueImageUrl}")`,
+        } as React.CSSProperties}
+      >
+        <div className="pub-section-inner">
+          <div className="pub-event-venue-panel">
+            <div className="pub-event-venue-copy">
+              <span className="pub-event-venue-eyebrow">{section.title || 'Venue'}</span>
+              <h3>{venueTitle}</h3>
+              {venueDescription && <div className="text-content" dangerouslySetInnerHTML={{ __html: venueDescription }} />}
+              <div className="pub-event-venue-facts">
+                {renderVenueFact('Address', address)}
+                {renderVenueFact('Room', venueRoom)}
+                {renderVenueFact('Nearest Station', 'Samseong Station · Line 2')}
+              </div>
+            </div>
+            <aside className="pub-event-venue-aside">
+              {renderVenueFact('District', 'Gangnam, Seoul')}
+              {renderVenueFact('Parking', 'On-site available')}
+              {venueBlock?.linkUrl && (
+                <div className="pub-event-venue-map">
+                  <span>Map</span>
+                  <a href={venueBlock.linkUrl} target={venueBlock.linkTarget || '_blank'} rel="noopener noreferrer">
+                    {venueBlock.buttonLabel || 'View on Map'}
+                    <span aria-hidden="true">{'\u2197'}</span>
+                  </a>
+                </div>
+              )}
+            </aside>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   if (section.sectionType === 'visit_seoul') {
     const hotelHeading = section.subtitle?.trim().toLowerCase().includes('partner hotel') ? '' : 'Partner Hotels';
 
     return (
-      <section id={anchor} className={`pub-section section-text size-medium ${sectionClassName}`} style={sectionStyle}>
+      <section id={anchor} className={`pub-section section-text size-medium ${sectionClassName} pub-event-visit-section`} style={sectionStyle}>
         <div className="pub-section-inner">
           {section.title && <h3 className="text-title">{section.title}</h3>}
           {section.subtitle && <p className="pub-event-section-subtitle">{section.subtitle}</p>}
@@ -1533,16 +1662,24 @@ function renderProgramBlocks(blocks: EventPageBlock[]) {
     return [block];
   });
 
-  return groupProgramBlocks(sessions).map(([track, trackSessions]) => (
-    <section className="pub-event-program-track" key={track}>
+  const programTracks = groupProgramBlocks(sessions);
+  const orderedSessions = programTracks.flatMap(([, trackSessions]) => trackSessions);
+  const tabLabels = ['Main Schedule', 'Open Session', 'Institutions Session'];
+
+  return [
+    <section className="pub-event-program-track" key="program-schedule">
       <div className="pub-event-program-track-head">
-        <span>{track}</span>
+        {tabLabels.map((label) => (
+          <span className={label === tabLabels[0] ? 'is-active' : undefined} key={label}>
+            {label}
+          </span>
+        ))}
       </div>
       <div className="pub-event-program-track-sessions">
-        {trackSessions.map((block) => renderProgramSession(block))}
+        {orderedSessions.map((block) => renderProgramSession(block))}
       </div>
-    </section>
-  ));
+    </section>,
+  ];
 }
 
 function renderProgramSession(block: EventPageBlock) {
@@ -1620,19 +1757,69 @@ function renderSpeakerCard(block: EventPageBlock) {
 function renderSupportingOrganizations(blocks: EventPageBlock[]) {
   const shownBlocks = blocks.filter((block) => block.useYn !== 'N');
   const groups = groupOrganizationBlocks(shownBlocks);
+  const organizers = groups.find(([group]) => isOrganizerGroup(group))?.[1] ?? [];
+  const supporters = groups
+    .filter(([group]) => !isOrganizerGroup(group))
+    .flatMap(([, groupBlocks]) => groupBlocks);
 
   return (
     <div className="pub-event-org-wrap">
-      {groups.map(([group, groupBlocks]) => (
-        <div key={group} className={`pub-event-org-group${isOrganizerGroup(group) ? ' is-organizers' : ' is-supporters'}`}>
-          <h4>{group}</h4>
+      <div className="pub-event-org-organizers">
+        {organizers.map((block, index) => renderOrganizationCard(block, 'Organizers', index))}
+      </div>
+      {supporters.length > 0 && (
+        <div className="pub-event-org-supporters">
+          <h4>Supporters</h4>
           <div className="pub-event-org-grid">
-            {groupBlocks.map((block) => renderLinkedBlock(block, `pub-event-logo-card${isOrganizerGroup(group) ? ' is-large' : ''}`))}
+            {supporters.map((block, index) => renderSupporterLogo(block, index))}
           </div>
         </div>
-      ))}
+      )}
     </div>
   );
+}
+
+function renderOrganizationCard(block: EventPageBlock, label: string, index: number) {
+  const imageUrl = getBlockImageUrl(block);
+  const title = getOrganizationDisplayName(block, index);
+  const content = (
+    <>
+      <div>
+        <span>{label}</span>
+        <h4>{title}</h4>
+      </div>
+      {imageUrl && <img src={imageUrl} alt={title} />}
+    </>
+  );
+
+  if (block.linkUrl) {
+    return (
+      <a key={block.blockSeq} className="pub-event-org-card" href={block.linkUrl} target={block.linkTarget || '_blank'} rel="noopener noreferrer">
+        {content}
+      </a>
+    );
+  }
+  return <article key={block.blockSeq} className="pub-event-org-card">{content}</article>;
+}
+
+function renderSupporterLogo(block: EventPageBlock, index: number) {
+  const imageUrl = getBlockImageUrl(block);
+  const title = getOrganizationDisplayName(block, index);
+  const content = imageUrl ? <img src={imageUrl} alt={title} /> : <span>{title}</span>;
+
+  if (block.linkUrl) {
+    return (
+      <a key={block.blockSeq} className="pub-event-supporter-logo" href={block.linkUrl} target={block.linkTarget || '_blank'} rel="noopener noreferrer">
+        {content}
+      </a>
+    );
+  }
+  return <span key={block.blockSeq} className="pub-event-supporter-logo">{content}</span>;
+}
+
+function getOrganizationDisplayName(block: EventPageBlock, index: number) {
+  const fallbackOrganizerNames = ['KCAB International', 'Asia Civil Law Council'];
+  return block.organizationName || block.title || block.summary || fallbackOrganizerNames[index] || `Organization ${index + 1}`;
 }
 
 function renderLinkedBlock(block: EventPageBlock, className: string) {
@@ -1717,6 +1904,22 @@ function renderNoticeBlock(block: EventPageBlock) {
   }
 
   return <article key={block.blockSeq} className="pub-event-notice-card">{content}</article>;
+}
+
+function renderVenueFact(label: string, value?: string | null) {
+  if (!value) return null;
+  return (
+    <dl className="pub-event-venue-fact">
+      <dt>{label}</dt>
+      <dd>{value}</dd>
+    </dl>
+  );
+}
+
+function getFirstHtmlParagraph(value?: string | null) {
+  if (!value) return '';
+  const match = value.match(/<p[\s\S]*?<\/p>/i);
+  return match ? match[0] : value;
 }
 
 function normalizeRegistrationType(value?: string | null): RegistrationActionType {
@@ -2067,7 +2270,7 @@ function getThemeColor(themeColor: string) {
 }
 
 function buildHeroStyle(theme: PageTheme, heroImageUrl?: string | null): React.CSSProperties {
-  if (theme.heroBackgroundType === 'image' && heroImageUrl) {
+  if (heroImageUrl) {
     return {
       backgroundImage: `${getOverlayGradient(theme.heroOverlay)}, url("${heroImageUrl}")`,
       backgroundPosition: 'center',

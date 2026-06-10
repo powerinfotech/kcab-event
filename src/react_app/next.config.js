@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  ...(process.env.NEXT_DIST_DIR ? { distDir: process.env.NEXT_DIST_DIR } : {}),
   ...(process.env.NODE_ENV === 'production' ? { output: 'export' } : {}),
   images: { unoptimized: true },
   typescript: { ignoreBuildErrors: true }, // TODO: TS 에러 수정 후 false로 변경 (현재 35건 이상의 에러 존재)

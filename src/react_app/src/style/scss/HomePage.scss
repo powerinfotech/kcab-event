@@ -44,10 +44,12 @@
 
   &.is-menu-open {
     background: var(--saf-menu-navy);
+    height: 300px;
   }
 
   &:has(.saf-renewal-nav-item.has-submenu:hover) {
     background: var(--saf-menu-navy);
+    height: 300px;
   }
 }
 
@@ -149,6 +151,15 @@
 .saf-renewal-nav-item {
   position: relative;
 
+  &.has-submenu::before {
+    content: '';
+    position: absolute;
+    left: -28px;
+    right: -28px;
+    top: 30px;
+    height: 32px;
+  }
+
   > a {
     position: relative;
     display: inline-flex;
@@ -223,7 +234,8 @@
       text-underline-offset: 3px;
     }
 
-    &.is-featured {
+    &.is-featured,
+    &.is-current {
       color: #253b87;
       text-decoration: underline;
       text-underline-offset: 4px;
@@ -240,9 +252,9 @@
 
 .saf-renewal-sunset-hero {
   position: relative;
-  height: 640px;
-  min-height: 640px;
-  background-size: 100% 100%;
+  height: min(980px, 51.05vw);
+  min-height: 720px;
+  background-size: cover;
   background-position: left center;
   background-repeat: no-repeat;
   color: #fff;
@@ -271,24 +283,24 @@
 .saf-renewal-sunset-hero-content {
   width: min(calc(100% - var(--saf-home-left) - 24px), 760px);
   margin-left: var(--saf-home-left);
-  padding-top: clamp(158px, 11vw, 210px);
+  padding-top: clamp(238px, 18.2vw, 350px);
 }
 
 .saf-renewal-sunset-title {
   margin: 0;
   color: #fff;
-  font-size: clamp(46px, 4.46vw, 74px);
-  line-height: 1.1;
-  font-weight: 700;
-  letter-spacing: -0.028em;
-  white-space: nowrap;
+  font-size: clamp(50px, 4.05vw, 78px);
+  line-height: 1.04;
+  font-weight: 800;
+  letter-spacing: 0;
+  white-space: normal;
   text-shadow: 0 5px 18px rgba(15, 15, 35, 0.22);
 }
 
 .saf-renewal-sunset-date {
   display: inline-flex;
   align-items: center;
-  margin: 16px 0 0;
+  margin: 24px 0 0;
   padding: 0;
   background: none;
   color: var(--saf-lilac);
@@ -299,11 +311,21 @@
   text-shadow: 0 2px 8px rgba(15, 15, 35, 0.35);
 }
 
+.saf-renewal-sunset-lede {
+  max-width: 730px;
+  margin: 34px 0 0;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 16px;
+  line-height: 1.85;
+  font-weight: 500;
+  text-shadow: 0 2px 8px rgba(15, 15, 35, 0.32);
+}
+
 .saf-renewal-sunset-meta {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-top: 38px;
+  margin-top: 18px;
   color: rgba(255, 255, 255, 0.95);
   font-size: 26px;
   font-weight: 700;
@@ -345,7 +367,7 @@
   gap: 22px;
   min-width: 180px;
   min-height: 54px;
-  margin-top: 34px;
+  margin-top: 30px;
   padding: 0 26px 0 32px;
   border-radius: 999px;
   background: linear-gradient(135deg, #6825db 0%, #9a4ef0 100%);
@@ -1237,7 +1259,15 @@
   }
 
   .saf-renewal-sunset-date {
-    font-size: clamp(22px, 6vw, 30px);
+    font-size: 14px;
+    letter-spacing: 0.16em;
+  }
+
+  .saf-renewal-sunset-lede {
+    max-width: 620px;
+    margin-top: 24px;
+    font-size: 15px;
+    line-height: 1.7;
   }
 
   .saf-renewal-sunset-meta {
@@ -1362,8 +1392,14 @@
   }
 
   .saf-renewal-sunset-date {
-    padding: 2px 8px 4px;
-    font-size: clamp(20px, 6vw, 25px);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+  }
+
+  .saf-renewal-sunset-lede {
+    margin-top: 20px;
+    font-size: 14px;
+    line-height: 1.62;
   }
 
   .saf-renewal-sunset-meta {

@@ -7,6 +7,8 @@ import Footer from '@layout/Footer';
 import PublicNotice from '@page/public/PublicNotice';
 import PublicFaq from '@page/public/PublicFaq';
 import PublicEvents from '@page/public/PublicEvents';
+import Organizer from '@page/public/Organizer';
+import MediaPartners from '@page/public/MediaPartners';
 import PublicEventPage, { PublicEventRegistrationPage } from '@page/public/PublicEventPage';
 import PastEditions, { PastEdition2020, PastEdition2021, PastEdition2022, PastEdition2023, PastEdition2024, PastEdition2024EventDetail, PastEdition2025, PastEdition2025EventDetail } from '@page/PastEditions';
 import SafSignup from '@page/saf/SafSignup';
@@ -150,6 +152,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     }
     if (currentPath === '/notice') return <PublicNotice />;
     if (currentPath === '/faq') return <PublicFaq />;
+    if (currentPath === '/organizer') return <Organizer />;
+    if (currentPath === '/media-partners') return <MediaPartners />;
     if (currentPath === '/past-editions') return <PastEditions />;
     if (currentPath === '/past-editions/2020') return <PastEdition2020 />;
     if (currentPath === '/past-editions/2021') return <PastEdition2021 />;

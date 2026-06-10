@@ -15,7 +15,10 @@ function getExpectedRouteRootSelector(path) {
   if (path === '/login' || path === '/admin/login') return '.saf-login-page';
   if (path === '/admin/signup') return '.saf-signup-page';
   if (path.indexOf('/event/') === 0) return '.pub-event-renewal';
-  if (path === '/events' || path === '/notice' || path === '/faq' || path === '/gallery') return '.pub-layout';
+  if (path === '/notice' || path === '/faq' || path === '/gallery') return '.pub-layout';
+  if (path === '/events') return '.official-events-page';
+  if (path === '/organizer') return '.organizer-page';
+  if (path === '/media-partners') return '.media-partners-page';
   if (path.indexOf('/past-editions') === 0) return '.saf-past-home, .saf-renewal-home';
   return '';
 }
