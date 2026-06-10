@@ -8,15 +8,16 @@ import { callGetPublicPopupList } from '@api/popup/PopupApi';
 import { PopupItem } from '@interface/popup/PopupManagement';
 import MainPopupOverlay from '@component/popup/MainPopupOverlay';
 import HeroSeoulImage from '../assets/images/saf-renewal/hero-seoul-figma.jpg';
-import StatementPatternImage from '../assets/images/saf-renewal/statement-pattern-figma.jpg';
+import StatementPhotoImage from '../assets/images/saf-renewal/main01/statement-photo.jpg';
+import ExpectBandImage from '../assets/images/saf-renewal/main01/statement-photo2.png';
 import GalleryConferenceImage from '../assets/images/saf-renewal/gallery-conference.jpg';
 import GalleryReceptionImage from '../assets/images/saf-renewal/gallery-reception.jpg';
 import GalleryNetworkImage from '../assets/images/saf-renewal/gallery-network.jpg';
 import GalleryAudienceImage from '../assets/images/saf-renewal/gallery-audience.jpg';
-import GalleryNetworkingFigmaImage from '../assets/images/saf-renewal/gallery-networking-figma.jpg';
-import GalleryCollaborationFigmaImage from '../assets/images/saf-renewal/gallery-collaboration-figma.jpg';
-import GalleryKnowledgeFigmaImage from '../assets/images/saf-renewal/gallery-knowledge-figma.jpg';
-import GalleryTrendsFigmaCardImage from '../assets/images/saf-renewal/gallery-trends-figma-card.jpg';
+import ExpectNetworkingImage from '../assets/images/saf-renewal/main01/expect-networking.png';
+import ExpectCollaborationImage from '../assets/images/saf-renewal/main01/expect-collaboration.png';
+import ExpectKnowledgeImage from '../assets/images/saf-renewal/main01/expect-knowledge.png';
+import ExpectTrendsImage from '../assets/images/saf-renewal/main01/expect-trends.png';
 import SponsorAnalysisGroupLogo from '../assets/images/saf-renewal/sponsors/analysis-group.png';
 import SponsorAsiaBusinessLawJournalLogo from '../assets/images/saf-renewal/sponsors/asia-business-law-journal.png';
 import SponsorBaeKimLeeLogo from '../assets/images/saf-renewal/sponsors/bae-kim-lee.png';
@@ -65,31 +66,40 @@ function dismissPopupForToday(popupSeq: number): void {
 
 const assetSrc = (asset: string | { src?: string }) => (typeof asset === 'string' ? asset : asset.src ?? '');
 
+// Figma main01 Figure 카드 원본 사진 (image 165~168, image-fills API에서 추출).
+// bgSize/bgPos = Figma에서 이미지 rect가 카드 프레임보다 크게 배치된 오프셋(보이는 크롭) 그대로.
 const expectationCards = [
   {
     no: '01',
     title: 'Networking',
     desc: 'Connect with global ADR leaders',
-    image: GalleryNetworkingFigmaImage,
+    image: ExpectNetworkingImage,
+    bgSize: '114% auto',
+    bgPos: '69% 50%',
   },
   {
     no: '02',
     title: 'Collaboration',
     desc: 'Cross-border partnerships',
-    image: GalleryCollaborationFigmaImage,
+    image: ExpectCollaborationImage,
+    bgSize: '114% auto',
+    bgPos: '69% 50%',
   },
   {
     no: '03',
     title: 'Knowledge',
     desc: 'Insights from top practitioners',
-    image: GalleryKnowledgeFigmaImage,
+    image: ExpectKnowledgeImage,
+    bgSize: '115.5% auto',
+    bgPos: '6% 0%',
   },
   {
     no: '04',
     title: 'Trends',
     desc: 'Shaping the future of arbitration',
-    image: GalleryTrendsFigmaCardImage,
-    precomposed: true,
+    image: ExpectTrendsImage,
+    bgSize: '118.8% auto',
+    bgPos: '0% 92%',
   },
 ];
 
@@ -98,7 +108,7 @@ const recapStats = [
   { value: '40+', label: 'Jurisdictions' },
   { value: '60', label: 'Sessions' },
   { value: '10', label: 'Years' },
-  { value: '120+', label: 'Sessions Held' },
+  { value: '120+', label: 'Sessions held' },
   { value: '8K+', label: 'Alumni' },
 ];
 
@@ -238,12 +248,40 @@ export default function HomePage() {
                 <br />
                 Festival 2026
               </h1>
-              <p className="saf-renewal-sunset-date">{'26 \u2013 30 October 2026 \u00b7 Seoul'}</p>
-              <p className="saf-renewal-sunset-lede">
-                The Seoul ADR Festival brings together leading arbitrators, practitioners, and industry
-                experts from across the Asia-Pacific region for five days of dialogue, collaboration,
-                and discovery.
-              </p>
+              {/* Figma main01: \ub0a0\uc9dc\ub294 \ud669\uae08 \uadf8\ub77c\ub370\uc774\uc158 \uc0ac\uac01\ud615(346\u00d748)\uc5d0 \ubb38\uad6c\uac00 \uc0c8\uaca8\uc9c4(knockout) \ud615\ud0dc */}
+              <svg
+                className="saf-renewal-sunset-date-badge"
+                width="346"
+                height="48"
+                viewBox="0 0 346 48"
+                role="img"
+                aria-label="26 \u2013 30 October 2026"
+              >
+                <defs>
+                  <linearGradient id="safHeroDateGold" x1="0" y1="0.5" x2="1" y2="0.5">
+                    <stop offset="0" stopColor="#d8d47f" />
+                    <stop offset="0.37" stopColor="#fdffc6" />
+                    <stop offset="1" stopColor="#d3e6ec" />
+                  </linearGradient>
+                  <mask id="safHeroDateCut">
+                    <rect width="346" height="48" fill="#fff" />
+                    <text
+                      x="173"
+                      y="25"
+                      textAnchor="middle"
+                      dominantBaseline="central"
+                      fontFamily="Montserrat, sans-serif"
+                      fontSize="20"
+                      fontWeight="700"
+                      letterSpacing="2"
+                      fill="#000"
+                    >
+                      {'26 \u2013 30 October 2026'}
+                    </text>
+                  </mask>
+                </defs>
+                <rect width="346" height="48" fill="url(#safHeroDateGold)" mask="url(#safHeroDateCut)" />
+              </svg>
               <div className="saf-renewal-sunset-meta">
                 <button type="button" className="saf-renewal-sunset-arrow" aria-label="Previous hero slide">
                   {'\u2190'}
@@ -257,13 +295,19 @@ export default function HomePage() {
               </div>
               <a className="saf-renewal-hero-readmore" href="#program">
                 Read More
-                <span aria-hidden="true">{'\u203a'}</span>
+                <span className="saf-renewal-hero-readmore-chevron" aria-hidden="true" />
               </a>
             </div>
           </div>
         </section>
 
         <section className="saf-renewal-expect" id="program">
+          {/* Figma main01 밴드 배경 — 사용자 제공 PNG export(1920×463, 'Gradient'+'Mask group' 원본) */}
+          <div
+            className="saf-renewal-expect-band"
+            style={{ backgroundImage: `url(${assetSrc(ExpectBandImage)})` }}
+            aria-hidden="true"
+          />
           <div className="saf-renewal-shell">
             <div className="saf-renewal-section-heading">
               <span className="saf-renewal-expect-kicker">SAF 2026</span>
@@ -280,13 +324,14 @@ export default function HomePage() {
             </div>
             <div className="saf-renewal-expect-grid">
               {expectationCards.map((card) => (
-                <article
-                  className={`saf-renewal-expect-card${card.precomposed ? ' is-precomposed' : ''}`}
-                  key={card.title}
-                >
+                <article className="saf-renewal-expect-card" key={card.title}>
                   <div
                     className="saf-renewal-expect-card-media"
-                    style={{ backgroundImage: `url(${assetSrc(card.image)})` }}
+                    style={{
+                      backgroundImage: `url(${assetSrc(card.image)})`,
+                      backgroundSize: card.bgSize,
+                      backgroundPosition: card.bgPos,
+                    }}
                     aria-hidden="true"
                   />
                   <span className="saf-renewal-expect-card-num">{card.no}</span>
@@ -302,7 +347,7 @@ export default function HomePage() {
 
         <section
           className="saf-renewal-statement"
-          style={{ backgroundImage: `url(${assetSrc(StatementPatternImage)})` }}
+          style={{ backgroundImage: `url(${assetSrc(StatementPhotoImage)})` }}
         >
           <div className="saf-renewal-shell saf-renewal-statement-inner">
             <h2 className="saf-renewal-statement-title">
@@ -371,7 +416,9 @@ export default function HomePage() {
             </div>
             <div className="saf-renewal-journey-grid">
               <button type="button" className="saf-renewal-journey-arrow" aria-label="Previous gallery image">
-                {'\u2039'}
+                <svg width="6" height="10" viewBox="0 0 6 10" aria-hidden="true">
+                  <path d="M5 1 L1 5 L5 9" fill="none" stroke="#233b5c" strokeWidth="2" />
+                </svg>
               </button>
               {journeyCards.map((card) => (
                 <article
@@ -383,7 +430,9 @@ export default function HomePage() {
                 </article>
               ))}
               <button type="button" className="saf-renewal-journey-arrow is-next" aria-label="Next gallery image">
-                {'\u203a'}
+                <svg width="6" height="10" viewBox="0 0 6 10" aria-hidden="true">
+                  <path d="M1 1 L5 5 L1 9" fill="none" stroke="#233b5c" strokeWidth="2" />
+                </svg>
               </button>
             </div>
           </div>

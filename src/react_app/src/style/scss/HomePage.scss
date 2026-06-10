@@ -266,8 +266,7 @@
 
 .saf-renewal-sunset-hero {
   position: relative;
-  height: min(980px, 51.05vw);
-  min-height: 720px;
+  height: 980px;               // Figma main01: hero 980px 고정
   background-size: cover;
   background-position: left center;
   background-repeat: no-repeat;
@@ -279,9 +278,7 @@
 .saf-renewal-sunset-hero-overlay {
   position: absolute;
   inset: 0;
-  background:
-    linear-gradient(90deg, rgba(17, 19, 47, 0.2) 0%, rgba(17, 19, 47, 0.03) 62%),
-    linear-gradient(180deg, rgba(17, 19, 47, 0.1) 0%, rgba(17, 19, 47, 0.18) 100%);
+  background: none;        // Figma main01: 사진 위 별도 스크림 없음 (모바일에서만 가독성 스크림)
   z-index: 0;
 }
 
@@ -297,52 +294,36 @@
 .saf-renewal-sunset-hero-content {
   width: min(calc(100% - var(--saf-home-left) - 24px), 760px);
   margin-left: var(--saf-home-left);
-  padding-top: clamp(238px, 18.2vw, 350px);
+  padding-top: 241px;          // Figma main01: 타이틀 y=241
 }
 
 .saf-renewal-sunset-title {
   margin: 0;
   color: #fff;
-  font-size: clamp(50px, 4.05vw, 78px);
-  line-height: 1.04;
-  font-weight: 800;
-  letter-spacing: 0;
+  font-size: 74px;                 // Figma main01: 74px
+  line-height: 1.1;                // Figma: 81.4 / 74
+  font-weight: 700;                // Figma: 700
+  letter-spacing: -2.1px;          // Figma: -2.1px
   white-space: normal;
   text-shadow: 0 5px 18px rgba(15, 15, 35, 0.22);
 }
 
-.saf-renewal-sunset-date {
-  display: inline-flex;
-  align-items: center;
-  margin: 24px 0 0;
-  padding: 0;
-  background: none;
-  color: var(--saf-lilac);
-  font-size: 16px;
-  line-height: 1.1;
-  font-weight: 700;
-  letter-spacing: 0.27em;
-  text-shadow: 0 2px 8px rgba(15, 15, 35, 0.35);
-}
-
-.saf-renewal-sunset-lede {
-  max-width: 730px;
-  margin: 34px 0 0;
-  color: rgba(255, 255, 255, 0.92);
-  font-size: 16px;
-  line-height: 1.85;
-  font-weight: 500;
-  text-shadow: 0 2px 8px rgba(15, 15, 35, 0.32);
+// Figma main01: 날짜 = 황금 그라데이션 사각형(346×48)에 knockout 문구 (title 아래 16px)
+.saf-renewal-sunset-date-badge {
+  display: block;
+  margin-top: 16px;
 }
 
 .saf-renewal-sunset-meta {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-top: 18px;
+  margin-top: 42px;                // Figma: 배지(y548) → 페이저(y590)
   color: rgba(255, 255, 255, 0.95);
+  font-family: 'Onest', 'Montserrat', 'Noto Sans KR', sans-serif;   // Figma: Onest
   font-size: 26px;
-  font-weight: 700;
+  font-weight: 500;                // Figma: 500
+  letter-spacing: -0.78px;         // Figma: -0.78px
   text-shadow: 0 2px 6px rgba(20, 16, 46, 0.45);
 }
 
@@ -374,35 +355,32 @@
   margin: 0 2px;
 }
 
+// Figma main01 'Link': 180×54 필, 그라데이션 #1a2678 → #5f3ed8(50%) → #bf71ff, 페이저 아래 36px
 .saf-renewal-hero-readmore {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 22px;
-  min-width: 180px;
-  min-height: 54px;
-  margin-top: 30px;
-  padding: 0 26px 0 32px;
+  justify-content: space-between;
+  width: 180px;
+  height: 54px;
+  margin-top: 36px;
+  padding: 0 22px 0 32px;
   border-radius: 999px;
-  background: linear-gradient(135deg, #6825db 0%, #9a4ef0 100%);
+  background: linear-gradient(165deg, #1a2678 0%, #5f3ed8 50%, #bf71ff 100%);
   color: #fff;
   font-size: 14px;
   font-weight: 700;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.7px;
   text-decoration: none;
-  box-shadow: 0 20px 38px rgba(73, 36, 160, 0.3);
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
 
-  span {
-    font-size: 34px;
-    line-height: 1;
-    transform: translateY(-1px);
-  }
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 24px 44px rgba(73, 36, 160, 0.36);
-  }
+// 흰색 2px 스트로크 체브론(›) — Figma chevron-right
+.saf-renewal-hero-readmore-chevron {
+  width: 9px;
+  height: 9px;
+  border-top: 2px solid #fff;
+  border-right: 2px solid #fff;
+  transform: rotate(45deg);
+  flex: none;
 }
 
 .saf-renewal-hero {
@@ -498,16 +476,31 @@
   }
 }
 
+// Figma main01: 그라데이션 밴드는 463px(y980..1443)이고, 카드(y1266..1542)는
+// 밴드 하단에 99px 걸쳐(straddle) 흰 배경 위로 내려온다. 카드 아래 132px 여백 후 Section.
 .saf-renewal-expect {
   position: relative;
-  padding: 92px 0 98px;
+  padding: 90px 0 132px;
   overflow: hidden;
-  background:
-    radial-gradient(ellipse 36% 58% at 76% 20%, rgba(126, 109, 255, 0.52) 0%, rgba(126, 109, 255, 0.08) 50%, transparent 70%),
-    radial-gradient(ellipse 26% 48% at 84% 32%, rgba(236, 247, 170, 0.82) 0%, rgba(236, 247, 170, 0.12) 54%, transparent 70%),
-    radial-gradient(ellipse 58% 62% at 29% 46%, rgba(223, 194, 255, 0.82) 0%, rgba(223, 194, 255, 0.22) 58%, transparent 72%),
-    linear-gradient(135deg, #e9f5ff 0%, #f6eaff 58%, #f6f8ff 100%);
+  background: none;
   color: #181631;
+
+}
+
+// Figma main01 밴드 배경 — 사용자 export PNG(1920×463)를 그대로 사용 (벡터 블롭 픽셀 동일).
+// PNG는 85%가 반투명이라 Figma처럼 아래 레이어(1:11)의 #d8d8f4 베이스 위에 합성해야 같은 톤이 난다.
+.saf-renewal-expect-band {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 463px;               // Figma: 밴드 높이 463px
+  background-color: #d8d8f4;   // Figma 1:11 'Gradient' 최상단 visible SOLID (마스크 뒤 베이스)
+  background-size: cover;      // 1920에서 1:1, 그 외 폭에선 비율 유지 크롭
+  background-position: center top;
+  background-repeat: no-repeat;
+  z-index: 0;
+  pointer-events: none;
 }
 
 .saf-renewal-expect .saf-renewal-shell {
@@ -529,27 +522,27 @@
 
   h2 {
     margin: 18px 0 22px;
-    color: #181631;
-    font-size: 32px;
-    line-height: 1.16;
-    font-weight: 900;
+    color: #222222;            // Figma main01
+    font-size: 30px;           // Figma: 30px
+    line-height: 1.15;         // Figma: 34.5 / 30
+    font-weight: 700;          // Figma: 700
   }
 
   p {
     margin: 0;
-    color: #434057;
-    font-size: 14px;
-    line-height: 1.6;
+    color: #222222;            // Figma main01
+    font-size: 13px;           // Figma: 13px
+    line-height: 1.627;        // Figma: 21.13 / 13
     max-width: 280px;
   }
 }
 
 .saf-renewal-expect-kicker {
   display: block;
-  color: #181631;
-  font-size: 12px;
-  font-weight: 850;
-  letter-spacing: 6px;
+  color: #222222;              // Figma main01
+  font-size: 11px;             // Figma: 11px
+  font-weight: 700;            // Figma: 700
+  letter-spacing: 0;           // Figma: 0
   text-transform: uppercase;
 }
 
@@ -557,7 +550,7 @@
   width: 64px;
   height: 1px;
   margin: 22px 0 22px;
-  background: rgba(24, 22, 49, 0.28);
+  background: #222222;         // Figma main01
 }
 
 .saf-renewal-recap-kicker {
@@ -567,10 +560,10 @@
   border: 0;
   border-radius: 0;
   background: none;
-  color: #7d42ea;
-  font-size: 12px;
-  font-weight: 850;
-  letter-spacing: 7px;
+  color: #693ad4;              // Figma main01: #693ad4
+  font-size: 11px;             // Figma main01: 11px
+  font-weight: 700;            // Figma: 700
+  letter-spacing: 3.85px;      // Figma: 3.85px
   text-transform: uppercase;
 }
 
@@ -591,11 +584,12 @@
 }
 
 .saf-renewal-expect-grid {
-  width: max-content;
-  margin: 150px 0 0;
+  width: 100%;
+  max-width: 879px;                           // Figma: 207×4 + 17×3
+  margin: 196px 0 0;                          // Figma: 카드 top = 밴드 top + 286 (콘텐츠 90 + 196)
   display: grid;
-  grid-template-columns: repeat(4, 208px);
-  gap: 16px;
+  grid-template-columns: repeat(4, minmax(0, 207px));   // Figma 207px, 좁은 셸에서는 비율 축소(잘림 방지)
+  gap: 17px;                                  // Figma: 17px
 }
 
 .saf-renewal-expect-card {
@@ -615,16 +609,8 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(180deg, rgba(20, 16, 46, 0) 30%, rgba(20, 16, 46, 0.82) 100%);
+    background: linear-gradient(180deg, rgba(16, 15, 71, 0) 40%, rgba(16, 15, 71, 0.85) 100%);   // Figma main01
     z-index: 1;
-  }
-}
-
-.saf-renewal-expect-card.is-precomposed {
-  &::after,
-  .saf-renewal-expect-card-num,
-  .saf-renewal-expect-card-body {
-    display: none;
   }
 }
 
@@ -644,11 +630,11 @@
 
 .saf-renewal-expect-card-num {
   position: absolute;
-  top: 12px;
-  left: 16px;
+  top: 14px;                   // Figma: 14px
+  left: 12px;                  // Figma: 12px
   z-index: 2;
   color: rgba(255, 255, 255, 0.92);
-  font-size: 12px;
+  font-size: 10px;             // Figma: 10px
   font-weight: 700;
   letter-spacing: 1px;
 }
@@ -662,9 +648,9 @@
   h3 {
     margin: 0 0 5px;
     color: #fff;
-    font-size: 16px;
+    font-size: 14px;           // Figma: 14px
     line-height: 1.18;
-    font-weight: 800;
+    font-weight: 700;          // Figma: 700
   }
 
   p {
@@ -677,23 +663,34 @@
 
 .saf-renewal-statement {
   position: relative;
-  min-height: 284px;
-  background-size: cover;
-  background-position: center;
+  min-height: 248px;           // Figma: Section 높이 248
+  // Figma: shutterstock_2278834239 사진이 2074×1556(108%)로 배치되어 y765..1013 구간이 보임
+  background-size: 108% auto;
+  background-position: 31% 58.5%;
   background-repeat: no-repeat;
   overflow: hidden;
   isolation: isolate;
   color: #181631;
+
+  // Figma main01: 사진 위 좌→우 희미한 navy 그라데이션 (레이어 opacity 0.1 반영)
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(3, 11, 79, 0.1) 0%, rgba(3, 11, 79, 0.066) 57.6%, rgba(131, 141, 223, 0) 81.25%);
+    z-index: 0;
+    pointer-events: none;
+  }
 }
 
 .saf-renewal-statement-inner {
   position: relative;
   z-index: 1;
-  width: min(calc(100% - var(--saf-home-left) - 24px), 690px);
+  width: min(calc(100% - var(--saf-home-left) - 24px), 627px);   // Figma: 텍스트503 + 간격44 + CTA80
   margin-left: var(--saf-home-left);
   margin-right: 0;
-  min-height: 284px;
-  padding: 58px 0;
+  min-height: 248px;           // Figma: Section 높이 248
+  padding: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -703,20 +700,20 @@
 .saf-renewal-statement-title {
   margin: 0;
   max-width: 570px;
-  color: #181631;
-  font-size: 32px;
-  line-height: 1.35;
-  font-weight: 900;
+  color: #222222;            // Figma main01 (dark statement slide)
+  font-size: 30px;           // Figma: 30px
+  line-height: 1.3;          // Figma: 39 / 30
+  font-weight: 700;          // Figma: 700
 }
 
 .saf-renewal-statement-cta {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 82px;
-  height: 82px;
+  width: 80px;               // Figma: 80px
+  height: 80px;
   border-radius: 50%;
-  background: #7d42ea;
+  background: #7b58ff;       // Figma main01: Frame 427319170
   border: 0;
   color: #fff;
   font-size: 34px;
@@ -731,8 +728,8 @@
 
 .saf-renewal-recap {
   padding: 112px 0 62px;
-  background:
-    linear-gradient(180deg, #fff 0 44%, #f4f3fb 44% 100%);
+  // Figma main01 (1:13232): 좌→우 #ececff(1) → #ececff(0.4)
+  background: linear-gradient(90deg, #ececff 0%, rgba(236, 236, 255, 0.4) 100%);
 }
 
 .saf-renewal-recap .saf-renewal-shell {
@@ -748,9 +745,9 @@
   h2 {
     margin: 14px 0 0;
     color: #161443;
-    font-size: 42px;
-    line-height: 1.12;
-    font-weight: 900;
+    font-size: 40px;           // Figma main01: 40px
+    line-height: 1.1;          // Figma: 44 / 40
+    font-weight: 700;          // Figma: 700
   }
 }
 
@@ -769,44 +766,44 @@
   justify-content: center;
   align-items: flex-start;
   border-radius: 0;
+  // Figma main01 (1:13680): 베이스 #dfdfff + 장식 그라데이션 블롭, 텍스트 모두 #222222
   background:
-    radial-gradient(ellipse 55% 80% at 84% 70%, rgba(124, 106, 255, 0.38) 0%, rgba(124, 106, 255, 0.08) 62%, transparent 72%),
-    radial-gradient(ellipse 48% 62% at 18% 30%, rgba(227, 214, 255, 0.72) 0%, rgba(227, 214, 255, 0.18) 62%, transparent 74%),
-    radial-gradient(ellipse 34% 42% at 10% 72%, rgba(231, 250, 174, 0.72) 0%, rgba(231, 250, 174, 0.05) 64%, transparent 74%),
-    #e8e4ff;
+    radial-gradient(ellipse 55% 80% at 84% 70%, rgba(124, 106, 255, 0.30) 0%, rgba(124, 106, 255, 0.06) 62%, transparent 72%),
+    radial-gradient(ellipse 34% 42% at 10% 72%, rgba(231, 250, 174, 0.55) 0%, rgba(231, 250, 174, 0.05) 64%, transparent 74%),
+    #dfdfff;
   box-shadow: none;
-  color: #181631;
+  color: #222222;
 
   > span {
-    color: #6b5fa3;
-    font-size: 12px;
-    font-weight: 850;
-    letter-spacing: 8px;
+    color: #222222;            // Figma: 10px/400 #222
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 2px;
     text-transform: uppercase;
   }
 
   strong {
     display: block;
     margin-top: 22px;
-    color: #181631;
-    font-size: 29px;
+    color: #222222;            // Figma: 30px/700 #222
+    font-size: 30px;
     line-height: 1.12;
-    font-weight: 900;
+    font-weight: 700;
     text-transform: uppercase;
   }
 
   a {
     display: inline-flex;
-    min-height: 34px;
+    min-height: 31px;          // Figma Border 프레임 180×31
     align-items: center;
     justify-content: center;
-    margin-top: 28px;
-    padding: 0 24px;
-    border: 1px solid rgba(24, 22, 49, 0.45);
-    color: #181631;
-    font-size: 11px;
-    font-weight: 850;
-    letter-spacing: 4px;
+    margin-top: 22px;
+    padding: 0 18px;
+    border: 1px solid rgba(34, 34, 34, 0.45);
+    color: #222222;            // Figma: 10px/700 #222
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
     text-decoration: none;
     text-transform: uppercase;
 
@@ -824,7 +821,7 @@
     margin: 0;
     color: #4f4c63;
     font-size: 16px;
-    line-height: 1.55;
+    line-height: 1.3;          // Figma main01: 20.8 / 16
 
     + p {
       margin-top: 18px;
@@ -850,22 +847,27 @@
   }
 
   dt {
-    color: var(--saf-purple);          // Figma: 1번째 줄 보라 #693ad4
+    // Figma main01: 1번째 줄(1,500+/40+/60) 숫자는 보라 그라데이션 #693ad4 → #af61f8
+    background: linear-gradient(90deg, #693ad4 0%, #af61f8 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
     font-size: 30px;
     line-height: 1;
     font-weight: 700;
   }
 
-  // Figma: 2번째 줄(10 / 120+ / 8K+)은 네이비
+  // Figma: 2번째 줄(10 / 120+ / 8K+)은 네이비 #111047 솔리드
   dl div:nth-child(n + 4) dt {
-    color: var(--saf-ink);
+    background: none;
+    color: #111047;
   }
 
   dd {
     margin-top: 8px;
-    color: var(--saf-muted);
+    color: #4a556c;            // Figma main01: 라벨 #4a556c
     font-size: 10px;
-    font-weight: 700;
+    font-weight: 400;          // Figma main01: 400
     letter-spacing: 2px;
     text-transform: uppercase;
   }
@@ -885,15 +887,15 @@
 
 .saf-renewal-journey-heading {
   max-width: none;
-  margin: 0 0 18px;
+  margin: 0 0 16px;            // Figma: 16px
   text-align: left;
 
   > span {
     display: block;
-    color: #7d42ea;
-    font-size: 12px;
-    font-weight: 850;
-    letter-spacing: 7px;
+    color: #693ad4;            // Figma main01
+    font-size: 10px;           // Figma: 10px
+    font-weight: 700;          // Figma: 700
+    letter-spacing: 3.5px;     // Figma: 3.5px
     text-transform: uppercase;
   }
 }
@@ -903,37 +905,41 @@
   margin-top: 18px;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
+  gap: 21px;                   // Figma: 21px
   align-items: stretch;
 }
 
+// Figma main01 (1:13694/1:13697): 흰 40px 원 + 작은 네이비(#233b5c) 2px 스트로크 체브론(인라인 SVG)
 .saf-renewal-journey-arrow {
   position: absolute;
-  left: -26px;
+  left: -23px;                 // Figma: x352 (셸 375에서 23px 왼쪽)
   top: 50%;
+  transform: translateY(-50%);
   z-index: 4;
   display: grid;
-  place-items: center;
-  width: 52px;
-  height: 52px;
+  place-items: center;         // SVG 체브론을 원의 정중앙에 배치
+  width: 40px;
+  height: 40px;
+  padding: 0;
   border: 0;
   border-radius: 50%;
   background: #fff;
-  color: #302a59;
   cursor: pointer;
-  font-size: 32px;
-  line-height: 1;
-  box-shadow: 0 14px 28px rgba(31, 28, 66, 0.12);
+
+  svg {
+    display: block;
+  }
 }
 
 .saf-renewal-journey-arrow.is-next {
   left: auto;
-  right: -26px;
+  right: -20px;                // Figma: x1525 (셸 우측 1545에서 20px 걸침)
 }
 
 .saf-renewal-journey-card {
   position: relative;
-  min-height: 238px;
+  aspect-ratio: 1;             // Figma main01: 정사각(276×276) — 반응형으로 정사각 유지
+  min-height: 0;
   overflow: hidden;
   border: 0;
   border-radius: 0;
@@ -1265,6 +1271,7 @@
   }
 
   .saf-renewal-sunset-hero {
+    height: auto;
     min-height: 720px;
     background-size: cover;
     background-position: 62% center;
@@ -1287,16 +1294,9 @@
     white-space: normal;
   }
 
-  .saf-renewal-sunset-date {
-    font-size: 14px;
-    letter-spacing: 0.16em;
-  }
-
-  .saf-renewal-sunset-lede {
-    max-width: 620px;
-    margin-top: 24px;
-    font-size: 15px;
-    line-height: 1.7;
+  .saf-renewal-sunset-date-badge {
+    max-width: 100%;
+    height: auto;
   }
 
   .saf-renewal-sunset-meta {
@@ -1404,6 +1404,7 @@
   }
 
   .saf-renewal-sunset-hero {
+    height: auto;
     min-height: 680px;
     background-size: cover;
     background-position: 64% center;
@@ -1420,25 +1421,13 @@
     line-height: 1.14;
   }
 
-  .saf-renewal-sunset-date {
-    font-size: 12px;
-    letter-spacing: 0.08em;
-  }
-
-  .saf-renewal-sunset-lede {
-    margin-top: 20px;
-    font-size: 14px;
-    line-height: 1.62;
+  .saf-renewal-sunset-date-badge {
+    max-width: 100%;
+    height: auto;
   }
 
   .saf-renewal-sunset-meta {
     font-size: 22px;
-  }
-
-  .saf-renewal-hero-readmore {
-    min-width: 156px;
-    min-height: 48px;
-    margin-top: 26px;
   }
 
   .saf-renewal-hero-media {
