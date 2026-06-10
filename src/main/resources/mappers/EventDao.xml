@@ -184,6 +184,8 @@
             ,e.venue_name AS location
             ,e.registration_type
             ,e.registration_url
+            ,e.registration_start_at AS registration_start_dt
+            ,e.registration_end_at AS registration_end_dt
             ,e.status AS event_status
             ,e.event_type
         FROM event.event_pages ep
@@ -228,6 +230,8 @@
             ,e.venue_name AS location
             ,e.registration_type
             ,e.registration_url
+            ,e.registration_start_at AS registration_start_dt
+            ,e.registration_end_at AS registration_end_dt
             ,e.status AS event_status
             ,e.event_type
         FROM event.event_pages ep

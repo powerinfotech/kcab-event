@@ -727,7 +727,8 @@
 
   .saf-event-detail-hero {
     min-height: 980px;
-    padding: 221px 0 0;
+    // Figma: hero 980px; info card bottom at y909, Nav bar at y980 → 71px gap.
+    padding: 221px 0 71px;
     background-size: cover;
     background-position: center top;
 

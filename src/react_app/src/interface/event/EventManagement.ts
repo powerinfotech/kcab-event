@@ -152,6 +152,8 @@ export interface PublicEventPage {
   location?: string | null;
   registrationType?: RegistrationType | string | null;
   registrationUrl?: string | null;
+  registrationStartDt?: string | null;
+  registrationEndDt?: string | null;
   eventStatus?: string | null;
   eventType?: string | null;
   sections: EventPageSection[];

@@ -1,3 +1,5 @@
+// Google Fonts는 app/layout.tsx의 <link>로 로드한다.
+// (Turbopack이 외부 @import url(...)을 번들에서 드롭하므로 여기서 import하지 않음)
 
 @import 'Variable.scss';
 @import 'Component.scss';
@@ -15,8 +17,6 @@
 @font-face { font-family: "Noto Sans Korean"; font-weight: 500; font-style: normal; src: url("/style/font/NotoSansKr/NotoSans-Medium.eot") format("eot"), url("/style/font/NotoSansKr/NotoSans-Medium.otf") format("opentype"), url("/style/font/NotoSansKr/NotoSans-Medium.woff") format("woff"), url("/style/font/NotoSansKr/NotoSans-Medium.woff2") format("woff2"); }
 @font-face { font-family: "Noto Sans Korean"; font-weight: 700; font-style: normal; src: url("/style/font/NotoSansKr/NotoSans-Black.eot") format("eot"), url("/style/font/NotoSansKr/NotoSans-Black.otf") format("opentype"), url("/style/font/NotoSansKr/NotoSans-Black.woff") format("woff"), url("/style/font/NotoSansKr/NotoSans-Black.woff2") format("woff2"); }
 @font-face { font-family: "Noto Sans Korean"; font-weight: 900; font-style: normal; src: url("/style/font/NotoSansKr/NotoSans-Bold.eot") format("eot"), url("/style/font/NotoSansKr/NotoSans-Bold.otf") format("opentype"), url("/style/font/NotoSansKr/NotoSans-Bold.woff") format("woff"), url("/style/font/NotoSansKr/NotoSans-Bold.woff2") format("woff2"); }
-
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100..900&display=swap');
 
 html, body, div, span, applet, object, iframe,
 h1, h2, h3, h4, h5, h6, p, blockquote, pre,

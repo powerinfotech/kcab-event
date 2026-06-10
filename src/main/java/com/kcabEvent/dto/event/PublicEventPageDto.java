@@ -33,6 +33,8 @@ public class PublicEventPageDto {
     private String location;
     private String registrationType;
     private String registrationUrl;
+    private LocalDateTime registrationStartDt;
+    private LocalDateTime registrationEndDt;
     private String eventStatus;
     private String eventType;
 

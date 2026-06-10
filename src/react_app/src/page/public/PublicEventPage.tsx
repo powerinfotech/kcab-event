@@ -18,6 +18,7 @@ import {
 } from '@interface/public/PublicRegistration';
 import HeroSeoulImage from '../../assets/images/saf-renewal/official-events-hero-wide-figma.png';
 import VenueFigmaImage from '../../assets/images/saf-renewal/official-events-venue-figma.png';
+import RibbonFigmaImage from '../../assets/images/saf-renewal/official-events-ribbon-large-figma.png';
 import { usePublicNavigate } from '@hook/usePublicNavigate';
 import BusinessFooterInfo from './components/BusinessFooterInfo';
 import PublicRenewalLayout from './components/PublicRenewalLayout';
@@ -74,6 +75,7 @@ const THEME_COLOR_MAP: Record<string, string> = {
 
 const assetSrc = (asset: string | { src?: string }) => (typeof asset === 'string' ? asset : asset.src ?? '');
 const officialVenueImageUrl = assetSrc(VenueFigmaImage);
+const officialRibbonImageUrl = assetSrc(RibbonFigmaImage);
 
 const createEventNavItems = (officialEventPath: string) => [
   { label: 'Home', href: '/' },
@@ -219,6 +221,8 @@ const DEFAULT_REGISTRATION_FIELDS: EventRegistrationFieldItem[] = [
   { fieldCode: 'residence_country', fieldLabel: 'Country of Residence', enabledYn: 'Y', requiredYn: 'N', sortSeq: 11 },
 ];
 
+const HIDDEN_EVENT_SECTION_TYPES = new Set(['contact']);
+
 const REGISTRATION_FIELD_INPUTS: Record<string, {
   key: keyof PublicRegistrationParticipantRequest;
   autoComplete?: string;
@@ -260,9 +264,15 @@ const PublicEventPage: React.FC<PublicEventPageProps> = ({ urlSlug }) => {
     return () => { mounted = false; };
   }, [urlSlug]);
 
-  const navSections = useMemo(
-    () => (page?.sections ?? []).filter((section) => section.showInNavYn !== 'N' && (section.navLabel || section.title)),
+  const visibleSections = useMemo(
+    () => (page?.sections ?? []).filter((section) => (
+      section.useYn !== 'N' && !HIDDEN_EVENT_SECTION_TYPES.has(section.sectionType)
+    )),
     [page],
+  );
+  const navSections = useMemo(
+    () => visibleSections.filter((section) => section.navLabel || section.title),
+    [visibleSections],
   );
   const theme = useMemo(() => parseTheme(page?.themeJson), [page?.themeJson]);
   const pageSettings = useMemo(() => parsePageSettings(page?.settingsJson), [page?.settingsJson]);
@@ -325,7 +335,7 @@ const PublicEventPage: React.FC<PublicEventPageProps> = ({ urlSlug }) => {
   const primarySection = navSections.find((section) => section.sectionType === 'program') ?? navSections[0];
   const primarySectionLabel = primarySection?.sectionType === 'program'
     ? 'View Program'
-    : `View ${primarySection?.navLabel || primarySection?.title || 'Details'}`;
+    : `View ${primarySection?.title || primarySection?.navLabel || 'Details'}`;
 
   return (
     <PublicRenewalLayout className="official-event-detail-page pub-event-renewal">
@@ -355,14 +365,14 @@ const PublicEventPage: React.FC<PublicEventPageProps> = ({ urlSlug }) => {
           <nav className="pub-event-page-nav">
             {navSections.map((section) => (
               <a key={section.sectionSeq} href={`#${section.anchorId || section.sectionKey}`}>
-                {section.navLabel || section.title}
+                {section.title || section.navLabel}
               </a>
             ))}
           </nav>
         )}
 
         <div className="pub-event-detail-body">
-          {page.sections.map((section) => (
+          {visibleSections.map((section) => (
             <EventPageSectionRenderer key={section.sectionSeq} section={section} accentColor={accentColor} />
           ))}
         </div>
@@ -377,6 +387,14 @@ const PublicEventPage: React.FC<PublicEventPageProps> = ({ urlSlug }) => {
           Register
         </button>
       )}
+      <button
+        type="button"
+        className={`pub-event-scroll-top${showRegistrationCta ? ' has-register-button' : ''}`}
+        aria-label="Back to top"
+        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+      >
+        <span aria-hidden="true">{'\u2191'}</span>
+      </button>
     </PublicRenewalLayout>
   );
 };
@@ -1061,7 +1079,7 @@ const EventHeroInfoCard: React.FC<{
   onRegister: () => void;
 }> = ({ page, settings, showRegistrationButton, onRegister }) => {
   const contact = [settings.contactEmail, settings.contactPhone].filter(Boolean).join(' / ');
-  const registrationStatus = settings.registrationStatusLabel || formatStatusLabel(page.eventStatus);
+  const registrationStatus = getRegistrationStatusLabel(page, settings);
   const eventDate = formatHeroDate(page.eventStartDt, page.eventEndDt);
   const eventDateMeta = formatHeroDateMeta(page.eventStartDt, page.location);
   const eventDateDetail = formatHeroDateDetail(page.eventStartDt, page.eventEndDt);
@@ -1071,7 +1089,7 @@ const EventHeroInfoCard: React.FC<{
     <aside
       className="pub-event-hero-info-card"
       style={{
-        background: 'rgba(62, 61, 61, 0.2)',
+        background: 'rgba(62, 61, 61, 0.34)',
         borderRadius: 24,
         boxShadow: '0 40px 100px -20px rgba(80, 40, 160, 0.55)',
         backdropFilter: 'blur(94px)',
@@ -1097,7 +1115,7 @@ const EventHeroInfoCard: React.FC<{
               <span aria-hidden="true">{'\u2197'}</span>
             </button>
           )}
-          <small>{settings.infoNote ? 'Limited seats · Invitation included' : 'Limited seats'}</small>
+          <small>{settings.infoNote ? `Limited seats ${'\u00b7'} Invitation included` : 'Limited seats'}</small>
         </div>
       </div>
       <div className="pub-event-hero-info-sub">
@@ -1117,6 +1135,42 @@ function renderHeroInfoRow(label: string, value?: string | null) {
       <dd>{value}</dd>
     </dl>
   );
+}
+
+function getRegistrationStatusLabel(page: PublicEventPageModel, settings: PageSettings) {
+  if (normalizeRegistrationType(page.registrationType) === 'none') {
+    return 'Registration is not available.';
+  }
+
+  const startDate = parseDateTime(page.registrationStartDt);
+  const endDate = parseDateTime(page.registrationEndDt);
+  const now = new Date();
+
+  if (startDate && now.getTime() < startDate.getTime()) {
+    return 'Registration is not open yet.';
+  }
+
+  if (endDate) {
+    const inclusiveEnd = new Date(endDate);
+    if (
+      inclusiveEnd.getHours() === 0
+      && inclusiveEnd.getMinutes() === 0
+      && inclusiveEnd.getSeconds() === 0
+      && inclusiveEnd.getMilliseconds() === 0
+    ) {
+      inclusiveEnd.setDate(inclusiveEnd.getDate() + 1);
+      inclusiveEnd.setMilliseconds(inclusiveEnd.getMilliseconds() - 1);
+    }
+    if (now.getTime() > inclusiveEnd.getTime()) {
+      return 'Registration is now closed.';
+    }
+  }
+
+  if (startDate || endDate) {
+    return 'Registration Open';
+  }
+
+  return settings.registrationStatusLabel || formatStatusLabel(page.eventStatus);
 }
 
 function formatHeroDate(start?: string | null, end?: string | null) {
@@ -1166,7 +1220,7 @@ const PublicRegistrationMasthead: React.FC<{
 }> = ({ page, settings, onBackToEvent }) => {
   const contact = [settings.contactEmail, settings.contactPhone].filter(Boolean).join(' / ');
   const heroImageUrl = page.heroImageUrl || assetSrc(HeroSeoulImage);
-  // Figma sub02_01Registration Mask group: 1줄=날짜/시간, 2줄=장소 (자정 00:00 표기는 생략)
+  // Figma registration masthead keeps date/time and venue on separate lines.
   const mastheadDate = (formatBlockDateRange(page.eventStartDt, page.eventEndDt) || '').replace(/\s*00:00/g, '');
   const mastheadVenue = page.location;
   const mastheadStyle = {
@@ -1608,6 +1662,7 @@ const EventPageSectionRenderer: React.FC<{ section: EventPageSection; accentColo
     return (
       <section id={anchor} className={`pub-section section-speaker-list ${sectionClassName}`} style={sectionStyle}>
         <div className="pub-section-inner">
+          <span className="pub-event-section-eyebrow">VOICES</span>
           <h3 className="speaker-title">{section.title || 'Speakers'}</h3>
           {section.subtitle && <p className="pub-event-section-subtitle">{section.subtitle}</p>}
           <div className="speaker-grid">
@@ -1620,12 +1675,20 @@ const EventPageSectionRenderer: React.FC<{ section: EventPageSection; accentColo
 
   if (section.sectionType === 'program') {
     return (
-      <section id={anchor} className={`pub-section section-text size-medium ${sectionClassName} pub-event-builder-program`} style={sectionStyle}>
+      <section
+        id={anchor}
+        className={`pub-section section-text size-medium ${sectionClassName} pub-event-builder-program`}
+        style={{
+          ...sectionStyle,
+          '--oe-program-ribbon-bg': `url("${officialRibbonImageUrl}")`,
+        } as React.CSSProperties}
+      >
         <div className="pub-section-inner">
+          <span className="pub-event-section-eyebrow">SCHEDULE</span>
           <h3 className="text-title">{section.title || 'Program'}</h3>
           {section.subtitle && <p className="pub-event-section-subtitle">{section.subtitle}</p>}
           <div className="pub-event-program-list">
-            {renderProgramBlocks(blocks)}
+            <ProgramSchedule blocks={blocks} />
           </div>
         </div>
       </section>
@@ -1636,6 +1699,7 @@ const EventPageSectionRenderer: React.FC<{ section: EventPageSection; accentColo
     return (
       <section id={anchor} className={`pub-section section-banner-list ${sectionClassName}`} style={sectionStyle}>
         <div className="pub-section-inner">
+          <span className="pub-event-section-eyebrow">WITH THANKS</span>
           <h3 className="card-list-title">{section.title || 'Supporting Organizations'}</h3>
           {section.subtitle && <p className="pub-event-section-subtitle">{section.subtitle}</p>}
           {renderSupportingOrganizations(blocks)}
@@ -1673,7 +1737,7 @@ const EventPageSectionRenderer: React.FC<{ section: EventPageSection; accentColo
               <div className="pub-event-venue-facts">
                 {renderVenueFact('Address', address)}
                 {renderVenueFact('Room', venueRoom)}
-                {renderVenueFact('Nearest Station', 'Samseong Station · Line 2')}
+                {renderVenueFact('Nearest Station', `Samseong Station ${'\u00b7'} Line 2`)}
               </div>
             </div>
             <aside className="pub-event-venue-aside">
@@ -1696,19 +1760,19 @@ const EventPageSectionRenderer: React.FC<{ section: EventPageSection; accentColo
   }
 
   if (section.sectionType === 'visit_seoul') {
-    const hotelHeading = section.subtitle?.trim().toLowerCase().includes('partner hotel') ? '' : 'Partner Hotels';
+    const visitEyebrow = `VISIT SEOUL ${'\u00b7'} PARTNER HOTELS`;
 
     return (
       <section id={anchor} className={`pub-section section-text size-medium ${sectionClassName} pub-event-visit-section`} style={sectionStyle}>
         <div className="pub-section-inner">
+          <span className="pub-event-visit-eyebrow">{visitEyebrow}</span>
           {section.title && <h3 className="text-title">{section.title}</h3>}
           {section.subtitle && <p className="pub-event-section-subtitle">{section.subtitle}</p>}
           {section.body && <div className="text-content" dangerouslySetInnerHTML={{ __html: section.body }} />}
           {blocks.length > 0 && (
             <div className="pub-event-subsection">
-              {hotelHeading && <h4>{hotelHeading}</h4>}
               <div className="pub-event-page-card-grid pub-event-hotel-grid">
-                {blocks.map((block) => renderLinkedBlock(block, 'pub-event-page-card pub-event-hotel-card'))}
+                {blocks.filter((block) => block.useYn !== 'N').map(renderHotelCard)}
               </div>
             </div>
           )}
@@ -1718,20 +1782,11 @@ const EventPageSectionRenderer: React.FC<{ section: EventPageSection; accentColo
   }
 
   if (section.sectionType === 'notice') {
-    return (
-      <section id={anchor} className={`pub-section section-text size-medium ${sectionClassName} pub-event-notice-section`} style={sectionStyle}>
-        <div className="pub-section-inner">
-          <h3 className="text-title">{section.title || 'Notice'}</h3>
-          {section.subtitle && <p className="pub-event-section-subtitle">{section.subtitle}</p>}
-          {section.body && <div className="text-content" dangerouslySetInnerHTML={{ __html: section.body }} />}
-          {blocks.length > 0 && (
-            <div className="pub-event-notice-list">
-              {blocks.map((block) => renderNoticeBlock(block))}
-            </div>
-          )}
-        </div>
-      </section>
-    );
+    return renderNoticeSection(section, sectionClassName, sectionStyle, anchor, blocks);
+  }
+
+  if (section.sectionType === 'contact') {
+    return null;
   }
 
   return (
@@ -1750,7 +1805,7 @@ const EventPageSectionRenderer: React.FC<{ section: EventPageSection; accentColo
   );
 };
 
-function renderProgramBlocks(blocks: EventPageBlock[]) {
+function getProgramSessions(blocks: EventPageBlock[]) {
   const topLevelBlocks = blocks.filter((block) => !block.parentBlockSeq && block.useYn !== 'N');
   const childrenByParent = blocks.reduce<Record<number, EventPageBlock[]>>((acc, block) => {
     if (block.parentBlockSeq && block.useYn !== 'N') {
@@ -1766,26 +1821,38 @@ function renderProgramBlocks(blocks: EventPageBlock[]) {
     }
     return [block];
   });
+  return sessions;
+}
 
-  const programTracks = groupProgramBlocks(sessions);
-  const orderedSessions = programTracks.flatMap(([, trackSessions]) => trackSessions);
-  const tabLabels = ['Main Schedule', 'Open Session', 'Institutions Session'];
+const ProgramSchedule: React.FC<{ blocks: EventPageBlock[] }> = ({ blocks }) => {
+  const sessions = useMemo(() => getProgramSessions(blocks), [blocks]);
+  const programTracks = useMemo(() => groupProgramBlocks(sessions), [sessions]);
+  const tabLabels = ['Main Schedule', 'Open Session', 'Institutions Session'].filter((label) =>
+    programTracks.some(([track]) => track === label),
+  );
+  const [activeTrack, setActiveTrack] = useState(tabLabels[0] || 'Main Schedule');
+  const activeSessions = programTracks.find(([track]) => track === activeTrack)?.[1] ?? [];
 
-  return [
+  return (
     <section className="pub-event-program-track" key="program-schedule">
       <div className="pub-event-program-track-head">
         {tabLabels.map((label) => (
-          <span className={label === tabLabels[0] ? 'is-active' : undefined} key={label}>
+          <button
+            type="button"
+            className={label === activeTrack ? 'is-active' : undefined}
+            onClick={() => setActiveTrack(label)}
+            key={label}
+          >
             {label}
-          </span>
+          </button>
         ))}
       </div>
       <div className="pub-event-program-track-sessions">
-        {orderedSessions.map((block) => renderProgramSession(block))}
+        {activeSessions.map((block) => renderProgramSession(block))}
       </div>
-    </section>,
-  ];
-}
+    </section>
+  );
+};
 
 function renderProgramSession(block: EventPageBlock) {
   const content = parseBlockContent(block.contentJson);
@@ -1980,6 +2047,61 @@ function renderLinkedBlock(block: EventPageBlock, className: string) {
   return <article key={block.blockSeq} className={className}>{content}</article>;
 }
 
+function renderHotelCard(block: EventPageBlock) {
+  const content = parseBlockContent(block.contentJson);
+  const mapUrl = typeof content.mapUrl === 'string' ? content.mapUrl : '';
+  const parsedSummary = parseHotelSummary(block.summary || '');
+  const travelTime = (typeof content.travelTime === 'string' && content.travelTime.trim())
+    ? content.travelTime.trim()
+    : parsedSummary.travelTime;
+  const title = block.title || 'Partner Hotel';
+  const [contactEmail, contactPhone] = (block.subtitle || '').split(' - ').map((item) => item.trim());
+  const address = parsedSummary.address;
+
+  return (
+    <article key={block.blockSeq} className="pub-event-page-card pub-event-hotel-card">
+      {travelTime && <span className="pub-event-hotel-distance">{travelTime}</span>}
+      <h4>{title}</h4>
+      {address && <p className="pub-event-hotel-address">{address}</p>}
+      <div className="pub-event-hotel-contact">
+        {contactEmail && <span>{contactEmail}</span>}
+        {contactPhone && <span>{contactPhone}</span>}
+      </div>
+      <div className="pub-event-page-actions">
+        {block.linkUrl && (
+          <a href={block.linkUrl} target={block.linkTarget || '_blank'} rel="noopener noreferrer">
+            {block.buttonLabel || 'View Details'}
+            <span aria-hidden="true">{'\u2197'}</span>
+          </a>
+        )}
+        {mapUrl && (
+          <a href={mapUrl} target="_blank" rel="noopener noreferrer">
+            Map
+            <span aria-hidden="true">{'\u2197'}</span>
+          </a>
+        )}
+      </div>
+    </article>
+  );
+}
+
+function parseHotelSummary(summary: string) {
+  const normalized = summary.trim();
+  const [address, travelTime] = normalized.split(/\s+-\s+about\s+/i);
+
+  if (travelTime) {
+    return {
+      address: address.trim(),
+      travelTime: `~${travelTime.trim()}`,
+    };
+  }
+
+  return {
+    address: normalized,
+    travelTime: '',
+  };
+}
+
 function renderNoticeBlock(block: EventPageBlock) {
   const content = (
     <>
@@ -2009,6 +2131,96 @@ function renderNoticeBlock(block: EventPageBlock) {
   }
 
   return <article key={block.blockSeq} className="pub-event-notice-card">{content}</article>;
+}
+
+function renderNoticeSection(
+  section: EventPageSection,
+  sectionClassName: string,
+  sectionStyle: React.CSSProperties,
+  anchor: string,
+  blocks: EventPageBlock[],
+) {
+  const visibleBlocks = blocks.filter((block) => block.useYn !== 'N');
+  const sectionBodyText = stripHtml(section.body || '');
+  const noticeItems = visibleBlocks.length > 0
+    ? visibleBlocks.map((block) => ({
+      title: block.title || block.badgeText || 'Notice',
+      body: stripHtml(block.summary || block.subtitle || block.body || ''),
+    })).filter((item) => item.title || item.body)
+    : (sectionBodyText ? [{ title: section.title || 'Notice', body: sectionBodyText }] : []);
+  const displayedNoticeItems = noticeItems.slice(0, 3);
+
+  return (
+    <section
+      id={anchor}
+      className={`pub-section section-text size-medium ${sectionClassName} pub-event-notice-section`}
+      style={{
+        ...sectionStyle,
+        '--oe-ribbon-bg': `url("${officialRibbonImageUrl}")`,
+      } as React.CSSProperties}
+    >
+      <div className="pub-section-inner">
+        <h3 className="text-title">{section.title || 'Notice'}</h3>
+        {section.subtitle && <p className="pub-event-section-subtitle">{section.subtitle}</p>}
+        {displayedNoticeItems.length > 0 && (
+          <div className="pub-event-notice-list">
+            <article className="pub-event-notice-card">
+              {displayedNoticeItems.map((item, index) => (
+                <div className="pub-event-notice-row" key={`${item.title}-${index}`}>
+                  <h4>{item.title}</h4>
+                  {item.body && <p title={item.body}>{item.body}</p>}
+                </div>
+              ))}
+            </article>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function renderContactSection(
+  section: EventPageSection,
+  sectionClassName: string,
+  sectionStyle: React.CSSProperties,
+  anchor: string,
+  blocks: EventPageBlock[],
+) {
+  const contactBlock = blocks.find((block) => block.useYn !== 'N');
+  const email = contactBlock?.linkUrl?.startsWith('mailto:') ? contactBlock.linkUrl.replace('mailto:', '') : 'acls@kcab.or.kr';
+  const contactTitle = contactBlock?.title || '';
+  const contactSummary = contactBlock?.summary || '';
+  const description = [contactTitle, contactSummary].filter(Boolean).join(' - ')
+    || stripHtml(section.body || '')
+    || 'For event inquiries, registration changes, or delegate assistance.';
+  const contactButtonLabel = contactBlock?.buttonLabel || section.navLabel || section.title || 'Contact';
+
+  return (
+    <section id={anchor} className={`pub-section section-text size-medium ${sectionClassName} pub-event-contact-section`} style={sectionStyle}>
+      <div className="pub-section-inner">
+        <div className="pub-event-contact-copy">
+          <span>Get in Touch</span>
+          <h3>{section.title || 'Contact'}</h3>
+          <p>{description}</p>
+          <a href={`mailto:${email}`}>{email}</a>
+        </div>
+        <form className="pub-event-contact-form">
+          <label>
+            <span>Your Email</span>
+            <input type="email" placeholder="you@example.com" />
+          </label>
+          <label>
+            <span>Message</span>
+            <textarea placeholder="How can we help?" />
+          </label>
+          <button type="button">
+            {contactButtonLabel}
+            <span aria-hidden="true">{'\u2197'}</span>
+          </button>
+        </form>
+      </div>
+    </section>
+  );
 }
 
 function renderVenueFact(label: string, value?: string | null) {
@@ -2329,7 +2541,7 @@ function groupOrganizationBlocks(blocks: EventPageBlock[]) {
 }
 
 function isOrganizerGroup(group: string) {
-  return group.toLowerCase().includes('organizer') || group.includes('주최');
+  return group.toLowerCase().includes('organizer') || group.includes('\uc8fc\ucd5c');
 }
 
 function getProgramSessionType(content: Record<string, unknown>) {
@@ -2401,7 +2613,7 @@ function getOverlayGradient(overlay: PageTheme['heroOverlay']) {
 }
 
 function stripHtml(value: string) {
-  return value.replace(/<[^>]*>/g, '').slice(0, 160);
+  return value.replace(/<[^>]*>/g, '');
 }
 
 export default PublicEventPage;

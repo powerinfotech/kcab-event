@@ -221,6 +221,8 @@ const SECTION_PRESETS: SectionPreset[] = [
   },
 ];
 
+const DISABLED_SECTION_TYPES = new Set(['contact']);
+
 const OfficialEventPageBuilder = React.forwardRef<OfficialEventPageBuilderHandle, OfficialEventPageBuilderProps>(({ eventSeq, canEdit }, ref) => {
   const { message } = App.useApp();
   const tempSeqRef = useRef(-1);
@@ -915,7 +917,7 @@ const OfficialEventPageBuilder = React.forwardRef<OfficialEventPageBuilderHandle
                           disabled={!canEdit}
                           onChange={(e) => updateSection(section.sectionSeq, {
                             useYn: e.target.checked ? 'Y' : 'N',
-                            showInNavYn: e.target.checked ? (section.showInNavYn || 'Y') : section.showInNavYn,
+                            showInNavYn: e.target.checked ? 'Y' : section.showInNavYn,
                           })}
                         />
                         <span>사용</span>
@@ -1107,7 +1109,10 @@ const SectionEditor: React.FC<{
               type="checkbox"
               checked={section.useYn !== 'N'}
               disabled={!canEdit}
-              onChange={(e) => onUpdate({ useYn: e.target.checked ? 'Y' : 'N' })}
+              onChange={(e) => onUpdate({
+                useYn: e.target.checked ? 'Y' : 'N',
+                showInNavYn: e.target.checked ? 'Y' : section.showInNavYn,
+              })}
             />
             <span>화면에 보이기</span>
           </label>
@@ -1790,6 +1795,7 @@ function renderItemFields(
     const roomRates = typeof hotelContent.roomRates === 'string' ? hotelContent.roomRates : '';
     const mapUrl = typeof hotelContent.mapUrl === 'string' ? hotelContent.mapUrl : '';
     const bookingDeadline = typeof hotelContent.bookingDeadline === 'string' ? hotelContent.bookingDeadline : '';
+    const travelTime = typeof hotelContent.travelTime === 'string' ? hotelContent.travelTime : '';
     const updateHotelContent = (patch: Record<string, unknown>) => {
       onUpdate({ contentJson: JSON.stringify({ ...hotelContent, ...patch }) });
     };
@@ -1820,6 +1826,10 @@ function renderItemFields(
         <label className="is-wide">
           <span>주소 / 행사장까지 이동 시간</span>
           <textarea value={block.summary ?? ''} disabled={!canEdit} onChange={(e) => onUpdate({ summary: e.target.value })} />
+        </label>
+        <label className="is-wide">
+          <span>Travel time from venue</span>
+          <input value={travelTime} disabled={!canEdit} onChange={(e) => updateHotelContent({ travelTime: e.target.value })} placeholder="~15 min by car from venue" />
         </label>
         <label className="is-wide">
           <span>연락처</span>
@@ -1906,8 +1916,8 @@ const OfficialPagePreview: React.FC<{
   blockImageFiles: Record<number, FileDetailType[]>;
   onNavigateSection?: (sectionSeq: number) => void;
 }> = ({ page, theme, heroImageUrl, blockImageFiles, onNavigateSection }) => {
-  const sections = (page.sections ?? []).filter((section) => section.useYn !== 'N');
-  const navSections = sections.filter((section) => section.showInNavYn !== 'N' && (section.navLabel || section.title));
+  const sections = (page.sections ?? []).filter((section) => section.useYn !== 'N' && !DISABLED_SECTION_TYPES.has(section.sectionType));
+  const navSections = sections.filter((section) => section.navLabel || section.title);
   const accentColor = getThemeColor(theme.themeColor);
   const pageSettings = parsePageSettings(page.settingsJson);
   const heroTitle = page.heroTitle || page.pageTitle || page.eventTitle || 'Official Event';
@@ -1943,7 +1953,7 @@ const OfficialPagePreview: React.FC<{
         <div className="saf-builder-preview-info-card">
           {renderPreviewInfoRow('Date', formatPreviewDateRange(page.eventStartDt, page.eventEndDt))}
           {renderPreviewInfoRow('Venue', page.location)}
-          {renderPreviewInfoRow('Registration', pageSettings.registrationStatusLabel || formatStatusLabel(page.eventStatus))}
+          {renderPreviewInfoRow('Registration', getRegistrationStatusLabel(page, pageSettings))}
           {renderPreviewInfoRow('Organizer', pageSettings.organizerName)}
           {renderPreviewInfoRow('Contact', [pageSettings.contactEmail, pageSettings.contactPhone].filter(Boolean).join(' / '))}
           {pageSettings.infoNote && <p>{pageSettings.infoNote}</p>}
@@ -2378,8 +2388,10 @@ function ensureSimpleSections(
   catalog: EventPageComponentCatalog,
   nextTempSeq: () => number,
 ): PublicEventPage {
-  const existingByType = new Map(page.sections.map((section) => [section.sectionType, section]));
-  const presetSections = SECTION_PRESETS.map((preset, index) => {
+  const sourceSections = page.sections.filter((section) => !DISABLED_SECTION_TYPES.has(section.sectionType));
+  const activePresets = SECTION_PRESETS.filter((preset) => !DISABLED_SECTION_TYPES.has(preset.sectionType));
+  const existingByType = new Map(sourceSections.map((section) => [section.sectionType, section]));
+  const presetSections = activePresets.map((preset, index) => {
     const existing = existingByType.get(preset.sectionType);
     if (existing) {
       return {
@@ -2398,9 +2410,9 @@ function ensureSimpleSections(
     return createSection(page, preset, catalog, nextTempSeq(), index + 1);
   });
 
-  const knownTypes = new Set(SECTION_PRESETS.map((preset) => preset.sectionType));
-  const customSections = page.sections
-    .filter((section) => !knownTypes.has(section.sectionType))
+  const knownTypes = new Set(activePresets.map((preset) => preset.sectionType));
+  const customSections = sourceSections
+    .filter((section) => !knownTypes.has(section.sectionType) && !DISABLED_SECTION_TYPES.has(section.sectionType))
     .map((section, index) => ({
       ...section,
       sortSeq: presetSections.length + index + 1,
@@ -2482,7 +2494,8 @@ function simplifyBlocks(section: EventPageSection) {
 }
 
 function prepareSectionsForSave(sections: EventPageSection[]) {
-  return resequenceSections(sections).map((section) => ({
+  const saveableSections = sections.filter((section) => !DISABLED_SECTION_TYPES.has(section.sectionType));
+  return resequenceSections(saveableSections).map((section) => ({
     ...section,
     sectionKey: section.sectionKey || section.sectionType,
     anchorId: section.anchorId || section.sectionKey || section.sectionType,
@@ -2881,6 +2894,42 @@ function isSameDay(first: Date, second: Date) {
   return first.getFullYear() === second.getFullYear()
     && first.getMonth() === second.getMonth()
     && first.getDate() === second.getDate();
+}
+
+function getRegistrationStatusLabel(page: PublicEventPage, settings: PageSettings) {
+  if (page.registrationType === 'none') {
+    return 'Registration is not available.';
+  }
+
+  const startDate = parseDate(page.registrationStartDt);
+  const endDate = parseDate(page.registrationEndDt);
+  const now = new Date();
+
+  if (startDate && now.getTime() < startDate.getTime()) {
+    return 'Registration is not open yet.';
+  }
+
+  if (endDate) {
+    const inclusiveEnd = new Date(endDate);
+    if (
+      inclusiveEnd.getHours() === 0
+      && inclusiveEnd.getMinutes() === 0
+      && inclusiveEnd.getSeconds() === 0
+      && inclusiveEnd.getMilliseconds() === 0
+    ) {
+      inclusiveEnd.setDate(inclusiveEnd.getDate() + 1);
+      inclusiveEnd.setMilliseconds(inclusiveEnd.getMilliseconds() - 1);
+    }
+    if (now.getTime() > inclusiveEnd.getTime()) {
+      return 'Registration is now closed.';
+    }
+  }
+
+  if (startDate || endDate) {
+    return 'Registration Open';
+  }
+
+  return settings.registrationStatusLabel || formatStatusLabel(page.eventStatus);
 }
 
 function formatStatusLabel(status?: string | null) {
