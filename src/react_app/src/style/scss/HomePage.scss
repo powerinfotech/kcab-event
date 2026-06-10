@@ -957,12 +957,12 @@
 
   h2 {
     max-width: 760px;
-    margin: 0 0 44px auto;
+    margin: 0 auto 44px;
     color: var(--saf-ink);
     font-size: 44px;
     line-height: 1.18;
     font-weight: 900;
-    text-align: right;
+    text-align: center;   // Figma main01: 'Our 2025 Sponsors' 중앙 정렬
   }
 
   h2 span {
@@ -1017,10 +1017,12 @@
 
 .saf-renewal-logo-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 24px 38px;
+  // 한 줄당 로고 수는 --logo-cols 로 등급별 제어 (홈: Gold 5×2, Silver 6×1 등).
+  // Figma main01: 로고는 content 폭으로 가로 중앙 정렬된 그룹 (가득 채우지 않음).
+  grid-template-columns: repeat(var(--logo-cols, 4), auto);
+  gap: 24px 28px;   // Figma main01 로고 itemSpacing(~20px)에 가깝게
   align-items: center;
-  justify-content: stretch;
+  justify-content: center;
 }
 
 .saf-renewal-sponsor-logo {
@@ -1031,44 +1033,64 @@
   justify-content: center;
 
   img {
-    max-width: 100%;
+    // 로고 폭 상한 — Figma main01: 다중 로고 등급(Gold/Silver 등)은 작은 로고가
+    // 가로 중앙으로 모이도록 폭을 제한한다(가득 채우지 않음).
+    max-width: 130px;
     max-height: 56px;
     width: auto;
     height: auto;
     display: block;
     object-fit: contain;
   }
+
+  // 단일 로고 등급(Organized/Welcome/Special)은 Figma처럼 더 크게.
+  &:only-child img {
+    max-width: 220px;
+  }
 }
 
 .saf-renewal-footer {
-  padding: 46px 0 42px;
-  background: var(--saf-footer-navy);   // Figma: 단색 네이비 #2a2559
+  padding: 36px 0 44px;
+  background: var(--saf-footer-navy);   // Figma main01: 단색 네이비 #2a2559
   color: #fff;
 
+  // Figma main01 footer: 2단 레이아웃 (좌 로고/단락/카피 · 우 Privacy/소셜)
   .saf-renewal-shell {
-    display: block;
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: 24px;
   }
 
   p {
-    margin: 22px 0 0;
-    color: rgba(255, 255, 255, 0.82);
+    margin: 26px 0 0;
+    max-width: 440px;
+    color: rgba(255, 255, 255, 0.9);
     font-size: 12px;
-    line-height: 1.55;
+    line-height: 1.45;
   }
 
   small {
     display: block;
-    margin-top: 20px;
-    color: rgba(255, 255, 255, 0.6);
+    margin-top: 28px;
+    color: rgba(255, 255, 255, 0.8);
     font-size: 10px;
   }
 }
 
-.saf-renewal-footer-top {
+// 좌측 컬럼: 로고 → 영문 단락 → 카피라이트
+.saf-renewal-footer-left {
   display: flex;
+  flex-direction: column;
   align-items: flex-start;
+}
+
+// 우측 컬럼: Privacy(상단) · 소셜(하단)
+.saf-renewal-footer-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
   justify-content: space-between;
-  gap: 24px;
 }
 
 .saf-renewal-footer-privacy {
@@ -1082,32 +1104,6 @@
   }
 }
 
-.saf-renewal-footer-social {
-  display: inline-flex;
-  gap: 8px;
-  margin-top: 18px;
-
-  a {
-    width: 30px;
-    height: 30px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 7px;
-    background: rgba(255, 255, 255, 0.12);
-    color: #fff;
-    transition: background 0.15s ease;
-
-    &:hover {
-      background: rgba(255, 255, 255, 0.24);
-    }
-
-    svg {
-      width: 15px;
-      height: 15px;
-    }
-  }
-}
 
 .saf-renewal-footer-brand {
   display: flex;
@@ -1123,6 +1119,20 @@
     font-size: 22px;
     line-height: 0.96;
     font-weight: 900;
+  }
+}
+
+// 모바일: footer 2단을 세로 스택 (Figma는 데스크톱 기준; 좁은 화면 가독성 유지)
+@media (max-width: 640px) {
+  .saf-renewal-footer .saf-renewal-shell {
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  .saf-renewal-footer-right {
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 18px;
   }
 }
 

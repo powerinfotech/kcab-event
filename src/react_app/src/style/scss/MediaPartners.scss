@@ -1284,6 +1284,73 @@
   }
 }
 
+// Figma sub01_organizer: KCAB International 소개 블록 — 헤딩 + 2단(로고 | 설명 단락).
+// 콘텐츠 폭 762px(Figma 본문 x579..1341)로 셸 중앙에 배치.
+.organizer-about {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 762px);
+  margin: 0 auto;
+}
+
+.organizer-about-title {
+  margin-bottom: 56px;
+}
+
+.organizer-about-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 40px;
+}
+
+.organizer-about-logo {
+  flex: 0 0 224px;
+  margin: 0;
+
+  img {
+    display: block;
+    width: 100%;
+    max-width: 224px;
+    height: auto;
+  }
+}
+
+.organizer-about-text {
+  flex: 1;
+  min-width: 0;
+
+  p {
+    margin: 0 0 22px;
+    color: #222222;
+    font-family: 'Montserrat', 'Onest', 'Open Sans', 'Noto Sans KR', sans-serif;
+    font-size: 16px;
+    line-height: 22.4px;       // Figma: lineHeightPx 22.4
+    letter-spacing: -0.16px;
+    text-align: justify;
+  }
+
+  p:last-child {
+    margin-bottom: 0;
+  }
+
+  a {
+    color: #294dc7;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+}
+
+@media (max-width: 768px) {
+  .organizer-about-body {
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  .organizer-about-logo {
+    flex: none;
+  }
+}
+
 @media (max-width: 900px) {
   .saf-public-shell,
   .media-partners-page,

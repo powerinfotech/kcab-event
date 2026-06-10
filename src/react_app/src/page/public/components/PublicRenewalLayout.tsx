@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { usePublicNavigate } from '@hook/usePublicNavigate';
 import { useCurrentOfficialEventPath } from '@hook/useCurrentOfficialEventPath';
-import BusinessFooterInfo from './BusinessFooterInfo';
 import SafLogo from '../../../assets/images/saf-renewal/header/logo.svg';
 import Social1 from '../../../assets/images/saf-renewal/header/social-1.svg';
 import Social2 from '../../../assets/images/saf-renewal/header/social-2.svg';
@@ -147,12 +146,23 @@ export default function PublicRenewalLayout({ className, children }: PublicRenew
 
       {children}
 
+      {/* Figma main01 footer: navy 2\ub2e8 \u2014 \uc88c(\ub85c\uace0/\uc601\ubb38 \ub2e8\ub77d/\uce74\ud53c\ub77c\uc774\ud2b8) \u00b7 \uc6b0(Privacy \uc0c1\u00b7\uc18c\uc15c \ud558). */}
       <footer className="saf-renewal-footer">
         <div className="saf-renewal-shell">
-          <div className="saf-renewal-footer-top">
+          <div className="saf-renewal-footer-left">
             <div className="saf-renewal-footer-brand">
               <SafLogo className="mp-footer-logo" aria-hidden="true" />
             </div>
+            <p>
+              Seoul ADR Festival (SAF) is organized by KCAB International.
+              <br />
+              Office: Trade Tower, 511 Yeongdong-daero, Gangnam-gu, Seoul
+              <br />
+              Contact: saf@kcab.or.kr
+            </p>
+            <small>{'\u00a9'} 2026 KCAB International. All rights reserved.</small>
+          </div>
+          <div className="saf-renewal-footer-right">
             <a
               className="saf-renewal-footer-privacy"
               href="#privacy"
@@ -160,22 +170,13 @@ export default function PublicRenewalLayout({ className, children }: PublicRenew
             >
               Privacy
             </a>
-          </div>
-          <p>
-            Seoul ADR Festival (SAF) is organized by KCAB International.
-            <br />
-            Office Trade Tower, 511 Yeongdong-daero, Gangnam-gu, Seoul
-            <br />
-            Contact: saf@kcab.or.kr
-          </p>
-          <BusinessFooterInfo />
-          <small>{'\u00a9'} 2026 KCAB International. All rights reserved.</small>
-          <div className="saf-renewal-footer-social" aria-label="Social links">
-            {socialLinks.map(({ label, href, Icon }) => (
-              <a key={label} href={href} aria-label={label}>
-                <Icon className="mp-social-icon" aria-hidden="true" />
-              </a>
-            ))}
+            <div className="saf-renewal-social" aria-label="Social links">
+              {socialLinks.map(({ label, href, Icon }) => (
+                <a key={label} href={href} aria-label={label}>
+                  <Icon className="mp-social-icon" aria-hidden="true" />
+                </a>
+              ))}
+            </div>
           </div>
         </div>
       </footer>

@@ -43,6 +43,8 @@ import SponsorUncitralLogo from '../assets/images/saf-renewal/sponsors/uncitral.
 import SponsorVanguardLogo from '../assets/images/saf-renewal/sponsors/vanguard.png';
 import SponsorYendallHunterLogo from '../assets/images/saf-renewal/sponsors/yendall-hunter.png';
 import SponsorYoonYangLogo from '../assets/images/saf-renewal/sponsors/yoon-yang.png';
+import SponsorLeeKoLogo from '../assets/images/saf-renewal/sponsors/lee-ko.png';
+import SponsorYulchonLogo from '../assets/images/saf-renewal/sponsors/yulchon.png';
 
 const POPUP_DISMISS_COOKIE_PREFIX = 'popup_dismissed_';
 
@@ -107,9 +109,11 @@ const journeyCards = [
   { year: '2025', image: GalleryAudienceImage },
 ];
 
+// Figma main01 'Our 2025 Sponsors' 기준: 등급 라벨/구성/배치(cols) 동일.
+// cols = 한 줄당 로고 수 (Gold 10개=5×2줄, Silver 6개=1줄, 나머지는 개수≤4라 기본 그리드).
 const sponsorGroups = [
   {
-    title: 'Organized By',
+    title: 'Organized',
     logos: [{ name: 'KCAB International', image: SponsorKcabLogo }],
   },
   {
@@ -132,7 +136,7 @@ const sponsorGroups = [
     logos: [{ name: 'Jipyong', image: SponsorJipyongLogo }],
   },
   {
-    title: 'Platinum Sponsors',
+    title: 'Platinum',
     logos: [
       { name: 'Bae, Kim & Lee', image: SponsorBaeKimLeeLogo },
       { name: 'Kim & Chang', image: SponsorKimChangLogo },
@@ -141,20 +145,24 @@ const sponsorGroups = [
     ],
   },
   {
-    title: 'Gold Sponsors',
+    title: 'Gold',
+    cols: 5,
     logos: [
       { name: 'Analysis Group', image: SponsorAnalysisGroupLogo },
       { name: 'Baker McKenzie', image: SponsorBakerMckenzieLogo },
       { name: 'DIAC', image: SponsorDiacLogo },
       { name: 'HFW', image: SponsorHfwLogo },
+      { name: 'Lee & Ko', image: SponsorLeeKoLogo },
       { name: 'Quinn Emanuel', image: SponsorQuinnEmanuelLogo },
       { name: 'Shin & Kim', image: SponsorShinKimLogo },
       { name: 'Yendall Hunter', image: SponsorYendallHunterLogo },
       { name: 'Yoon & Yang', image: SponsorYoonYangLogo },
+      { name: 'Yulchon', image: SponsorYulchonLogo },
     ],
   },
   {
-    title: 'Silver Sponsors',
+    title: 'Silver',
+    cols: 6,
     logos: [
       { name: 'Herbert Smith Freehills Kramer', image: SponsorHerbertSmithLogo },
       { name: 'Secretariat', image: SponsorSecretariatLogo },
@@ -165,7 +173,7 @@ const sponsorGroups = [
     ],
   },
   {
-    title: 'Special Sponsor',
+    title: 'Special',
     logos: [{ name: 'Seoul Metropolitan Government', image: SponsorSeoulMetropolitanLogo }],
   },
 ];
@@ -224,11 +232,11 @@ export default function HomePage() {
           <div className="saf-renewal-sunset-hero-inner">
             <div className="saf-renewal-sunset-hero-content">
               <h1 className="saf-renewal-sunset-title">
-                Unveiling
+                Seoul
                 <br />
-                Excellence
+                ADR
                 <br />
-                in Arbitration.
+                Festival 2026
               </h1>
               <p className="saf-renewal-sunset-date">{'26 \u2013 30 October 2026 \u00b7 Seoul'}</p>
               <p className="saf-renewal-sunset-lede">
@@ -391,7 +399,10 @@ export default function HomePage() {
                 <div className="saf-renewal-sponsor-title">
                   <span>{group.title}</span>
                 </div>
-                <div className="saf-renewal-logo-grid">
+                <div
+                  className="saf-renewal-logo-grid"
+                  style={{ '--logo-cols': group.cols ?? group.logos.length } as React.CSSProperties}
+                >
                   {group.logos.map((logo) => (
                     <figure className="saf-renewal-sponsor-logo" key={logo.name}>
                       <img src={assetSrc(logo.image)} alt={logo.name} loading="lazy" />
