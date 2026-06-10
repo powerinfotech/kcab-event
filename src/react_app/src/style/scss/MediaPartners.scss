@@ -1,4 +1,8 @@
 // Media Partners public page (Figma: sub01_Media Partners, node 1:16317)
+// `.saf-public-shell` is the persistent public shell root (lifted into AppLayout),
+// so these header/footer rules apply to every public SPA page, not just the mp group.
+// (Note: NOT `.saf-renewal-shell`, which is a separate 1180px width-container utility.)
+.saf-public-shell,
 .media-partners-page,
 .organizer-page,
 .official-events-page,
@@ -7,7 +11,7 @@
   // Figma node 1:16346: logo lockup left (227x89), right column with social
   // icons on top and the nav row below, both right-aligned.
   .saf-renewal-header {
-    height: auto;
+    height: 180px;  // Figma main01_gnb활성화: stable 180px GNB band on every shell page
   }
 
   .saf-renewal-header-inner {
@@ -1300,12 +1304,26 @@
 }
 
 @media (max-width: 900px) {
+  .saf-public-shell,
   .media-partners-page,
   .organizer-page,
   .official-events-page,
   .official-event-detail-page {
+    // Mobile header grows with the hamburger accordion; the fixed 180px
+    // desktop band above would clip it (this out-specifies the global rule).
+    .saf-renewal-header {
+      height: auto;
+    }
+
     .saf-renewal-header-inner {
       width: min(100% - 32px, 720px);
+    }
+
+    // On mobile the header collapses to a hamburger menu. Dissolve the desktop
+    // right-column wrapper so the global mobile nav rules (full-width accordion
+    // under the brand row) apply to .saf-renewal-nav / .saf-renewal-social.
+    .mp-header-right {
+      display: contents;
     }
   }
 

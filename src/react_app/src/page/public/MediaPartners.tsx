@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import PublicRenewalLayout from './components/PublicRenewalLayout';
 import HeroImage from '../../assets/images/saf-renewal/media-partners/hero.png';
 import BlobGraphic from '../../assets/images/saf-renewal/media-partners/blob.svg';
 import HomeIcon from '../../assets/images/saf-renewal/media-partners/home.svg';
@@ -16,8 +15,7 @@ const mediaPartners = [
 ];
 
 const MediaPartners: React.FC = () => (
-  <PublicRenewalLayout className="media-partners-page">
-    <main className="mp-main">
+  <main className="mp-main">
       <section
         className="mp-hero"
         style={{ backgroundImage: `url(${assetSrc(HeroImage)})` }}
@@ -55,7 +53,6 @@ const MediaPartners: React.FC = () => (
         </div>
       </div>
     </main>
-  </PublicRenewalLayout>
 );
 
 export default MediaPartners;

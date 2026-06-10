@@ -7,7 +7,6 @@ import { usePublicNavigate } from '@hook/usePublicNavigate';
 import { useSetAtom } from 'jotai';
 import { currentPathAtom, replacePath } from '@atom/currentPathAtom';
 import { useCurrentOfficialEventPath } from '@hook/useCurrentOfficialEventPath';
-import PublicRenewalLayout from './components/PublicRenewalLayout';
 import HeroImage from '../../assets/images/saf-renewal/media-partners/hero.png';
 import BlobGraphic from '../../assets/images/saf-renewal/media-partners/blob.svg';
 import HomeIcon from '../../assets/images/saf-renewal/media-partners/home.svg';
@@ -84,8 +83,7 @@ const PublicEvents: React.FC = () => {
   }, [officialEventPath, setCurrentPath]);
 
   return (
-    <PublicRenewalLayout className="official-events-page">
-      <main className="mp-main official-events-main">
+    <main className="mp-main official-events-main">
         <section
           className="mp-hero official-events-hero"
           style={{ backgroundImage: `url(${assetSrc(HeroImage)})` }}
@@ -137,7 +135,6 @@ const PublicEvents: React.FC = () => {
           </div>
         </div>
       </main>
-    </PublicRenewalLayout>
   );
 };
 

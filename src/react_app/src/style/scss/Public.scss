@@ -2027,44 +2027,6 @@ $pub-header-height-mobile: 60px;
   color: var(--saf-event-ink);
   overflow-x: clip;
   overflow-y: visible;
-
-  .saf-renewal-shell {
-    width: min(100% - 96px, 1200px);
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  .saf-renewal-header-inner {
-    width: min(100% - 96px, 1440px);
-  }
-}
-
-.saf-event-header {
-  position: absolute;
-}
-
-.pub-event-registration-page {
-  .saf-event-header {
-    background:
-      linear-gradient(180deg, rgba(16, 18, 43, 0.96) 0%, rgba(16, 18, 43, 0.88) 100%);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.14);
-    box-shadow: 0 20px 54px rgba(16, 18, 43, 0.16);
-    backdrop-filter: blur(18px);
-  }
-
-  .saf-renewal-brand,
-  .saf-renewal-nav a,
-  .saf-renewal-social a {
-    color: #fff;
-  }
-
-  .saf-renewal-logo-title {
-    color: #fff;
-  }
-
-  .saf-renewal-social a {
-    background: rgba(255, 255, 255, 0.14);
-  }
 }
 
 .saf-event-detail-hero {
@@ -4059,45 +4021,6 @@ $pub-header-height-mobile: 60px;
 }
 
 @media (max-width: 900px) {
-  .pub-event-renewal {
-    .saf-renewal-shell,
-    .saf-renewal-header-inner {
-      width: min(100% - 32px, 720px);
-    }
-
-    .saf-renewal-header {
-      padding: 18px 0;
-    }
-
-    .saf-renewal-header-inner {
-      flex-direction: row;
-      align-items: flex-start;
-      gap: 16px;
-    }
-
-    .saf-renewal-header-right {
-      min-width: 0;
-      align-items: flex-end;
-      gap: 0;
-    }
-
-    .saf-renewal-social {
-      display: none;
-    }
-
-    .saf-renewal-nav {
-      max-width: min(58vw, 260px);
-      flex-wrap: nowrap;
-      gap: 16px;
-      overflow-x: auto;
-      padding-bottom: 4px;
-
-      a {
-        font-size: 13px;
-      }
-    }
-  }
-
   .saf-event-detail-hero {
     min-height: auto;
     padding: 164px 0 64px;
@@ -5483,21 +5406,6 @@ $pub-header-height-mobile: 60px;
    모두 .pub-event-registration-page 스코프, Public.scss 맨끝 append → 기존 override
    ===================================================================== */
 
-/* 1) 헤더: 다크 그라데이션/보더/blur 제거 → 투명 (텍스트 흰색 유지).
-      is-menu-open / submenu-hover 시 navy 는 base .saf-renewal-header
-      (HomePage.scss) 규칙이 그대로 처리하므로 추가 불필요. */
-.pub-event-registration-page .saf-event-header {
-  background: transparent;
-  border-bottom: 0;
-  box-shadow: none;
-  backdrop-filter: none;
-}
-/* 메뉴/드롭다운 열릴 때만 가독성용 navy (base 규칙 재확인 — 안전망) */
-.pub-event-registration-page .saf-event-header.is-menu-open,
-.pub-event-registration-page .saf-event-header:has(.saf-renewal-nav-item.has-submenu:hover) {
-  background: var(--saf-menu-navy);
-}
-
 /* 2) 섹션: 상단 패딩(132px, line 2248) 제거 → 마스트헤드가 페이지 최상단
       (absolute 180px 헤더 뒤)에서 시작. 좌우 패딩 없음(풀블리드). */
 .pub-event-registration-page .pub-event-registration-page-section {
@@ -5543,19 +5451,34 @@ $pub-header-height-mobile: 60px;
 /* ============================================================
    FIX1: 등록 마스트헤드 히어로를 상세페이지 히어로와 동일하게
    상세 .saf-event-detail-hero 는 buildHeroStyle→getOverlayGradient(navy 기본)
-   결과 `linear-gradient(135deg, rgba(16,32,51,.84), rgba(16,32,51,.48)), url(image)`
-   를 사용한다(PublicEventPage.tsx:2171,2191).
-   기존 갈색+네이비 이중 오버레이(Public.scss:4538-4541)를 상세와 동일한
-   단일 navy 135deg 오버레이로 통일. 이미지는 기존 --registration-hero-image 재사용.
-   min-height 등 히어로 형태는 그대로 유지.
+   상세(saf-event-detail-hero)와 동일하게 히어로 이미지를 밝게 노출한다.
+   상단은 투명(이미지 그대로) → 하단만 옅은 navy 로 어둡게 해서 제목 가독성만 확보.
+   이미지는 기존 --registration-hero-image 재사용, min-height 등 형태는 그대로 유지.
    ============================================================ */
 .pub-event-registration-page .pub-event-registration-masthead {
   background-image:
-    linear-gradient(135deg, rgba(16, 32, 51, 0.84) 0%, rgba(16, 32, 51, 0.48) 100%),
+    linear-gradient(180deg, rgba(16, 32, 51, 0) 0%, rgba(16, 32, 51, 0.45) 100%),
     var(--registration-hero-image);
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
+}
+
+/* register hero(masthead) 높이를 organizer/sponsors .mp-hero 와 동일한 반응형으로:
+   데스크톱 490px(기존 유지) / ≤900px 360px (mp-hero @media(max-width:900px) 와 일치) */
+@media (max-width: 900px) {
+  .pub-event-registration-page .pub-event-registration-masthead {
+    min-height: 360px;
+  }
+}
+
+/* 좁은 모바일(≤640): 제목이 여러 줄로 길어져 상단 헤더(로고)와 겹치므로
+   상단 여백/최소높이를 더 확보(겹침 방지 우선 — 이 구간은 mp-hero 360보다 약간 큼) */
+@media (max-width: 640px) {
+  .pub-event-registration-page .pub-event-registration-masthead {
+    min-height: 420px;
+    padding-top: 140px;
+  }
 }
 
 /* ===== preview ===== */
@@ -5721,13 +5644,6 @@ $pub-header-height-mobile: 60px;
 }
 /* FIX: 등록 헤더 드롭다운 패널(흰 배경)의 링크가 흰색이라 안 보이던 문제 →
    패널 링크는 어두운 글자로 (.saf-renewal-nav a{color:#fff} 보다 높은 specificity) */
-.pub-event-registration-page .saf-event-header .saf-renewal-menu-panel a {
-  color: #11132f;
-}
-.pub-event-registration-page .saf-event-header .saf-renewal-menu-panel a:hover,
-.pub-event-registration-page .saf-event-header .saf-renewal-menu-panel a.is-featured {
-  color: #253b87;
-}
 
 /* FIX: 히어로 "Back to Event" 버튼 = Figma sub02_01Registration 원형 그라데이션 버튼
    (130x130 원형, linear #6bc8ff→#777dea→#7f4bdc, 흰 글자 가운데, 콘텐츠 컬럼 우측·중하단)

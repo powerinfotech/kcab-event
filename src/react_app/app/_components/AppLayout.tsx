@@ -14,6 +14,7 @@ import PastEditions, { PastEdition2020, PastEdition2021, PastEdition2022, PastEd
 import SafSignup from '@page/saf/SafSignup';
 import SponsorsPage from '@page/public/SponsorsPage';
 import SupportersPage from '@page/public/SupportersPage';
+import PublicRenewalLayout from '@page/public/components/PublicRenewalLayout';
 import { getUserLoginInfo } from '@api/CommonApi';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { sessionInfoAtom } from '@atom/sessionInfoAtom';
@@ -34,6 +35,44 @@ function getAdminMenuPath(path: string): string {
   const withoutAdmin = path.replace(/^\/admin/, '') || '/';
   const withoutTrailingSlash = withoutAdmin.replace(/\/+$/, '');
   return withoutTrailingSlash || '/';
+}
+
+/**
+ * Public SPA shell routing. Every renewal public route renders inside ONE persistent
+ * <PublicRenewalLayout> (shared header navigator + footer) so that navigating between
+ * these pages swaps only the inner content while the header/footer stay mounted.
+ * Returns null for non-shell public routes (notice/faq/past-editions/saf-signup),
+ * which keep rendering their own markup.
+ */
+function getPublicShellRoute(
+  currentPath: string,
+  children: React.ReactNode,
+): { className: string; content: React.ReactNode } | null {
+  if (currentPath === '/') return { className: '', content: children };
+  if (currentPath === '/organizer') return { className: 'organizer-page', content: <Organizer /> };
+  if (currentPath === '/media-partners') {
+    return { className: 'media-partners-page', content: <MediaPartners /> };
+  }
+  if (currentPath === '/sponsors-2025') return { className: 'saf-sponsors-page', content: <SponsorsPage /> };
+  if (currentPath === '/supporters') {
+    return { className: 'saf-sponsors-page saf-supporters-page', content: <SupportersPage /> };
+  }
+  if (currentPath === '/events') return { className: 'official-events-page', content: <PublicEvents /> };
+  if (currentPath.startsWith('/event/')) {
+    const eventPathParts = currentPath.replace(/^\/event\//, '').split('/');
+    const urlSlug = decodeURIComponent(eventPathParts[0] ?? '');
+    if (eventPathParts[1] === 'register') {
+      return {
+        className: 'pub-layout pub-event-renewal pub-event-registration-page',
+        content: <PublicEventRegistrationPage urlSlug={urlSlug} />,
+      };
+    }
+    return {
+      className: 'official-event-detail-page pub-event-renewal',
+      content: <PublicEventPage urlSlug={urlSlug} />,
+    };
+  }
+  return null;
 }
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -149,13 +188,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   if (!isAdminPath) {
-    if (currentPath === '/') {
-      return <>{children}</>;
+    const publicShellRoute = getPublicShellRoute(currentPath, children);
+    if (publicShellRoute) {
+      return (
+        <PublicRenewalLayout className={publicShellRoute.className}>
+          {publicShellRoute.content}
+        </PublicRenewalLayout>
+      );
     }
     if (currentPath === '/notice') return <PublicNotice />;
     if (currentPath === '/faq') return <PublicFaq />;
-    if (currentPath === '/organizer') return <Organizer />;
-    if (currentPath === '/media-partners') return <MediaPartners />;
     if (currentPath === '/past-editions') return <PastEditions />;
     if (currentPath === '/past-editions/2020') return <PastEdition2020 />;
     if (currentPath === '/past-editions/2021') return <PastEdition2021 />;
@@ -170,17 +212,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     if (currentPath.startsWith('/past-editions/2025/events/')) {
       const eventSlug = decodeURIComponent(currentPath.replace(/^\/past-editions\/2025\/events\//, '').split('/')[0] ?? '');
       return <PastEdition2025EventDetail slug={eventSlug} />;
-    }
-    if (currentPath === '/sponsors-2025') return <SponsorsPage />;
-    if (currentPath === '/supporters') return <SupportersPage />;
-    if (currentPath === '/events') return <PublicEvents />;
-    if (currentPath.startsWith('/event/')) {
-      const eventPathParts = currentPath.replace(/^\/event\//, '').split('/');
-      const urlSlug = decodeURIComponent(eventPathParts[0] ?? '');
-      if (eventPathParts[1] === 'register') {
-        return <PublicEventRegistrationPage urlSlug={urlSlug} />;
-      }
-      return <PublicEventPage urlSlug={urlSlug} />;
     }
     if (currentPath === '/saf/signup') return <SafSignup />;
     // 알 수 없는 공개 경로는 홈으로 fallback
