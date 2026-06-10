@@ -20,7 +20,6 @@ import HeroSeoulImage from '../../assets/images/saf-renewal/official-events-hero
 import VenueFigmaImage from '../../assets/images/saf-renewal/official-events-venue-figma.png';
 import RibbonFigmaImage from '../../assets/images/saf-renewal/official-events-ribbon-large-figma.png';
 import { usePublicNavigate } from '@hook/usePublicNavigate';
-import PublicRenewalLayout from './components/PublicRenewalLayout';
 
 declare global {
   interface Window {
@@ -319,7 +318,7 @@ const PublicEventPage: React.FC<PublicEventPageProps> = ({ urlSlug }) => {
     : `View ${primarySection?.title || primarySection?.navLabel || 'Details'}`;
 
   return (
-    <PublicRenewalLayout className="official-event-detail-page pub-event-renewal">
+    <>
       <main className="pub-page-content">
         <section className="pub-section pub-event-builder-hero saf-event-detail-hero" style={heroStyle}>
           <div className="saf-renewal-shell saf-event-detail-hero-inner">
@@ -376,7 +375,7 @@ const PublicEventPage: React.FC<PublicEventPageProps> = ({ urlSlug }) => {
       >
         <span aria-hidden="true">{'\u2191'}</span>
       </button>
-    </PublicRenewalLayout>
+    </>
   );
 };
 
