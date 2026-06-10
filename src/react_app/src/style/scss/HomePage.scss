@@ -585,16 +585,17 @@
 
 .saf-renewal-expect-grid {
   width: 100%;
-  max-width: 879px;                           // Figma: 207×4 + 17×3
+  max-width: 879px;                           // Figma: 207×4 + 17×3 (1920에서 카드 207px)
   margin: 196px 0 0;                          // Figma: 카드 top = 밴드 top + 286 (콘텐츠 90 + 196)
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 207px));   // Figma 207px, 좁은 셸에서는 비율 축소(잘림 방지)
-  gap: 17px;                                  // Figma: 17px
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.93%;                                 // Figma 17/879 — 폭과 함께 비례 축소(카드:간격 비율 유지)
 }
 
 .saf-renewal-expect-card {
   position: relative;
-  min-height: 274px;
+  aspect-ratio: 207 / 276;     // Figma 카드 비율(3:4) — 폭이 줄어도 비율 유지
+  min-height: 0;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -609,7 +610,7 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(180deg, rgba(16, 15, 71, 0) 40%, rgba(16, 15, 71, 0.85) 100%);   // Figma main01
+    background: linear-gradient(180deg, rgba(17, 16, 71, 0) 40%, rgba(17, 16, 71, 0.85) 100%);   // Figma: #111047 0%→85%
     z-index: 1;
   }
 }
@@ -630,34 +631,37 @@
 
 .saf-renewal-expect-card-num {
   position: absolute;
-  top: 14px;                   // Figma: 14px
-  left: 12px;                  // Figma: 12px
+  top: 14px;                   // Figma: dy=14
+  left: 12px;                  // Figma: dx=12
   z-index: 2;
-  color: rgba(255, 255, 255, 0.92);
-  font-size: 10px;             // Figma: 10px
+  color: #fff;                 // Figma: #ffffff a=1
+  font-size: 10px;             // Figma: 10px/700
   font-weight: 700;
-  letter-spacing: 1px;
+  line-height: 1.5;            // Figma: lh 15
+  letter-spacing: 2.5px;       // Figma: ls 2.5
 }
 
 .saf-renewal-expect-card-body {
   position: relative;
   z-index: 2;
-  padding: 18px 16px 16px;
+  padding: 0 12px 13px;        // Figma: Figcaption dx=12, desc 하단 ~263.5 → bottom ≈13
   margin-top: auto;
 
   h3 {
-    margin: 0 0 5px;
+    margin: 0 0 4px;           // Figma: 제목(lh17.5) → desc(y247.5) 간격 ≈4
     color: #fff;
-    font-size: 14px;           // Figma: 14px
-    line-height: 1.18;
-    font-weight: 700;          // Figma: 700
+    font-size: 14px;           // Figma: 14px/700
+    line-height: 1.25;         // Figma: lh 17.5
+    font-weight: 700;
+    letter-spacing: -0.35px;   // Figma: ls -0.35
   }
 
   p {
     margin: 0;
-    color: rgba(255, 255, 255, 0.78);
-    font-size: 11px;
-    line-height: 1.5;
+    color: #fff;               // Figma: #ffffff a=1 (순백)
+    font-size: 11px;           // Figma: 11px/400
+    line-height: 1.375;        // Figma: lh 15.13
+    font-weight: 400;
   }
 }
 
@@ -1468,6 +1472,7 @@
   }
 
   .saf-renewal-expect-card {
+    aspect-ratio: auto;        // 1열 풀폭에서는 비율 고정 해제
     min-height: 280px;
   }
 
