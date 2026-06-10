@@ -9,9 +9,9 @@
   --saf-lilac: #dabcff;        // Figma: hero eyebrow
   --saf-pink: #df55e7;
   --saf-line: rgba(37, 36, 74, 0.12);
-  --saf-menu-navy: #29265f;
+  --saf-menu-navy: #2a2559;  // Figma main01_gnb활성화: GNB band (Rectangle 3468325, #2A2559)
   --saf-footer-navy: #2a2559;  // Figma: footer bg
-  --saf-menu-yellow: #f4e46f;
+  --saf-menu-yellow: #fffb84;  // Figma: active nav label color
   --saf-home-left: clamp(24px, 18.2vw, 350px);
 
   min-height: 100vh;
@@ -42,14 +42,14 @@
   background: transparent;
   transition: background 0.18s ease;
 
+  // Figma main01_gnb활성화: the band stays 180px when the menu opens;
+  // only the background turns navy and the dropdown hangs below the band.
   &.is-menu-open {
     background: var(--saf-menu-navy);
-    height: 300px;
   }
 
   &:has(.saf-renewal-nav-item.has-submenu:hover) {
     background: var(--saf-menu-navy);
-    height: 300px;
   }
 }
 
@@ -157,7 +157,7 @@
     left: -28px;
     right: -28px;
     top: 30px;
-    height: 32px;
+    height: 42px;  // must span the gap down to the panel at the band bottom (180px)
   }
 
   > a {
@@ -203,15 +203,16 @@
 
 .saf-renewal-menu-panel {
   position: absolute;
-  top: 54px;
+  top: 66px;  // panel top = GNB band bottom (180px) − nav item top (114px), per Figma main01_gnb활성화
   left: 50%;
   z-index: 5;
   width: 200px;
-  padding: 22px 28px 26px;
+  padding: 23px 0 30px;
   display: grid;
-  gap: 22px;
+  gap: 24px;
+  justify-items: center;
   background: #fff;
-  box-shadow: 0 18px 36px rgba(17, 19, 47, 0.18);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   opacity: 0;
   pointer-events: none;
   transform: translate(-50%, 8px);
@@ -220,25 +221,38 @@
   a {
     position: relative;
     width: fit-content;
-    color: #11132f;
+    color: #231815;
     font-size: 15px;
     font-weight: 500;
-    line-height: 1.2;
+    line-height: 1.4;
+    letter-spacing: -0.45px;
     text-decoration: none;
     white-space: nowrap;
     text-shadow: none;
 
     &:hover {
-      color: #253b87;
+      color: #294dc7;
       text-decoration: underline;
       text-underline-offset: 3px;
     }
 
     &.is-featured,
     &.is-current {
-      color: #253b87;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: #294dc7;
       text-decoration: underline;
       text-underline-offset: 4px;
+
+      &::before {
+        content: '';
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: currentColor;
+        flex: none;
+      }
     }
   }
 }
@@ -2724,7 +2738,7 @@
 /* ===== Sponsors sub page (Figma sub01_Sponsors) ===== */
 .saf-sub-hero {
   position: relative;
-  min-height: 440px;
+  min-height: 490px;              // organizer .mp-hero 와 동일한 hero 높이
   padding: 180px 0 54px;          // 절대배치된 180px 헤더 영역 확보
   display: flex;
   align-items: flex-end;
@@ -2732,6 +2746,13 @@
   background-position: center;
   background-repeat: no-repeat;
   isolation: isolate;
+}
+
+// organizer .mp-hero 와 동일하게 ≤900px 에서 360px (organizer 의 900px 브레이크포인트와 일치)
+@media (max-width: 900px) {
+  .saf-sub-hero {
+    min-height: 360px;
+  }
 }
 
 .saf-sub-hero-overlay {
@@ -2918,7 +2939,7 @@
 
 @media (max-width: 768px) {
   .saf-sub-hero {
-    min-height: 300px;
+    min-height: 360px;             // organizer .mp-hero 와 동일 (모바일에서도 360px 유지)
     padding: 120px 0 32px;
   }
 

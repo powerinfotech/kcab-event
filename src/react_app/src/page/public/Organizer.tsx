@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import PublicRenewalLayout from './components/PublicRenewalLayout';
 import HeroImage from '../../assets/images/saf-renewal/media-partners/hero.png';
 import BlobGraphic from '../../assets/images/saf-renewal/media-partners/blob.svg';
 import HomeIcon from '../../assets/images/saf-renewal/media-partners/home.svg';
@@ -14,8 +13,7 @@ const organizers = [
 ];
 
 const Organizer: React.FC = () => (
-  <PublicRenewalLayout className="organizer-page">
-    <main className="mp-main organizer-main">
+  <main className="mp-main organizer-main">
       <section
         className="mp-hero organizer-hero"
         style={{ backgroundImage: `url(${assetSrc(HeroImage)})` }}
@@ -53,7 +51,6 @@ const Organizer: React.FC = () => (
         </div>
       </div>
     </main>
-  </PublicRenewalLayout>
 );
 
 export default Organizer;

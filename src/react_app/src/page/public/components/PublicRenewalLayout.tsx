@@ -24,9 +24,9 @@ const createNavItems = (officialEventPath: string): NavItem[] => [
     href: '/organizer',
     children: [
       { label: 'Organizer', href: '/organizer' },
-      { label: 'Sponsors', href: '/sponsors' },
+      { label: 'Sponsors', href: '/sponsors-2025' },
       { label: 'Supporters', href: '/supporters' },
-      { label: 'Media Partners', href: '/media-partners', featured: true },
+      { label: 'Media Partners', href: '/media-partners' },
     ],
   },
   {
@@ -59,10 +59,12 @@ export default function PublicRenewalLayout({ className, children }: PublicRenew
   const pathname = usePathname();
   const officialEventPath = useCurrentOfficialEventPath();
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navItems = createNavItems(officialEventPath);
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     setActiveMenu(null);
+    setMobileMenuOpen(false);
     if (href.startsWith('/') && !href.includes('#')) {
       e.preventDefault();
       navigate(href);
@@ -70,9 +72,9 @@ export default function PublicRenewalLayout({ className, children }: PublicRenew
   };
 
   return (
-    <div className={`saf-renewal-home ${className}`}>
+    <div className={`saf-renewal-home saf-public-shell ${className}`}>
       <header
-        className={`saf-renewal-header${activeMenu ? ' is-menu-open' : ''}`}
+        className={`saf-renewal-header${activeMenu ? ' is-menu-open' : ''}${mobileMenuOpen ? ' is-mobile-menu-open is-menu-open' : ''}`}
         onMouseLeave={() => setActiveMenu(null)}
       >
         <div className="saf-renewal-shell saf-renewal-header-inner">
@@ -84,6 +86,17 @@ export default function PublicRenewalLayout({ className, children }: PublicRenew
           >
             <SafLogo className="mp-brand-logo" aria-hidden="true" />
           </a>
+          <button
+            className="saf-renewal-menu-toggle"
+            type="button"
+            aria-label={mobileMenuOpen ? 'Close main menu' : 'Open main menu'}
+            aria-expanded={mobileMenuOpen}
+            onClick={() => setMobileMenuOpen((prev) => !prev)}
+          >
+            <span aria-hidden="true" />
+            <span aria-hidden="true" />
+            <span aria-hidden="true" />
+          </button>
           <div className="mp-header-right">
             <div className="saf-renewal-social" aria-label="Social links">
               {socialLinks.map(({ label, href, Icon }) => (

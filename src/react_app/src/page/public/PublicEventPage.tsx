@@ -19,9 +19,6 @@ import {
 import HeroSeoulImage from '../../assets/images/saf-renewal/official-events-hero-wide-figma.png';
 import VenueFigmaImage from '../../assets/images/saf-renewal/official-events-venue-figma.png';
 import { usePublicNavigate } from '@hook/usePublicNavigate';
-import BusinessFooterInfo from './components/BusinessFooterInfo';
-import PublicRenewalLayout from './components/PublicRenewalLayout';
-import { useCurrentOfficialEventPath } from '@hook/useCurrentOfficialEventPath';
 
 declare global {
   interface Window {
@@ -74,38 +71,6 @@ const THEME_COLOR_MAP: Record<string, string> = {
 
 const assetSrc = (asset: string | { src?: string }) => (typeof asset === 'string' ? asset : asset.src ?? '');
 const officialVenueImageUrl = assetSrc(VenueFigmaImage);
-
-const createEventNavItems = (officialEventPath: string) => [
-  { label: 'Home', href: '/' },
-  {
-    label: 'Partners',
-    href: '#partners',
-    children: [
-      { label: 'Organizer', href: '/#partners' },
-      { label: 'Sponsors', href: '/sponsors-2025' },
-      { label: 'Supporters', href: '/supporters' },
-      { label: 'Media Partners', href: '/#partners', featured: true },
-    ],
-  },
-  {
-    label: 'Official Events',
-    href: officialEventPath,
-    children: [
-      { label: 'Register', href: '/event/asia-civil-law-summit-demo/register' },
-    ],
-  },
-  { label: 'Calendar', href: '/#program' },
-  { label: 'Speakers', href: '/#speakers' },
-  { label: 'Visit Seoul', href: '/#visit' },
-  { label: 'Archives', href: '/past-editions' },
-  { label: 'Contact', href: '/#contact' },
-];
-
-const socialLinks = [
-  { label: 'Artstation', href: '#', icon: 'A' },
-  { label: 'LinkedIn', href: '#', icon: 'in' },
-  { label: 'YouTube', href: '#', icon: 'YT' },
-];
 
 type RegistrationActionType = 'direct' | 'external' | 'none';
 type RegistrationStep = 1 | 2 | 3;
@@ -239,25 +204,39 @@ const REGISTRATION_FIELD_INPUTS: Record<string, {
   residence_country: { key: 'residenceCountry', select: true, wide: true },
 };
 
+// Cache loaded event-page data by slug so re-navigating to the event detail /
+// registration pages renders instantly (no loading flash), like the static pages.
+// Stale-while-revalidate: the fetch effect still re-fetches in the background.
+const eventPageCache = new Map<string, PublicEventPageModel | null>();
+
 const PublicEventPage: React.FC<PublicEventPageProps> = ({ urlSlug }) => {
-  const [page, setPage] = useState<PublicEventPageModel | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState<PublicEventPageModel | null>(() => eventPageCache.get(urlSlug) ?? null);
+  const [loading, setLoading] = useState(() => !eventPageCache.get(urlSlug));
 
   useEffect(() => {
     let mounted = true;
-    setLoading(true);
+    const cached = eventPageCache.get(urlSlug);
+    if (cached) {
+      setPage(cached);
+      setLoading(false);
+    } else {
+      setLoading(true);
+    }
     callGetPublicEventPage(urlSlug)
       .then((res) => {
-        if (!mounted) return;
-        setPage(res?.item ?? null);
+        const item = res?.item ?? null;
+        if (item) eventPageCache.set(urlSlug, item);
+        if (mounted) setPage(item);
       })
       .catch(() => {
-        if (mounted) setPage(null);
+        if (mounted && !cached) setPage(null);
       })
       .finally(() => {
         if (mounted) setLoading(false);
       });
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, [urlSlug]);
 
   const navSections = useMemo(
@@ -283,29 +262,31 @@ const PublicEventPage: React.FC<PublicEventPageProps> = ({ urlSlug }) => {
   }, [externalRegistrationUrl, handleNavigate, page?.urlSlug, registrationActionType, urlSlug]);
 
   if (loading) {
+    // Render the hero with the hardcoded local image immediately (no backend wait).
     return (
-      <PublicRenewalLayout className="official-event-detail-page pub-event-renewal">
-        <main className="pub-page-content">
-          <section className="pub-section section-text size-medium pub-event-builder-section">
-            <div className="pub-section-inner">Loading event...</div>
-          </section>
-        </main>
-      </PublicRenewalLayout>
+      <main className="pub-page-content" aria-busy="true">
+        <section
+          className="pub-section pub-event-builder-hero saf-event-detail-hero"
+          style={{
+            backgroundImage: `url("${assetSrc(HeroSeoulImage)}")`,
+            backgroundPosition: 'center top',
+            backgroundSize: 'cover',
+          }}
+        />
+      </main>
     );
   }
 
   if (!page) {
     return (
-      <PublicRenewalLayout className="official-event-detail-page pub-event-renewal">
-        <main className="pub-page-content">
-          <section className="pub-section section-text size-medium pub-event-builder-section">
-            <div className="pub-section-inner">
-              <h3 className="text-title" style={{ paddingLeft: 0 }}>Event not found</h3>
-              <p className="text-content">The event page is not published or the URL is incorrect.</p>
-            </div>
-          </section>
-        </main>
-      </PublicRenewalLayout>
+      <main className="pub-page-content">
+        <section className="pub-section section-text size-medium pub-event-builder-section">
+          <div className="pub-section-inner">
+            <h3 className="text-title" style={{ paddingLeft: 0 }}>Event not found</h3>
+            <p className="text-content">The event page is not published or the URL is incorrect.</p>
+          </div>
+        </section>
+      </main>
     );
   }
 
@@ -328,7 +309,7 @@ const PublicEventPage: React.FC<PublicEventPageProps> = ({ urlSlug }) => {
     : `View ${primarySection?.navLabel || primarySection?.title || 'Details'}`;
 
   return (
-    <PublicRenewalLayout className="official-event-detail-page pub-event-renewal">
+    <>
       <main className="pub-page-content">
         <section className="pub-section pub-event-builder-hero saf-event-detail-hero" style={heroStyle}>
           <div className="saf-renewal-shell saf-event-detail-hero-inner">
@@ -377,14 +358,14 @@ const PublicEventPage: React.FC<PublicEventPageProps> = ({ urlSlug }) => {
           Register
         </button>
       )}
-    </PublicRenewalLayout>
+    </>
   );
 };
 
 export const PublicEventRegistrationPage: React.FC<PublicEventPageProps> = ({ urlSlug }) => {
   const { message } = App.useApp();
-  const [page, setPage] = useState<PublicEventPageModel | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState<PublicEventPageModel | null>(() => eventPageCache.get(urlSlug) ?? null);
+  const [loading, setLoading] = useState(() => !eventPageCache.get(urlSlug));
   const [registrationStep, setRegistrationStep] = useState<RegistrationStep>(1);
   const [participant, setParticipant] = useState<PublicRegistrationParticipantRequest>(EMPTY_REGISTRATION_PARTICIPANT);
   const [pricingList, setPricingList] = useState<PublicRegistrationPricingOption[]>([]);
@@ -407,19 +388,28 @@ export const PublicEventRegistrationPage: React.FC<PublicEventPageProps> = ({ ur
 
   useEffect(() => {
     let mounted = true;
-    setLoading(true);
+    const cached = eventPageCache.get(urlSlug);
+    if (cached) {
+      setPage(cached);
+      setLoading(false);
+    } else {
+      setLoading(true);
+    }
     callGetPublicEventPage(urlSlug)
       .then((res) => {
-        if (!mounted) return;
-        setPage(res?.item ?? null);
+        const item = res?.item ?? null;
+        if (item) eventPageCache.set(urlSlug, item);
+        if (mounted) setPage(item);
       })
       .catch(() => {
-        if (mounted) setPage(null);
+        if (mounted && !cached) setPage(null);
       })
       .finally(() => {
         if (mounted) setLoading(false);
       });
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, [urlSlug]);
 
   const pageSettings = useMemo(() => parsePageSettings(page?.settingsJson), [page?.settingsJson]);
@@ -744,44 +734,38 @@ export const PublicEventRegistrationPage: React.FC<PublicEventPageProps> = ({ ur
   }, [appliedDiscount, message, page?.eventSeq, page?.registrationFields, participant, selectedPaymentMethod, selectedPricing]);
 
   if (loading) {
+    // Render the masthead hero with the hardcoded local image immediately (no backend wait).
     return (
-      <div className="pub-layout pub-event-renewal pub-event-registration-page saf-renewal-home">
-        <SafEventHeader onNavigate={handleNavigate} />
-        <main className="pub-page-content">
-          <section className="pub-event-registration-page-section">
-            <div className="saf-renewal-shell">Loading registration...</div>
-          </section>
-        </main>
-        <SafEventFooter />
-      </div>
+      <main className="pub-page-content" aria-busy="true">
+        <section className="pub-event-registration-page-section">
+          <section
+            className="pub-event-registration-masthead"
+            style={{ '--registration-hero-image': `url("${assetSrc(HeroSeoulImage)}")` } as React.CSSProperties}
+          />
+        </section>
+      </main>
     );
   }
 
   if (!page) {
     return (
-      <div className="pub-layout pub-event-renewal pub-event-registration-page saf-renewal-home">
-        <SafEventHeader onNavigate={handleNavigate} />
-        <main className="pub-page-content">
-          <section className="pub-event-registration-page-section">
-            <div className="saf-renewal-shell pub-event-registration-message">
-              <h1>Registration Not Found</h1>
-              <p>The event page is not published or the URL is incorrect.</p>
-              <button type="button" className="pub-event-registration-primary" onClick={() => handleNavigate('/events')}>
-                View Events
-              </button>
-            </div>
-          </section>
-        </main>
-        <SafEventFooter />
-      </div>
+      <main className="pub-page-content">
+        <section className="pub-event-registration-page-section">
+          <div className="saf-renewal-shell pub-event-registration-message">
+            <h1>Registration Not Found</h1>
+            <p>The event page is not published or the URL is incorrect.</p>
+            <button type="button" className="pub-event-registration-primary" onClick={() => handleNavigate('/events')}>
+              View Events
+            </button>
+          </div>
+        </section>
+      </main>
     );
   }
 
   if (registrationActionType !== 'direct') {
     return (
-      <div className="pub-layout pub-event-renewal pub-event-registration-page saf-renewal-home">
-        <SafEventHeader onNavigate={handleNavigate} />
-        <main className="pub-page-content">
+      <main className="pub-page-content">
           <section className="pub-event-registration-page-section">
             <div className="saf-renewal-shell pub-event-registration-message">
               <p className="pub-event-registration-kicker">Event Registration</p>
@@ -812,16 +796,12 @@ export const PublicEventRegistrationPage: React.FC<PublicEventPageProps> = ({ ur
               )}
             </div>
           </section>
-        </main>
-        <SafEventFooter />
-      </div>
+      </main>
     );
   }
 
   return (
-    <div className="pub-layout pub-event-renewal pub-event-registration-page saf-renewal-home">
-      <SafEventHeader onNavigate={handleNavigate} />
-      <main className="pub-page-content">
+    <main className="pub-page-content">
         <section className="pub-event-registration-page-section">
           <PublicRegistrationMasthead
             page={page}
@@ -869,190 +849,9 @@ export const PublicEventRegistrationPage: React.FC<PublicEventPageProps> = ({ ur
             />
           </div>
         </section>
-      </main>
-      <SafEventFooter />
-    </div>
+    </main>
   );
 };
-
-const SafEventHeader: React.FC<{ onNavigate: (url: string) => void }> = ({ onNavigate }) => {
-  const officialEventPath = useCurrentOfficialEventPath();
-  const eventNavItems = createEventNavItems(officialEventPath);
-  const [activeMenu, setActiveMenu] = useState<string | null>(null);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  const handleNavClick = (event: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-    setActiveMenu(null);
-    setMobileMenuOpen(false);
-    if (href.startsWith('/') && !href.includes('#')) {
-      event.preventDefault();
-      onNavigate(href);
-    }
-  };
-
-  const handleHeaderBlur = (event: React.FocusEvent<HTMLElement>) => {
-    const nextTarget = event.relatedTarget;
-    if (!nextTarget || !event.currentTarget.contains(nextTarget as Node)) {
-      setActiveMenu(null);
-    }
-  };
-
-  return (
-    <header
-      className={`saf-renewal-header saf-event-header${activeMenu ? ' is-menu-open' : ''}${mobileMenuOpen ? ' is-mobile-menu-open is-menu-open' : ''}`}
-      onMouseLeave={() => setActiveMenu(null)}
-      onBlur={handleHeaderBlur}
-    >
-      <div className="saf-renewal-shell saf-renewal-header-inner">
-        <a className="saf-renewal-brand" href="/" aria-label="Seoul ADR Festival home" onClick={(event) => handleNavClick(event, '/')}>
-          <FestivalLogo />
-          <span className="saf-renewal-brand-wordmark">
-            Seoul
-            <br />
-            ADR
-            <br />
-            Festival
-          </span>
-        </a>
-        <button
-          className="saf-renewal-menu-toggle"
-          type="button"
-          aria-label={mobileMenuOpen ? 'Close main menu' : 'Open main menu'}
-          aria-expanded={mobileMenuOpen}
-          onClick={() => setMobileMenuOpen((prev) => !prev)}
-        >
-          <span />
-          <span />
-          <span />
-        </button>
-        <nav className="saf-renewal-nav" aria-label="Main navigation">
-          {eventNavItems.map((item) => {
-            const hasChildren = Boolean(item.children?.length);
-            const isActive = activeMenu === item.label;
-            return (
-              <div
-                className={`saf-renewal-nav-item${isActive ? ' is-active' : ''}${hasChildren ? ' has-submenu' : ''}`}
-                key={item.label}
-                onMouseEnter={() => setActiveMenu(hasChildren ? item.label : null)}
-                onFocus={() => {
-                  if (hasChildren) setActiveMenu(item.label);
-                }}
-              >
-                <a
-                  href={item.href}
-                  aria-haspopup={hasChildren ? 'true' : undefined}
-                  aria-expanded={hasChildren ? isActive || mobileMenuOpen : undefined}
-                  onClick={(event) => handleNavClick(event, item.href)}
-                >
-                  {item.label}
-                </a>
-                {hasChildren && (
-                  <div className="saf-renewal-menu-panel" role="menu">
-                    {item.children?.map((child) => (
-                      <a
-                        className={child.featured ? 'is-featured' : undefined}
-                        href={child.href}
-                        key={child.label}
-                        role="menuitem"
-                        onClick={(event) => handleNavClick(event, child.href)}
-                      >
-                        {child.label}
-                      </a>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </nav>
-        <div className="saf-renewal-social" aria-label="Social links">
-          {socialLinks.map((item) => (
-            <a key={item.label} href={item.href} aria-label={item.label}>
-              <SocialIcon icon={item.icon} />
-            </a>
-          ))}
-        </div>
-      </div>
-    </header>
-  );
-};
-
-const SafEventFooter: React.FC = () => (
-  <footer className="saf-renewal-footer saf-event-footer">
-    <div className="saf-renewal-shell">
-      <div className="saf-renewal-footer-top">
-        <div className="saf-renewal-footer-brand">
-          <FestivalLogo />
-          <strong>
-            Seoul
-            <br />
-            ADR
-            <br />
-            Festival
-          </strong>
-        </div>
-        <a className="saf-renewal-footer-privacy" href="#privacy">
-          Privacy
-        </a>
-      </div>
-      <p>
-        Seoul ADR Festival (SAF) is organized by KCAB International.
-        <br />
-        Office Trade Tower, 511 Yeongdong-daero, Gangnam-gu, Seoul
-        <br />
-        Contact: saf@kcab.or.kr
-      </p>
-      <BusinessFooterInfo />
-      <small>&copy; 2026 KCAB International. All rights reserved.</small>
-      <div className="saf-renewal-footer-social" aria-label="Social links">
-        {socialLinks.map((item) => (
-          <a key={item.label} href={item.href} aria-label={item.label}>
-            <SocialIcon icon={item.icon} />
-          </a>
-        ))}
-      </div>
-    </div>
-  </footer>
-);
-
-function SocialIcon({ icon }: { icon: string }) {
-  if (icon === 'A') {
-    return (
-      <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
-        <path d="M12 4 4 20h3l1.5-3h7L17 20h3L12 4Zm-2 10 2-4 2 4h-4Z" fill="currentColor" />
-      </svg>
-    );
-  }
-  if (icon === 'in') {
-    return (
-      <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
-        <path d="M6.94 7.5a1.94 1.94 0 1 1 0-3.88 1.94 1.94 0 0 1 0 3.88Zm-1.7 1.7h3.4V20h-3.4V9.2Zm6.07 0h3.26v1.5h.04a3.57 3.57 0 0 1 3.21-1.76c3.44 0 4.07 2.26 4.07 5.2V20H18.5v-4.85c0-1.16-.02-2.65-1.62-2.65-1.62 0-1.87 1.27-1.87 2.57V20h-3.39V9.2Z" fill="currentColor" />
-      </svg>
-    );
-  }
-  return (
-    <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
-      <path d="M21.6 7.2a2.5 2.5 0 0 0-1.77-1.77C18.24 5 12 5 12 5s-6.24 0-7.83.43A2.5 2.5 0 0 0 2.4 7.2 26.1 26.1 0 0 0 2 12a26.1 26.1 0 0 0 .4 4.8 2.5 2.5 0 0 0 1.77 1.77C5.76 19 12 19 12 19s6.24 0 7.83-.43a2.5 2.5 0 0 0 1.77-1.77A26.1 26.1 0 0 0 22 12a26.1 26.1 0 0 0-.4-4.8ZM10 15V9l5.2 3-5.2 3Z" fill="currentColor" />
-    </svg>
-  );
-}
-
-function FestivalLogo() {
-  return (
-    <span className="saf-renewal-logo" aria-hidden="true">
-      <svg viewBox="0 0 110 60" focusable="false">
-        <path d="M5 20 L55 6 L105 20" />
-        <path d="M9 22 L101 22" />
-        <path d="M14 22 L14 24 L18 24 L18 22 M24 22 L24 24 L28 24 L28 22 M34 22 L34 24 L38 24 L38 22 M44 22 L44 24 L48 24 L48 22 M54 22 L54 24 L58 24 L58 22 M64 22 L64 24 L68 24 L68 22 M74 22 L74 24 L78 24 L78 22 M84 22 L84 24 L88 24 L88 22 M94 22 L94 24 L98 24 L98 22" />
-        <path d="M12 26 L98 26 L98 44 L12 44 Z" fill="none" />
-        <path d="M22 26 L22 44 M32 26 L32 44 M42 26 L42 44 M52 26 L52 44 M62 26 L62 44 M72 26 L72 44 M82 26 L82 44 M92 26 L92 44" />
-        <path d="M12 32 L98 32 M12 38 L98 38" />
-        <path d="M8 44 L102 44 L102 48 L8 48 Z" fill="none" />
-      </svg>
-      <span className="saf-renewal-logo-title">SEOUL ADR FESTIVAL</span>
-    </span>
-  );
-}
 
 const EventHeroInfoCard: React.FC<{
   page: PublicEventPageModel;
@@ -1165,7 +964,8 @@ const PublicRegistrationMasthead: React.FC<{
   onBackToEvent: () => void;
 }> = ({ page, settings, onBackToEvent }) => {
   const contact = [settings.contactEmail, settings.contactPhone].filter(Boolean).join(' / ');
-  const heroImageUrl = page.heroImageUrl || assetSrc(HeroSeoulImage);
+  // Hardcoded local hero image (no backend dependency) so it loads immediately.
+  const heroImageUrl = assetSrc(HeroSeoulImage);
   // Figma sub02_01Registration Mask group: 1줄=날짜/시간, 2줄=장소 (자정 00:00 표기는 생략)
   const mastheadDate = (formatBlockDateRange(page.eventStartDt, page.eventEndDt) || '').replace(/\s*00:00/g, '');
   const mastheadVenue = page.location;

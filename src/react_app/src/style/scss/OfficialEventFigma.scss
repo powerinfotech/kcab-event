@@ -7,25 +7,6 @@
 
   font-family: var(--oe-font);
 
-  .saf-renewal-header {
-    height: 180px;
-  }
-
-  .saf-renewal-header.is-menu-open,
-  .saf-renewal-header:has(.saf-renewal-nav-item.has-submenu:hover) {
-    height: 300px;
-    background: var(--saf-menu-navy);
-  }
-
-  .saf-renewal-nav-item.has-submenu::before {
-    content: '';
-    position: absolute;
-    left: -28px;
-    right: -28px;
-    top: 30px;
-    height: 42px;
-  }
-
   .pub-page-content {
     background: #fff;
   }
