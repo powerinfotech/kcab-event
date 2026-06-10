@@ -4507,3 +4507,1267 @@ $pub-header-height-mobile: 60px;
     font-variant-numeric: tabular-nums;
   }
 }
+
+/* ============================================================
+   Figma sub02_01Registration 디자인 적용 (멀티에이전트 생성)
+   - .pub-event-registration-page 스코프, 기존 규칙 override
+   ============================================================ */
+
+/* ===== Registration masthead + "Complete your registration" head + 3-step indicator ===== */
+/* =====================================================================
+   Figma override: Registration masthead + head + 3-step indicator
+   sub02_01Registration tokens. Scoped under .pub-event-registration-page.
+   Place AFTER existing .pub-event-registration-* rules (>= line 2900)
+   so these win on specificity/order. All values from reg_design_spec.txt.
+   ===================================================================== */
+
+/* ---------- MASTHEAD : event hero (image + gradient overlay) ---------- */
+.pub-event-registration-page .pub-event-registration-masthead {
+  min-height: 490px;                 /* Figma hero 1920x490 */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 0 0 64px;                  /* copy sits near bottom-left, full-bleed image */
+  border-radius: 0;
+  overflow: hidden;
+  color: #ffffff;
+  box-shadow: none;
+  /* Figma overlay: grad #7b6a65 -> #8b7b83 @0 over the hero image */
+  background-image:
+    linear-gradient(180deg, rgba(123, 106, 101, 0.55) 0%, rgba(139, 123, 131, 0) 100%),
+    linear-gradient(90deg, rgba(17, 24, 49, 0.55) 0%, rgba(17, 24, 49, 0.15) 60%, rgba(17, 24, 49, 0) 100%),
+    var(--registration-hero-image);
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+/* drop the gold bottom divider */
+.pub-event-registration-page .pub-event-registration-masthead::after {
+  content: none;
+}
+
+/* inner copy block aligned to the 1170 content column, bottom-left */
+.pub-event-registration-page .pub-event-registration-masthead-copy {
+  width: min(100% - 80px, 1170px);
+  max-width: none;
+  margin: 0 auto;
+  padding: 0;
+}
+
+/* hide the eyebrow "Official Event Registration" — not in Figma hero */
+.pub-event-registration-page .pub-event-registration-masthead-copy p {
+  display: none;
+}
+
+/* title 54 / 700 #fff ls -2.1 */
+.pub-event-registration-page .pub-event-registration-masthead-copy h1 {
+  margin: 0;
+  color: #ffffff;
+  font-family: 'Montserrat', sans-serif;
+  font-size: clamp(34px, 4.4vw, 54px);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -2.1px;
+}
+
+/* date | venue meta line 22 / 600 #fff ls -0.22 (render into the existing <span>) */
+.pub-event-registration-page .pub-event-registration-masthead-copy span {
+  display: block;
+  max-width: none;
+  margin-top: 16px;
+  color: #ffffff;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.22px;
+}
+
+/* meta dl panel is not part of the Figma hero — hide the glass box */
+.pub-event-registration-page .pub-event-registration-masthead-meta {
+  display: none;
+}
+
+/* back-to-event pill on the hero: keep, restyle to purple-friendly white glass */
+.pub-event-registration-page .pub-event-registration-back {
+  top: 28px;
+  right: max(40px, calc((100% - 1170px) / 2));
+  min-height: 42px;
+  padding: 0 22px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+/* ---------- SECTION CARD : white 1170 r16 + 3px top gradient bar ---------- */
+.pub-event-registration-page .pub-event-registration-panel {
+  width: min(100% - 80px, 1170px);
+  margin: -40px auto 0;              /* overlap hero slightly per Figma stacking */
+  padding: clamp(32px, 3.4vw, 48px);
+  position: relative;
+  border: 1px solid #dfe0eb;
+  border-top: 1px solid #dfe0eb;    /* override the 4px gold top border */
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 32px 90px rgba(15, 18, 45, 0.10);
+  overflow: hidden;
+}
+
+/* 3px top gradient bar: #7e4adb -> #bc87f4 -> transparent */
+.pub-event-registration-page .pub-event-registration-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #7e4adb 0%, #bc87f4 55%, rgba(188, 135, 244, 0) 100%);
+}
+
+/* ---------- HEAD : kicker / "Complete your registration" / subtitle ---------- */
+.pub-event-registration-page .pub-event-registration-head {
+  grid-template-columns: minmax(0, 1fr);   /* Figma has no design-preview switch */
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+/* kicker "REGISTRATION DETAILS" 11 / 700 #7e4adb ls 3.08 */
+.pub-event-registration-page .pub-event-registration-head p {
+  margin: 0 0 14px;
+  color: #7e4adb;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 3.08px;
+  text-transform: uppercase;
+}
+
+/* heading "Complete your registration" 48 / 700 #111831 ls -1.2 */
+.pub-event-registration-page .pub-event-registration-head h2 {
+  margin: 0;
+  color: #111831;
+  font-family: 'Montserrat', sans-serif;
+  font-size: clamp(30px, 3.4vw, 48px);
+  font-weight: 700;
+  line-height: 1.0;
+  letter-spacing: -1.2px;
+}
+
+/* subtitle 15 / 400 #5d6274 */
+.pub-event-registration-page .pub-event-registration-head span {
+  display: block;
+  max-width: 640px;
+  margin-top: 14px;
+  color: #5d6274;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.35;
+  letter-spacing: 0;
+}
+
+/* re-show the "Design Preview" step switcher (restore original display:grid) */
+.pub-event-registration-page .pub-event-registration-preview {
+  display: grid;
+}
+
+/* ---------- STEP INDICATOR : container r16 #f2f2fb@0.5, buttons 336x76 ---------- */
+.pub-event-registration-page .pub-event-registration-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 28px 0 32px;
+  padding: 12px;
+  border: 0;
+  border-radius: 16px;
+  background: rgba(242, 242, 251, 0.5);   /* #f2f2fb @ 0.5 */
+}
+
+/* drop the connector line */
+.pub-event-registration-page .pub-event-registration-steps::before {
+  content: none;
+}
+
+/* each step button : 76 tall, r12, inactive fill #fcfdff */
+.pub-event-registration-page .pub-event-registration-steps li {
+  flex: none;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 14px;
+  min-height: 76px;
+  padding: 0 22px;
+  border: 2px solid transparent;          /* inactive border #000@0 */
+  border-radius: 12px;
+  background: #fcfdff;
+  text-align: left;
+}
+
+/* number circle : inactive 40 round, fill #7e4adb@0.1, border #7e4adb@0.3 */
+.pub-event-registration-page .pub-event-registration-steps span {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 2px solid rgba(126, 74, 219, 0.3);
+  background: rgba(126, 74, 219, 0.1);
+  color: #7e4adb;                          /* number 16 / 700 */
+  font-family: 'Montserrat', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  box-shadow: none;
+}
+
+/* label : inactive #111831 14 / 700 */
+.pub-event-registration-page .pub-event-registration-steps strong {
+  color: #111831;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+/* per-step description is not in the Figma chip — hide it */
+.pub-event-registration-page .pub-event-registration-steps small {
+  display: none;
+}
+
+/* ----- ACTIVE step : fill #7e4adb, border #7e4adb ----- */
+.pub-event-registration-page .pub-event-registration-steps .is-active {
+  background: #7e4adb;
+  border-color: #7e4adb;
+}
+
+/* active number circle : fill #fffefe@0.2, border #fffefe@0.4, number #fff */
+.pub-event-registration-page .pub-event-registration-steps .is-active span {
+  background: rgba(255, 254, 254, 0.2);
+  border-color: rgba(255, 254, 254, 0.4);
+  color: #ffffff;
+}
+
+/* active label : #fafbff 14 / 700 */
+.pub-event-registration-page .pub-event-registration-steps .is-active strong {
+  color: #fafbff;
+}
+
+/* completed steps read like active (purple) for consistency with Figma */
+.pub-event-registration-page .pub-event-registration-steps .is-complete {
+  background: #7e4adb;
+  border-color: #7e4adb;
+}
+.pub-event-registration-page .pub-event-registration-steps .is-complete span {
+  background: rgba(255, 254, 254, 0.2);
+  border-color: rgba(255, 254, 254, 0.4);
+  color: #ffffff;
+}
+.pub-event-registration-page .pub-event-registration-steps .is-complete strong {
+  color: #fafbff;
+}
+
+/* ---------- responsive : stack the 3 step chips on narrow screens ---------- */
+@media (max-width: 768px) {
+  .pub-event-registration-page .pub-event-registration-steps {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .pub-event-registration-page .pub-event-registration-masthead {
+    min-height: 360px;
+    padding-bottom: 40px;
+  }
+}
+
+/* ===== STEP1 Participant Information form — Figma token override ===== */
+/* =========================================================
+   STEP 1 — Participant Information (Figma token override)
+   sub02_01Registration :: Overlay+Border 1056x742 r12
+   All rules scoped under .pub-event-registration-page and the
+   STEP-1 grid (.is-participant-only) so STEP 2/3 + home are
+   untouched. Append AFTER the existing .pub-event-registration-*
+   rules (around line 2810 / end of the registration block).
+   ========================================================= */
+.pub-event-registration-page {
+  /* --- STEP panel container (the participant card) --- */
+  .pub-event-registration-grid.is-participant-only .pub-event-registration-form {
+    position: relative;
+    padding: clamp(28px, 3vw, 36px);
+    border: 1px solid #dfe0eb;
+    border-radius: 12px;
+    background: rgba(244, 243, 255, 0.4); /* #f4f3ff @ 0.4 */
+    box-shadow: none;
+
+    /* top gradient bar: linear-gradient(90deg,#7e4adb,#bc87f4,transparent) 3px */
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      border-radius: 12px 12px 0 0;
+      background: linear-gradient(90deg, #7e4adb 0%, #bc87f4 55%, rgba(188, 135, 244, 0) 100%);
+    }
+
+    /* --- section title (STEP 1 / Participant Information / desc) --- */
+    .pub-event-registration-section-title {
+      span {
+        margin-bottom: 8px;
+        color: #7e4adb;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 3.08px;
+        text-transform: uppercase;
+      }
+
+      h3 {
+        color: #111831;
+        font-size: 30px;
+        font-weight: 700;
+        line-height: 1.2;
+        letter-spacing: -0.3px;
+      }
+
+      p {
+        margin-top: 10px;
+        color: #5d6274;
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 1.5;
+      }
+    }
+
+    /* --- field labels + inputs --- */
+    .pub-event-registration-fields {
+      label > span {
+        color: #111831;
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0;
+      }
+
+      input {
+        min-height: 44px;
+        height: 44px;
+        padding: 0 14px;
+        border: 1px solid #dfe0eb;
+        border-radius: 6px;
+        background: #ffffff;
+        color: #111831;
+        font-size: 14px;
+        font-weight: 400;
+
+        &::placeholder {
+          color: rgba(17, 24, 49, 0.5); /* #111831 @ 0.5 */
+          font-size: 14px;
+          font-weight: 400;
+        }
+
+        &:focus {
+          border-color: #7e4adb;
+          box-shadow: 0 0 0 3px rgba(126, 74, 219, 0.15);
+        }
+      }
+
+      /* Country select — match 44px / r6 / white / #dfe0eb */
+      .pub-event-registration-country-select {
+        min-height: 44px;
+        border: 1px solid #dfe0eb;
+        border-radius: 6px;
+        background: #ffffff;
+
+        .ant-select-content {
+          height: 42px;
+        }
+
+        .ant-select-selector {
+          min-height: 44px;
+          border-color: #dfe0eb !important;
+          border-radius: 6px !important;
+          background: #ffffff !important;
+        }
+
+        .ant-select-input,
+        .ant-select-selection-search-input {
+          height: 42px !important;
+        }
+
+        .ant-select-content,
+        .ant-select-placeholder,
+        .ant-select-value,
+        .ant-select-input,
+        .ant-select-selection-item,
+        .ant-select-selection-search-input {
+          line-height: 42px;
+        }
+
+        .ant-select-placeholder,
+        .ant-select-selection-placeholder {
+          color: rgba(17, 24, 49, 0.5); /* #111831 @ 0.5 */
+          font-size: 14px;
+          font-weight: 400;
+        }
+
+        .ant-select-selection-item {
+          color: #111831;
+          font-size: 14px;
+        }
+
+        .ant-select-suffix {
+          color: #5d6274; /* chevron */
+        }
+
+        &.ant-select-focused,
+        &.ant-select-open,
+        &.ant-select-focused .ant-select-selector {
+          border-color: #7e4adb !important;
+          box-shadow: 0 0 0 3px rgba(126, 74, 219, 0.15) !important;
+        }
+      }
+    }
+
+    /* --- footer action bar --- */
+    .pub-event-registration-form-actions {
+      border-top: 1px solid #dfe0eb;
+
+      /* Back to Event — pill, #f4f3ff fill, #dfe0eb border, #111831 */
+      .pub-event-registration-secondary {
+        min-height: 41px;
+        padding: 0 22px;
+        border: 1px solid #dfe0eb;
+        border-radius: 999px;
+        background: #f4f3ff;
+        color: #111831;
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0;
+        box-shadow: none;
+      }
+
+      /* Next: Ticket & Payment — pill, #7e4adb fill, #fafbff text */
+      .pub-event-registration-primary {
+        min-height: 41px;
+        padding: 0 24px;
+        border: 0;
+        border-radius: 999px;
+        background: #7e4adb;
+        color: #fafbff;
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0;
+        box-shadow: none;
+
+        &:hover:not(:disabled) {
+          background: #6f3fce;
+        }
+      }
+    }
+  }
+}
+
+/* ===== STEP 2 — Select Ticket & Payment ===== */
+/* =========================================================================
+   STEP 2 — Select Ticket & Payment  (Figma sub02_01Registration override)
+   모두 .pub-event-registration-page 하위로 스코프 — 다른 페이지/홈 영향 없음.
+   기존 .pub-event-registration-* (Public.scss ~2627, 2843~, 3017~)을 override.
+   토큰: purple #7e4adb / ink #111831 / muted #5d6274 / border #dfe0eb
+   라운드: 카드 12 / 티켓·칩 8 / 알약 999
+   ========================================================================= */
+.pub-event-registration-page {
+
+  /* ---- 좌측 카드: "REGISTRATION TYPE / Select Ticket" ------------------- */
+  /* 흰색 r12, border #7e4adb@0.4 2px, 골드 그라데이션/inset 제거 */
+  .pub-event-registration-summary {
+    align-self: start;
+    gap: 18px;
+    padding: 28px;
+    border: 2px solid rgba(126, 74, 219, 0.4);
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: none;
+  }
+
+  /* 좌측 카드 내부 섹션타이틀: "REGISTRATION TYPE" 11/700 ls2.64, "Select Ticket" 20/700 */
+  .pub-event-registration-summary .pub-event-registration-section-title {
+    span {
+      margin-bottom: 8px;
+      color: #7e4adb;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2.64px;
+    }
+
+    h3 {
+      color: #111831;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+    }
+  }
+
+  /* 외곽 STEP 2 섹션타이틀: "STEP 2" 11/700 ls3.08, "Select Ticket & Payment" 30/700 */
+  .pub-event-registration-payment > .pub-event-registration-section-title {
+    span {
+      color: #7e4adb;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 3.08px;
+    }
+
+    h3 {
+      color: #111831;
+      font-size: 30px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+
+    p {
+      color: #5d6274;
+      font-size: 14px;
+      font-weight: 400;
+    }
+  }
+
+  /* ---- 티켓 옵션 r8 ------------------------------------------------------ */
+  .pub-event-registration-ticket-list,
+  .pub-event-registration-methods {
+    gap: 10px;
+  }
+
+  .pub-event-registration-ticket {
+    min-height: 81px;
+    gap: 4px 14px;
+    padding: 14px 16px;
+    border: 1px solid #dfe0eb;       /* 미선택: 흰색 border #dfe0eb */
+    border-radius: 8px;
+    background: #ffffff;
+    color: #111831;
+
+    span {                            /* "Regular" 16/700 #111831 */
+      color: #111831;
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    strong {                          /* 가격 16/700 #7e4adb */
+      color: #7e4adb;
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    small {                           /* 코드 13/400 #5d6274 */
+      color: #5d6274;
+      font-size: 13px;
+      font-weight: 400;
+    }
+
+    &.is-selected {                   /* 선택: fill #7e4adb@0.05 border #7e4adb/1 */
+      border-color: #7e4adb;
+      background: rgba(126, 74, 219, 0.05);
+      box-shadow: none;
+    }
+  }
+
+  /* ---- Payment Method ---------------------------------------------------- */
+  .pub-event-registration-methods {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    > span {                          /* "Payment Method" 13/600 #111831 */
+      grid-column: 1 / -1;
+      color: #111831;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    button {                          /* 결제수단칩 r8 — 미선택 흰색 border #dfe0eb */
+      min-height: 67px;
+      gap: 5px;
+      padding: 12px 14px;
+      border: 1px solid #dfe0eb;
+      border-radius: 8px;
+      background: #ffffff;
+      color: #111831;
+
+      strong {                        /* 명칭 14/700 #111831 */
+        color: #111831;
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      small {                         /* 설명 12/400 #5d6274 */
+        color: #5d6274;
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 1.3;
+      }
+
+      &.is-selected {                 /* 선택 #7e4adb@0.05 border #7e4adb */
+        border-color: #7e4adb;
+        background: rgba(126, 74, 219, 0.05);
+      }
+    }
+  }
+
+  /* ---- Total 행 --------------------------------------------------------- */
+  .pub-event-registration-total {
+    padding-top: 16px;
+    border-top: 1px solid #dfe0eb;    /* 상단 border #dfe0eb */
+
+    span {                            /* "Total" 13/600 #5d6274 */
+      color: #5d6274;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    strong {                          /* 금액 20/700 #111831 */
+      color: #111831;
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    small {
+      color: #5d6274;
+      font-size: 12px;
+      font-weight: 600;
+    }
+  }
+
+  /* ---- 우측 "Ready to Pay" 카드 r12 grad ------------------------------- */
+  .pub-event-registration-payment-state {
+    padding: 26px;
+    border: 0;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #f6f2ff 0%, #efe4ff 100%);
+
+    span {                            /* 배지 알약 흰색, 11/700 #7e4adb */
+      margin-bottom: 12px;
+      padding: 5px 12px;
+      border-radius: 999px;
+      background: #ffffff;
+      color: #7e4adb;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    h4 {                              /* 제목 20/700 #111831 */
+      color: #111831;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+    }
+
+    p {                               /* 설명 13/400 #5d6274 */
+      color: #5d6274;
+      font-size: 13px;
+      font-weight: 400;
+    }
+  }
+
+  /* ---- 할인 카드 r12 흰색 border #dfe0eb ------------------------------- */
+  .pub-event-registration-discount {
+    gap: 12px;
+    padding: 22px;
+    border: 1px solid #dfe0eb;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: none;
+  }
+
+  .pub-event-registration-discount-head span {  /* "DISCOUNT CODE" 11/700 #7e4adb ls2.64 */
+    color: #7e4adb;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2.64px;
+  }
+
+  .pub-event-registration-discount-head strong {
+    color: #7e4adb;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  /* 입력 알약 #fcfdff border #dfe0eb, placeholder 13/400 #5d6274@0.7 */
+  .pub-event-registration-discount-control input {
+    min-height: 40px;
+    padding: 0 16px;
+    border: 1px solid #dfe0eb;
+    border-radius: 999px;
+    background: #fcfdff;
+    color: #111831;
+    font-size: 13px;
+    font-weight: 600;
+
+    &::placeholder {
+      color: rgba(93, 98, 116, 0.7);
+      font-size: 13px;
+      font-weight: 400;
+      text-transform: uppercase;
+    }
+
+    &:focus {
+      border-color: #7e4adb;
+      box-shadow: 0 0 0 3px rgba(126, 74, 219, 0.12);
+    }
+  }
+
+  /* "Apply" 알약 border #dfe0eb, 13/600 #111831 */
+  .pub-event-registration-discount-control .pub-event-registration-secondary {
+    min-height: 40px;
+    padding: 0 18px;
+    border: 1px solid #dfe0eb;
+    background: #ffffff;
+    color: #111831;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  /* 할인 라인 / 메시지 — 토큰 색 정렬 */
+  .pub-event-registration-discount-lines div {
+    color: #5d6274;
+
+    &:last-child {
+      border-top-color: #dfe0eb;
+      color: #111831;
+      font-weight: 700;
+    }
+  }
+
+  /* ---- 액션 버튼: primary 솔리드 #7e4adb / secondary border #dfe0eb ---- */
+  .pub-event-registration-primary {
+    background: #7e4adb;
+    box-shadow: 0 14px 30px rgba(126, 74, 219, 0.22);
+  }
+
+  .pub-event-registration-secondary {
+    border: 1px solid #dfe0eb;
+    background: #f4f3ff;
+    color: #111831;
+  }
+}
+
+/* ===== STEP3 등록 완료 (Registration Complete) ===== */
+/* =====================================================================
+   STEP3 — Registration Complete (Figma sub02_01Registration override)
+   모든 규칙 .pub-event-registration-page 하위로 스코프 (홈/타 페이지 영향 없음)
+   기존 셀렉터: .pub-event-registration-complete (Public.scss 2629/3018/3228),
+   .pub-event-registration-complete-badge (3262) 를 override
+   ===================================================================== */
+.pub-event-registration-page {
+
+  /* --- 섹션 상단 "Back to Event" 보라 알약 버튼 ---
+     Figma: 141x42 r999 fill=#7e4adb pad=11/24 gap10, text 13/600 #fafbff */
+  .pub-event-registration-complete-back {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 42px;
+    padding: 11px 24px;
+    border: 0;
+    border-radius: 999px;
+    background: #7e4adb;
+    color: #fafbff;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0;
+    cursor: pointer;
+    box-shadow: none;
+    transition: background-color 0.15s ease, transform 0.15s ease;
+
+    &:hover {
+      background: #6e3fc6;
+    }
+
+    &:active {
+      transform: translateY(1px);
+    }
+  }
+
+  /* --- 완료 섹션 컨테이너: 좌측 정렬 스택 ---
+     기존 2629(min-width/border/radius), 3018(grid/gap/padding/shadow),
+     3228(min-height/center/center-align/gradient) 전부 override */
+  .pub-event-registration-complete {
+    display: grid;
+    gap: 24px;
+    min-height: 0;            /* 3228 min-height:360px 제거 */
+    align-content: start;     /* 3228 center 제거 */
+    justify-items: stretch;   /* 3228 center 제거 */
+    text-align: left;         /* 3228 center 제거 */
+    padding: clamp(24px, 3vw, 36px);
+    border: 1px solid #dfe0eb;
+    border-radius: 16px;      /* 섹션 카드 16px */
+    background: #ffffff;      /* 3228 gradient 제거 */
+    box-shadow: 0 16px 42px rgba(20, 23, 55, 0.05);
+
+    /* 헤딩/본문 색·크기는 패널 내부 스코프에서 재지정하므로
+       3236(h3) / 3243(p) / 3256(a) 의 영향 무력화는 아래 규칙들이 담당 */
+    a {
+      color: #7e4adb;
+      font-weight: 700;
+    }
+  }
+
+  /* --- 완료 패널 ---
+     Figma: r12 fill=#f4f3ff@0.4 border=#dfe0eb/1.0, pad 내부 */
+  .pub-event-registration-complete-panel {
+    display: grid;
+    gap: 18px;
+    justify-items: start;
+    padding: clamp(28px, 3vw, 40px);
+    border: 1px solid #dfe0eb;
+    border-radius: 12px;                 /* 내부 패널 12px */
+    background: rgba(244, 243, 255, 0.4); /* #f4f3ff @ 0.4 */
+  }
+
+  /* --- CONFIRMED 배지 ---
+     Figma: 알약 fill=#e6dfff@0.3, text 12/700 #7e4adb ls2.4, uppercase */
+  .pub-event-registration-complete-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 30px;
+    padding: 0 16px;
+    border-radius: 999px;
+    border: 0;
+    background: rgba(230, 223, 255, 0.3); /* #e6dfff @ 0.3 */
+    color: #7e4adb;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2.4px;
+    text-transform: uppercase;
+  }
+
+  /* --- "Registration Complete" 헤딩 ---
+     Figma: 48/700 #111831 ls-0.48 (override 3236/3239) */
+  .pub-event-registration-complete-panel h3 {
+    margin: 0;
+    color: #111831;
+    font-size: clamp(30px, 4vw, 48px);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.48px;
+  }
+
+  /* --- 본문 2단락 ---
+     Figma: 15/400 #5d6274 (override 3243~3249) */
+  .pub-event-registration-complete-panel p {
+    max-width: 680px;
+    margin: 0;
+    color: #5d6274;
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.55;
+    text-align: left;
+  }
+
+  .pub-event-registration-complete-panel a {
+    color: #7e4adb;
+    font-weight: 700;
+  }
+}
+
+/* --- 반응형: 좁은 화면에서도 좌측 정렬 / 패딩 축소 유지 ---
+   기존 3438(border-radius:14) / 3445(padding:18) 미디어쿼리는 그대로 두되,
+   완료 패널·정렬이 깨지지 않도록 보강 */
+@media (max-width: 900px) {
+  .pub-event-registration-page .pub-event-registration-complete {
+    border-radius: 14px;
+    padding: 18px;
+  }
+
+  .pub-event-registration-page .pub-event-registration-complete-panel {
+    padding: 20px;
+  }
+
+  .pub-event-registration-page .pub-event-registration-complete-back {
+    width: auto;          /* 3472 width:100% 무력화 — Figma는 컴팩트 알약 */
+    align-self: flex-start;
+  }
+}
+/* 필수 입력 표시(*) — Figma: 13/600 #cf4232 */
+.pub-event-registration-page .pub-event-registration-fields .pub-event-required {
+  margin-left: 2px;
+  color: #cf4232;
+  font-style: normal;
+  font-weight: 600;
+}
+
+/* STEP3 Back to Event 버튼: grid 컨테이너에서 컬럼 폭으로 늘어나지 않도록 좌측 컴팩트 알약 유지 */
+.pub-event-registration-page .pub-event-registration-complete-back {
+  justify-self: start;
+  width: fit-content;
+}
+
+/* =====================================================================
+   STEP3 레이아웃 보정 (Figma sub02_01Registration 검증 좌표)
+   - 완료 패널 본문(배지/제목/2단락) = 가운데 정렬
+   - "Back to Event" 버튼 = 패널 아래, 우측 하단
+   모든 규칙 .pub-event-registration-page 스코프, 위쪽 5263~5407 블록을
+   source-order 로 override (홈/헤더/푸터 등 공유 스타일 무영향)
+   ===================================================================== */
+.pub-event-registration-page {
+
+  /* 컨테이너: grid → flex column 으로 전환해 panel → button 순서 보장.
+     위 5298 .pub-event-registration-complete (display:grid …) override.
+     gap 으로 패널과 버튼 사이 간격 확보. */
+  .pub-event-registration-complete {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 24px;
+    text-align: center; /* 패널 외 컨테이너 기본 정렬도 가운데 기준 */
+  }
+
+  /* 패널 내부 전부 가운데 정렬.
+     위 5321 (justify-items:start) / 5361 (p text-align:left) override. */
+  .pub-event-registration-complete-panel {
+    justify-items: center;
+    text-align: center;
+  }
+
+  /* 배지: inline-flex 알약을 가운데로. grid item 이므로 justify-self:center,
+     혹시 컨텍스트가 바뀌어도 margin auto 로 가운데 보장. */
+  .pub-event-registration-complete-badge {
+    justify-self: center;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .pub-event-registration-complete-panel h3 {
+    text-align: center;
+  }
+
+  /* 본문 2단락: 가운데 정렬 + max-width 가운데 배치.
+     위 5361~5369 (text-align:left) override. */
+  .pub-event-registration-complete-panel p {
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* "Back to Event" 버튼: 패널 다음 줄, 우측 하단.
+     flex column 에서 align-self:flex-end 로 오른쪽 끝, margin-left:auto 보강.
+     위 5267 (align-self:flex-start) / 5404 (justify-self:start) override. */
+  .pub-event-registration-complete-back {
+    align-self: flex-end;
+    justify-self: end;
+    margin-left: auto;
+    margin-top: 0;
+    width: fit-content;
+  }
+}
+
+/* 반응형: 좁은 화면에서도 버튼 우측 하단 + 본문 가운데 유지.
+   위 5380~5394 미디어쿼리(align-self:flex-start)를 source-order 로 override */
+@media (max-width: 900px) {
+  .pub-event-registration-page .pub-event-registration-complete-back {
+    align-self: flex-end;
+    width: fit-content;
+  }
+
+  .pub-event-registration-page .pub-event-registration-complete-panel p {
+    text-align: center;
+  }
+}
+
+/* =====================================================================
+   FIX: 네비게이터를 히어로 내부에 — 투명 헤더가 풀블리드 마스트헤드 위 오버레이
+   (sponsors/supporters .saf-sub-hero 패턴)
+   모두 .pub-event-registration-page 스코프, Public.scss 맨끝 append → 기존 override
+   ===================================================================== */
+
+/* 1) 헤더: 다크 그라데이션/보더/blur 제거 → 투명 (텍스트 흰색 유지).
+      is-menu-open / submenu-hover 시 navy 는 base .saf-renewal-header
+      (HomePage.scss) 규칙이 그대로 처리하므로 추가 불필요. */
+.pub-event-registration-page .saf-event-header {
+  background: transparent;
+  border-bottom: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+/* 메뉴/드롭다운 열릴 때만 가독성용 navy (base 규칙 재확인 — 안전망) */
+.pub-event-registration-page .saf-event-header.is-menu-open,
+.pub-event-registration-page .saf-event-header:has(.saf-renewal-nav-item.has-submenu:hover) {
+  background: var(--saf-menu-navy);
+}
+
+/* 2) 섹션: 상단 패딩(132px, line 2248) 제거 → 마스트헤드가 페이지 최상단
+      (absolute 180px 헤더 뒤)에서 시작. 좌우 패딩 없음(풀블리드). */
+.pub-event-registration-page .pub-event-registration-page-section {
+  padding: 0 0 92px;
+}
+
+/* 3) 마스트헤드: JSX 이동으로 셸 밖 → 섹션 폭(=100%) 풀블리드.
+      히어로 자체 스타일(min-height/이미지/하단정렬/1170 copy)은 이미
+      line 4525-4587 override 가 처리. 여기선 헤더 높이 확보 + 카드 오버랩만. */
+.pub-event-registration-page .pub-event-registration-masthead {
+  width: 100%;
+  margin: 0;
+  padding-top: 180px;          /* 절대배치 180px 헤더 영역 확보 (.saf-sub-hero 동일) */
+  padding-bottom: 96px;        /* 카드 -40px 오버랩 여유 (line 4613) */
+}
+
+/* 4) 셸(흰 카드 1170)은 기존대로 — 히어로와 자연스럽게 연결되도록 카드가
+      히어로를 살짝 덮음. 카드 자체 margin-top:-40px(line 4613)는 유지되므로
+      여기선 셸에 음수 마진을 주지 않는다. (셸 width 1280, 카드 width 1170 유지) */
+
+/* 5) 반응형: 모바일 헤더 높이가 작아지면 히어로 상단 패딩도 축소 */
+@media (max-width: 1024px) {
+  .pub-event-registration-page .pub-event-registration-masthead {
+    padding-top: 140px;
+    padding-bottom: 72px;
+  }
+}
+@media (max-width: 768px) {
+  .pub-event-registration-page .pub-event-registration-page-section {
+    padding: 0 0 42px;
+  }
+  .pub-event-registration-page .pub-event-registration-masthead {
+    padding-top: 120px;        /* .saf-sub-hero 모바일 120px 와 정합 */
+    padding-bottom: 56px;
+  }
+}
+
+/* ============================================================
+   추가 수정 3건 (hero overlay / preview / overlap) — 멀티에이전트
+   ============================================================ */
+
+/* ===== hero ===== */
+/* ============================================================
+   FIX1: 등록 마스트헤드 히어로를 상세페이지 히어로와 동일하게
+   상세 .saf-event-detail-hero 는 buildHeroStyle→getOverlayGradient(navy 기본)
+   결과 `linear-gradient(135deg, rgba(16,32,51,.84), rgba(16,32,51,.48)), url(image)`
+   를 사용한다(PublicEventPage.tsx:2171,2191).
+   기존 갈색+네이비 이중 오버레이(Public.scss:4538-4541)를 상세와 동일한
+   단일 navy 135deg 오버레이로 통일. 이미지는 기존 --registration-hero-image 재사용.
+   min-height 등 히어로 형태는 그대로 유지.
+   ============================================================ */
+.pub-event-registration-page .pub-event-registration-masthead {
+  background-image:
+    linear-gradient(135deg, rgba(16, 32, 51, 0.84) 0%, rgba(16, 32, 51, 0.48) 100%),
+    var(--registration-hero-image);
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+/* ===== preview ===== */
+/* =========================================================
+   FIX2 — "Design Preview" step switcher cleanup
+   Append at the very END of Public.scss (after line 4680).
+   Scoped to .pub-event-registration-page so it overrides:
+     - 2486 base .pub-event-registration-preview block
+     - 4665 leaked .pub-event-registration-head span rule
+     - 4678 restore (display:grid only)
+   Goal: a tidy segmented control at the top-right of the card
+   head, consistent with the #7e4adb step-indicator system.
+   ========================================================= */
+.pub-event-registration-page {
+
+  /* re-pin the head to 2 columns so the preview sits top-right
+     of the title instead of dropping to a full-width row.
+     (overrides 4636 single-column Figma rule) */
+  .pub-event-registration-head {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    column-gap: 24px;
+  }
+
+  /* preview = compact white segment chip, top-aligned with the kicker */
+  .pub-event-registration-preview {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    justify-items: initial;          /* cancel 2489 justify-items:end */
+    margin: 0;
+    padding: 6px 8px 6px 14px;
+    border: 1px solid #ece8fa;       /* light purple-grey, on-system */
+    border-radius: 999px;
+    background: #faf8ff;             /* very light purple, replaces cream */
+    box-shadow: 0 1px 2px rgba(17, 24, 49, 0.04);
+    white-space: nowrap;
+  }
+
+  /* "Design Preview" label — undo the leaked head-span paragraph styles */
+  .pub-event-registration-preview > span {
+    display: inline-block;
+    max-width: none;
+    margin: 0;
+    color: #8a83a8;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+  }
+
+  /* pill group track */
+  .pub-event-registration-preview > div {
+    display: inline-flex;
+    gap: 4px;
+    padding: 3px;
+    border-radius: 999px;
+    background: #ffffff;
+    box-shadow: inset 0 0 0 1px #ece8fa;
+  }
+
+  /* individual pill buttons (inactive = grey on white) */
+  .pub-event-registration-preview button {
+    min-height: 28px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: #6f6a86;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  .pub-event-registration-preview button:hover {
+    background: rgba(126, 74, 219, 0.08);   /* light purple tint */
+    color: #7e4adb;
+  }
+
+  /* active = solid purple, on-system with step indicator */
+  .pub-event-registration-preview button.is-active {
+    background: #7e4adb;
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(126, 74, 219, 0.30);
+  }
+  .pub-event-registration-preview button.is-active:hover {
+    background: #7e4adb;
+    color: #ffffff;
+  }
+}
+
+/* responsive: head is single-column <=768px (rule 3308),
+   so let the preview span full width and lay pills evenly */
+@media (max-width: 768px) {
+  .pub-event-registration-page .pub-event-registration-head {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .pub-event-registration-page .pub-event-registration-preview {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .pub-event-registration-page .pub-event-registration-preview > div {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+  }
+  .pub-event-registration-page .pub-event-registration-preview button {
+    text-align: center;
+  }
+}
+
+/* ===== overlap ===== */
+/* ============================================================
+   FIX3 : 히어로(마스트헤드) ↔ 흰 카드(panel) 겹침 제거 → 흰 여백
+   - line 4613 의 .pub-event-registration-panel margin-top:-40px(겹침)
+     및 line 5515 hero padding-bottom:96px(겹침 여유)를 override.
+   - 히어로 하단 가장자리 아래로 양수 gap(흰 여백) 확보, 카드는
+     가운데 정렬(min(100%-80px,1170)) 유지.
+   - .pub-event-registration-page 스코프, 파일 맨끝 append 전제.
+   ============================================================ */
+
+/* 1) 히어로: 겹침용 과한 하단 패딩(96px) 축소 → 좌하단 카피 내부 여백 64px.
+      (상단 180px 헤더 영역은 유지) */
+.pub-event-registration-page .pub-event-registration-masthead {
+  padding-bottom: 64px;
+}
+
+/* 2) 흰 카드: 음수 margin-top(-40px, 겹침) 제거 → 양수 56px 흰 여백.
+      가운데 정렬(auto) · width 1170 유지. */
+.pub-event-registration-page .pub-event-registration-panel {
+  margin-top: 56px;          /* 히어로 하단 ↔ 카드 사이 흰 여백 (겹침 제거) */
+  margin-right: auto;        /* 가운데 정렬 유지 */
+  margin-left: auto;
+  margin-bottom: 0;
+}
+
+/* 3) 반응형: 좁은 화면에서 히어로 하단 패딩 + 카드 gap 비례 축소.
+      (line 4784 / 5526 / 5535 의 hero padding-bottom 도 함께 정리) */
+@media (max-width: 1024px) {
+  .pub-event-registration-page .pub-event-registration-masthead {
+    padding-bottom: 48px;
+  }
+  .pub-event-registration-page .pub-event-registration-panel {
+    margin-top: 44px;
+  }
+}
+
+@media (max-width: 768px) {
+  .pub-event-registration-page .pub-event-registration-masthead {
+    padding-bottom: 36px;
+  }
+  .pub-event-registration-page .pub-event-registration-panel {
+    margin-top: 32px;
+  }
+}
+/* FIX: 등록 헤더 드롭다운 패널(흰 배경)의 링크가 흰색이라 안 보이던 문제 →
+   패널 링크는 어두운 글자로 (.saf-renewal-nav a{color:#fff} 보다 높은 specificity) */
+.pub-event-registration-page .saf-event-header .saf-renewal-menu-panel a {
+  color: #11132f;
+}
+.pub-event-registration-page .saf-event-header .saf-renewal-menu-panel a:hover,
+.pub-event-registration-page .saf-event-header .saf-renewal-menu-panel a.is-featured {
+  color: #253b87;
+}
+
+/* FIX: 히어로 "Back to Event" 버튼 = Figma sub02_01Registration 원형 그라데이션 버튼
+   (130x130 원형, linear #6bc8ff→#777dea→#7f4bdc, 흰 글자 가운데, 콘텐츠 컬럼 우측·중하단)
+   기존 흰색 글래스 알약(4595) override */
+.pub-event-registration-page .pub-event-registration-back {
+  position: absolute;
+  top: auto;
+  bottom: 88px;
+  right: max(24px, calc((100% - 1170px) / 2));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 130px;
+  height: 130px;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: linear-gradient(167deg, #6bc8ff 0%, #777dea 60%, #7f4bdc 100%);
+  color: #fafbff;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.55;
+  letter-spacing: 0;
+  text-align: center;
+  box-shadow: 0 18px 38px rgba(86, 75, 196, 0.35);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.pub-event-registration-page .pub-event-registration-back:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 22px 46px rgba(86, 75, 196, 0.45);
+}
+@media (max-width: 768px) {
+  .pub-event-registration-page .pub-event-registration-back {
+    width: 104px;
+    height: 104px;
+    bottom: 52px;
+    font-size: 12px;
+  }
+}

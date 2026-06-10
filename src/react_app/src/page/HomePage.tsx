@@ -93,7 +93,7 @@ const createNavItems = (officialEventPath: string) => [
     href: '#partners',
     children: [
       { label: 'Organizer', href: '/organizer' },
-      { label: 'Sponsors', href: '/sponsors' },
+      { label: 'Sponsors', href: '/sponsors-2025' },
       { label: 'Supporters', href: '/supporters' },
       { label: 'Media Partners', href: '/media-partners', featured: true },
     ],
@@ -104,6 +104,13 @@ const createNavItems = (officialEventPath: string) => [
     children: [
       { label: 'Events', href: officialEventPath },
       { label: 'Register', href: `${officialEventPath}/register`, featured: true },
+    ],
+  },
+  {
+    label: 'Official Events',
+    href: '/events',
+    children: [
+      { label: 'Register', href: '/event/asia-civil-law-summit-demo/register' },
     ],
   },
   { label: 'Calendar', href: '#program' },

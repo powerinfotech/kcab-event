@@ -12,6 +12,8 @@ import MediaPartners from '@page/public/MediaPartners';
 import PublicEventPage, { PublicEventRegistrationPage } from '@page/public/PublicEventPage';
 import PastEditions, { PastEdition2020, PastEdition2021, PastEdition2022, PastEdition2023, PastEdition2024, PastEdition2024EventDetail, PastEdition2025, PastEdition2025EventDetail } from '@page/PastEditions';
 import SafSignup from '@page/saf/SafSignup';
+import SponsorsPage from '@page/public/SponsorsPage';
+import SupportersPage from '@page/public/SupportersPage';
 import { getUserLoginInfo } from '@api/CommonApi';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { sessionInfoAtom } from '@atom/sessionInfoAtom';
@@ -169,6 +171,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       const eventSlug = decodeURIComponent(currentPath.replace(/^\/past-editions\/2025\/events\//, '').split('/')[0] ?? '');
       return <PastEdition2025EventDetail slug={eventSlug} />;
     }
+    if (currentPath === '/sponsors-2025') return <SponsorsPage />;
+    if (currentPath === '/supporters') return <SupportersPage />;
     if (currentPath === '/events') return <PublicEvents />;
     if (currentPath.startsWith('/event/')) {
       const eventPathParts = currentPath.replace(/^\/event\//, '').split('/');
