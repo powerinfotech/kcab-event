@@ -586,7 +586,7 @@
 .saf-renewal-expect-grid {
   width: 100%;
   max-width: 879px;                           // Figma: 207×4 + 17×3 (1920에서 카드 207px)
-  margin: 196px 0 0;                          // Figma: 카드 top = 밴드 top + 286 (콘텐츠 90 + 196)
+  margin: 226px 0 0;                          // Figma 기준(196) + 사용자 요청 10px 하향
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1.93%;                                 // Figma 17/879 — 폭과 함께 비례 축소(카드:간격 비율 유지)
