@@ -106,17 +106,20 @@ export default function SupportersPage() {
           <div className="saf-renewal-shell">
             <div className="saf-sponsors-intro">
               <h2 className="mp-heading">Supporters</h2>
+              {/* Figma sub01_Supporters: 문장당 한 줄 (명시적 줄바꿈 2개) */}
               <p>
                 The Seoul ADR Festival 2025 is proud to be supported by leading arbitration
-                institutions from around the world. Their collaboration and promotion play a vital
-                role in making this global gathering a success.
+                institutions from around the world.
+                <br />
+                Their collaboration and promotion play a vital role in making this global
+                gathering a success.
                 <br />
                 Please click on each logo to learn more about our valued supporters.
               </p>
             </div>
             <div className="saf-renewal-sponsor-row">
               <div className="saf-renewal-sponsor-title">
-                <span>Supporting Organizations</span>
+                <span>Supporting Organization</span>
               </div>
               <div className="saf-renewal-logo-grid">
                 {supporterLogos.map((logo) => (

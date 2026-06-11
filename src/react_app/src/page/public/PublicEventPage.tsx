@@ -300,7 +300,10 @@ const PublicEventPage: React.FC<PublicEventPageProps> = ({ urlSlug }) => {
   }
 
   const heroTitle = page.heroTitle || page.pageTitle || page.eventTitle;
-  const heroSubtitle = stripHtml(page.heroSubtitle || page.pageSubtitle || formatEventMeta(page)).trim();
+  // hero 부제는 리치에디터(TipTap) HTML일 수 있어(eventSummary 폴백) 본문 섹션들과 같은
+  // dangerouslySetInnerHTML 패턴으로 마크업을 그대로 렌더한다. 빈 마크업(<p></p>)만 있으면 숨김.
+  const heroSubtitle = page.heroSubtitle || page.pageSubtitle || formatEventMeta(page) || '';
+  const hasHeroSubtitle = stripHtml(heroSubtitle).trim().length > 0;
   const fallbackHeroImageUrl = assetSrc(HeroSeoulImage);
   const useFigmaOfficialEventHero = page.urlSlug === 'asia-civil-law-summit-demo';
   const heroImageUrl = useFigmaOfficialEventHero ? fallbackHeroImageUrl : page.heroImageUrl || fallbackHeroImageUrl;
@@ -325,7 +328,12 @@ const PublicEventPage: React.FC<PublicEventPageProps> = ({ urlSlug }) => {
             <div className="hero-content pub-event-hero-content saf-event-detail-hero-copy">
               <p className="saf-event-detail-eyebrow">Official Event</p>
               <h1 className="hero-title">{heroTitle}</h1>
-              {heroSubtitle && <p className="hero-subtitle">{heroSubtitle}</p>}
+              {heroSubtitle && (
+                <div
+                  className="hero-subtitle is-rich"
+                  dangerouslySetInnerHTML={{ __html: heroSubtitle }}
+                />
+              )}
               {primarySection && (
                 <a className="saf-event-detail-hero-cta" href={`#${primarySection.anchorId || primarySection.sectionKey}`}>
                   {primarySectionLabel}
@@ -913,7 +921,14 @@ const EventHeroInfoCard: React.FC<{
               <span aria-hidden="true">{'\u2197'}</span>
             </button>
           )}
-          <small>{settings.infoNote ? `Limited seats ${'\u00b7'} Invitation included` : 'Limited seats'}</small>
+          {settings.infoNote ? (
+            <div
+              className="pub-event-hero-info-note is-rich"
+              dangerouslySetInnerHTML={{ __html: settings.infoNote }}
+            />
+          ) : (
+            <small>Limited seats</small>
+          )}
         </div>
       </div>
       <div className="pub-event-hero-info-sub">

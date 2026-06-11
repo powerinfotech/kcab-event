@@ -31,49 +31,53 @@ const assetSrc = (asset: string | { src?: string }) =>
   typeof asset === 'string' ? asset : asset.src ?? '';
 
 /* Figma sub01_Sponsors 에 표기된 후원 등급만 노출한다. (Organizer / Supporters / Media Partners 는 별도 페이지) */
+/* size: 로고별 대각선 정규화(에셋 실측 종횡비 유지, 대각선 √(w²+h²)≈300px 균등, h≤140 클램프)
+   — 면적 균등은 가로형 로고의 폭을 키워(420px) 체감 크기가 커지는 문제가 있어,
+   눈이 크기를 읽는 "최장축" 기준(대각선)으로 맞춰 모든 로고가 비슷한 크기로 보이게 한다.
+   세로형(HFW/Lee&Ko/Shin&Kim/Vanguard)만 h=140 클램프로 대각선이 약간 짧다. */
 const sponsorGroups = [
   {
     title: 'Welcome Reception Sponsor',
-    logos: [{ name: 'Jipyong', image: SponsorJipyongLogo }],
+    logos: [{ name: 'Jipyong', image: SponsorJipyongLogo, size: { w: 279, h: 110 } }],
   },
   {
     title: 'Platinum Sponsors',
     logos: [
-      { name: 'Bae, Kim & Lee', image: SponsorBaeKimLeeLogo },
-      { name: 'Kim & Chang', image: SponsorKimChangLogo },
-      { name: 'LITIG', image: SponsorLitigLogo },
-      { name: 'Peter & Kim', image: SponsorPeterKimLogo },
+      { name: 'Bae, Kim & Lee', image: SponsorBaeKimLeeLogo, size: { w: 275, h: 120 } },
+      { name: 'Kim & Chang', image: SponsorKimChangLogo, size: { w: 298, h: 33 } },
+      { name: 'LITIG', image: SponsorLitigLogo, size: { w: 282, h: 104 } },
+      { name: 'Peter & Kim', image: SponsorPeterKimLogo, size: { w: 277, h: 115 } },
     ],
   },
   {
     title: 'Gold Sponsor',
     logos: [
-      { name: 'Analysis Group', image: SponsorAnalysisGroupLogo },
-      { name: 'Baker McKenzie', image: SponsorBakerMckenzieLogo },
-      { name: 'DIAC', image: SponsorDiacLogo },
-      { name: 'HFW', image: SponsorHfwLogo },
-      { name: 'Lee & Ko', image: SponsorLeeKoLogo },
-      { name: 'Quinn Emanuel', image: SponsorQuinnEmanuelLogo },
-      { name: 'Shin & Kim', image: SponsorShinKimLogo },
-      { name: 'Yendall Hunter', image: SponsorYendallHunterLogo },
-      { name: 'Yoon & Yang', image: SponsorYoonYangLogo },
-      { name: 'Yulchon', image: SponsorYulchonLogo },
+      { name: 'Analysis Group', image: SponsorAnalysisGroupLogo, size: { w: 297, h: 40 } },
+      { name: 'Baker McKenzie', image: SponsorBakerMckenzieLogo, size: { w: 278, h: 113 } },
+      { name: 'DIAC', image: SponsorDiacLogo, size: { w: 281, h: 104 } },
+      { name: 'HFW', image: SponsorHfwLogo, size: { w: 195, h: 140 } },
+      { name: 'Lee & Ko', image: SponsorLeeKoLogo, size: { w: 209, h: 140 } },
+      { name: 'Quinn Emanuel', image: SponsorQuinnEmanuelLogo, size: { w: 298, h: 34 } },
+      { name: 'Shin & Kim', image: SponsorShinKimLogo, size: { w: 210, h: 140 } },
+      { name: 'Yendall Hunter', image: SponsorYendallHunterLogo, size: { w: 297, h: 39 } },
+      { name: 'Yoon & Yang', image: SponsorYoonYangLogo, size: { w: 285, h: 93 } },
+      { name: 'Yulchon', image: SponsorYulchonLogo, size: { w: 285, h: 95 } },
     ],
   },
   {
     title: 'Silver Sponsors',
     logos: [
-      { name: 'Herbert Smith Freehills Kramer', image: SponsorHerbertSmithLogo },
-      { name: 'Secretariat', image: SponsorSecretariatLogo },
-      { name: 'Steptoe', image: SponsorSteptoeLogo },
-      { name: 'Stevenson Wong & Co.', image: SponsorStevensonWongLogo },
-      { name: 'Jus Mundi', image: SponsorJusMundiLogo },
-      { name: 'Vanguard', image: SponsorVanguardLogo },
+      { name: 'Herbert Smith Freehills Kramer', image: SponsorHerbertSmithLogo, size: { w: 288, h: 84 } },
+      { name: 'Secretariat', image: SponsorSecretariatLogo, size: { w: 293, h: 65 } },
+      { name: 'Steptoe', image: SponsorSteptoeLogo, size: { w: 284, h: 97 } },
+      { name: 'Stevenson Wong & Co.', image: SponsorStevensonWongLogo, size: { w: 288, h: 83 } },
+      { name: 'Jus Mundi', image: SponsorJusMundiLogo, size: { w: 281, h: 105 } },
+      { name: 'Vanguard', image: SponsorVanguardLogo, size: { w: 169, h: 140 } },
     ],
   },
   {
     title: 'Special Sponsor',
-    logos: [{ name: 'Seoul Metropolitan Government', image: SponsorSeoulMetropolitanLogo }],
+    logos: [{ name: 'Seoul Metropolitan Government', image: SponsorSeoulMetropolitanLogo, size: { w: 292, h: 68 } }],
   },
 ];
 
@@ -123,7 +127,12 @@ export default function SponsorsPage() {
                 <div className="saf-renewal-logo-grid">
                   {group.logos.map((logo) => (
                     <figure className="saf-renewal-sponsor-logo" key={logo.name}>
-                      <img src={assetSrc(logo.image)} alt={logo.name} loading="lazy" />
+                      <img
+                        src={assetSrc(logo.image)}
+                        alt={logo.name}
+                        loading="lazy"
+                        style={{ width: logo.size.w, height: logo.size.h }}
+                      />
                     </figure>
                   ))}
                 </div>

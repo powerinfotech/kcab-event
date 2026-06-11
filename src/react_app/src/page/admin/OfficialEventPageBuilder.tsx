@@ -20,6 +20,7 @@ import {
 } from '@api/event/EventApi';
 import { callGetFileList, callSaveFiles, UPLOAD_CONTEXT, type UploadContext } from '@api/CommonApi';
 import CustomFile, { FileDetailType } from '@component/upload/CustomFile';
+import CustomRichEditor from '@component/special/CustomRichEditor';
 import {
   EventListItem,
   EventPageBlock,
@@ -694,15 +695,16 @@ const OfficialEventPageBuilder = React.forwardRef<OfficialEventPageBuilderHandle
                 placeholder="상단에 크게 보이는 제목"
               />
             </label>
-            <label className="is-wide">
+            <div className="saf-simple-rich-field is-wide">
               <span>상단 소개 문구</span>
-              <textarea
+              <CustomRichEditor
                 value={page.heroSubtitle ?? ''}
-                disabled={!canEdit}
-                onChange={(e) => updatePage({ heroSubtitle: e.target.value })}
+                isEditable={canEdit}
+                onChange={(value) => updatePage({ heroSubtitle: normalizeEditorHtml(value) })}
                 placeholder="행사를 소개하는 짧은 문구"
+                height={128}
               />
-            </label>
+            </div>
           </div>
 
           <div className="saf-visual-settings">
@@ -753,15 +755,16 @@ const OfficialEventPageBuilder = React.forwardRef<OfficialEventPageBuilderHandle
                   placeholder="+82-2-0000-0000"
                 />
               </label>
-              <label className="is-wide">
+              <div className="saf-simple-rich-field is-wide">
                 <span>상단 안내 메모</span>
-                <textarea
+                <CustomRichEditor
                   value={pageSettings.infoNote || ''}
-                  disabled={!canEdit}
-                  onChange={(e) => updatePageSettings({ infoNote: e.target.value })}
+                  isEditable={canEdit}
+                  onChange={(value) => updatePageSettings({ infoNote: normalizeEditorHtml(value) })}
                   placeholder="예: Registration closes when seats are full."
+                  height={118}
                 />
-              </label>
+              </div>
             </div>
           </div>
 
@@ -1942,7 +1945,10 @@ const OfficialPagePreview: React.FC<{
           <span>Official Event</span>
           <h1>{heroTitle}</h1>
           {heroSubtitle && (
-            <p>{heroSubtitle}</p>
+            <div
+              className="saf-builder-preview-hero-subtitle is-rich"
+              dangerouslySetInnerHTML={{ __html: heroSubtitle }}
+            />
           )}
           {primarySection && (
             <a href={`#preview-${primarySection.sectionSeq}`} onClick={(event) => handleSectionLinkClick(event, primarySection.sectionSeq)}>
@@ -1956,7 +1962,12 @@ const OfficialPagePreview: React.FC<{
           {renderPreviewInfoRow('Registration', getRegistrationStatusLabel(page, pageSettings))}
           {renderPreviewInfoRow('Organizer', pageSettings.organizerName)}
           {renderPreviewInfoRow('Contact', [pageSettings.contactEmail, pageSettings.contactPhone].filter(Boolean).join(' / '))}
-          {pageSettings.infoNote && <p>{pageSettings.infoNote}</p>}
+          {pageSettings.infoNote && (
+            <div
+              className="saf-builder-preview-info-note is-rich"
+              dangerouslySetInnerHTML={{ __html: pageSettings.infoNote }}
+            />
+          )}
           {page.registrationUrl && <em>Register</em>}
         </div>
       </section>
@@ -2905,8 +2916,8 @@ function getRegistrationStatusLabel(page: PublicEventPage, settings: PageSetting
     return 'Registration is not available.';
   }
 
-  const startDate = parseDate(page.registrationStartDt);
-  const endDate = parseDate(page.registrationEndDt);
+  const startDate = parseDateTime(page.registrationStartDt);
+  const endDate = parseDateTime(page.registrationEndDt);
   const now = new Date();
 
   if (startDate && now.getTime() < startDate.getTime()) {
@@ -2945,6 +2956,12 @@ function formatStatusLabel(status?: string | null) {
 
 function stripHtml(value: string) {
   return value.replace(/<[^>]*>/g, '').slice(0, 140);
+}
+
+function normalizeEditorHtml(value?: string | null) {
+  const html = (value ?? '').trim();
+  if (!html || html === '<p></p>') return '';
+  return html;
 }
 
 export default OfficialEventPageBuilder;
