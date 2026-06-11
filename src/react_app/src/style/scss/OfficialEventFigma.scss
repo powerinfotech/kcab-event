@@ -200,14 +200,31 @@
     min-width: 0;
     flex-direction: column;
     justify-content: center;
-    /* exact Figma divider tint (node 1:15207). Only the Date|Venue divider shows
-       (Venue & Register columns set border-right: 0 below). */
-    border-right: 1px solid rgba(227, 228, 235, 0.2);
+    /* no full-height border: the Date|Venue divider is drawn inset via a centered
+       pseudo-element below (Figma node 1:15207 is not edge-to-edge). */
+    border-right: 0;
   }
 
   .pub-event-hero-info-date {
     /* item4: extra right room so the long date-range line stays on one line. */
     padding: 0 20px 0 64px;
+    /* anchor for the inset divider pseudo-element */
+    position: relative;
+  }
+
+  /* Figma (node 1:15207 "Paragraph+VerticalBorder"): the Date|Venue divider is NOT
+     full-height — it's inset top & bottom. The line spans y=56→225.5 within the
+     282px main strip (height 169.5, ~56px gap above and below). Render it as a
+     vertically-centered 1px line instead of a full-height border so the gaps show. */
+  .pub-event-hero-info-date::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: 0;
+    width: 1px;
+    height: 169.5px;
+    transform: translateY(-50%);
+    background: rgba(227, 228, 235, 0.2);
   }
 
   .pub-event-hero-info-venue {
