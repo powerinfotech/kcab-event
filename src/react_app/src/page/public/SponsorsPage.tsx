@@ -34,11 +34,13 @@ const assetSrc = (asset: string | { src?: string }) =>
 /* size: 로고별 대각선 정규화(에셋 실측 종횡비 유지, 대각선 √(w²+h²)≈300px 균등, h≤140 클램프)
    — 면적 균등은 가로형 로고의 폭을 키워(420px) 체감 크기가 커지는 문제가 있어,
    눈이 크기를 읽는 "최장축" 기준(대각선)으로 맞춰 모든 로고가 비슷한 크기로 보이게 한다.
-   세로형(HFW/Lee&Ko/Shin&Kim/Vanguard)만 h=140 클램프로 대각선이 약간 짧다. */
+   세로형(HFW/Lee&Ko/Shin&Kim/Vanguard)만 h=140 클램프로 대각선이 약간 짧다.
+   사용자 요청 개별 보정(종횡비 유지): Jipyong·Seoul Metropolitan ×1.1,
+   Baker McKenzie·Yoon & Yang·Steptoe·Jus Mundi ×0.9 */
 const sponsorGroups = [
   {
     title: 'Welcome Reception Sponsor',
-    logos: [{ name: 'Jipyong', image: SponsorJipyongLogo, size: { w: 279, h: 110 } }],
+    logos: [{ name: 'Jipyong', image: SponsorJipyongLogo, size: { w: 307, h: 121 } }],
   },
   {
     title: 'Platinum Sponsors',
@@ -53,14 +55,14 @@ const sponsorGroups = [
     title: 'Gold Sponsor',
     logos: [
       { name: 'Analysis Group', image: SponsorAnalysisGroupLogo, size: { w: 297, h: 40 } },
-      { name: 'Baker McKenzie', image: SponsorBakerMckenzieLogo, size: { w: 278, h: 113 } },
+      { name: 'Baker McKenzie', image: SponsorBakerMckenzieLogo, size: { w: 250, h: 102 } },
       { name: 'DIAC', image: SponsorDiacLogo, size: { w: 281, h: 104 } },
       { name: 'HFW', image: SponsorHfwLogo, size: { w: 195, h: 140 } },
       { name: 'Lee & Ko', image: SponsorLeeKoLogo, size: { w: 209, h: 140 } },
       { name: 'Quinn Emanuel', image: SponsorQuinnEmanuelLogo, size: { w: 298, h: 34 } },
       { name: 'Shin & Kim', image: SponsorShinKimLogo, size: { w: 210, h: 140 } },
       { name: 'Yendall Hunter', image: SponsorYendallHunterLogo, size: { w: 297, h: 39 } },
-      { name: 'Yoon & Yang', image: SponsorYoonYangLogo, size: { w: 285, h: 93 } },
+      { name: 'Yoon & Yang', image: SponsorYoonYangLogo, size: { w: 257, h: 84 } },
       { name: 'Yulchon', image: SponsorYulchonLogo, size: { w: 285, h: 95 } },
     ],
   },
@@ -69,15 +71,15 @@ const sponsorGroups = [
     logos: [
       { name: 'Herbert Smith Freehills Kramer', image: SponsorHerbertSmithLogo, size: { w: 288, h: 84 } },
       { name: 'Secretariat', image: SponsorSecretariatLogo, size: { w: 293, h: 65 } },
-      { name: 'Steptoe', image: SponsorSteptoeLogo, size: { w: 284, h: 97 } },
+      { name: 'Steptoe', image: SponsorSteptoeLogo, size: { w: 256, h: 88 } },
       { name: 'Stevenson Wong & Co.', image: SponsorStevensonWongLogo, size: { w: 288, h: 83 } },
-      { name: 'Jus Mundi', image: SponsorJusMundiLogo, size: { w: 281, h: 105 } },
+      { name: 'Jus Mundi', image: SponsorJusMundiLogo, size: { w: 253, h: 94 } },
       { name: 'Vanguard', image: SponsorVanguardLogo, size: { w: 169, h: 140 } },
     ],
   },
   {
     title: 'Special Sponsor',
-    logos: [{ name: 'Seoul Metropolitan Government', image: SponsorSeoulMetropolitanLogo, size: { w: 292, h: 68 } }],
+    logos: [{ name: 'Seoul Metropolitan Government', image: SponsorSeoulMetropolitanLogo, size: { w: 321, h: 75 } }],
   },
 ];
 
