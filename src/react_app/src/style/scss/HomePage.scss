@@ -212,8 +212,11 @@
   top: 66px;  // panel top = GNB band bottom (180px) − nav item top (114px), per Figma main01_gnb활성화
   left: 50%;
   z-index: 5;
-  width: 200px;
-  padding: 23px 0 30px;
+  // Figma 기본 200px — 동적 slug 하위 메뉴(긴 라벨)가 넘치지 않게 내용 폭까지 확장
+  width: max-content;
+  min-width: 200px;
+  max-width: 340px;
+  padding: 23px 16px 30px;
   display: grid;
   gap: 24px;
   justify-items: center;
@@ -227,6 +230,9 @@
   a {
     position: relative;
     width: fit-content;
+    max-width: 100%;         // 긴 slug 라벨은 패널 폭(max 340) 안에서 말줄임
+    overflow: hidden;
+    text-overflow: ellipsis;
     color: #231815;
     font-size: 15px;
     font-weight: 500;
@@ -1312,6 +1318,8 @@
   .saf-renewal-nav-item.is-active .saf-renewal-menu-panel {
     position: static;
     width: 100%;
+    min-width: 0;        // 데스크톱 드롭다운의 max-content/200~340px 캡 해제 (모바일은 전체폭 정적 패널)
+    max-width: none;
     margin: 2px 0 12px;
     padding: 14px 18px;
     gap: 12px;

@@ -791,10 +791,10 @@
   }
 
   h1 {
-    max-width: 900px;
+    max-width: 1120px;
     margin: 0;
     color: #fff;
-    font-size: 48px;
+    font-size: 46px;
     line-height: 1.08;
     font-weight: 900;
     overflow-wrap: anywhere;
@@ -835,8 +835,8 @@
 
 .saf-archive-event-detail-grid {
   display: grid;
-  grid-template-columns: 300px minmax(0, 1fr);
-  gap: 28px;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 36px;
   align-items: start;
 }
 

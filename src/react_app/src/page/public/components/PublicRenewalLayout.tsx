@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { usePathname } from 'next/navigation';
+import { useAtomValue } from 'jotai';
 import { usePublicNavigate } from '@hook/usePublicNavigate';
-import { useCurrentOfficialEventPath } from '@hook/useCurrentOfficialEventPath';
+import { usePublishedOfficialEvents, DEFAULT_OFFICIAL_EVENT_PATH } from '@hook/useCurrentOfficialEventPath';
+import { currentPathAtom } from '@atom/currentPathAtom';
 import SafLogo from '../../../assets/images/saf-renewal/header/logo.svg';
 import Social1 from '../../../assets/images/saf-renewal/header/social-1.svg';
 import Social2 from '../../../assets/images/saf-renewal/header/social-2.svg';
@@ -16,7 +17,7 @@ type NavItem = {
   children?: NavItem[];
 };
 
-const createNavItems = (officialEventPath: string): NavItem[] => [
+const createNavItems = (officialEventPath: string, officialEventChildren: NavItem[]): NavItem[] => [
   { label: 'Home', href: '/' },
   {
     label: 'Partners',
@@ -31,10 +32,9 @@ const createNavItems = (officialEventPath: string): NavItem[] => [
   {
     label: 'Official Events',
     href: officialEventPath,
-    children: [
-      { label: 'Events', href: officialEventPath },
-      { label: 'Register', href: `${officialEventPath}/register` },
-    ],
+    // events 테이블 status='published' 행의 slug 로 동적 구성 (정적 Events/Register 대체).
+    // 목록이 비면 hasChildren 가드로 드롭다운 없이 일반 링크로 동작한다.
+    children: officialEventChildren,
   },
   { label: 'Calendar', href: '#program' },
   { label: 'Visit Seoul', href: '#visit-seoul' },
@@ -55,11 +55,18 @@ type PublicRenewalLayoutProps = {
 
 export default function PublicRenewalLayout({ className, children }: PublicRenewalLayoutProps) {
   const navigate = usePublicNavigate();
-  const pathname = usePathname();
-  const officialEventPath = useCurrentOfficialEventPath();
+  // SPA 내비게이션(pushState)은 next/navigation usePathname 을 갱신하지 않으므로
+  // is-current 비교는 셸 라우팅의 source of truth 인 currentPathAtom 을 쓴다
+  const pathname = useAtomValue(currentPathAtom);
+  const publishedEvents = usePublishedOfficialEvents();
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const navItems = createNavItems(officialEventPath);
+  const officialEventChildren = publishedEvents.map((event) => ({
+    label: event.slug,
+    href: `/event/${encodeURIComponent(event.slug)}`,
+  }));
+  const officialEventPath = officialEventChildren[0]?.href ?? DEFAULT_OFFICIAL_EVENT_PATH;
+  const navItems = createNavItems(officialEventPath, officialEventChildren);
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     setActiveMenu(null);
