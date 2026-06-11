@@ -1105,8 +1105,13 @@ const PublicRegistrationMasthead: React.FC<{
         {renderRegistrationMetaItem('Venue', page.location)}
         {renderRegistrationMetaItem('Contact', contact || 'saf@kcab.or.kr')}
       </div>
-      <button type="button" className="pub-event-registration-back" onClick={onBackToEvent}>
-        Back to Event
+      {/* Figma sub02_01: 원형 버튼 안에서 단어별 한 줄(Back/to/Event) 스택 */}
+      <button type="button" className="pub-event-registration-back" onClick={onBackToEvent} aria-label="Back to Event">
+        Back
+        <br />
+        to
+        <br />
+        Event
       </button>
     </section>
   );
