@@ -271,7 +271,7 @@ export default function HomePage() {
                       textAnchor="middle"
                       dominantBaseline="central"
                       fontFamily="Montserrat, sans-serif"
-                      fontSize="27"
+                      fontSize="30"
                       fontWeight="700"
                       letterSpacing="0"
                       fill="#000"
