@@ -19,6 +19,7 @@ import {
 import HeroSeoulImage from '../../assets/images/saf-renewal/official-events-hero-wide-figma.png';
 import VenueFigmaImage from '../../assets/images/saf-renewal/official-events-venue-figma.png';
 import RibbonFigmaImage from '../../assets/images/saf-renewal/official-events-ribbon-large-figma.png';
+import ChevronRightImage from '../../assets/images/saf-renewal/chevron-right.png';
 import { usePublicNavigate } from '@hook/usePublicNavigate';
 
 declare global {
@@ -365,7 +366,13 @@ export const PublicEventPageView: React.FC<PublicEventPageViewProps> = ({
                   href={`#${primarySection.anchorId || primarySection.sectionKey}`}
                   onClick={(event) => onSectionNavigate?.(event, primarySection)}
                 >
-                  {primarySectionLabel}
+                  <span>{primarySectionLabel}</span>
+                  <img
+                    className="saf-event-detail-hero-cta-arrow"
+                    src={assetSrc(ChevronRightImage)}
+                    alt=""
+                    aria-hidden="true"
+                  />
                 </a>
               )}
             </div>
@@ -398,7 +405,7 @@ export const PublicEventPageView: React.FC<PublicEventPageViewProps> = ({
           ))}
         </div>
       </main>
-      {showFloatingActions && showRegistrationCta && (
+      {showFloatingActions && showRegistrationCta && !useFigmaOfficialEventHero && (
         <button
           type="button"
           className="pub-event-floating-register"
@@ -927,16 +934,7 @@ const EventHeroInfoCard: React.FC<{
   const venue = splitVenue(page.location);
 
   return (
-    <aside
-      className="pub-event-hero-info-card"
-      style={{
-        background: 'rgba(62, 61, 61, 0.34)',
-        borderRadius: 24,
-        boxShadow: '0 40px 100px -20px rgba(80, 40, 160, 0.55)',
-        backdropFilter: 'blur(94px)',
-        WebkitBackdropFilter: 'blur(94px)',
-      }}
-    >
+    <aside className="pub-event-hero-info-card">
       <div className="pub-event-hero-info-main">
         <div className="pub-event-hero-info-date">
           <span>Date</span>
@@ -956,14 +954,7 @@ const EventHeroInfoCard: React.FC<{
               <span aria-hidden="true">{'\u2197'}</span>
             </button>
           )}
-          {settings.infoNote ? (
-            <div
-              className="pub-event-hero-info-note is-rich"
-              dangerouslySetInnerHTML={{ __html: settings.infoNote }}
-            />
-          ) : (
-            <small>Limited seats</small>
-          )}
+          <small>Limited seats &middot; Invitation included</small>
         </div>
       </div>
       <div className="pub-event-hero-info-sub">
@@ -1640,6 +1631,24 @@ const EventPageSectionRenderer: React.FC<{ section: EventPageSection; accentColo
     );
   }
 
+  if (section.sectionType === 'about') {
+    return (
+      <section id={anchor} className={`pub-section section-text size-medium ${sectionClassName}`} style={sectionStyle}>
+        <div className="pub-section-inner">
+          <span className="pub-event-section-eyebrow">ABOUT</span>
+          {section.title && <h3 className="text-title">{section.title}</h3>}
+          {section.subtitle && <p className="pub-event-section-subtitle">{section.subtitle}</p>}
+          {section.body && <div className="text-content" dangerouslySetInnerHTML={{ __html: section.body }} />}
+          {blocks.length > 0 && (
+            <div className="pub-event-page-card-grid">
+              {blocks.map((block) => renderLinkedBlock(block, 'pub-event-page-card'))}
+            </div>
+          )}
+        </div>
+      </section>
+    );
+  }
+
   if (section.sectionType === 'notice') {
     return renderNoticeSection(section, sectionClassName, sectionStyle, anchor, blocks);
   }
@@ -2019,6 +2028,7 @@ function renderNoticeSection(
       } as React.CSSProperties}
     >
       <div className="pub-section-inner">
+        <span className="pub-event-section-eyebrow">NOTICE</span>
         <h3 className="text-title">{section.title || 'Notice'}</h3>
         {section.subtitle && <p className="pub-event-section-subtitle">{section.subtitle}</p>}
         {displayedNoticeItems.length > 0 && (

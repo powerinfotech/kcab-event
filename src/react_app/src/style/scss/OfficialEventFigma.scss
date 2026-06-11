@@ -6,16 +6,9 @@
   --oe-line: #dedbea;
   --oe-purple: #7b42ff;
   --oe-purple-2: #b747f5;
-  --oe-font: 'Montserrat', 'Noto Sans KR', sans-serif;
 
   color: var(--oe-ink);
   background: #fff;
-  font-family: var(--oe-font) !important;
-
-  &,
-  * {
-    font-family: var(--oe-font) !important;
-  }
 
   *,
   *::before,
@@ -91,14 +84,16 @@
   }
 
   .saf-event-detail-hero-copy .hero-title {
-    width: 876px;
-    max-width: 876px !important;
+    /* title stays on one line on desktop — widened to the full hero width. */
+    width: 100%;
+    max-width: 100% !important;
     flex: 0 0 auto;
     color: #fff;
     font-size: 67px !important;
     font-weight: 700;
     line-height: 1.22;
     letter-spacing: 0;
+    white-space: nowrap;
     word-break: normal !important;
     text-shadow: 0 12px 24px rgba(10, 12, 30, 0.22);
   }
@@ -118,6 +113,8 @@
       margin: 0;
       font-family: inherit;
       letter-spacing: inherit;
+      // 데스크톱에서는 날짜/장소 한 줄이 줄바꿈되지 않게 (히어로 copy 는 full-width).
+      white-space: nowrap;
     }
   }
 
@@ -143,22 +140,30 @@
 
   .saf-event-detail-hero-cta {
     display: inline-flex;
-    height: 47px;
-    min-width: 164px;
+    height: 54px;
+    min-width: 208px;
     margin-top: 30px;
-    padding: 0 29px;
+    padding: 15px 22px 15px 32px;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
     gap: 11px;
     border-radius: 999px;
     color: #fff;
-    background: linear-gradient(100deg, #6223f6 0%, #b54df2 100%);
-    box-shadow: 0 18px 32px rgba(69, 28, 160, 0.24);
+    /* exact Figma (node 1:15167): solid purple #6825db (rgb 104,37,219). */
+    background: #6825db;
+    box-shadow: 0 20px 30px rgba(35, 35, 120, 0.35);
     font-size: 14px;
     font-weight: 700;
     line-height: 20px;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.05em; /* Figma tracking 0.7px on 14px */
     text-transform: uppercase;
+  }
+
+  .saf-event-detail-hero-cta-arrow {
+    display: block;
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
   }
 
   .pub-event-hero-info-card {
@@ -167,20 +172,25 @@
     height: 384px;
     margin-top: 92px;
     padding: 0 !important;
-    border: 1px solid rgba(255, 255, 255, 0.16);
+    /* exact Figma (node 1:15202 "Background+Shadow") — no border in the design. */
+    border: 0;
     border-radius: 24px;
     overflow: hidden;
-    background: rgba(51, 48, 43, 0.36) !important;
-    box-shadow: 0 45px 110px -28px rgba(54, 28, 105, 0.62);
-    backdrop-filter: blur(84px) saturate(118%);
-    -webkit-backdrop-filter: blur(84px) saturate(118%);
+    background: rgba(62, 61, 61, 0.2) !important;
+    box-shadow: 0 40px 100px -20px rgba(80, 40, 160, 0.55);
+    backdrop-filter: blur(47px);
+    -webkit-backdrop-filter: blur(47px);
   }
 
   .pub-event-hero-info-main {
     display: grid;
     height: 282px;
-    grid-template-columns: 390px 390px 1fr;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+    /* Figma (node 1:15201/1:15207): Date|Venue divider sits at x=400 in the
+       1170px card, so the first column is 400px. This makes the Date|Venue
+       divider line up with the Registration|Organizer divider in the sub-strip
+       below (also x=400). */
+    grid-template-columns: 400px 390px 1fr;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
   }
 
   .pub-event-hero-info-date,
@@ -190,15 +200,20 @@
     min-width: 0;
     flex-direction: column;
     justify-content: center;
-    border-right: 1px solid rgba(255, 255, 255, 0.16);
+    /* exact Figma divider tint (node 1:15207). Only the Date|Venue divider shows
+       (Venue & Register columns set border-right: 0 below). */
+    border-right: 1px solid rgba(227, 228, 235, 0.2);
   }
 
   .pub-event-hero-info-date {
-    padding: 0 68px;
+    /* item4: extra right room so the long date-range line stays on one line. */
+    padding: 0 20px 0 64px;
   }
 
   .pub-event-hero-info-venue {
     padding: 0 70px;
+    /* item5: drop the divider between Venue and the REGISTER column (not in Figma). */
+    border-right: 0;
   }
 
   .pub-event-hero-info-action {
@@ -245,6 +260,8 @@
     font-size: 12px;
     font-weight: 500;
     line-height: 18px;
+    /* item4: keep the full date range on one line like Figma. */
+    white-space: nowrap;
   }
 
   .pub-event-hero-info-venue strong {
@@ -266,23 +283,26 @@
 
   .pub-event-register-link {
     display: inline-flex !important;
-    width: 300px !important;
-    height: 72px !important;
-    min-height: 72px !important;
-    padding: 0 34px !important;
+    width: 218px !important;
+    height: 64px !important;
+    min-height: 64px !important;
+    padding: 0 40px !important;
     align-items: center;
     justify-content: center;
-    gap: 16px;
+    gap: 12px;
     border: 0 !important;
     border-radius: 999px !important;
     color: #fff !important;
-    background: linear-gradient(100deg, #7027f6 0%, #c94cf2 100%) !important;
-    box-shadow: 0 28px 44px rgba(91, 38, 155, 0.38);
+    /* exact Figma (node 1:15211): 92deg, rgb(130,63,235) → rgb(189,75,214). */
+    background: linear-gradient(92deg, #823feb 0%, #bd4bd6 100%) !important;
+    /* exact Figma (node 1:15212 "Button:shadow"). !important to beat
+       MediaPartners.scss's competing (equal-specificity) box-shadow. */
+    box-shadow: 0 20px 25px -5px rgba(148, 95, 249, 0.4), 0 8px 10px -6px rgba(148, 95, 249, 0.4) !important;
     cursor: pointer;
-    font-size: 18px !important;
-    font-weight: 800 !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
     line-height: 24px !important;
-    letter-spacing: 0.28em !important;
+    letter-spacing: 0.18em !important; /* Figma tracking 2.88px on 16px */
     text-transform: uppercase !important;
     text-decoration: none !important;
     margin: 0 !important;
@@ -322,68 +342,116 @@
     }
   }
 
+  /* item5/overflow-fix: grow to fit the stacked content instead of clipping/spilling. */
+  /* fixed height (Figma) — content is compact and centered, so it never spills. */
   .pub-event-hero-info-sub {
     display: grid;
     height: 101px;
-    grid-template-columns: 390px 390px 1fr;
+    /* Figma (nodes 1:15219 / 1:15224 VerticalBorders): the three sub-strip cells
+       are 400px / 400px / 370px within the 1170px card (dividers at x=400 and
+       x=800). Registration|Organizer divider (x=400) aligns with the Date|Venue
+       divider above. */
+    grid-template-columns: 400px 400px 1fr;
     align-items: stretch;
+    align-content: stretch;
+    overflow: hidden;
   }
 
+  /* item5: stack label over value (line-break), tightly centered in the cell.
+     !important everywhere because MediaPartners.scss also targets this selector. */
   .pub-event-hero-info-row {
-    display: grid !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: flex-start !important;
     min-width: 0;
-    grid-template-columns: 150px minmax(0, 1fr) !important;
-    gap: 0 !important;
-    padding: 0 !important;
-    align-items: center;
-    border-right: 1px solid rgba(255, 255, 255, 0.16);
+    height: 101px !important;
+    gap: 9px !important;
+    margin: 0 !important;
+    padding: 0 40px !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-left: 0 !important;
     border-bottom: 0 !important;
+    text-align: left !important;
   }
 
   .pub-event-hero-info-row:last-child {
-    border-right: 0;
+    border-right: 0 !important;
   }
 
   .pub-event-hero-info-row dt {
-    width: 150px !important;
-    padding-left: 48px !important;
-    color: rgba(202, 192, 222, 0.95) !important;
+    /* reset MediaPartners' `flex: 0 0 104px` — that was a label-column WIDTH when
+       the row was display:flex (row). Our row is flex-direction:column, so a
+       104px flex-basis becomes the dt HEIGHT, pushing the value (dd) ~17px below
+       the card's fixed 384px bottom where `overflow:hidden` clips it. */
+    flex: 0 0 auto !important;
+    width: auto !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding-left: 0 !important;
+    color: #fff !important;
     font-size: 10px !important;
     font-weight: 700 !important;
     line-height: 15px !important;
-    letter-spacing: 0.22em !important;
+    letter-spacing: 0.3em !important;
     text-transform: uppercase !important;
     white-space: nowrap !important;
   }
 
   .pub-event-hero-info-row dd {
     display: flex !important;
-    width: 100% !important;
+    position: static !important;
+    width: auto !important;
     max-width: none !important;
     min-width: 0;
+    margin: 0 !important;
     align-items: center;
-    gap: 12px !important;
-    color: #0d103e !important;
+    gap: 10px !important;
+    /* match Figma: value text is white on the dark glass strip. */
+    color: #fff !important;
     font-size: 16px !important;
     font-weight: 700 !important;
     line-height: 22px !important;
-    padding-right: 22px !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
     white-space: normal !important;
     word-break: keep-all !important;
     overflow-wrap: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
   }
 
+  /* keep the dot inline (defeat MediaPartners' position:absolute version). */
   .pub-event-hero-info-row dd::before {
-    content: '';
-    width: 7px;
-    height: 7px;
-    flex: 0 0 7px;
-    border-radius: 50%;
-    background: #f52086;
+    content: '' !important;
+    position: static !important;
+    display: block !important;
+    width: 10px !important;
+    height: 10px !important;
+    flex: 0 0 10px !important;
+    border-radius: 50% !important;
+    background: #ff2056;
   }
 
+  /* item5: status-dot color follows the registration tone (green when open). */
+  .pub-event-hero-info-row.is-open dd::before {
+    background: #37d27a;
+    box-shadow: 0 0 0 4px rgba(55, 210, 122, 0.18);
+  }
+
+  .pub-event-hero-info-row.is-closed dd::before {
+    background: #ff2056;
+    box-shadow: 0 0 0 4px rgba(255, 99, 126, 0.3);
+  }
+
+  .pub-event-hero-info-row.is-pending dd::before {
+    background: #f5a623;
+  }
+
+  /* dot only on the Registration status row, not Organizer / Contact.
+     !important to beat the base dd::before { display: block !important }. */
   .pub-event-hero-info-row:nth-child(n + 2) dd::before {
-    display: none;
+    display: none !important;
   }
 
   .pub-event-page-nav {
@@ -391,16 +459,19 @@
     top: 0;
     z-index: 35;
     display: flex;
-    height: 50px;
+    height: 54px;
     align-items: center;
     justify-content: center;
     gap: 0;
-    background: linear-gradient(100deg, #6423f7 0%, #7f35e6 42%, #d1ab62 100%);
+    /* item2: exact Figma nav gradient (node 1:15229). The gold band sits at ~66%,
+       then returns to purple at the right edge — not a left→right purple→gold ramp. */
+    background: linear-gradient(90deg, #6825db 0%, #6825db 37.981%, #dad26d 66.346%, #6e2cd1 100%);
+    border-bottom: 1px solid #dddddd;
   }
 
   .pub-event-page-nav a {
     display: flex;
-    height: 50px;
+    height: 54px;
     min-width: 132px;
     padding: 0 24px;
     align-items: center;
@@ -499,8 +570,8 @@
 
   .pub-event-section-about .text-title {
     font-size: 48px !important;
-    font-weight: 800 !important;
-    line-height: 58.5px !important;
+    font-weight: 700 !important;
+    line-height: 48px !important;
   }
 
   .pub-event-section-about .pub-event-section-subtitle {
@@ -590,7 +661,7 @@
     background: transparent;
     color: #9a98ad;
     cursor: pointer;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
     line-height: 16px;
     letter-spacing: 0.48em;
@@ -757,7 +828,7 @@
   }
 
   .pub-event-program-track .pub-event-program-session.has-images .pub-event-program-main {
-    grid-template-columns: minmax(520px, 1fr) minmax(280px, 430px) !important;
+    grid-template-columns: minmax(460px, 1fr) minmax(380px, 500px) !important;
     grid-template-areas:
       'type logos'
       'title logos'
@@ -813,14 +884,14 @@
   }
 
   .pub-event-program-track .pub-event-program-image-frame {
-    width: 150px !important;
-    height: 72px !important;
-    flex: 0 0 150px !important;
+    width: 180px !important;
+    height: 86px !important;
+    flex: 0 0 180px !important;
   }
 
   .pub-event-program-track .pub-event-program-image {
-    max-width: 150px !important;
-    max-height: 72px !important;
+    max-width: 180px !important;
+    max-height: 86px !important;
     object-fit: contain !important;
   }
 
@@ -967,27 +1038,51 @@
     object-fit: contain;
   }
 
+  /* Figma (node 1:15287 "HorizontalBorder"): the supporters block starts with a
+     light gray rule across the full width, then the centered SUPPORTERS caption,
+     then the logo wall (node 1:15289). No inner panel/tint. */
   .pub-event-org-supporters {
-    margin-top: 48px;
-    padding: 40px 56px 48px;
-    border: 1px solid #e4e2ea;
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.68);
+    margin-top: 64px;
+    padding: 41px 0 0;
+    border-top: 1px solid var(--oe-line);
+    background: transparent;
   }
 
+  /* Figma (node 1:15288): SUPPORTERS caption is centered in the 1240px block.
+     It is a muted gray sub-label above the logo wall — NOT the accent purple
+     used by the section eyebrows. Overrides the shared eyebrow color above
+     (same specificity, declared later) while keeping the eyebrow typography. */
+  .pub-event-org-supporters h4 {
+    margin: 0;
+    color: var(--oe-muted);
+    text-align: center;
+  }
+
+  /* Figma logo wall (node 1:15289, 1240×356): a flush grid of white cells
+     separated by 1px gray rules. Container draws top+left; each cell draws
+     right+bottom, so interior lines are single-width and partial last rows
+     stay clean. */
   .pub-event-org-grid {
     display: grid;
-    margin-top: 34px;
+    margin-top: 24px;
     grid-template-columns: repeat(5, 1fr);
-    gap: 28px 40px;
-    align-items: center;
+    gap: 0;
+    align-items: stretch;
+    border-top: 1px solid var(--oe-line);
+    border-left: 1px solid var(--oe-line);
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
   }
 
   .pub-event-supporter-logo {
     display: flex;
-    height: 56px;
+    height: 88px;
     align-items: center;
     justify-content: center;
+    padding: 0 24px;
+    border-right: 1px solid var(--oe-line);
+    border-bottom: 1px solid var(--oe-line);
   }
 
   .pub-event-supporter-logo img {
@@ -1181,7 +1276,14 @@
 
   .pub-event-hotel-contact {
     display: grid;
-    margin-top: 18px;
+    /* Figma (node 1:15713 "Paragraph+HorizontalBorder"): a thin gray rule sits
+       above the email/phone block. margin-top:auto pushes this block (line +
+       contact + buttons) to the bottom, so the rule lands at the SAME height in
+       all three equal-height cards regardless of how many lines the name/address
+       take. */
+    margin-top: auto;
+    padding-top: 22px;
+    border-top: 1px solid var(--oe-line);
     gap: 6px;
     color: #7b7e91;
     font-size: 13px;
@@ -1232,6 +1334,11 @@
     gap: 12px !important;
     flex-wrap: nowrap !important;
     align-items: center;
+    /* fixed gap below the contact block — overrides the renewal's margin-top:auto
+       so only .pub-event-hotel-contact absorbs the free space (keeps the divider
+       line aligned across all three cards). */
+    margin-top: 24px !important;
+    padding-top: 0 !important;
   }
 
   .pub-event-visit-section .pub-event-page-actions a:first-child {
@@ -1483,6 +1590,7 @@
   @media (max-width: 1200px) {
     .saf-event-detail-hero-copy .hero-title {
       font-size: 54px;
+      white-space: normal;
     }
 
     .pub-event-hero-info-main,
@@ -1570,6 +1678,11 @@
     .saf-event-detail-hero-copy .hero-subtitle {
       font-size: 16px;
       line-height: 24px;
+
+      // 좁은 화면에서는 다시 줄바꿈 허용 (데스크톱 nowrap 해제).
+      p {
+        white-space: normal;
+      }
     }
 
     .pub-event-hero-info-card {
