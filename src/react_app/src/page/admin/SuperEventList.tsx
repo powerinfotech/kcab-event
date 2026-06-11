@@ -2291,7 +2291,7 @@ export default function SuperEventList() {
           <thead>
             <tr>
               <th>Event Name</th>
-              <th>Date</th>
+              <th>Event Date</th>
               <th>Show Period</th>
               <th>Type</th>
               <th>Organization</th>

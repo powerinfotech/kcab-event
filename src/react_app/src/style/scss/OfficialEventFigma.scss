@@ -113,6 +113,26 @@
     text-shadow: 0 8px 20px rgba(10, 12, 30, 0.22);
   }
 
+  .saf-event-detail-hero-copy .hero-subtitle.is-rich {
+    p,
+    ul,
+    ol {
+      margin: 0 0 0.55em;
+    }
+
+    p:last-child,
+    ul:last-child,
+    ol:last-child {
+      margin-bottom: 0;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+  }
+
   .saf-event-detail-hero-cta {
     display: inline-flex;
     height: 47px;
@@ -266,6 +286,32 @@
     font-size: 12px;
     font-weight: 500;
     line-height: 16px;
+  }
+
+  .pub-event-hero-info-note {
+    margin-top: 22px;
+    color: rgba(255, 255, 255, 0.86);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
+
+    p,
+    ul,
+    ol {
+      margin: 0 0 0.45em;
+    }
+
+    p:last-child,
+    ul:last-child,
+    ol:last-child {
+      margin-bottom: 0;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
   }
 
   .pub-event-hero-info-sub {

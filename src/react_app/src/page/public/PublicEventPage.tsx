@@ -325,7 +325,12 @@ const PublicEventPage: React.FC<PublicEventPageProps> = ({ urlSlug }) => {
             <div className="hero-content pub-event-hero-content saf-event-detail-hero-copy">
               <p className="saf-event-detail-eyebrow">Official Event</p>
               <h1 className="hero-title">{heroTitle}</h1>
-              {heroSubtitle && <p className="hero-subtitle">{heroSubtitle}</p>}
+              {heroSubtitle && (
+                <div
+                  className="hero-subtitle is-rich"
+                  dangerouslySetInnerHTML={{ __html: heroSubtitle }}
+                />
+              )}
               {primarySection && (
                 <a className="saf-event-detail-hero-cta" href={`#${primarySection.anchorId || primarySection.sectionKey}`}>
                   {primarySectionLabel}
@@ -913,7 +918,14 @@ const EventHeroInfoCard: React.FC<{
               <span aria-hidden="true">{'\u2197'}</span>
             </button>
           )}
-          <small>{settings.infoNote ? `Limited seats ${'\u00b7'} Invitation included` : 'Limited seats'}</small>
+          {settings.infoNote ? (
+            <div
+              className="pub-event-hero-info-note is-rich"
+              dangerouslySetInnerHTML={{ __html: settings.infoNote }}
+            />
+          ) : (
+            <small>Limited seats</small>
+          )}
         </div>
       </div>
       <div className="pub-event-hero-info-sub">
