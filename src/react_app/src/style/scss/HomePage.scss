@@ -522,12 +522,16 @@
 }
 
 .saf-renewal-section-heading {
-  max-width: 280px;
+  // Figma main01: 헤딩 텍스트 박스 288px(2줄), intro 327px(2줄) — 250px 그리드 트랙보다
+  // 넓게 흘러나오는 구조(카드는 196px 아래에서 시작해 겹치지 않음).
+  // 주의: 그리드 아이템의 100%는 트랙(250px) 기준이라 min(330px,100%)은 250으로 붕괴함 → 고정 폭.
+  width: 330px;
+  max-width: none;
   margin: 0;
   text-align: left;
 
   h2 {
-    margin: 18px 0 22px;
+    margin: 14px 0 22px;       // Figma: kicker 끝(1086.5) → 헤딩(1100)
     color: #222222;            // Figma main01
     font-size: 30px;           // Figma: 30px
     line-height: 1.15;         // Figma: 34.5 / 30
@@ -539,7 +543,7 @@
     color: #222222;            // Figma main01
     font-size: 13px;           // Figma: 13px
     line-height: 1.627;        // Figma: 21.13 / 13
-    max-width: 280px;
+    max-width: 330px;          // Figma: intro 327px → 2줄
   }
 }
 
@@ -848,7 +852,7 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 0;
     margin: 38px 0 0;
-    border-top: 1px solid rgba(31, 28, 66, 0.18);
+    // Figma main01: 통계 위에 구분선 없음 (Paragraph+HorizontalBorder strokeWeight 0)
   }
 
   dl div {
@@ -976,14 +980,15 @@
     max-width: 760px;
     margin: 0 auto 44px;
     color: var(--saf-ink);
-    font-size: 44px;
-    line-height: 1.18;
-    font-weight: 900;
-    text-align: center;   // Figma main01: 'Our 2025 Sponsors' 중앙 정렬
+    font-size: 40px;           // Figma main01 (1:13701): 40px / 700 / lh48 / ls -0.8
+    line-height: 1.2;
+    font-weight: 700;
+    letter-spacing: -0.8px;
+    text-align: center;        // Figma main01: 'Our 2025 Sponsors' 중앙 정렬
   }
 
   h2 span {
-    background: linear-gradient(90deg, #4b44d4 0%, #a747ec 72%);
+    background: linear-gradient(90deg, #693ad4 0%, #af61f8 100%);   // Figma: #693ad4 → #af61f8
     background-clip: text;
     -webkit-background-clip: text;
     color: transparent;
@@ -1056,7 +1061,9 @@
   // 한 줄당 로고 수는 --logo-cols 로 등급별 제어 (홈: Gold 5×2, Silver 6×1 등).
   // Figma main01: 로고는 content 폭으로 가로 중앙 정렬된 그룹 (가득 채우지 않음).
   grid-template-columns: repeat(var(--logo-cols, 4), auto);
-  gap: 24px 28px;   // Figma main01 로고 itemSpacing(~20px)에 가깝게
+  // Figma 엣지 간격은 ~90–127px이지만 로고 캡(140px)과 함께 최악 행(Silver 6열)이
+  // 셸 1170px을 넘지 않도록 60px (6×140+5×60=1140 ≤ 1170)
+  gap: 40px 60px;
   align-items: center;
   justify-content: center;
 }
@@ -1069,19 +1076,19 @@
   justify-content: center;
 
   img {
-    // 로고 폭 상한 — Figma main01: 다중 로고 등급(Gold/Silver 등)은 작은 로고가
-    // 가로 중앙으로 모이도록 폭을 제한한다(가득 채우지 않음).
-    max-width: 130px;
-    max-height: 56px;
+    // Figma main01 실측 기반(다중 등급 대부분 ≤150×82) + Silver 6열이 셸을 넘지 않는 상한
+    max-width: 140px;
+    max-height: 64px;
     width: auto;
     height: auto;
     display: block;
     object-fit: contain;
   }
 
-  // 단일 로고 등급(Organized/Welcome/Special)은 Figma처럼 더 크게.
+  // 단일 로고 등급 — Figma: Special 243×56, Welcome 229×50, Organized 162×64
   &:only-child img {
-    max-width: 220px;
+    max-width: 245px;
+    max-height: 64px;
   }
 }
 
@@ -1376,6 +1383,7 @@
   .saf-renewal-section-heading,
   .saf-renewal-journey-heading,
   .saf-renewal-sponsors h2 {
+    width: auto;          // 데스크톱 고정 330px 해제 (1열 레이아웃)
     max-width: none;
     margin-left: 0;
   }
@@ -2878,19 +2886,24 @@
 }
 
 .saf-sponsors-list .saf-sponsors-intro {
-  margin-bottom: 42px;
+  // Figma sub01: 문단 라인박스 하단 → 첫 등급 라벨 라인박스 상단 117px
+  // (Figma 박스 간격 78px + 문단 박스 하단 슬랙 19px + 행 프레임 내 라벨 오프셋 20px)
+  margin-bottom: 117px;
 
-  // 헤딩 글꼴/크기/색은 공통 .mp-heading (media-partners 와 동일) — 여기선 간격만
+  // 헤딩 글꼴/크기/색은 공통 .mp-heading (media-partners 와 동일) — 여기선 간격만.
+  // Figma 베이스라인→문단 78px; h2 라인박스(59px)의 베이스라인 아래 ~14px를 빼면 64px
   h2 {
-    margin: 0 0 16px;
+    margin: 0 0 64px;
   }
 
+  // Figma sub01: Montserrat 400 16/22.4, 자간 -0.16, #222, 폭 1170(셸 전체) — 문장당 한 줄(명시적 <br/>)
   p {
-    max-width: 680px;
+    max-width: none;
     margin: 0;
-    color: var(--saf-muted);
-    font-size: 15px;
-    line-height: 1.7;
+    color: #222;
+    font-size: 16px;
+    line-height: 22.4px;
+    letter-spacing: -0.16px;
   }
 }
 
@@ -2912,17 +2925,18 @@
     // Figma sub01_Sponsors: 2열 컬럼 중심 간격 468px(셀 폭 468), 그룹 중앙 정렬
     grid-template-columns: repeat(2, minmax(0, 468px));
     justify-content: center;
-    gap: 28px 0;
+    gap: 30px 0; // supporters 와 동일한 행 리듬
     margin-top: 8px;
   }
 
-  // 로고 크기 균일화: 모든 로고를 동일한 바운딩 박스(폭/높이 px 상한) 안에서 contain
+  // 로고 크기는 데이터의 대각선 정규화 값(SponsorsPage.tsx size, 대각선 ≈300px 균등)이 인라인으로 지정 —
+  // 여기서는 셀 리듬(min-height 150: 최고 로고 높이 140 + 여유)과 안전 캡만 둔다.
   .saf-renewal-sponsor-logo {
-    min-height: 110px;
+    min-height: 150px;
 
     img {
-      max-height: 72px;
-      max-width: 190px;
+      max-width: 100%;
+      max-height: none; // 홈 로고월 베이스 캡(64px) 해제 — max-* 는 인라인 크기보다 우선한다
       object-fit: contain;
     }
   }
@@ -2969,18 +2983,20 @@
 /* ===== Supporters sub page (Figma sub01_Supporters) ===== */
 .saf-supporters-page {
   .saf-renewal-logo-grid {
-    // Figma sub01_Supporters: 3열 컬럼 중심 간격 340px(셀 폭 340), 그룹 중앙 정렬
+    // Figma sub01_Supporters: 3열 컬럼 중심 간격 340px(셀 폭 340), 그룹 중앙 정렬, 행 피치 ~160
     grid-template-columns: repeat(3, minmax(0, 340px));
     justify-content: center;
-    gap: 44px 0;
+    gap: 30px 0;
     margin-top: 8px;
   }
 
+  // Figma 실측: 로고 표시 폭 62~310 / 높이 52~163(중간값 ~100)
   .saf-renewal-sponsor-logo {
-    min-height: 92px;
+    min-height: 130px;
 
     img {
-      max-height: 72px;
+      max-height: 120px;
+      max-width: 310px;
     }
   }
 }

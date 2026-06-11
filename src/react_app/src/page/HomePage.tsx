@@ -271,9 +271,9 @@ export default function HomePage() {
                       textAnchor="middle"
                       dominantBaseline="central"
                       fontFamily="Montserrat, sans-serif"
-                      fontSize="20"
+                      fontSize="27"
                       fontWeight="700"
-                      letterSpacing="2"
+                      letterSpacing="0"
                       fill="#000"
                     >
                       {'26 \u2013 30 October 2026'}
