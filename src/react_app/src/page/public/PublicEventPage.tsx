@@ -33,6 +33,15 @@ interface PublicEventPageProps {
   urlSlug: string;
 }
 
+interface PublicEventPageViewProps {
+  page: PublicEventPageModel;
+  urlSlug?: string;
+  heroImageUrl?: string | null;
+  showFloatingActions?: boolean;
+  onRegister?: () => void;
+  onSectionNavigate?: (event: React.MouseEvent<HTMLAnchorElement>, section: EventPageSection) => void;
+}
+
 interface PageTheme {
   heroBackgroundType: 'image' | 'color';
   heroOverlay: 'dark' | 'light' | 'none';
@@ -243,34 +252,6 @@ const PublicEventPage: React.FC<PublicEventPageProps> = ({ urlSlug }) => {
     };
   }, [urlSlug]);
 
-  const visibleSections = useMemo(
-    () => (page?.sections ?? []).filter((section) => (
-      section.useYn !== 'N' && !HIDDEN_EVENT_SECTION_TYPES.has(section.sectionType)
-    )),
-    [page],
-  );
-  const navSections = useMemo(
-    () => visibleSections.filter((section) => section.navLabel || section.title),
-    [visibleSections],
-  );
-  const theme = useMemo(() => parseTheme(page?.themeJson), [page?.themeJson]);
-  const pageSettings = useMemo(() => parsePageSettings(page?.settingsJson), [page?.settingsJson]);
-  const accentColor = getThemeColor(theme.themeColor);
-  const handleNavigate = usePublicNavigate();
-  const registrationActionType = normalizeRegistrationType(page?.registrationType);
-  const externalRegistrationUrl = registrationActionType === 'external' ? page?.registrationUrl?.trim() ?? '' : '';
-  const showRegistrationCta = registrationActionType === 'direct' || !!externalRegistrationUrl;
-
-  const openRegistration = useCallback(() => {
-    if (registrationActionType === 'external') {
-      if (!externalRegistrationUrl) return;
-      window.open(externalRegistrationUrl, '_blank', 'noopener,noreferrer');
-      return;
-    }
-    if (registrationActionType !== 'direct') return;
-    handleNavigate(`/event/${encodeURIComponent(page?.urlSlug || urlSlug)}/register`);
-  }, [externalRegistrationUrl, handleNavigate, page?.urlSlug, registrationActionType, urlSlug]);
-
   if (loading) {
     return (
       <main className="pub-page-content" aria-busy="true">
@@ -299,6 +280,50 @@ const PublicEventPage: React.FC<PublicEventPageProps> = ({ urlSlug }) => {
     );
   }
 
+  return <PublicEventPageView page={page} urlSlug={urlSlug} />;
+};
+
+export const PublicEventPageView: React.FC<PublicEventPageViewProps> = ({
+  page,
+  urlSlug,
+  heroImageUrl: heroImageUrlOverride,
+  showFloatingActions = true,
+  onRegister,
+  onSectionNavigate,
+}) => {
+  const visibleSections = useMemo(
+    () => (page.sections ?? []).filter((section) => (
+      section.useYn !== 'N' && !HIDDEN_EVENT_SECTION_TYPES.has(section.sectionType)
+    )),
+    [page.sections],
+  );
+  const navSections = useMemo(
+    () => visibleSections.filter((section) => section.navLabel || section.title),
+    [visibleSections],
+  );
+  const theme = useMemo(() => parseTheme(page.themeJson), [page.themeJson]);
+  const pageSettings = useMemo(() => parsePageSettings(page.settingsJson), [page.settingsJson]);
+  const accentColor = getThemeColor(theme.themeColor);
+  const handleNavigate = usePublicNavigate();
+  const registrationActionType = normalizeRegistrationType(page.registrationType);
+  const externalRegistrationUrl = registrationActionType === 'external' ? page.registrationUrl?.trim() ?? '' : '';
+  const showRegistrationCta = registrationActionType === 'direct' || !!externalRegistrationUrl;
+  const resolvedUrlSlug = page.urlSlug || urlSlug || '';
+
+  const openRegistration = useCallback(() => {
+    if (onRegister) {
+      onRegister();
+      return;
+    }
+    if (registrationActionType === 'external') {
+      if (!externalRegistrationUrl) return;
+      window.open(externalRegistrationUrl, '_blank', 'noopener,noreferrer');
+      return;
+    }
+    if (registrationActionType !== 'direct' || !resolvedUrlSlug) return;
+    handleNavigate(`/event/${encodeURIComponent(resolvedUrlSlug)}/register`);
+  }, [externalRegistrationUrl, handleNavigate, onRegister, registrationActionType, resolvedUrlSlug]);
+
   const heroTitle = page.heroTitle || page.pageTitle || page.eventTitle;
   // hero 부제는 리치에디터(TipTap) HTML일 수 있어(eventSummary 폴백) 본문 섹션들과 같은
   // dangerouslySetInnerHTML 패턴으로 마크업을 그대로 렌더한다. 빈 마크업(<p></p>)만 있으면 숨김.
@@ -306,7 +331,7 @@ const PublicEventPage: React.FC<PublicEventPageProps> = ({ urlSlug }) => {
   const hasHeroSubtitle = stripHtml(heroSubtitle).trim().length > 0;
   const fallbackHeroImageUrl = assetSrc(HeroSeoulImage);
   const useFigmaOfficialEventHero = page.urlSlug === 'asia-civil-law-summit-demo';
-  const heroImageUrl = useFigmaOfficialEventHero ? fallbackHeroImageUrl : page.heroImageUrl || fallbackHeroImageUrl;
+  const heroImageUrl = heroImageUrlOverride || (useFigmaOfficialEventHero ? fallbackHeroImageUrl : page.heroImageUrl || fallbackHeroImageUrl);
   const heroTheme = useFigmaOfficialEventHero || !page.heroImageUrl ? { ...theme, heroBackgroundType: 'image' as const } : theme;
   const heroStyle = useFigmaOfficialEventHero
     ? {
@@ -328,14 +353,18 @@ const PublicEventPage: React.FC<PublicEventPageProps> = ({ urlSlug }) => {
             <div className="hero-content pub-event-hero-content saf-event-detail-hero-copy">
               <p className="saf-event-detail-eyebrow">Official Event</p>
               <h1 className="hero-title">{heroTitle}</h1>
-              {heroSubtitle && (
+              {hasHeroSubtitle && (
                 <div
                   className="hero-subtitle is-rich"
                   dangerouslySetInnerHTML={{ __html: heroSubtitle }}
                 />
               )}
               {primarySection && (
-                <a className="saf-event-detail-hero-cta" href={`#${primarySection.anchorId || primarySection.sectionKey}`}>
+                <a
+                  className="saf-event-detail-hero-cta"
+                  href={`#${primarySection.anchorId || primarySection.sectionKey}`}
+                  onClick={(event) => onSectionNavigate?.(event, primarySection)}
+                >
                   {primarySectionLabel}
                 </a>
               )}
@@ -352,7 +381,11 @@ const PublicEventPage: React.FC<PublicEventPageProps> = ({ urlSlug }) => {
         {navSections.length > 0 && (
           <nav className="pub-event-page-nav">
             {navSections.map((section) => (
-              <a key={section.sectionSeq} href={`#${section.anchorId || section.sectionKey}`}>
+              <a
+                key={section.sectionSeq}
+                href={`#${section.anchorId || section.sectionKey}`}
+                onClick={(event) => onSectionNavigate?.(event, section)}
+              >
                 {section.title || section.navLabel}
               </a>
             ))}
@@ -365,7 +398,7 @@ const PublicEventPage: React.FC<PublicEventPageProps> = ({ urlSlug }) => {
           ))}
         </div>
       </main>
-      {showRegistrationCta && (
+      {showFloatingActions && showRegistrationCta && (
         <button
           type="button"
           className="pub-event-floating-register"
@@ -375,14 +408,16 @@ const PublicEventPage: React.FC<PublicEventPageProps> = ({ urlSlug }) => {
           Register
         </button>
       )}
-      <button
-        type="button"
-        className={`pub-event-scroll-top${showRegistrationCta ? ' has-register-button' : ''}`}
-        aria-label="Back to top"
-        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-      >
-        <span aria-hidden="true">{'\u2191'}</span>
-      </button>
+      {showFloatingActions && (
+        <button
+          type="button"
+          className={`pub-event-scroll-top${showRegistrationCta ? ' has-register-button' : ''}`}
+          aria-label="Back to top"
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        >
+          <span aria-hidden="true">{'\u2191'}</span>
+        </button>
+      )}
     </>
   );
 };

@@ -21,6 +21,7 @@ import {
 import { callGetFileList, callSaveFiles, UPLOAD_CONTEXT, type UploadContext } from '@api/CommonApi';
 import CustomFile, { FileDetailType } from '@component/upload/CustomFile';
 import CustomRichEditor from '@component/special/CustomRichEditor';
+import { PublicEventPageView } from '@page/public/PublicEventPage';
 import {
   EventListItem,
   EventPageBlock,
@@ -265,13 +266,17 @@ const OfficialEventPageBuilder = React.forwardRef<OfficialEventPageBuilderHandle
 
   const scrollPreviewToSection = (sectionSeq?: number | null) => {
     if (sectionSeq === null || sectionSeq === undefined || typeof window === 'undefined') return;
+    const section = page?.sections.find((item) => item.sectionSeq === sectionSeq);
+    const anchor = section?.anchorId || section?.sectionKey;
     if (previewScrollFrameRef.current !== null) {
       window.cancelAnimationFrame(previewScrollFrameRef.current);
     }
     previewScrollFrameRef.current = window.requestAnimationFrame(() => {
       previewScrollFrameRef.current = window.requestAnimationFrame(() => {
         const body = previewBodyRef.current;
-        const target = body?.querySelector<HTMLElement>(`#preview-${sectionSeq}`);
+        const target = body?.querySelector<HTMLElement>(
+          `#preview-${sectionSeq}${anchor ? `, [id="${escapeCssAttribute(anchor)}"]` : ''}`,
+        );
         previewScrollFrameRef.current = null;
         if (!body || !target) return;
         const bodyRect = body.getBoundingClientRect();
@@ -1919,81 +1924,32 @@ const OfficialPagePreview: React.FC<{
   blockImageFiles: Record<number, FileDetailType[]>;
   onNavigateSection?: (sectionSeq: number) => void;
 }> = ({ page, theme, heroImageUrl, blockImageFiles, onNavigateSection }) => {
-  const sections = (page.sections ?? []).filter((section) => section.useYn !== 'N' && !DISABLED_SECTION_TYPES.has(section.sectionType));
-  const navSections = sections.filter((section) => section.navLabel || section.title);
-  const accentColor = getThemeColor(theme.themeColor);
-  const pageSettings = parsePageSettings(page.settingsJson);
-  const heroTitle = page.heroTitle || page.pageTitle || page.eventTitle || 'Official Event';
-  const heroSubtitle = page.heroSubtitle || page.pageSubtitle || formatPreviewEventMeta(page);
   const fallbackHeroImageUrl = assetSrc(HeroSeoulImage);
   const resolvedHeroImageUrl = heroImageUrl || page.heroImageUrl || fallbackHeroImageUrl;
-  const heroTheme = (heroImageUrl || page.heroImageUrl) ? theme : { ...theme, heroBackgroundType: 'image' as const };
-  const primarySection = navSections.find((section) => section.sectionType === 'program') ?? navSections[0];
-  const primarySectionLabel = primarySection?.sectionType === 'program'
-    ? 'View Program'
-    : `View ${primarySection?.navLabel || primarySection?.title || 'Details'}`;
-  const handleSectionLinkClick = (event: React.MouseEvent<HTMLAnchorElement>, sectionSeq: number) => {
-    if (!onNavigateSection) return;
+  const previewPage = useMemo(
+    () => buildPublicPreviewPage(page, blockImageFiles),
+    [blockImageFiles, page],
+  );
+  const handleSectionLinkClick = (event: React.MouseEvent<HTMLAnchorElement>, section: EventPageSection) => {
     event.preventDefault();
-    onNavigateSection(sectionSeq);
+    const anchor = section.anchorId || section.sectionKey;
+    const previewRoot = event.currentTarget.closest('.saf-builder-public-preview');
+    const target = anchor ? previewRoot?.querySelector(`[id="${escapeCssAttribute(anchor)}"]`) : null;
+    if (target instanceof HTMLElement) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    onNavigateSection?.(section.sectionSeq);
   };
 
   return (
-    <div className="saf-builder-preview" style={{ '--preview-accent': accentColor } as React.CSSProperties}>
-      <section className="saf-builder-preview-hero" style={buildHeroStyle(heroTheme, resolvedHeroImageUrl)}>
-        <div className="saf-builder-preview-hero-copy">
-          <span>Official Event</span>
-          <h1>{heroTitle}</h1>
-          {heroSubtitle && (
-            <div
-              className="saf-builder-preview-hero-subtitle is-rich"
-              dangerouslySetInnerHTML={{ __html: heroSubtitle }}
-            />
-          )}
-          {primarySection && (
-            <a href={`#preview-${primarySection.sectionSeq}`} onClick={(event) => handleSectionLinkClick(event, primarySection.sectionSeq)}>
-              {primarySectionLabel}
-            </a>
-          )}
-        </div>
-        <div className="saf-builder-preview-info-card">
-          {renderPreviewInfoRow('Date', formatPreviewDateRange(page.eventStartDt, page.eventEndDt))}
-          {renderPreviewInfoRow('Venue', page.location)}
-          {renderPreviewInfoRow('Registration', getRegistrationStatusLabel(page, pageSettings))}
-          {renderPreviewInfoRow('Organizer', pageSettings.organizerName)}
-          {renderPreviewInfoRow('Contact', [pageSettings.contactEmail, pageSettings.contactPhone].filter(Boolean).join(' / '))}
-          {pageSettings.infoNote && (
-            <div
-              className="saf-builder-preview-info-note is-rich"
-              dangerouslySetInnerHTML={{ __html: pageSettings.infoNote }}
-            />
-          )}
-          {page.registrationUrl && <em>Register</em>}
-        </div>
-      </section>
-
-      {navSections.length > 0 && (
-        <nav className="saf-builder-preview-nav">
-          {navSections.map((section) => (
-            <a
-              key={section.sectionSeq}
-              href={`#preview-${section.sectionSeq}`}
-              onClick={(event) => handleSectionLinkClick(event, section.sectionSeq)}
-            >
-              {section.navLabel || section.title}
-            </a>
-          ))}
-        </nav>
-      )}
-
-      <div className="saf-builder-preview-body">
-        {sections.map((section) => (
-          <PreviewSection key={section.sectionSeq} section={section} blockImageFiles={blockImageFiles} />
-        ))}
-        {!sections.length && (
-          <div className="saf-builder-empty is-small">미리볼 수 있는 항목이 없습니다.</div>
-        )}
-      </div>
+    <div className="official-event-detail-page pub-event-renewal saf-builder-public-preview">
+      <PublicEventPageView
+        page={{ ...previewPage, themeJson: JSON.stringify(theme) }}
+        heroImageUrl={resolvedHeroImageUrl}
+        showFloatingActions={false}
+        onRegister={() => undefined}
+        onSectionNavigate={handleSectionLinkClick}
+      />
     </div>
   );
 };
@@ -2793,6 +2749,32 @@ function getProgramPreviewImageUrls(block: EventPageBlock, blockImageFiles: Reco
     externalImageUrl,
     ...normalizeImageUrlList(content.imageUrls),
   ]);
+}
+
+function buildPublicPreviewPage(page: PublicEventPage, blockImageFiles: Record<number, FileDetailType[]>): PublicEventPage {
+  return {
+    ...page,
+    sections: (page.sections ?? []).map((section) => ({
+      ...section,
+      blocks: (section.blocks ?? []).map((block) => {
+        const imageUrls = getProgramPreviewImageUrls(block, blockImageFiles);
+        if (!imageUrls.length && !block.imageUrl) return block;
+
+        const content = parseBlockContent(block.contentJson);
+        const nextContent = imageUrls.length ? { ...content, imageUrls } : content;
+
+        return {
+          ...block,
+          imageUrl: imageUrls[0] || block.imageUrl,
+          contentJson: JSON.stringify(nextContent),
+        };
+      }),
+    })),
+  };
+}
+
+function escapeCssAttribute(value: string) {
+  return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
 }
 
 function toDatetimeInput(value?: string | null) {
