@@ -2884,6 +2884,10 @@ function parseDateTime(value?: string | null) {
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
+function parseDate(value?: string | null) {
+  return parseDateTime(value);
+}
+
 function formatDateOnly(date: Date) {
   return new Intl.DateTimeFormat('en-US', {
     weekday: 'short',

@@ -42,8 +42,8 @@ function getAdminMenuPath(path: string): string {
  * Public SPA shell routing. Every renewal public route renders inside ONE persistent
  * <PublicRenewalLayout> (shared header navigator + footer) so that navigating between
  * these pages swaps only the inner content while the header/footer stay mounted.
- * Returns null for non-shell public routes (notice/faq/past-editions/saf-signup),
- * which keep rendering their own markup.
+ * Returns null for non-shell public routes (notice/faq/saf-signup), which keep
+ * rendering their own markup.
  */
 function getPublicShellRoute(
   currentPath: string,
@@ -73,6 +73,27 @@ function getPublicShellRoute(
     return {
       className: 'official-event-detail-page pub-event-renewal',
       content: <PublicEventPage urlSlug={urlSlug} />,
+    };
+  }
+  if (currentPath === '/past-editions') return { className: 'saf-past-home', content: <PastEditions /> };
+  if (currentPath === '/past-editions/2020') return { className: 'saf-past-home saf-archive-detail-home', content: <PastEdition2020 /> };
+  if (currentPath === '/past-editions/2021') return { className: 'saf-past-home saf-archive-detail-home', content: <PastEdition2021 /> };
+  if (currentPath === '/past-editions/2022') return { className: 'saf-past-home saf-archive-detail-home', content: <PastEdition2022 /> };
+  if (currentPath === '/past-editions/2023') return { className: 'saf-past-home saf-archive-detail-home', content: <PastEdition2023 /> };
+  if (currentPath === '/past-editions/2024') return { className: 'saf-past-home saf-archive-detail-home', content: <PastEdition2024 /> };
+  if (currentPath.startsWith('/past-editions/2024/events/')) {
+    const eventSlug = decodeURIComponent(currentPath.replace(/^\/past-editions\/2024\/events\//, '').split('/')[0] ?? '');
+    return {
+      className: 'saf-past-home saf-archive-detail-home',
+      content: <PastEdition2024EventDetail slug={eventSlug} />,
+    };
+  }
+  if (currentPath === '/past-editions/2025') return { className: 'saf-past-home saf-archive-detail-home', content: <PastEdition2025 /> };
+  if (currentPath.startsWith('/past-editions/2025/events/')) {
+    const eventSlug = decodeURIComponent(currentPath.replace(/^\/past-editions\/2025\/events\//, '').split('/')[0] ?? '');
+    return {
+      className: 'saf-past-home saf-archive-detail-home',
+      content: <PastEdition2025EventDetail slug={eventSlug} />,
     };
   }
   return null;
@@ -201,21 +222,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     }
     if (currentPath === '/notice') return <PublicNotice />;
     if (currentPath === '/faq') return <PublicFaq />;
-    if (currentPath === '/past-editions') return <PastEditions />;
-    if (currentPath === '/past-editions/2020') return <PastEdition2020 />;
-    if (currentPath === '/past-editions/2021') return <PastEdition2021 />;
-    if (currentPath === '/past-editions/2022') return <PastEdition2022 />;
-    if (currentPath === '/past-editions/2023') return <PastEdition2023 />;
-    if (currentPath === '/past-editions/2024') return <PastEdition2024 />;
-    if (currentPath.startsWith('/past-editions/2024/events/')) {
-      const eventSlug = decodeURIComponent(currentPath.replace(/^\/past-editions\/2024\/events\//, '').split('/')[0] ?? '');
-      return <PastEdition2024EventDetail slug={eventSlug} />;
-    }
-    if (currentPath === '/past-editions/2025') return <PastEdition2025 />;
-    if (currentPath.startsWith('/past-editions/2025/events/')) {
-      const eventSlug = decodeURIComponent(currentPath.replace(/^\/past-editions\/2025\/events\//, '').split('/')[0] ?? '');
-      return <PastEdition2025EventDetail slug={eventSlug} />;
-    }
     if (currentPath === '/saf/signup') return <SafSignup />;
     // 알 수 없는 공개 경로는 홈으로 fallback
     return <>{children}</>;

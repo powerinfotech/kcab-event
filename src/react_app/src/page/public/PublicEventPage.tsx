@@ -932,7 +932,7 @@ const EventHeroInfoCard: React.FC<{
         </div>
       </div>
       <div className="pub-event-hero-info-sub">
-        {renderHeroInfoRow('Registration', registrationStatus)}
+        {renderHeroInfoRow('Registration', registrationStatus, getRegistrationStatusTone(registrationStatus))}
         {renderHeroInfoRow('Organizer', settings.organizerName)}
         {renderHeroInfoRow('Contact', contact)}
       </div>
@@ -940,14 +940,25 @@ const EventHeroInfoCard: React.FC<{
   );
 };
 
-function renderHeroInfoRow(label: string, value?: string | null) {
+function renderHeroInfoRow(label: string, value?: string | null, tone?: 'open' | 'closed' | 'pending') {
   if (!value) return null;
+  const toneClass = tone ? ` is-${tone}` : '';
+  const typeClass = label.toLowerCase() === 'registration' ? ' is-registration' : '';
   return (
-    <dl className="pub-event-hero-info-row">
+    <dl className={`pub-event-hero-info-row${typeClass}${toneClass}`}>
       <dt>{label}</dt>
       <dd>{value}</dd>
     </dl>
   );
+}
+
+function getRegistrationStatusTone(value?: string | null): 'open' | 'closed' | 'pending' | undefined {
+  if (!value) return undefined;
+  const normalized = value.toLowerCase();
+  if (normalized.includes('open') && !normalized.includes('not open')) return 'open';
+  if (normalized.includes('closed') || normalized.includes('not available')) return 'closed';
+  if (normalized.includes('not open')) return 'pending';
+  return undefined;
 }
 
 function getRegistrationStatusLabel(page: PublicEventPageModel, settings: PageSettings) {
