@@ -1200,10 +1200,8 @@ const PublicRegistrationStepPanel: React.FC<PublicRegistrationStepPanelProps> = 
           {REGISTRATION_STEPS.map((item) => (
             <li
               key={item.step}
-              className={[
-                step === item.step ? 'is-active' : '',
-                step > item.step ? 'is-complete' : '',
-              ].filter(Boolean).join(' ')}
+              // Figma sub02_01: 현재 스텝만 활성(보라) — 이전 스텝도 비활성과 동일 스타일
+              className={step === item.step ? 'is-active' : undefined}
             >
               <span>{item.step}</span>
               <strong>{item.label}</strong>
@@ -1232,7 +1230,8 @@ const PublicRegistrationStepPanel: React.FC<PublicRegistrationStepPanelProps> = 
                   ].filter(Boolean).join(' ') || undefined;
                   if (inputConfig.select) {
                     return (
-                      <label key={field.fieldCode} className={fieldClassName}>
+                      // label 래핑 금지: 옵션 클릭이 label 활성화로 전파되어 antd Select 선택이 풀린다
+                      <div key={field.fieldCode} className={fieldClassName}>
                         <span>{field.fieldLabel}{isRequired && <em className="pub-event-required">*</em>}</span>
                         <Select<string>
                           className="pub-event-registration-country-select"
@@ -1245,7 +1244,7 @@ const PublicRegistrationStepPanel: React.FC<PublicRegistrationStepPanelProps> = 
                           optionFilterProp="label"
                           onChange={(nextValue) => onUpdateParticipant(inputConfig.key, nextValue ?? '')}
                         />
-                      </label>
+                      </div>
                     );
                   }
                   return (

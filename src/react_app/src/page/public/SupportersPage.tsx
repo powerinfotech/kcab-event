@@ -101,10 +101,11 @@ export default function SupportersPage() {
             사이즈/위치는 .mp-blob 공통 규칙(MediaPartners.scss) — .mp-hero 와 50px 간격. */}
         <img className="mp-blob" src={assetSrc(SupportersBlob)} alt="" aria-hidden="true" />
 
-        <section className="saf-renewal-sponsors saf-sponsors-list">
+        {/* media-partners .mp-body 와 동일한 배치/글꼴: 공통 class(mp-body, mp-heading) 사용 */}
+        <section className="saf-renewal-sponsors saf-sponsors-list mp-body">
           <div className="saf-renewal-shell">
             <div className="saf-sponsors-intro">
-              <h2>Supporters</h2>
+              <h2 className="mp-heading">Supporters</h2>
               <p>
                 The Seoul ADR Festival 2025 is proud to be supported by leading arbitration
                 institutions from around the world. Their collaboration and promotion play a vital

@@ -965,7 +965,8 @@
   padding: 82px 0 108px;
   background: #fff;
 
-  h2 {
+  // 홈 'Our 2025 Sponsors' 전용 — sponsors/supporters 페이지의 .mp-heading 은 제외
+  h2:not(.mp-heading) {
     max-width: 760px;
     margin: 0 auto 44px;
     color: var(--saf-ink);
@@ -987,6 +988,25 @@
   width: min(calc(100% - (var(--saf-home-left) * 2)), 1170px);
   margin-left: var(--saf-home-left);
   margin-right: 0;
+}
+
+/* Sponsors/Supporters 본문 = media-partners .mp-body 와 동일 배치 (공통 class 사용).
+   위 home-left 기반 셸/패딩 규칙을 mp-body 값(130/240, 1180 중앙 셸)으로 되돌린다. */
+.saf-sponsors-list.mp-body {
+  padding: 130px 0 240px;
+
+  .saf-renewal-shell {
+    width: min(100% - 48px, 1180px);
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+@media (max-width: 900px) {
+  // media-partners 모바일 .mp-body(80/140)와 동일 — 위 데스크톱 규칙(0,2,0)이 덮지 않게 재선언
+  .saf-sponsors-list.mp-body {
+    padding: 80px 0 140px;
+  }
 }
 
 .saf-renewal-sponsor-row {
@@ -2854,14 +2874,9 @@
 .saf-sponsors-list .saf-sponsors-intro {
   margin-bottom: 42px;
 
+  // 헤딩 글꼴/크기/색은 공통 .mp-heading (media-partners 와 동일) — 여기선 간격만
   h2 {
-    max-width: none;
     margin: 0 0 16px;
-    text-align: left;
-    font-size: 32px;
-    line-height: 1.2;
-    font-weight: 900;
-    color: var(--saf-ink);
   }
 
   p {
@@ -2888,8 +2903,10 @@
 /* Sponsors 전용: Figma sub01_Sponsors 2열 그리드 + 큰 로고 (Supporters 3열은 그대로 둠) */
 .saf-sponsors-page:not(.saf-supporters-page) {
   .saf-renewal-logo-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 28px 40px;
+    // Figma sub01_Sponsors: 2열 컬럼 중심 간격 468px(셀 폭 468), 그룹 중앙 정렬
+    grid-template-columns: repeat(2, minmax(0, 468px));
+    justify-content: center;
+    gap: 28px 0;
     margin-top: 8px;
   }
 
@@ -2921,9 +2938,7 @@
     font-size: 34px;
   }
 
-  .saf-sponsors-list .saf-sponsors-intro h2 {
-    font-size: 26px;
-  }
+  // 헤딩 모바일 크기는 공통 .mp-heading 모바일 규칙(media-partners 와 동일)을 따른다
 
   .saf-sponsors-page:not(.saf-supporters-page) .saf-renewal-logo-grid {
     gap: 22px 26px;
@@ -2948,8 +2963,10 @@
 /* ===== Supporters sub page (Figma sub01_Supporters) ===== */
 .saf-supporters-page {
   .saf-renewal-logo-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 44px 48px;
+    // Figma sub01_Supporters: 3열 컬럼 중심 간격 340px(셀 폭 340), 그룹 중앙 정렬
+    grid-template-columns: repeat(3, minmax(0, 340px));
+    justify-content: center;
+    gap: 44px 0;
     margin-top: 8px;
   }
 

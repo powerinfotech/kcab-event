@@ -2567,10 +2567,6 @@ $pub-header-height-mobile: 60px;
     }
   }
 
-  .is-complete span {
-    background: #1cba8a;
-    color: #fff;
-  }
 }
 
 .pub-event-registration-grid {
@@ -2652,7 +2648,9 @@ $pub-header-height-mobile: 60px;
   gap: 18px;
   margin-top: 30px;
 
-  label {
+  // select 필드는 label 대신 div 래퍼(antd Select 옵션 클릭이 label 활성화로 풀리는 문제 방지) — 동일 그리드
+  label,
+  > div {
     min-width: 0;
     display: grid;
     grid-column: span 2;
@@ -2673,13 +2671,14 @@ $pub-header-height-mobile: 60px;
     font-weight: 800;
   }
 
-  input {
+  // label input 으로 스코프 — antd Select 내부 검색 input 에 적용되면 흰 배경이 선택값을 가린다
+  label input {
     width: 100%;
-    min-height: 52px;
+    min-height: 44px;            // Figma sub02_01 Input: 44px / r6 / #dfe0eb
     padding: 0 16px;
-    border: 1px solid #ddd8e8;
-    border-radius: 8px;
-    background: #fdfdff;
+    border: 1px solid #dfe0eb;
+    border-radius: 6px;
+    background: #fff;
     color: var(--saf-event-ink);
     font: inherit;
     font-size: 14px;
@@ -2693,38 +2692,21 @@ $pub-header-height-mobile: 60px;
     }
   }
 
-  .pub-event-registration-country-select {
+  // antd v6 Select — Figma sub02_01 Input 스펙(44px, r6, #e0e0eb, 흰 배경)으로 input 과 통일.
+  // v6 DOM: .ant-select(루트, 박스) > .ant-select-content > .ant-select-placeholder/.ant-select-value/.ant-select-input
+  // antd v6 Select — 루트 박스만 Figma Input 스펙(44px, r6, #dfe0eb)으로 맞추고,
+  // 내부 레이아웃(.ant-select-content/.ant-select-input)은 antd v6 에 맡긴다
+  // (display/height/line-height 를 덮으면 절대배치 검색 input 이 선택값 텍스트를 가린다).
+  .pub-event-registration-country-select.ant-select {
     width: 100%;
-    min-height: 52px;
-    display: flex;
-    align-items: center;
-    padding: 0 12px;
-    border: 1px solid #ddd8e8;
-    border-radius: 8px;
-    background: #fdfdff;
+    min-height: 44px;
+    border: 1px solid #dfe0eb !important;   // Figma: #dfe0eb
+    border-radius: 6px !important;
+    background: #fff !important;
+    box-shadow: none;
+    color: var(--saf-event-ink);
+    font-size: 14px;
     transition: border-color 0.16s ease, box-shadow 0.16s ease;
-
-    .ant-select-content {
-      min-width: 0;
-      height: 50px;
-      flex: 1;
-      display: flex;
-      align-items: center;
-    }
-
-    .ant-select-placeholder,
-    .ant-select-value,
-    .ant-select-input {
-      color: var(--saf-event-ink);
-      font: inherit;
-      font-size: 14px;
-      line-height: 50px;
-    }
-
-    .ant-select-input {
-      height: 50px;
-      padding: 0;
-    }
 
     .ant-select-placeholder {
       color: #8a869d;
@@ -2734,36 +2716,8 @@ $pub-header-height-mobile: 60px;
       color: #7a758f;
     }
 
-    .ant-select-selector {
-      min-height: 52px;
-      align-items: center;
-      border-color: #ddd8e8 !important;
-      border-radius: 8px !important;
-      background: #fdfdff !important;
-      box-shadow: none !important;
-      transition: border-color 0.16s ease, box-shadow 0.16s ease;
-    }
-
-    .ant-select-selection-search-input {
-      height: 50px !important;
-      color: var(--saf-event-ink);
-      font: inherit;
-    }
-
-    .ant-select-selection-item,
-    .ant-select-selection-placeholder {
-      color: var(--saf-event-ink);
-      font-size: 14px;
-      line-height: 50px;
-    }
-
-    .ant-select-selection-placeholder {
-      color: #8a869d;
-    }
-
     &.ant-select-focused,
-    &.ant-select-open,
-    &.ant-select-focused .ant-select-selector {
+    &.ant-select-open {
       border-color: #d0ab55 !important;
       box-shadow: 0 0 0 3px rgba(216, 180, 96, 0.18) !important;
     }
@@ -3317,6 +3271,7 @@ $pub-header-height-mobile: 60px;
     grid-template-columns: repeat(2, minmax(0, 1fr));
 
     label,
+    > div,
     .is-half {
       grid-column: span 1;
     }
@@ -4539,7 +4494,7 @@ $pub-header-height-mobile: 60px;
   border-top: 1px solid #dfe0eb;    /* override the 4px gold top border */
   border-radius: 16px;
   background: #ffffff;
-  box-shadow: 0 32px 90px rgba(15, 18, 45, 0.10);
+  box-shadow: 0 30px 60px -35px rgba(19, 28, 64, 0.25);   /* Figma sub02_01 Section 카드 그림자 */
   overflow: hidden;
 }
 
@@ -4682,19 +4637,10 @@ $pub-header-height-mobile: 60px;
   color: #fafbff;
 }
 
-/* completed steps read like active (purple) for consistency with Figma */
-.pub-event-registration-page .pub-event-registration-steps .is-complete {
-  background: #7e4adb;
-  border-color: #7e4adb;
-}
-.pub-event-registration-page .pub-event-registration-steps .is-complete span {
-  background: rgba(255, 254, 254, 0.2);
-  border-color: rgba(255, 254, 254, 0.4);
-  color: #ffffff;
-}
-.pub-event-registration-page .pub-event-registration-steps .is-complete strong {
-  color: #fafbff;
-}
+/* Figma sub02_01: 현재 스텝만 활성(보라) — 완료된 이전 스텝도 비활성 스타일 그대로 둔다 */
+
+/* Figma sub02_01 Section 카드 그림자는 흰 카드(.pub-event-registration-panel)에 적용 —
+   form/payment/complete 는 카드 내부 패널이라 자체 그림자를 갖지 않는다 */
 
 /* ---------- responsive : stack the 3 step chips on narrow screens ---------- */
 @media (max-width: 768px) {
@@ -4768,14 +4714,16 @@ $pub-header-height-mobile: 60px;
 
     /* --- field labels + inputs --- */
     .pub-event-registration-fields {
-      label > span {
+      label > span,
+      > div > span {
         color: #111831;
         font-size: 13px;
         font-weight: 600;
         letter-spacing: 0;
       }
 
-      input {
+      /* label input 으로 스코프: antd Select 내부 검색 input(흰 배경/보더가 선택값을 가림)을 제외 */
+      label input {
         min-height: 44px;
         height: 44px;
         padding: 0 14px;
@@ -4798,48 +4746,21 @@ $pub-header-height-mobile: 60px;
         }
       }
 
-      /* Country select — match 44px / r6 / white / #dfe0eb */
-      .pub-event-registration-country-select {
+      /* Country select — 루트 박스만 Figma Input 스펙(44px / r6 / white / #dfe0eb).
+         내부(.ant-select-content/-input) 레이아웃은 antd v6 기본에 맡긴다. */
+      .pub-event-registration-country-select.ant-select {
         min-height: 44px;
-        border: 1px solid #dfe0eb;
-        border-radius: 6px;
-        background: #ffffff;
+        border: 1px solid #dfe0eb !important;
+        border-radius: 6px !important;
+        background: #ffffff !important;
+        color: #111831;
+        font-size: 14px;
+        font-weight: 400;
 
-        .ant-select-content {
-          height: 42px;
-        }
-
-        .ant-select-selector {
-          min-height: 44px;
-          border-color: #dfe0eb !important;
-          border-radius: 6px !important;
-          background: #ffffff !important;
-        }
-
-        .ant-select-input,
-        .ant-select-selection-search-input {
-          height: 42px !important;
-        }
-
-        .ant-select-content,
-        .ant-select-placeholder,
-        .ant-select-value,
-        .ant-select-input,
-        .ant-select-selection-item,
-        .ant-select-selection-search-input {
-          line-height: 42px;
-        }
-
-        .ant-select-placeholder,
-        .ant-select-selection-placeholder {
+        .ant-select-placeholder {
           color: rgba(17, 24, 49, 0.5); /* #111831 @ 0.5 */
           font-size: 14px;
           font-weight: 400;
-        }
-
-        .ant-select-selection-item {
-          color: #111831;
-          font-size: 14px;
         }
 
         .ant-select-suffix {
@@ -4847,8 +4768,7 @@ $pub-header-height-mobile: 60px;
         }
 
         &.ant-select-focused,
-        &.ant-select-open,
-        &.ant-select-focused .ant-select-selector {
+        &.ant-select-open {
           border-color: #7e4adb !important;
           box-shadow: 0 0 0 3px rgba(126, 74, 219, 0.15) !important;
         }
