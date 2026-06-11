@@ -2741,6 +2741,9 @@ $pub-header-height-mobile: 60px;
 }
 
 .pub-event-registration-country-dropdown {
+  // body 포털로 렌더되어 셸/페이지 폰트를 상속받지 못함 — Figma와 동일하게 명시
+  font-family: 'Montserrat', 'Onest', 'Open Sans', 'Noto Sans KR', sans-serif;
+
   .ant-select-item {
     min-height: 36px;
     padding: 8px 12px;
@@ -4482,6 +4485,12 @@ $pub-header-height-mobile: 60px;
   font-size: 13px;
   font-weight: 600;
   letter-spacing: 0;
+}
+
+/* Figma sub02_01: register 페이지 글꼴은 Montserrat (라벨 13/600, 입력 14/400 등).
+   .pub-layout 의 Onest 보다 뒤에 선언되어 이 페이지에서만 우선한다(한글은 Noto 폴백). */
+.pub-event-registration-page {
+  font-family: 'Montserrat', 'Onest', 'Open Sans', 'Noto Sans KR', sans-serif;
 }
 
 /* ---------- SECTION CARD : white 1170 r16 + 3px top gradient bar ---------- */

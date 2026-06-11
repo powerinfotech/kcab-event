@@ -12,7 +12,9 @@
   --saf-menu-navy: #2a2559;  // Figma main01_gnb활성화: GNB band (Rectangle 3468325, #2A2559)
   --saf-footer-navy: #2a2559;  // Figma: footer bg
   --saf-menu-yellow: #fffb84;  // Figma: active nav label color
-  --saf-home-left: clamp(24px, 18.2vw, 350px);
+  // 콘텐츠 좌측 기준선. 셸이 1170px에 캡되는 큰 뷰포트(>~1870px, 줌아웃 포함)에서는
+  // (100% - 1170)/2 항이 커져 좌우가 같아진다(중앙 정렬) — 1920에서 정확히 Figma의 375px.
+  --saf-home-left: max(24px, min(18.2vw, 350px), calc((100% - 1170px) / 2));
 
   min-height: 100vh;
   overflow-x: hidden;
@@ -25,6 +27,10 @@
   *::after {
     box-sizing: border-box;
     letter-spacing: 0;
+    // Common.scss 전역 리셋이 h1/h2/p/span 등에 Noto Sans KR을 '직접' 지정해
+    // 루트의 Montserrat 상속을 덮으므로, 셸 내부 전체가 루트 스택을 상속하게 강제.
+    // (한글은 스택의 Noto Sans KR 폴백으로 렌더, 클래스 단위 명시 폰트(Onest 등)는 그대로 우선)
+    font-family: inherit;
   }
 }
 
