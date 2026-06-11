@@ -390,6 +390,10 @@
     margin: 0 !important;
     padding-left: 0 !important;
     color: #fff !important;
+    /* Figma (nodes 131:7509/7514/7516): the REGISTRATION/ORGANIZER/CONTACT labels
+       are pure #ffffff. MediaPartners.scss sets opacity:0.68 on this dt, which made
+       the white read as gray over the dark hero photo — force full opacity. */
+    opacity: 1 !important;
     font-size: 10px !important;
     font-weight: 700 !important;
     line-height: 15px !important;
@@ -1048,31 +1052,34 @@
     background: transparent;
   }
 
-  /* Figma (node 1:15288): SUPPORTERS caption is centered in the 1240px block.
-     It is a muted gray sub-label above the logo wall — NOT the accent purple
-     used by the section eyebrows. Overrides the shared eyebrow color above
-     (same specificity, declared later) while keeping the eyebrow typography. */
+  /* Figma (node 131:7577): SUPPORTERS caption is centered in the 1240px block.
+     Its fill is rgba(34,34,34,1) = #222222 (near-black), NOT the muted gray nor
+     the accent purple used by the section eyebrows. Overrides the shared eyebrow
+     color above (same specificity, declared later) while keeping the typography. */
   .pub-event-org-supporters h4 {
     margin: 0;
-    color: var(--oe-muted);
+    color: #222222;
     text-align: center;
   }
 
-  /* Figma logo wall (node 1:15289, 1240×356): a flush grid of white cells
-     separated by 1px gray rules. Container draws top+left; each cell draws
-     right+bottom, so interior lines are single-width and partial last rows
-     stay clean. */
+  /* Figma logo wall (node 131:7578, 1240×356): the container is a #fafafa panel
+     with a single light-gray outer border (#ebebeb) and 8px radius. Each cell is
+     pure white (#ffffff) with NO border of its own; the cells sit in a 1px grid
+     gap so the only "interior lines" are the #fafafa container showing through —
+     i.e. they read as the background color, not a distinct gray rule. Empty slots
+     in a partial last row likewise expose the #fafafa panel (so blanks are not
+     white). This matches Figma exactly: subtle background-colored interior lines,
+     a light-gray outermost border, and off-white (non-white) empty cells. */
   .pub-event-org-grid {
     display: grid;
     margin-top: 24px;
     grid-template-columns: repeat(5, 1fr);
-    gap: 0;
+    gap: 1px;
     align-items: stretch;
-    border-top: 1px solid var(--oe-line);
-    border-left: 1px solid var(--oe-line);
+    border: 1px solid #ebebeb;
     border-radius: 8px;
     overflow: hidden;
-    background: #fff;
+    background: #fafafa;
   }
 
   .pub-event-supporter-logo {
@@ -1081,8 +1088,7 @@
     align-items: center;
     justify-content: center;
     padding: 0 24px;
-    border-right: 1px solid var(--oe-line);
-    border-bottom: 1px solid var(--oe-line);
+    background: #fff;
   }
 
   .pub-event-supporter-logo img {
