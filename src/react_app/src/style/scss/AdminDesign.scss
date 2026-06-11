@@ -5270,9 +5270,9 @@
   top: 88px;
   right: 24px;
   z-index: 1060;
-  width: min(720px, calc(100vw - 48px));
-  height: min(82vh, 860px);
-  min-width: 420px;
+  width: min(1180px, calc(100vw - 48px));
+  height: min(86vh, 920px);
+  min-width: min(640px, calc(100vw - 48px));
   min-height: 420px;
   max-width: calc(100vw - 32px);
   max-height: calc(100vh - 56px);
@@ -5345,7 +5345,16 @@
   min-height: 0;
   flex: 1;
   overflow: auto;
-  background: #fbfaff;
+  background: #fff;
+
+  .saf-builder-public-preview {
+    min-height: 100%;
+    background: #fff;
+
+    .pub-page-content {
+      overflow: visible;
+    }
+  }
 
   .saf-builder-preview-hero {
     min-height: auto;
