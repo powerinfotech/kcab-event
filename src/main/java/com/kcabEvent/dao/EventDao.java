@@ -23,7 +23,8 @@ public interface EventDao {
     List<EventListDto> selectEventList(@Param("status") String status,
                                        @Param("eventType") String eventType,
                                        @Param("keyword") String keyword,
-                                       @Param("organizationSeq") Long organizationSeq);
+                                       @Param("organizationSeq") Long organizationSeq,
+                                       @Param("exposeOnlyVisible") Boolean exposeOnlyVisible);
 
     Event selectEventBySeq(@Param("eventSeq") Long eventSeq);
 
@@ -111,6 +112,8 @@ public interface EventDao {
     void ensureParticipantsNationalityColumn();
 
     void ensureParticipantsResidenceCountryColumn();
+
+    void ensureEventsShowDateColumns();
 
     void backfillParticipantsResidenceCountry();
 

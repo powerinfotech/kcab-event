@@ -27,6 +27,12 @@
         ADD COLUMN IF NOT EXISTS residence_country VARCHAR(120)
     </update>
 
+    <update id="ensureEventsShowDateColumns">
+        ALTER TABLE event.events
+        ADD COLUMN IF NOT EXISTS show_start_date TIMESTAMP,
+        ADD COLUMN IF NOT EXISTS show_end_date TIMESTAMP
+    </update>
+
     <update id="backfillParticipantsResidenceCountry">
         UPDATE event.participants
         SET residence_country = country
@@ -80,6 +86,8 @@
             ,e.description AS summary
             ,e.start_at   AS event_start_dt
             ,e.end_at     AS event_end_dt
+            ,e.show_start_date
+            ,e.show_end_date
             ,e.venue_name AS location
             ,e.status
             ,CASE WHEN e.deleted_at IS NULL THEN 'Y' ELSE 'N' END AS use_yn
@@ -108,6 +116,10 @@
             <if test="organizationSeq != null">
                 AND e.organization_seq = #{organizationSeq}
             </if>
+            <if test="exposeOnlyVisible != null and exposeOnlyVisible">
+                AND (e.show_start_date IS NULL OR e.show_start_date &lt;= CURRENT_TIMESTAMP)
+                AND (e.show_end_date IS NULL OR e.show_end_date &gt;= CURRENT_TIMESTAMP)
+            </if>
             <if test="keyword != null and keyword != ''">
                 AND (
                     e.title ILIKE '%' || #{keyword} || '%'
@@ -128,6 +140,8 @@
             ,e.description AS summary
             ,e.start_at              AS event_start_dt
             ,e.end_at                AS event_end_dt
+            ,e.show_start_date
+            ,e.show_end_date
             ,e.registration_start_at AS registration_start_dt
             ,e.registration_end_at   AS registration_end_dt
             ,e.venue_name AS location
@@ -181,6 +195,8 @@
             ,e.description AS event_summary
             ,e.start_at AS event_start_dt
             ,e.end_at AS event_end_dt
+            ,e.show_start_date
+            ,e.show_end_date
             ,e.venue_name AS location
             ,e.registration_type
             ,e.registration_url
@@ -195,6 +211,8 @@
         WHERE ep.deleted_at IS NULL
           AND ep.use_yn = 'Y'
           AND ep.page_status = 'published'
+          AND (e.show_start_date IS NULL OR e.show_start_date &lt;= CURRENT_TIMESTAMP)
+          AND (e.show_end_date IS NULL OR e.show_end_date &gt;= CURRENT_TIMESTAMP)
           AND LOWER(e.slug) = LOWER(#{urlSlug})
         LIMIT 1
     </select>
@@ -227,6 +245,8 @@
             ,e.description AS event_summary
             ,e.start_at AS event_start_dt
             ,e.end_at AS event_end_dt
+            ,e.show_start_date
+            ,e.show_end_date
             ,e.venue_name AS location
             ,e.registration_type
             ,e.registration_url
@@ -743,6 +763,7 @@
         INSERT INTO event.events (
             slug, title, description, event_type, is_paid,
             start_at, end_at, registration_start_at, registration_end_at,
+            show_start_date, show_end_date,
             venue_name,
             max_participants, organization_seq, email_header_image_file_seq, attachment_file_seq,
             registration_type, registration_url,
@@ -753,6 +774,7 @@
             COALESCE(NULLIF(#{eventType}, ''), 'main'),
             COALESCE(#{isPaid}, false),
             #{eventStartDt}, #{eventEndDt}, #{registrationStartDt}, #{registrationEndDt},
+            #{showStartDate}, #{showEndDate},
             #{location},
             #{maxParticipants}, #{organizationSeq}, #{emailHeaderImageFileSeq}, #{attachmentFileSeq},
             COALESCE(NULLIF(#{registrationType,jdbcType=VARCHAR}, ''), 'direct'),
@@ -774,6 +796,8 @@
             ,end_at            = #{eventEndDt}
             ,registration_start_at = #{registrationStartDt}
             ,registration_end_at   = #{registrationEndDt}
+            ,show_start_date   = #{showStartDate}
+            ,show_end_date     = #{showEndDate}
             ,venue_name        = #{location}
             ,max_participants  = #{maxParticipants}
             ,organization_seq  = #{organizationSeq}

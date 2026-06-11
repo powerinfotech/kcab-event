@@ -5,6 +5,8 @@ export interface EventListItem {
   summary: string;
   eventStartDt: string;
   eventEndDt: string;
+  showStartDate: string | null;
+  showEndDate: string | null;
   location: string;
   status: string;
   useYn: string;
@@ -24,6 +26,8 @@ export interface EventDetail {
   summary: string;
   eventStartDt: string;
   eventEndDt: string;
+  showStartDate: string | null;
+  showEndDate: string | null;
   registrationStartDt: string | null;
   registrationEndDt: string | null;
   location: string;
@@ -58,6 +62,8 @@ export interface EventSaveRequest {
   summary: string;
   eventStartDt: string;
   eventEndDt: string;
+  showStartDate?: string | null;
+  showEndDate?: string | null;
   registrationStartDt?: string | null;
   registrationEndDt?: string | null;
   location: string;
@@ -149,6 +155,8 @@ export interface PublicEventPage {
   eventSummary?: string | null;
   eventStartDt?: string | null;
   eventEndDt?: string | null;
+  showStartDate?: string | null;
+  showEndDate?: string | null;
   location?: string | null;
   registrationType?: RegistrationType | string | null;
   registrationUrl?: string | null;

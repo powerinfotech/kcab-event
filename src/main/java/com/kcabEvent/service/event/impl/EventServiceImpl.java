@@ -106,13 +106,15 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
 
     @Override
     public List<EventListDto> selectEventList(String status, String eventType, String keyword) {
-        return eventDao.selectEventList(status, eventType, keyword, null);
+        ensureParticipantRegistrationSchema();
+        return eventDao.selectEventList(status, eventType, keyword, null, true);
     }
 
     @Override
     public List<EventListDto> selectEventList(String status, String eventType, String keyword, LoginUser loginUser) {
+        ensureParticipantRegistrationSchema();
         Long organizationSeq = resolveScopedOrganizationSeq(loginUser);
-        return eventDao.selectEventList(status, eventType, keyword, organizationSeq);
+        return eventDao.selectEventList(status, eventType, keyword, organizationSeq, false);
     }
 
     @Override
@@ -240,6 +242,13 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
         LocalDateTime startDt = saveDto.getEventStartDt() != null ? saveDto.getEventStartDt() : LocalDateTime.now();
         event.setEventStartDt(startDt);
         event.setEventEndDt(saveDto.getEventEndDt() != null ? saveDto.getEventEndDt() : startDt);
+        if (saveDto.getShowStartDate() != null
+                && saveDto.getShowEndDate() != null
+                && saveDto.getShowEndDate().isBefore(saveDto.getShowStartDate())) {
+            throw new IllegalArgumentException("Show end date/time must be on or after the show start date/time.");
+        }
+        event.setShowStartDate(saveDto.getShowStartDate());
+        event.setShowEndDate(saveDto.getShowEndDate());
         event.setLocation(saveDto.getLocation());
         // 참가신청 방식 분기:
         //   none     → 등록 자체가 없는 행사. URL과 등록 시작/종료 모두 null.
@@ -844,6 +853,7 @@ public class EventServiceImpl extends EgovAbstractServiceImpl implements EventSe
     }
 
     private void ensureParticipantRegistrationSchema() {
+        eventDao.ensureEventsShowDateColumns();
         eventDao.ensureParticipantsPhoneColumn();
         eventDao.ensureParticipantsAddressColumn();
         eventDao.ensureParticipantsCityColumn();

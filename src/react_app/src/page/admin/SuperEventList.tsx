@@ -214,6 +214,8 @@ const emptyDetail: EventDetail = {
   summary: '',
   eventStartDt: '',
   eventEndDt: '',
+  showStartDate: '',
+  showEndDate: '',
   registrationStartDt: '',
   registrationEndDt: '',
   location: '',
@@ -461,6 +463,8 @@ export default function SuperEventList() {
   const slugValue = form.slug?.trim().toLowerCase() ?? '';
   const startValue = form.eventStartDt?.trim() ?? '';
   const endValue = form.eventEndDt?.trim() ?? '';
+  const showStartValue = form.showStartDate?.trim() ?? '';
+  const showEndValue = form.showEndDate?.trim() ?? '';
   const regStartValue = form.registrationStartDt?.trim() ?? '';
   const regEndValue = form.registrationEndDt?.trim() ?? '';
   const registrationUrlValue = form.registrationUrl?.trim() ?? '';
@@ -471,6 +475,7 @@ export default function SuperEventList() {
   const isRequiredEmpty = (value?: string | null) => submitAttempted && !value?.toString().trim();
   const isContentRequiredEmpty = submitAttempted && isSideEvent && !hasContent;
   const isDateRangeInvalid = submitAttempted && !!startValue && !!endValue && startValue > endValue;
+  const isShowDateRangeInvalid = submitAttempted && !!showStartValue && !!showEndValue && showStartValue > showEndValue;
   const isRegRangeInvalid = submitAttempted && !!regStartValue && !!regEndValue && regStartValue > regEndValue;
   const isRegAfterEventInvalid = submitAttempted && !!regEndValue && !!startValue && regEndValue > startValue;
   const isExternalRegistration = form.registrationType === 'external';
@@ -885,6 +890,9 @@ export default function SuperEventList() {
     if (startValue > endValue) {
       return warnAndFocus('End date/time must be on or after the start date/time.', 'event-end');
     }
+    if (showStartValue && showEndValue && showStartValue > showEndValue) {
+      return warnAndFocus('Show end date/time must be on or after the show start date/time.', 'show-end');
+    }
     // 참가신청 일시 검증: 'none'이 아니면 시작/종료 둘 다 필수
     if (showRegistrationDates) {
       if (!regStartValue || !regEndValue) {
@@ -1020,6 +1028,8 @@ export default function SuperEventList() {
     summary: form.summary ?? '',
     eventStartDt: startValue,
     eventEndDt: endValue,
+    showStartDate: showStartValue || null,
+    showEndDate: showEndValue || null,
     registrationStartDt: isNoRegistration ? null : (regStartValue || null),
     registrationEndDt: isNoRegistration ? null : (regEndValue || null),
     location: form.location?.trim() ?? '',
@@ -1478,6 +1488,32 @@ export default function SuperEventList() {
                   value={toDayjs(form.eventEndDt)}
                   disabled={!canEdit}
                   onChange={(d) => updateForm('eventEndDt', fromDayjs(d))}
+                />
+              </Field>
+              <Field label="Show Start Date" invalid={isShowDateRangeInvalid} validationTarget="show-start">
+                <DatePicker
+                  showTime={{ format: 'HH:mm' }}
+                  format="YYYY-MM-DD HH:mm"
+                  minuteStep={5}
+                  needConfirm={false}
+                  style={{ width: '100%' }}
+                  placeholder="No start limit"
+                  value={toDayjs(form.showStartDate)}
+                  disabled={!canEdit}
+                  onChange={(d) => updateForm('showStartDate', fromDayjs(d))}
+                />
+              </Field>
+              <Field label="Show End Date" invalid={isShowDateRangeInvalid} validationTarget="show-end">
+                <DatePicker
+                  showTime={{ format: 'HH:mm' }}
+                  format="YYYY-MM-DD HH:mm"
+                  minuteStep={5}
+                  needConfirm={false}
+                  style={{ width: '100%' }}
+                  placeholder="No end limit"
+                  value={toDayjs(form.showEndDate)}
+                  disabled={!canEdit}
+                  onChange={(d) => updateForm('showEndDate', fromDayjs(d))}
                 />
               </Field>
               <Field label="Registration Type *" validationTarget="registration-type" wide>
@@ -2256,6 +2292,7 @@ export default function SuperEventList() {
             <tr>
               <th>Event Name</th>
               <th>Date</th>
+              <th>Show Period</th>
               <th>Type</th>
               <th>Organization</th>
               <th>Registrations</th>
@@ -2274,6 +2311,7 @@ export default function SuperEventList() {
                 <tr key={event.eventSeq} onClick={() => fetchDetail(event.eventSeq)}>
                   <td><strong>{event.title}</strong></td>
                   <td>{formatDateRange(event.eventStartDt, event.eventEndDt)}</td>
+                  <td>{formatDateRange(event.showStartDate, event.showEndDate)}</td>
                   <td><span className={`saf-status is-${typeTone}`}>{typeLabel}</span></td>
                   <td>{event.organizationName || 'KCAB'}</td>
                   <td>{cap > 0 ? `${reg}/${cap}` : `${reg}`}</td>
@@ -2283,7 +2321,7 @@ export default function SuperEventList() {
             })}
             {!events.length && (
               <tr>
-                <td colSpan={6} className="saf-event-empty">
+                <td colSpan={7} className="saf-event-empty">
                   <CalendarOutlined />
                   <span>{loading ? 'Loading...' : 'No events found.'}</span>
                 </td>

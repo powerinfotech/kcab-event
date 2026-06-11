@@ -14,6 +14,8 @@ public class EventListDto {
     private String summary;
     private LocalDateTime eventStartDt;
     private LocalDateTime eventEndDt;
+    private LocalDateTime showStartDate;
+    private LocalDateTime showEndDate;
     private String location;
     private String status;
     private String useYn;

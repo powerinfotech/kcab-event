@@ -24,6 +24,8 @@ public class Event {
     private LocalDateTime eventStartDt;
     /** 행사 종료 일시 (날짜+시간) */
     private LocalDateTime eventEndDt;
+    private LocalDateTime showStartDate;
+    private LocalDateTime showEndDate;
     /** 참가신청 시작 일시 */
     private LocalDateTime registrationStartDt;
     /** 참가신청 종료 일시 */

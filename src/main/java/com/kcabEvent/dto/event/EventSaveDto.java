@@ -22,6 +22,8 @@ public class EventSaveDto {
     private String summary;
     private LocalDateTime eventStartDt;
     private LocalDateTime eventEndDt;
+    private LocalDateTime showStartDate;
+    private LocalDateTime showEndDate;
     private LocalDateTime registrationStartDt;
     private LocalDateTime registrationEndDt;
     private String location;

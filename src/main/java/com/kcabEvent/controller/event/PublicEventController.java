@@ -8,6 +8,7 @@ import com.kcabEvent.service.event.EventService;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.annotation.Resource;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -36,7 +37,8 @@ public class PublicEventController {
      */
     @GetMapping("/detail")
     public ApiResponse<Event> selectEventDetail(@RequestParam Long eventSeq) {
-        return ApiResponse.ok(eventService.selectEventBySeq(eventSeq));
+        Event event = eventService.selectEventBySeq(eventSeq);
+        return ApiResponse.ok(isVisibleNow(event) ? event : null);
     }
 
     /**
@@ -45,5 +47,14 @@ public class PublicEventController {
     @GetMapping("/page")
     public ApiResponse<PublicEventPageDto> selectEventPage(@RequestParam String urlSlug) {
         return ApiResponse.ok(eventService.selectPublishedEventPageBySlug(urlSlug));
+    }
+
+    private boolean isVisibleNow(Event event) {
+        if (event == null) {
+            return false;
+        }
+        LocalDateTime now = LocalDateTime.now();
+        return (event.getShowStartDate() == null || !event.getShowStartDate().isAfter(now))
+                && (event.getShowEndDate() == null || !event.getShowEndDate().isBefore(now));
     }
 }
