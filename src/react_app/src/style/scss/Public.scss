@@ -4742,8 +4742,21 @@ $pub-header-height-mobile: 60px;
 
 /* ----- ACTIVE step : fill #7e4adb, border #7e4adb ----- */
 .pub-event-registration-page .pub-event-registration-steps .is-active {
+  position: relative;            /* 우상단 도트(::after)의 기준 */
   background: #7e4adb;
   border-color: #7e4adb;
+}
+
+/* Figma sub02_01: 활성 칩 우상단 연보라 원형 도트 — Ellipse 'Overlay' 8×8, top 10 / right 10(칩 336 기준), #FFFFFF 80% */
+.pub-event-registration-page .pub-event-registration-steps .is-active::after {
+  content: '';
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.8);
 }
 
 /* active number circle : fill #fffefe@0.2, border #fffefe@0.4, number #fff */
@@ -5708,7 +5721,7 @@ $pub-header-height-mobile: 60px;
   font-family: 'Montserrat', sans-serif;
   font-size: 13px;
   font-weight: 600;
-  line-height: 1.55;
+  line-height: 19.5px;           /* Figma: 13/19.5, Back/to/Event 3줄 스택 */
   letter-spacing: 0;
   text-align: center;
   box-shadow: 0 18px 38px rgba(86, 75, 196, 0.35);
