@@ -742,8 +742,14 @@
 
 .saf-renewal-recap {
   padding: 112px 0 62px;
-  // Figma main01 (1:13232): 좌→우 #ececff(1) → #ececff(0.4)
-  background: linear-gradient(90deg, #ececff 0%, rgba(236, 236, 255, 0.4) 100%);
+  // Figma main01 Gradient(1:13232): 풀블리드 밴드, 좌→우 #ececff stop alpha 1→0.4 에
+  // paint opacity 0.6 이 곱해진 실효값 rgba(236,236,255,0.6→0.24).
+  // 밴드는 헤딩(h2) top +63.5px 에서 시작해 다음 섹션(journey)의 사진 행 142px 지점까지 이어짐 —
+  // 여기서는 recap 구간 슬라이스만 칠한다 (시작 206px = 섹션 top→h2 143px + 63.5px; 나머지는 .saf-renewal-journey 가 이어 칠함)
+  background-image: linear-gradient(90deg, rgba(236, 236, 255, 0.6) 0%, rgba(236, 236, 255, 0.24) 100%);
+  background-repeat: no-repeat;
+  background-position: 0 206px;
+  background-size: 100% calc(100% - 206px);
 }
 
 .saf-renewal-recap .saf-renewal-shell {
@@ -889,7 +895,13 @@
 
 .saf-renewal-journey {
   padding: 18px 0 88px;
-  background: #f4f3fb;
+  // Figma main01 Gradient(1:13232) 밴드의 journey 구간 슬라이스 — recap 의 그라데이션과 동일한
+  // 가로 그라데이션이라 섹션 경계에서 이음새 없이 이어진다. 밴드는 사진 행(카드 top 52px)
+  // 의 142px 지점에서 끝나고(슬라이스 높이 194px = 52 + 142), 그 아래는 흰 배경 (통짜 #f4f3fb 였던 것 수정)
+  background-image: linear-gradient(90deg, rgba(236, 236, 255, 0.6) 0%, rgba(236, 236, 255, 0.24) 100%);
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  background-size: 100% 194px;
   color: #181631;
 }
 
@@ -938,6 +950,9 @@
   border: 0;
   border-radius: 50%;
   background: #fff;
+  // Figma 1:13694/1:13697 DROP_SHADOW: rgba(0,0,0,0.15), offset (0,4), blur 14
+  // — 밴드 아래 흰 배경 위에서도 원의 가장자리가 보이게 한다
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
   cursor: pointer;
 
   svg {
@@ -1413,6 +1428,17 @@
 
   .saf-renewal-recap-grid {
     grid-template-columns: 1fr;
+  }
+
+  // 밴드 슬라이스의 고정 px 앵커(206/194)는 1열 레이아웃에서 어긋나므로 해제 —
+  // recap 은 전체 밴드, journey 는 흰 배경으로 단순화
+  .saf-renewal-recap {
+    background-position: 0 0;
+    background-size: 100% 100%;
+  }
+
+  .saf-renewal-journey {
+    background-image: none;
   }
 
   .saf-renewal-logo-grid {

@@ -111,6 +111,14 @@
     line-height: 1.33;
     letter-spacing: 0;
     text-shadow: 0 8px 20px rgba(10, 12, 30, 0.22);
+
+    // 부제는 리치에디터 HTML(<p>…</p>)일 수 있음 — Common.scss 리셋이 p 요소에
+    // Noto Sans KR/자간 -0.25px 를 직접 박으므로 상속으로 되돌린다
+    p {
+      margin: 0;
+      font-family: inherit;
+      letter-spacing: inherit;
+    }
   }
 
   .saf-event-detail-hero-cta {
