@@ -123,15 +123,15 @@ export default function PublicRenewalLayout({ className, children }: PublicRenew
                           const childPath = child.href.split('#')[0];
                           const isCurrent = pathname === childPath;
                           return (
-                          <a
-                            className={`${child.featured ? 'is-featured' : ''}${isCurrent ? ' is-current' : ''}`.trim() || undefined}
-                            href={child.href}
-                            key={child.label}
-                            role="menuitem"
-                            onClick={(e) => handleNavClick(e, child.href)}
-                          >
-                            {child.label}
-                          </a>
+                            <a
+                              className={`${child.featured ? 'is-featured' : ''}${isCurrent ? ' is-current' : ''}`.trim() || undefined}
+                              href={child.href}
+                              key={child.label}
+                              role="menuitem"
+                              onClick={(e) => handleNavClick(e, child.href)}
+                            >
+                              {child.label}
+                            </a>
                           );
                         })}
                       </div>
