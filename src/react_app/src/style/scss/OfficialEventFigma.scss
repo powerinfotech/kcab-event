@@ -746,12 +746,16 @@
     min-width: 0;
     padding: 28px 28px 28px 28px;
     grid-template-columns: minmax(0, 1fr) minmax(180px, 430px);
+    /* Figma (Keynote session): the italic description (grid-area: body) sits ABOVE
+       the venue line (grid-area: venue). MediaPartners.scss explicitly places these
+       elements by named area, so `order` has no effect — instead we swap the row
+       order of the named areas here so 'body' renders above 'venue'. */
     grid-template-areas:
       'type logos'
       'title logos'
       'speakers logos'
-      'venue logos'
-      'body logos';
+      'body logos'
+      'venue logos';
     align-content: center;
     column-gap: 32px;
   }
@@ -762,8 +766,8 @@
       'type'
       'title'
       'speakers'
-      'venue'
-      'body';
+      'body'
+      'venue';
   }
 
   .pub-event-program-type {
@@ -777,10 +781,14 @@
     align-items: center;
     justify-content: center;
     border-radius: 999px;
-    color: var(--oe-purple);
-    background: #f1e2ff;
-    font-size: 11px;
-    font-weight: 700;
+    /* Figma (node 131:7641 badge "Background"): a horizontal gradient pill,
+       #e7fbff (light cyan) → #f9deff (light pink), with dark-indigo #2f2188 text
+       at 12px/600. This replaces the earlier solid lavender (#f1e2ff) + accent
+       purple text, which did not match the design. */
+    color: #2f2188;
+    background: linear-gradient(90deg, #e7fbff 0%, #f9deff 100%);
+    font-size: 12px;
+    font-weight: 600;
     line-height: 16px;
   }
 
@@ -803,6 +811,8 @@
 
   .pub-event-program-venue {
     grid-column: 1;
+    /* Figma (Keynote session, node 131:7691): venue sits BELOW node 131:7690 body.
+       Placement is handled by the grid-template-areas row order above. */
     margin-top: 12px;
     color: #9b9aab;
     font-size: 11px;
@@ -814,6 +824,8 @@
 
   .pub-event-program-main .text-content {
     grid-column: 1;
+    /* sits above the venue line per Figma (node 131:7690) — placed via the
+       grid-template-areas row order above. */
     margin-top: 10px;
     color: #67637d;
     font-size: 15px;
@@ -850,12 +862,14 @@
 
   .pub-event-program-track .pub-event-program-session.has-images .pub-event-program-main {
     grid-template-columns: minmax(460px, 1fr) minmax(380px, 500px) !important;
+    /* Figma (Keynote session): italic description (body) sits ABOVE the venue line.
+       This rule wins via !important, so the row order must be swapped here too. */
     grid-template-areas:
       'type logos'
       'title logos'
       'speakers logos'
-      'venue logos'
-      'body logos' !important;
+      'body logos'
+      'venue logos' !important;
     column-gap: 44px !important;
   }
 
@@ -905,6 +919,9 @@
   }
 
   .pub-event-program-track .pub-event-program-image-frame {
+    /* Original size. At 180px the logos column (~445px) fits two frames per row
+       (180 + 30 gap + 180 = 390 < 445), so sessions with many logos (e.g. the
+       Institutions Roundtable) wrap into two columns instead of one tall stack. */
     width: 180px !important;
     height: 86px !important;
     flex: 0 0 180px !important;
@@ -1652,8 +1669,8 @@
         'type'
         'title'
         'speakers'
-        'venue'
         'body'
+        'venue'
         'logos';
     }
 
