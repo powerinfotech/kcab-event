@@ -390,6 +390,26 @@ $pub-header-height-mobile: 60px;
     @media (max-width: 1279px) {
       font-size: 15px;
     }
+
+    &.is-rich {
+      p,
+      ul,
+      ol {
+        margin: 0 0 0.55em;
+      }
+
+      p:last-child,
+      ul:last-child,
+      ol:last-child {
+        margin-bottom: 0;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: underline;
+        text-underline-offset: 4px;
+      }
+    }
   }
 }
 
@@ -1628,6 +1648,32 @@ $pub-header-height-mobile: 60px;
   font-size: 13px;
   line-height: 1.5;
   font-weight: 600;
+}
+
+.pub-event-hero-info-note {
+  margin: 12px 0 0;
+  color: $pub-text-muted;
+  font-size: 13px;
+  line-height: 1.5;
+  font-weight: 600;
+
+  p,
+  ul,
+  ol {
+    margin: 0 0 0.5em;
+  }
+
+  p:last-child,
+  ul:last-child,
+  ol:last-child {
+    margin-bottom: 0;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
 }
 
 .speaker-photo-fallback {
