@@ -332,38 +332,37 @@
 
 .saf-archive-detail-home {
   background: linear-gradient(180deg, #fbf8ff 0%, #fff 46%, #f8fbff 100%);
-  --saf-menu-yellow: #8b6fd6;
+  --saf-menu-yellow: #fff6a3;
 
   .saf-renewal-shell {
     margin-left: auto;
     margin-right: auto;
   }
 
+  // 히어로가 이미지(mp-hero)라 헤더는 main/organizer 처럼 투명 + 흰 nav.
   .saf-renewal-header {
     &.is-menu-open,
     &:has(.saf-renewal-nav-item.has-submenu:hover) {
-      background: rgba(255, 255, 255, 0.92);
-      box-shadow: 0 12px 34px rgba(16, 16, 60, 0.08);
-      backdrop-filter: blur(14px);
+      background: var(--saf-menu-navy);
     }
   }
 
   .saf-renewal-brand,
   .saf-renewal-social a,
   .saf-renewal-nav-item > a {
-    color: #6c6684;
-    text-shadow: none;
+    color: #fff;
+    text-shadow: 0 2px 10px rgba(15, 15, 35, 0.22);
   }
 
   .saf-renewal-nav-item > a:hover,
   .saf-renewal-nav-item.is-active > a,
   .saf-renewal-nav-item.has-submenu:hover > a {
-    color: #8b6fd6;
+    color: var(--saf-menu-yellow);
   }
 
   .mp-brand-logo,
   .mp-social-icon {
-    filter: brightness(0) saturate(100%) invert(43%) sepia(11%) saturate(1064%) hue-rotate(213deg) brightness(91%) contrast(84%);
+    filter: none;
   }
 
   &:has(.saf-archive-event-detail-main) {
