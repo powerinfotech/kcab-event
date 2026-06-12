@@ -9,6 +9,7 @@ import React, { useEffect, useState } from 'react';
 import { useSetAtom } from 'jotai';
 import { currentPathAtom, pushPath } from '@atom/currentPathAtom';
 import HeroSeoulImage from '../assets/images/saf-renewal/hero-seoul.jpg';
+import HomeIcon from '../assets/images/saf-renewal/media-partners/home.svg';
 import { saf2024EventDetails } from './Saf2024EventDetails';
 import { saf2025EventDetails } from './Saf2025EventDetails';
 
@@ -2216,39 +2217,32 @@ export default function PastEditions() {
   return (
     <>
       <main className="saf-past-main">
+        {/* organizer 와 동일한 mp-hero 패턴: 이미지 배경(cover) + breadcrumb + 타이틀 */}
         <section
-          className="saf-past-hero"
-          style={{ '--saf-past-hero-image': `url(${assetSrc(HeroSeoulImage)})` } as React.CSSProperties}
+          className="mp-hero"
+          style={{ backgroundImage: `url(${assetSrc(HeroSeoulImage)})` }}
         >
-          <div className="saf-renewal-shell">
-            <p className="saf-renewal-eyebrow">Archives | 2015 - 2025</p>
-            <h1>
-              A decade of <span>dialogue.</span>
-            </h1>
-            <p className="saf-past-hero-copy">
-              Since 2015, the Seoul ADR Festival has gathered arbitrators, practitioners,
-              and global experts every autumn. Browse the eleven editions that shaped the
-              conversation.
-            </p>
-            <div className="saf-past-metrics">
-              <div>
-                <strong>11</strong>
-                <span>editions hosted</span>
-              </div>
-              <div>
-                <strong>2015</strong>
-                <span>inaugural year</span>
-              </div>
-              <div>
-                <strong>Seoul</strong>
-                <span>permanent host city</span>
-              </div>
-            </div>
+          <div className="mp-hero-content">
+            <nav className="mp-breadcrumb" aria-label="Breadcrumb">
+              <HomeIcon className="mp-breadcrumb-home" aria-hidden="true" />
+              <span className="mp-breadcrumb-dot" aria-hidden="true" />
+              <span>Archives</span>
+              <span className="mp-breadcrumb-dot" aria-hidden="true" />
+              <span className="mp-breadcrumb-current">Past Editions</span>
+            </nav>
+            <h1 className="mp-hero-title">Past Editions</h1>
           </div>
         </section>
 
         <section className="saf-past-listing">
           <div className="saf-renewal-shell">
+            <div className="saf-past-intro">
+              <h2 className="mp-heading saf-past-intro-title">A decade of dialogue</h2>
+              <p>
+                Since 2015, the Seoul ADR Festival has gathered arbitrators, practitioners,
+                and global experts every autumn. Browse the editions that shaped the conversation.
+              </p>
+            </div>
             <div className="saf-past-filter">
               {decades.map((decade) => (
                 <button
@@ -2510,23 +2504,41 @@ function PastEditionArchiveEventDetail({
     <>
 
       <main className="saf-archive-event-detail-main">
+        {/* organizer 와 동일한 mp-hero 패턴 (이미지 + breadcrumb + 타이틀) */}
         <section
-          className="saf-archive-event-detail-hero"
-          style={{ '--saf-past-hero-image': `url(${assetSrc(HeroSeoulImage)})` } as React.CSSProperties}
+          className="mp-hero"
+          style={{ backgroundImage: `url(${assetSrc(HeroSeoulImage)})` }}
         >
-          <div className="saf-renewal-shell saf-archive-event-detail-hero-inner">
-            <a href={archiveHref} className="saf-archive-back-link" onClick={(e) => handleNavClick(e, archiveHref)}>
-              Back to SAF {year}
-            </a>
-            <p className="saf-renewal-eyebrow">SAF {year} | {event.eventType ?? 'Event'}</p>
-            <h1>{event.title}</h1>
-            <div className="saf-archive-event-detail-actions">
-              {registerHref && (
+          <div className="mp-hero-content">
+            <nav className="mp-breadcrumb" aria-label="Breadcrumb">
+              <HomeIcon className="mp-breadcrumb-home" aria-hidden="true" />
+              <span className="mp-breadcrumb-dot" aria-hidden="true" />
+              <a
+                href="/past-editions"
+                className="mp-breadcrumb-link"
+                onClick={(e) => handleNavClick(e, '/past-editions')}
+              >
+                Archives
+              </a>
+              <span className="mp-breadcrumb-dot" aria-hidden="true" />
+              <a
+                href={archiveHref}
+                className="mp-breadcrumb-link"
+                onClick={(e) => handleNavClick(e, archiveHref)}
+              >
+                SAF {year}
+              </a>
+              <span className="mp-breadcrumb-dot" aria-hidden="true" />
+              <span className="mp-breadcrumb-current">{event.eventType ?? 'Event'}</span>
+            </nav>
+            <h1 className="mp-hero-title">{event.title}</h1>
+            {registerHref && (
+              <div className="saf-archive-event-detail-actions">
                 <a href={registerHref} target="_blank" rel="noopener noreferrer">
                   Register
                 </a>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </section>
 
@@ -2663,18 +2675,32 @@ function PastEditionDetail({
     <>
 
       <main>
-        <section className="saf-archive-detail-hero">
-          <div className="saf-renewal-shell saf-archive-detail-hero-inner">
-            <div className="saf-archive-detail-hero-copy">
+        {/* organizer 와 동일한 mp-hero 패턴 (이미지 + breadcrumb + 타이틀) */}
+        <section
+          className="mp-hero"
+          style={{ backgroundImage: `url(${assetSrc(visualImage ?? HeroSeoulImage)})` }}
+        >
+          <div className="mp-hero-content">
+            <nav className="mp-breadcrumb" aria-label="Breadcrumb">
+              <HomeIcon className="mp-breadcrumb-home" aria-hidden="true" />
+              <span className="mp-breadcrumb-dot" aria-hidden="true" />
               <a
                 href="/past-editions"
-                className="saf-archive-back-link"
+                className="mp-breadcrumb-link"
                 onClick={handleBackToArchives}
               >
-                Back to Archives
+                Archives
               </a>
-              <p className="saf-renewal-eyebrow">SAF Archive | {year}</p>
-              <h1>{theme}</h1>
+              <span className="mp-breadcrumb-dot" aria-hidden="true" />
+              <span className="mp-breadcrumb-current">SAF {year}</span>
+            </nav>
+            <h1 className="mp-hero-title">{theme}</h1>
+          </div>
+        </section>
+
+        <section className="saf-archive-detail-body">
+          <div className="saf-renewal-shell">
+            <div className="saf-archive-detail-intro">
               <p>
                 {intro
                   ?? `Seoul ADR Festival ${year} ran from ${dateRange} in Korea Standard Time. This page combines the original day-by-day archive into one continuous schedule.`}
@@ -2694,21 +2720,6 @@ function PastEditionDetail({
                 </div>
               </div>
             </div>
-            <div
-              className="saf-archive-detail-visual"
-              style={{ backgroundImage: `url(${assetSrc(visualImage ?? HeroSeoulImage)})` }}
-              aria-hidden="true"
-            >
-              <div>
-                <span>{visualDateRange}</span>
-                <strong>SAF {year}</strong>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="saf-archive-detail-body">
-          <div className="saf-renewal-shell">
             <nav
               className={`saf-archive-day-nav saf-archive-day-nav--${days.length}`}
               aria-label={`SAF ${year} days`}

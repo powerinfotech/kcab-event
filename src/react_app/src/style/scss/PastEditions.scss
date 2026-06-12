@@ -94,11 +94,29 @@
 }
 
 .saf-past-listing {
-  padding: 68px 0 104px;
+  padding: 100px 0 120px;
 
   .saf-renewal-shell {
     margin-left: auto;
     margin-right: auto;
+  }
+}
+
+// organizer 본문(mp-heading + 설명)과 동일한 톤의 인트로
+.saf-past-intro {
+  max-width: 760px;
+  margin-bottom: 44px;
+
+  .saf-past-intro-title {
+    margin: 0 0 14px;
+    line-height: 1.18;
+  }
+
+  p {
+    margin: 0;
+    color: #5b5775;
+    font-size: 16px;
+    line-height: 1.65;
   }
 }
 
@@ -479,6 +497,36 @@
     font-weight: 800;
     letter-spacing: 0.08em;
     text-transform: uppercase;
+  }
+}
+
+// 연도 상세: mp-hero 아래 본문 인트로(설명 + 통계). organizer 톤과 통일.
+.saf-archive-detail-intro {
+  max-width: 760px;
+  margin-bottom: 48px;
+
+  p {
+    margin: 0;
+    color: #4f4a6f;
+    font-size: 17px;
+    line-height: 1.65;
+  }
+
+  .saf-archive-detail-stats {
+    margin-top: 28px;
+  }
+}
+
+// 히어로 breadcrumb 안의 클릭 가능한 링크(Archives)
+.mp-breadcrumb-link {
+  color: #fff;
+  text-decoration: none;
+  transition: opacity 0.15s ease;
+
+  &:hover {
+    opacity: 0.78;
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 }
 
