@@ -48,7 +48,14 @@ const createNavItems = (officialEventPath: string, officialEventChildren: NavIte
       { label: 'Past Editions', href: '/past-editions' },
     ],
   },
-  { label: 'Contact', href: '#contact' },
+  {
+    label: 'Contact',
+    href: '#contact',
+    children: [
+      { label: 'Notice & News', href: '/notice' },
+      { label: 'Contact us', href: '#contact' },
+    ],
+  },
   { label: 'My Events', href: '/my-events' },
 ];
 
