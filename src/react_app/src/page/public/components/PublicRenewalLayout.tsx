@@ -14,6 +14,7 @@ type NavItem = {
   label: string;
   href: string;
   featured?: boolean;
+  disabled?: boolean;
   children?: NavItem[];
 };
 
@@ -38,7 +39,14 @@ const createNavItems = (officialEventPath: string, officialEventChildren: NavIte
   },
   { label: 'Calendar', href: '#program' },
   { label: 'Visit Seoul', href: '#visit-seoul' },
-  { label: 'Archives', href: '/past-editions' },
+  {
+    label: 'Archives',
+    href: '/past-editions',
+    children: [
+      { label: 'Gallery', href: '#', disabled: true },
+      { label: 'Past Editions', href: '/past-editions' },
+    ],
+  },
   { label: 'Contact', href: '#contact' },
 ];
 
@@ -68,7 +76,12 @@ export default function PublicRenewalLayout({ className, children }: PublicRenew
   const officialEventPath = officialEventChildren[0]?.href ?? DEFAULT_OFFICIAL_EVENT_PATH;
   const navItems = createNavItems(officialEventPath, officialEventChildren);
 
-  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string, disabled = false) => {
+    if (disabled || href === '#') {
+      e.preventDefault();
+      return;
+    }
+
     setActiveMenu(null);
     setMobileMenuOpen(false);
     if (href.startsWith('/') && !href.includes('#')) {
@@ -128,14 +141,15 @@ export default function PublicRenewalLayout({ className, children }: PublicRenew
                       <div className="saf-renewal-menu-panel" role="menu">
                         {item.children?.map((child) => {
                           const childPath = child.href.split('#')[0];
-                          const isCurrent = pathname === childPath;
+                          const isCurrent = Boolean(childPath) && pathname === childPath;
                           return (
                             <a
-                              className={`${child.featured ? 'is-featured' : ''}${isCurrent ? ' is-current' : ''}`.trim() || undefined}
+                              className={`${child.featured ? 'is-featured' : ''}${isCurrent ? ' is-current' : ''}${child.disabled ? ' is-disabled' : ''}`.trim() || undefined}
                               href={child.href}
                               key={child.label}
                               role="menuitem"
-                              onClick={(e) => handleNavClick(e, child.href)}
+                              aria-disabled={child.disabled || undefined}
+                              onClick={(e) => handleNavClick(e, child.href, child.disabled)}
                             >
                               {child.label}
                             </a>

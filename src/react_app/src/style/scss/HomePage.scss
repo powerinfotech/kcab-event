@@ -248,6 +248,18 @@
       text-underline-offset: 3px;
     }
 
+    &.is-disabled {
+      color: rgba(35, 24, 21, 0.38);
+      cursor: default;
+      pointer-events: auto;
+      text-decoration: none;
+    }
+
+    &.is-disabled:hover {
+      color: rgba(35, 24, 21, 0.38);
+      text-decoration: none;
+    }
+
     &.is-featured,
     &.is-current {
       display: inline-flex;
