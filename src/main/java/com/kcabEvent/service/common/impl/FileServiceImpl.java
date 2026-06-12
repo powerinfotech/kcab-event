@@ -471,6 +471,7 @@ public class FileServiceImpl implements FileService {
             case "EVENT_PAGE_BLOCK_ATTACHMENT" -> "event-pages/blocks/attachments";
             case "NOTICE_NEWS_ATTACHMENT" -> "notice-news/attachments";
             case "GALLERY_IMAGE" -> "gallery";
+            case "SPONSOR_LOGO" -> "sponsors/logos";
             case "ORGANIZATION_IMAGE" -> "organizations/images";
             case "EDITOR_EVENT" -> "editor/events";
             case "EDITOR_NOTICE_NEWS" -> "editor/notice-news";

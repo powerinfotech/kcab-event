@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kcabEvent.dao.SponsorDao">
+
+    <select id="selectSponsorList" resultType="com.kcabEvent.dto.sponsor.SponsorListDto"
+            parameterType="com.kcabEvent.dto.sponsor.SponsorSearchDto">
+        SELECT
+             s.sponsor_seq
+            ,s.edition_year
+            ,s.tier_cd
+            ,tc.com_cd_nm AS tier_cd_nm
+            ,tc.sort_seq  AS tier_sort_seq
+            ,s.company_name
+            ,s.logo_file_seq
+            ,s.sort_seq
+            ,s.use_yn
+            ,CASE
+                WHEN s.representative_remarks IS NOT NULL
+                 AND length(btrim(s.representative_remarks)) > 0
+                THEN true ELSE false
+             END AS has_remarks
+            ,cu.name AS rgst_user_name
+            ,s.created_at AS rgst_date_time
+            ,uu.name AS upt_user_name
+            ,s.updated_at AS upt_date_time
+            ,logo.logo_file_dtl_seq
+            ,logo.logo_file_path
+        FROM event.sponsor s
+        LEFT JOIN event.users cu ON cu.user_seq = s.created_by
+        LEFT JOIN event.users uu ON uu.user_seq = s.updated_by
+        LEFT JOIN event.com_cd tc
+               ON tc.com_cd = s.tier_cd
+              AND tc.com_grp_cd_seq = (
+                    SELECT com_grp_cd_seq FROM event.com_grp_cd WHERE com_grp_cd = 'SPONSOR_TIER'
+                  )
+        LEFT JOIN LATERAL (
+            SELECT
+                 (ARRAY_AGG(d.file_dtl_seq ORDER BY d.sort_seq ASC, d.file_dtl_seq ASC))[1] AS logo_file_dtl_seq
+                ,(ARRAY_AGG(d.file_path    ORDER BY d.sort_seq ASC, d.file_dtl_seq ASC))[1] AS logo_file_path
+            FROM event.tb_file_dtl d
+            WHERE d.file_seq = s.logo_file_seq
+              AND d.del_yn = 'N'
+        ) logo ON TRUE
+        <where>
+            s.deleted_at IS NULL
+            <if test="editionYear != null">
+                AND s.edition_year = #{editionYear}
+            </if>
+            <if test="tierCd != null and tierCd != ''">
+                AND s.tier_cd = #{tierCd}
+            </if>
+            <if test="useYn != null and useYn != ''">
+                AND s.use_yn = #{useYn}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND s.company_name ILIKE '%' || #{keyword} || '%'
+            </if>
+        </where>
+        ORDER BY
+            s.edition_year DESC,
+            tc.sort_seq ASC NULLS LAST,
+            s.sort_seq ASC,
+            s.sponsor_seq DESC
+    </select>
+
+    <select id="selectSponsorDetail" resultType="com.kcabEvent.dto.sponsor.SponsorDetailDto">
+        SELECT
+             s.sponsor_seq
+            ,s.edition_year
+            ,s.tier_cd
+            ,tc.com_cd_nm AS tier_cd_nm
+            ,s.company_name
+            ,s.logo_file_seq
+            ,s.description
+            ,s.representative_remarks
+            ,s.sort_seq
+            ,s.use_yn
+            ,s.created_by AS rgst_user_seq
+            ,cu.name AS rgst_user_name
+            ,s.created_at AS rgst_date_time
+            ,s.updated_by AS upt_user_seq
+            ,uu.name AS upt_user_name
+            ,s.updated_at AS upt_date_time
+            ,logo.logo_file_dtl_seq
+            ,logo.logo_file_path
+        FROM event.sponsor s
+        LEFT JOIN event.users cu ON cu.user_seq = s.created_by
+        LEFT JOIN event.users uu ON uu.user_seq = s.updated_by
+        LEFT JOIN event.com_cd tc
+               ON tc.com_cd = s.tier_cd
+              AND tc.com_grp_cd_seq = (
+                    SELECT com_grp_cd_seq FROM event.com_grp_cd WHERE com_grp_cd = 'SPONSOR_TIER'
+                  )
+        LEFT JOIN LATERAL (
+            SELECT
+                 (ARRAY_AGG(d.file_dtl_seq ORDER BY d.sort_seq ASC, d.file_dtl_seq ASC))[1] AS logo_file_dtl_seq
+                ,(ARRAY_AGG(d.file_path    ORDER BY d.sort_seq ASC, d.file_dtl_seq ASC))[1] AS logo_file_path
+            FROM event.tb_file_dtl d
+            WHERE d.file_seq = s.logo_file_seq
+              AND d.del_yn = 'N'
+        ) logo ON TRUE
+        WHERE s.sponsor_seq = #{sponsorSeq}
+          AND s.deleted_at IS NULL
+    </select>
+
+    <select id="selectSponsorTiers" resultType="com.kcabEvent.dto.sponsor.SponsorTierDto">
+        SELECT
+             c.com_cd   AS code
+            ,c.com_cd_nm AS name
+            ,c.sort_seq  AS sort_seq
+        FROM event.com_cd c
+        JOIN event.com_grp_cd g ON g.com_grp_cd_seq = c.com_grp_cd_seq
+        WHERE g.com_grp_cd = 'SPONSOR_TIER'
+          AND c.use_yn = 'Y'
+        ORDER BY c.sort_seq ASC, c.com_cd ASC
+    </select>
+
+    <insert id="insertSponsor" parameterType="com.kcabEvent.domain.Sponsor"
+            useGeneratedKeys="true" keyProperty="sponsorSeq">
+        INSERT INTO event.sponsor
+            (
+             edition_year
+            ,tier_cd
+            ,company_name
+            ,logo_file_seq
+            ,description
+            ,representative_remarks
+            ,sort_seq
+            ,use_yn
+            ,created_by
+            ,updated_by
+            )
+        VALUES
+            (
+             #{editionYear}
+            ,#{tierCd}
+            ,#{companyName}
+            ,#{logoFileSeq,jdbcType=BIGINT}
+            ,#{description,jdbcType=VARCHAR}
+            ,#{representativeRemarks,jdbcType=VARCHAR}
+            ,COALESCE(#{sortSeq,jdbcType=INTEGER}, 0)
+            ,COALESCE(#{useYn,jdbcType=CHAR}, 'Y')
+            ,#{rgstUserSeq,jdbcType=BIGINT}
+            ,#{uptUserSeq,jdbcType=BIGINT}
+            )
+    </insert>
+
+    <update id="updateSponsor" parameterType="com.kcabEvent.domain.Sponsor">
+        UPDATE event.sponsor
+        SET  edition_year           = #{editionYear}
+            ,tier_cd                = #{tierCd}
+            ,company_name           = #{companyName}
+            ,logo_file_seq          = #{logoFileSeq,jdbcType=BIGINT}
+            ,description            = #{description,jdbcType=VARCHAR}
+            ,representative_remarks = #{representativeRemarks,jdbcType=VARCHAR}
+            ,sort_seq               = COALESCE(#{sortSeq,jdbcType=INTEGER}, 0)
+            ,use_yn                 = COALESCE(#{useYn,jdbcType=CHAR}, use_yn)
+            ,updated_by             = #{uptUserSeq,jdbcType=BIGINT}
+            ,updated_at             = CURRENT_TIMESTAMP
+        WHERE sponsor_seq = #{sponsorSeq}
+          AND deleted_at IS NULL
+    </update>
+
+    <update id="softDeleteSponsor">
+        UPDATE event.sponsor
+        SET  deleted_at = CURRENT_TIMESTAMP
+            ,updated_by = #{uptUserSeq,jdbcType=BIGINT}
+            ,updated_at = CURRENT_TIMESTAMP
+        WHERE sponsor_seq = #{sponsorSeq}
+          AND deleted_at IS NULL
+    </update>
+
+</mapper>
