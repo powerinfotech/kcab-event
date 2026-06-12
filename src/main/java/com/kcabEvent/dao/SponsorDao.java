@@ -20,6 +20,9 @@ public interface SponsorDao {
 
     Integer selectLatestPublishedYear();
 
+    /** 스폰서 데이터가 존재하는 연도(내림차순) — 노출 설정 콤보용 */
+    List<Integer> selectDistinctSponsorYears();
+
     long insertSponsor(Sponsor sponsor);
 
     int updateSponsor(Sponsor sponsor);

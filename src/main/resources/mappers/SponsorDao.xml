@@ -126,6 +126,13 @@
           AND use_yn = 'Y'
     </select>
 
+    <select id="selectDistinctSponsorYears" resultType="java.lang.Integer">
+        SELECT DISTINCT edition_year
+        FROM event.sponsor
+        WHERE deleted_at IS NULL
+        ORDER BY edition_year DESC
+    </select>
+
     <insert id="insertSponsor" parameterType="com.kcabEvent.domain.Sponsor"
             useGeneratedKeys="true" keyProperty="sponsorSeq">
         INSERT INTO event.sponsor

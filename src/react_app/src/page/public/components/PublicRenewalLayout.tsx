@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAtomValue } from 'jotai';
 import { usePublicNavigate } from '@hook/usePublicNavigate';
 import { usePublishedOfficialEvents, DEFAULT_OFFICIAL_EVENT_PATH } from '@hook/useCurrentOfficialEventPath';
+import { callGetPublicDisplaySetting } from '@api/displaySetting/DisplaySettingApi';
 import { currentPathAtom } from '@atom/currentPathAtom';
 import SafLogo from '../../../assets/images/saf-renewal/header/logo.svg';
 import Social1 from '../../../assets/images/saf-renewal/header/social-1.svg';
@@ -48,6 +49,7 @@ const createNavItems = (officialEventPath: string, officialEventChildren: NavIte
     ],
   },
   { label: 'Contact', href: '#contact' },
+  { label: 'My Events', href: '/my-events' },
 ];
 
 const socialLinks = [
@@ -69,12 +71,34 @@ export default function PublicRenewalLayout({ className, children }: PublicRenew
   const publishedEvents = usePublishedOfficialEvents();
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  // 공개 설정: 파트너 섹션(Sponsors/Supporters/Media partners) 노출 여부.
+  // 'N'이면 Partners 하위에서 셋 다 숨기고 Organizer만 남긴다.
+  const [showPartnersMenu, setShowPartnersMenu] = useState(true);
+  useEffect(() => {
+    let active = true;
+    callGetPublicDisplaySetting()
+      .then((res) => {
+        if (active) setShowPartnersMenu(res?.item?.showSponsors !== 'N');
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
+  const HIDDEN_PARTNER_HREFS = ['/sponsors', '/supporters', '/media-partners'];
   const officialEventChildren = publishedEvents.map((event) => ({
     label: event.slug,
     href: `/event/${encodeURIComponent(event.slug)}`,
   }));
   const officialEventPath = officialEventChildren[0]?.href ?? DEFAULT_OFFICIAL_EVENT_PATH;
-  const navItems = createNavItems(officialEventPath, officialEventChildren);
+  const baseNavItems = createNavItems(officialEventPath, officialEventChildren);
+  const navItems = showPartnersMenu
+    ? baseNavItems
+    : baseNavItems.map((item) =>
+        item.children
+          ? { ...item, children: item.children.filter((child) => !HIDDEN_PARTNER_HREFS.includes(child.href)) }
+          : item,
+      );
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string, disabled = false) => {
     if (disabled || href === '#') {

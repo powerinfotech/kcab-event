@@ -1263,7 +1263,8 @@
   }
 
   .saf-archive-nav-dock {
-    position: static;
+    position: sticky;
+    top: 12px;
     width: 100%;
     flex-direction: column;
     align-items: stretch;
@@ -1305,7 +1306,7 @@
   }
 
   .saf-archive-day-section {
-    scroll-margin-top: 150px;
+    scroll-margin-top: 210px;
   }
 
   .saf-archive-day-heading {

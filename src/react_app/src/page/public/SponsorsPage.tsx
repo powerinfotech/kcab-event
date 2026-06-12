@@ -5,6 +5,7 @@ import HomeIcon from '../../assets/images/saf-renewal/media-partners/home.svg';
 import SponsorsHeroImage from '../../assets/images/saf-renewal/media-partners/hero.png';
 import SponsorsBlob from '../../assets/images/saf-renewal/sponsors-blob.png';
 import { callGetPublicSponsors } from '@api/sponsor/SponsorApi';
+import { callGetPublicDisplaySetting } from '@api/displaySetting/DisplaySettingApi';
 import { SponsorListItem } from '@interface/admin/Sponsor';
 
 const assetSrc = (asset: string | { src?: string }) =>
@@ -33,17 +34,35 @@ interface SelectedSponsor {
 
 export default function SponsorsPage() {
   const [sponsors, setSponsors] = useState<SponsorListItem[]>([]);
+  const [available, setAvailable] = useState(true);
   const [selected, setSelected] = useState<SelectedSponsor | null>(null);
 
+  // 공개 설정에 따라: 노출 N이면 안내, Y이면 설정 연도의 스폰서를 가져온다.
   useEffect(() => {
     let active = true;
-    callGetPublicSponsors()
+    callGetPublicDisplaySetting()
       .then((res) => {
-        if (active) setSponsors(res?.item ?? []);
+        const item = res?.item;
+        if (item?.showSponsors === 'N') {
+          if (active) {
+            setAvailable(false);
+            setSponsors([]);
+          }
+          return undefined;
+        }
+        if (active) setAvailable(true);
+        return callGetPublicSponsors(item?.editionYear ?? undefined).then((sr) => {
+          if (active) setSponsors(sr?.item ?? []);
+        });
       })
-      .catch(() => {
-        if (active) setSponsors([]);
-      });
+      .catch(() =>
+        // 설정 조회 실패 시 기존 동작(최신 연도)으로 폴백
+        callGetPublicSponsors()
+          .then((sr) => {
+            if (active) setSponsors(sr?.item ?? []);
+          })
+          .catch(() => {}),
+      );
     return () => {
       active = false;
     };
@@ -113,17 +132,24 @@ export default function SponsorsPage() {
         <div className="saf-renewal-shell">
           <div className="saf-sponsors-intro">
             <h2 className="mp-heading">Sponsors</h2>
-            <p>
-              We are delighted to recognize and collaborate with our esteemed sponsors for the
-              Seoul ADR Festival{yearLabel}.
-              <br />
-              Click on each sponsor logo to explore more about their work and contributions.
-              <br />
-              Our deepest appreciation goes to all sponsors and partners whose generous support
-              makes SAF{yearLabel} possible.
-            </p>
+            {available && (
+              <p>
+                We are delighted to recognize and collaborate with our esteemed sponsors for the
+                Seoul ADR Festival{yearLabel}.
+                <br />
+                Click on each sponsor logo to explore more about their work and contributions.
+                <br />
+                Our deepest appreciation goes to all sponsors and partners whose generous support
+                makes SAF{yearLabel} possible.
+              </p>
+            )}
           </div>
-          {groups.map((group) => (
+          {!available && (
+            <p className="saf-sponsors-unavailable">
+              Sponsor information for this edition is not available yet. Please check back soon.
+            </p>
+          )}
+          {available && groups.map((group) => (
             <div className="saf-renewal-sponsor-row" key={group.code}>
               <div className="saf-renewal-sponsor-title">
                 <span>{group.title}</span>

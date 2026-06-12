@@ -27,6 +27,7 @@ import type { AdminDashboardMetrics, AdminDashboardRecentActivity } from '@inter
 import type { OrgDashboardEvent, OrgDashboardMetrics } from '@interface/admin/OrgDashboard';
 import { EVENT_STATUS_LABELS, EVENT_STATUS_TONE } from '@interface/event/EventManagement';
 import AdminGridPagination, { useClientGridPagination } from './AdminGridPagination';
+import PublicDisplaySettingCard from './PublicDisplaySettingCard';
 
 type Metric = {
   label: string;
@@ -220,6 +221,7 @@ export function SuperDashboard() {
         </div>
       </section>
       <MetricGrid metrics={buildSuperMetrics(dashboardMetrics)} />
+      <PublicDisplaySettingCard />
       <div className="saf-dashboard-grid">
         <section className="saf-panel saf-dashboard-review-panel">
           <PanelTitle title="Side Events Awaiting Review" />

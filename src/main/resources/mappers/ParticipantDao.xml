@@ -133,6 +133,99 @@
             ,ep.event_participant_seq DESC
     </select>
 
+    <select id="existsByEmail" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1
+            FROM event.participants p
+            INNER JOIN event.event_participants ep ON ep.participant_seq = p.participant_seq
+            INNER JOIN event.events e ON e.event_seq = ep.event_seq AND e.deleted_at IS NULL
+            WHERE LOWER(p.email) = LOWER(#{email})
+        )
+    </select>
+
+    <select id="selectMyEvents" resultType="com.kcabEvent.dto.participant.MyEventDto">
+        SELECT
+             ep.event_participant_seq
+            ,ep.event_seq
+            ,e.title AS event_title
+            ,e.slug
+            ,e.event_type
+            ,e.start_at    AS event_start_dt
+            ,e.end_at      AS event_end_dt
+            ,e.venue_name  AS location
+            ,COALESCE(ptc.com_cd_nm, ep.participant_type_cd) AS participant_type_name
+            ,ep.status AS participation_status
+            ,ep.registered_at
+            ,ep.cancelled_at
+            ,pay.status   AS payment_status
+            ,pay.amount   AS payment_amount
+            ,pay.currency AS payment_currency
+            ,pay.paid_at  AS paid_at
+        FROM event.participants p
+        INNER JOIN event.event_participants ep ON ep.participant_seq = p.participant_seq
+        INNER JOIN event.events e ON e.event_seq = ep.event_seq AND e.deleted_at IS NULL
+        LEFT JOIN event.com_grp_cd ptg
+            ON ptg.com_grp_cd = 'PARTICIPANT_TYPE' AND ptg.use_yn = 'Y'
+        LEFT JOIN event.com_cd ptc
+            ON ptc.com_grp_cd_seq = ptg.com_grp_cd_seq
+           AND ptc.com_cd = ep.participant_type_cd
+           AND ptc.use_yn = 'Y'
+        LEFT JOIN LATERAL (
+            SELECT pmt.status, pmt.amount, pmt.currency, pmt.paid_at
+            FROM event.payments pmt
+            WHERE (
+                    pmt.event_participant_seq = ep.event_participant_seq
+                    OR (
+                        pmt.event_participant_seq IS NULL
+                        AND pmt.event_seq = ep.event_seq
+                        AND pmt.participant_seq = p.participant_seq
+                    )
+                  )
+            ORDER BY
+                 CASE pmt.status
+                    WHEN 'paid' THEN 1
+                    WHEN 'cancelled' THEN 2
+                    WHEN 'failed' THEN 4
+                    ELSE 3
+                 END
+                ,COALESCE(pmt.paid_at, pmt.created_at) DESC NULLS LAST
+                ,pmt.payment_seq DESC
+            LIMIT 1
+        ) pay ON TRUE
+        WHERE LOWER(p.email) = LOWER(#{email})
+        ORDER BY
+             e.start_at DESC NULLS LAST
+            ,ep.registered_at DESC NULLS LAST
+            ,ep.event_participant_seq DESC
+    </select>
+
+    <select id="selectMyProfile" resultType="com.kcabEvent.dto.participant.MyProfileDto">
+        SELECT
+             p.email
+            ,TRIM(CONCAT_WS(' ', p.first_name, NULLIF(p.middle_name, ''), p.last_name)) AS full_name
+            ,p.organization_name
+            ,p.position
+            ,p.country
+            ,p.nationality
+            ,COALESCE(p.residence_country, p.country) AS residence_country
+            ,p.phone
+            ,(
+                SELECT COUNT(*)
+                FROM event.event_participants ep2
+                INNER JOIN event.events e2 ON e2.event_seq = ep2.event_seq AND e2.deleted_at IS NULL
+                WHERE ep2.participant_seq = p.participant_seq
+             ) AS total_event_count
+        FROM event.participants p
+        LEFT JOIN LATERAL (
+            SELECT MAX(ep.registered_at) AS latest
+            FROM event.event_participants ep
+            WHERE ep.participant_seq = p.participant_seq
+        ) r ON TRUE
+        WHERE LOWER(p.email) = LOWER(#{email})
+        ORDER BY r.latest DESC NULLS LAST, p.participant_seq DESC
+        LIMIT 1
+    </select>
+
     <select id="selectParticipantEventOptions" resultType="com.kcabEvent.dto.participant.ParticipantEventOptionDto">
         SELECT
              e.event_seq

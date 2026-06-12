@@ -29,6 +29,7 @@ public class SafEmailVerificationServiceImpl implements SafEmailVerificationServ
     private static final String SESSION_VERIFIED = "safSignupEmailVerifyVerified";
     private static final String PURPOSE_SIGNUP = "signup";
     private static final String PURPOSE_CONTACT_EMAIL = "contact-email";
+    private static final String PURPOSE_MY_EVENTS = "my-events";
     private static final int CODE_EXPIRE_MINUTES = 10;
 
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
@@ -117,6 +118,7 @@ public class SafEmailVerificationServiceImpl implements SafEmailVerificationServ
         clear(session, PURPOSE_SIGNUP);
         clear(session, "profile-email");
         clear(session, PURPOSE_CONTACT_EMAIL);
+        clear(session, PURPOSE_MY_EVENTS);
     }
 
     @Override
@@ -137,7 +139,9 @@ public class SafEmailVerificationServiceImpl implements SafEmailVerificationServ
             return PURPOSE_SIGNUP;
         }
         String normalized = purpose.trim().toLowerCase(Locale.ROOT);
-        if (!"profile-email".equals(normalized) && !PURPOSE_CONTACT_EMAIL.equals(normalized)) {
+        if (!"profile-email".equals(normalized)
+                && !PURPOSE_CONTACT_EMAIL.equals(normalized)
+                && !PURPOSE_MY_EVENTS.equals(normalized)) {
             return PURPOSE_SIGNUP;
         }
         return normalized;
@@ -148,7 +152,7 @@ public class SafEmailVerificationServiceImpl implements SafEmailVerificationServ
     }
 
     private boolean shouldCheckDuplicateEmail(String purpose) {
-        return !PURPOSE_CONTACT_EMAIL.equals(purpose);
+        return !PURPOSE_CONTACT_EMAIL.equals(purpose) && !PURPOSE_MY_EVENTS.equals(purpose);
     }
 
     private String createSixDigitCode() {

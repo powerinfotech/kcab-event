@@ -2162,3 +2162,530 @@
     font-size: 22px;
   }
 }
+
+/* ===== My Events (이메일 인증 → 내 등록 행사) ===== */
+.saf-myevents {
+  .mp-body {
+    padding-bottom: 120px;
+  }
+
+  .saf-renewal-shell {
+    max-width: 760px;
+  }
+}
+
+.saf-myevents-panel {
+  width: min(100%, 480px);
+  margin: 60px auto 0;
+  background: #fff;
+  border: 1px solid #ece8fb;
+  border-radius: 16px;
+  box-shadow: 0 18px 48px rgba(42, 37, 89, 0.08);
+  padding: 38px 36px;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.saf-myevents-title {
+  margin: 0 0 10px;
+  color: #1f1c33;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.4px;
+}
+
+.saf-myevents-desc {
+  margin: 0 0 22px;
+  color: #6b6788;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.saf-myevents-field {
+  display: block;
+  margin-bottom: 16px;
+
+  span {
+    display: block;
+    margin-bottom: 8px;
+    color: #463c86;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  input {
+    width: 100%;
+    height: 48px;
+    padding: 0 14px;
+    border: 1px solid #ddd7f3;
+    border-radius: 10px;
+    background: #faf9ff;
+    color: #1f1c33;
+    font-size: 15px;
+    font-family: inherit;
+    transition: border-color 0.12s ease, box-shadow 0.12s ease;
+
+    &:focus {
+      outline: none;
+      border-color: #9586f2;
+      box-shadow: 0 0 0 3px rgba(149, 134, 242, 0.18);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+    }
+  }
+}
+
+.saf-myevents-code-input {
+  text-align: center;
+  letter-spacing: 8px;
+  font-size: 24px !important;
+  font-weight: 700;
+}
+
+.saf-myevents-submit {
+  width: 100%;
+  height: 50px;
+  margin-top: 6px;
+  border: none;
+  border-radius: 10px;
+  background: #6b4ff2;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+
+  &:hover:not(:disabled) {
+    background: #5a3fe0;
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.99);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.saf-myevents-error {
+  margin: 0 0 14px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #fdeaea;
+  color: #b91c1c;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.saf-myevents-info {
+  margin: 0 0 18px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #eef0ff;
+  color: #463c86;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.saf-myevents-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 18px;
+  color: #9b97b3;
+  font-size: 13px;
+
+  button {
+    border: none;
+    background: none;
+    color: #6b4ff2;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+      text-decoration: underline;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+}
+
+/* 결과: 내 행사 목록 */
+.saf-myevents-result {
+  margin-top: 50px;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.saf-myevents-result-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+
+  .saf-myevents-title {
+    margin-bottom: 4px;
+  }
+
+  .saf-myevents-desc {
+    margin: 0;
+  }
+}
+
+.saf-myevents-ghost {
+  flex-shrink: 0;
+  height: 40px;
+  padding: 0 16px;
+  border: 1px solid #ddd7f3;
+  border-radius: 10px;
+  background: #fff;
+  color: #463c86;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease;
+
+  &:hover {
+    background: #f3f0ff;
+    border-color: #b3a9ec;
+  }
+}
+
+.saf-myevents-empty {
+  padding: 60px 20px;
+  text-align: center;
+  color: #6b6788;
+  font-size: 15px;
+  background: #faf9ff;
+  border: 1px solid #ece8fb;
+  border-radius: 14px;
+}
+
+.saf-myevents-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 16px;
+}
+
+.saf-myevents-card {
+  border: 1px solid #ece8fb;
+  border-radius: 14px;
+  background: #fff;
+  padding: 22px 24px;
+  box-shadow: 0 10px 28px rgba(42, 37, 89, 0.05);
+}
+
+.saf-myevents-card-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.saf-myevents-type {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: #efe8ff;
+  color: #6b4ff2;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.saf-myevents-status {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+
+  &.is-green {
+    background: #e1f5ea;
+    color: #15784e;
+  }
+
+  &.is-gray {
+    background: #eeebf7;
+    color: #6b6788;
+  }
+
+  &.is-amber {
+    background: #fff0df;
+    color: #9a4b00;
+  }
+}
+
+.saf-myevents-event-title {
+  margin: 0 0 16px;
+  color: #1f1c33;
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1.3;
+  letter-spacing: -0.3px;
+}
+
+.saf-myevents-meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 24px;
+  margin: 0;
+
+  div {
+    margin: 0;
+  }
+
+  dt {
+    margin: 0 0 2px;
+    color: #9b97b3;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  dd {
+    margin: 0;
+    color: #2c2a40;
+    font-size: 14px;
+    font-weight: 500;
+  }
+}
+
+@media (max-width: 560px) {
+  .saf-myevents-panel {
+    padding: 30px 22px;
+  }
+
+  .saf-myevents-result-head {
+    flex-direction: column;
+  }
+
+  .saf-myevents-meta {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* My Events: 세션 바(남은 시간/연장) + 내 정보 패널 */
+.saf-myevents-sessionbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 40px 0 22px;
+  padding: 12px 16px 12px 18px;
+  border-radius: 12px;
+  background: #f3f1ff;
+  border: 1px solid #e6e1fb;
+
+  &.is-low {
+    background: #fff2ec;
+    border-color: #f6d6c6;
+  }
+}
+
+.saf-myevents-timer {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: #463c86;
+  font-size: 14px;
+
+  strong {
+    font-variant-numeric: tabular-nums;
+    font-weight: 800;
+  }
+
+  .saf-myevents-sessionbar.is-low & {
+    color: #9a4b00;
+  }
+}
+
+.saf-myevents-timer-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #6b4ff2;
+  animation: saf-myevents-pulse 1.6s ease-in-out infinite;
+
+  .saf-myevents-sessionbar.is-low & {
+    background: #e0701f;
+  }
+}
+
+@keyframes saf-myevents-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+.saf-myevents-sessionbar-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.saf-myevents-extend {
+  height: 36px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 9px;
+  background: #6b4ff2;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: 'Montserrat', sans-serif;
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background: #5a3fe0;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.saf-myevents-signout {
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid #ddd7f3;
+  border-radius: 9px;
+  background: #fff;
+  color: #6b6788;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: 'Montserrat', sans-serif;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease;
+
+  &:hover {
+    background: #f3f0ff;
+    border-color: #b3a9ec;
+  }
+}
+
+.saf-myevents-profile {
+  margin-bottom: 36px;
+  padding: 26px 28px;
+  border: 1px solid #ece8fb;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 12px 30px rgba(42, 37, 89, 0.06);
+  font-family: 'Montserrat', sans-serif;
+}
+
+.saf-myevents-profile-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #f1eefb;
+}
+
+.saf-myevents-avatar {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #efe8ff;
+  color: #6b4ff2;
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.saf-myevents-profile-name {
+  margin: 0 0 2px;
+  color: #1f1c33;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+}
+
+.saf-myevents-profile-sub {
+  margin: 0;
+  color: #6b6788;
+  font-size: 14px;
+}
+
+.saf-myevents-profile-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px 24px;
+  margin: 0;
+
+  div {
+    margin: 0;
+  }
+
+  dt {
+    margin: 0 0 3px;
+    color: #9b97b3;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  dd {
+    margin: 0;
+    color: #2c2a40;
+    font-size: 14px;
+    font-weight: 500;
+    word-break: break-word;
+  }
+}
+
+.saf-myevents-events-head {
+  margin-bottom: 18px;
+
+  .saf-myevents-title {
+    margin: 0;
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 560px) {
+  .saf-myevents-profile {
+    padding: 22px 20px;
+  }
+
+  .saf-myevents-profile-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Sponsors 노출 OFF 상태에서 직접 진입 시 안내 */
+.saf-sponsors-unavailable {
+  margin: 40px 0 0;
+  padding: 50px 24px;
+  text-align: center;
+  color: #6b6788;
+  font-size: 16px;
+  background: #faf9ff;
+  border: 1px solid #ece8fb;
+  border-radius: 14px;
+}

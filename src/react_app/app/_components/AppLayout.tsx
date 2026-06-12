@@ -14,6 +14,7 @@ import PastEditions, { PastEdition2020, PastEdition2021, PastEdition2022, PastEd
 import SafSignup from '@page/saf/SafSignup';
 import SponsorsPage from '@page/public/SponsorsPage';
 import SupportersPage from '@page/public/SupportersPage';
+import MyEventsPage from '@page/public/MyEventsPage';
 import HomePage from '@page/HomePage';
 import PublicRenewalLayout from '@page/public/components/PublicRenewalLayout';
 import PublicBackToTopButton from '@component/navigation/PublicBackToTopButton';
@@ -61,6 +62,7 @@ function getPublicShellRoute(
   if (currentPath === '/supporters') {
     return { className: 'saf-sponsors-page saf-supporters-page', content: <SupportersPage /> };
   }
+  if (currentPath === '/my-events') return { className: 'saf-myevents-page', content: <MyEventsPage /> };
   if (currentPath === '/events') return { className: 'official-events-page', content: <PublicEvents /> };
   if (currentPath.startsWith('/event/')) {
     const eventPathParts = currentPath.replace(/^\/event\//, '').split('/');
