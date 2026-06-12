@@ -54,6 +54,7 @@ interface FormState {
   companyName: string;
   description: string;
   representativeRemarks: string;
+  websiteUrl: string;
   logoFileSeq: number | null;
   sortSeq: string;
   useYn: string;
@@ -65,6 +66,7 @@ const blankForm = (): FormState => ({
   companyName: '',
   description: '',
   representativeRemarks: '',
+  websiteUrl: '',
   logoFileSeq: null,
   sortSeq: '0',
   useYn: 'Y',
@@ -187,6 +189,7 @@ export default function Sponsorship() {
         companyName: detail.companyName ?? '',
         description: detail.description ?? '',
         representativeRemarks: detail.representativeRemarks ?? '',
+        websiteUrl: detail.websiteUrl ?? '',
         logoFileSeq: detail.logoFileSeq ?? null,
         sortSeq: String(detail.sortSeq ?? 0),
         useYn: detail.useYn || 'Y',
@@ -227,7 +230,6 @@ export default function Sponsorship() {
   const companyInvalid = submitAttempted && !form.companyName.trim();
   const tierInvalid = submitAttempted && !form.tierCd;
   const logoInvalid = submitAttempted && !visibleLogo;
-  const descriptionInvalid = submitAttempted && !htmlHasContent(form.description);
 
   const validate = () => {
     if (!form.tierCd) {
@@ -240,10 +242,6 @@ export default function Sponsorship() {
     }
     if (!visibleLogo) {
       message.warning('Please upload a company logo.');
-      return false;
-    }
-    if (!htmlHasContent(form.description)) {
-      message.warning('Please enter a company description.');
       return false;
     }
     return true;
@@ -269,6 +267,7 @@ export default function Sponsorship() {
         logoFileSeq: resolvedFileSeq,
         description: cleanHtml(form.description),
         representativeRemarks: cleanHtml(form.representativeRemarks),
+        websiteUrl: form.websiteUrl.trim() || null,
         sortSeq: Number.isNaN(sortSeqNumber) ? 0 : sortSeqNumber,
         useYn: form.useYn || 'Y',
       };
@@ -393,6 +392,16 @@ export default function Sponsorship() {
                   disabled={saving}
                 />
               </Field>
+              <Field label="Website URL" wide>
+                <input
+                  type="url"
+                  value={form.websiteUrl}
+                  maxLength={500}
+                  placeholder="https://example.com"
+                  onChange={(e) => updateForm('websiteUrl', e.target.value)}
+                  disabled={saving}
+                />
+              </Field>
               <Field label="Sort Order">
                 <input
                   type="number"
@@ -422,8 +431,8 @@ export default function Sponsorship() {
           </section>
 
           <section className="saf-panel">
-            <PanelTitle title="Company Description *" subtitle="Rich text shown on the sponsor's entry." />
-            <div className={`saf-event-description-editor${descriptionInvalid ? ' is-invalid' : ''}`}>
+            <PanelTitle title="Company Description" subtitle="Rich text shown on the sponsor's entry." />
+            <div className="saf-event-description-editor">
               <CustomRichEditor
                 key={`desc-${selectedSeq ?? 'new'}`}
                 value={form.description}

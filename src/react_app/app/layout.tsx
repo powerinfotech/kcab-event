@@ -18,7 +18,7 @@ function getExpectedRouteRootSelector(path) {
   if (path.indexOf('/event/') === 0) return '.pub-event-renewal';
   if (path === '/notice' || path === '/faq' || path === '/gallery') return '.pub-layout';
   if (path === '/events') return '.official-events-page';
-  if (path === '/sponsors-2025') return '.saf-sponsors-page';
+  if (path === '/sponsors') return '.saf-sponsors-page';
   if (path === '/organizer') return '.organizer-page';
   if (path === '/media-partners') return '.media-partners-page';
   if (path.indexOf('/past-editions') === 0) return '.saf-past-home, .saf-renewal-home';

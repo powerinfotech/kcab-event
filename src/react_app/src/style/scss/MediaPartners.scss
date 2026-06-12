@@ -1282,6 +1282,37 @@
     height: auto;
     object-fit: contain;
   }
+
+  // 클릭 시 해당 매체 website(새 탭)로 이동 — 팝업 없음
+  .mp-logo-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.15s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+    }
+
+    &:focus-visible {
+      outline: 2px solid #6b4ff2;
+      outline-offset: 4px;
+      border-radius: 4px;
+    }
+  }
+
+  // 로고 미등록 시 매체명 텍스트 폴백
+  .saf-sponsor-name {
+    margin: 0;
+    text-align: center;
+    color: #555;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.35;
+    word-break: keep-all;
+  }
 }
 
 // Figma sub01_organizer: KCAB International 소개 블록 — 헤딩 + 2단(로고 | 설명 단락).

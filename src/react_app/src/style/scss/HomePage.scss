@@ -1811,6 +1811,8 @@
     margin-top: 0;
   }
 
+  // 로고 이미지는 등록 데이터(가변 원본 크기)라 박스를 고정하고 object-fit:contain 으로
+  // 균일하게 맞춘다 — 어떤 비율의 로고가 와도 레이아웃이 깨지지 않는다.
   .saf-renewal-sponsor-logo {
     width: 408px;
     height: 130px;
@@ -1818,9 +1820,23 @@
     overflow: hidden;
 
     img {
-      max-width: 100%;
-      max-height: none;
+      width: 100%;
+      height: 100%;
       object-fit: contain;
+      display: block;
+    }
+
+    // 로고 이미지 미등록 시 회사명 텍스트 폴백
+    .saf-sponsor-name {
+      width: 100%;
+      margin: 0;
+      text-align: center;
+      color: #555;
+      font-size: 18px;
+      font-weight: 600;
+      line-height: 1.35;
+      letter-spacing: -0.2px;
+      word-break: keep-all;
     }
   }
 
@@ -1852,13 +1868,16 @@
     width: 100%;
     height: 88px;
     min-height: 88px;
-    overflow: visible;
+    overflow: hidden;
 
     img {
-      width: auto !important;
-      height: auto !important;
-      max-height: 56px;
-      max-width: 140px;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .saf-sponsor-name {
+      font-size: 14px;
     }
   }
 
@@ -1883,13 +1902,46 @@
     margin-top: 8px;
   }
 
-  // Figma 실측: 로고 표시 폭 62~310 / 높이 52~163(중간값 ~100)
+  // 로고는 등록 데이터(가변 원본 크기)라 박스를 고정하고 object-fit:contain 으로 균일하게.
   .saf-renewal-sponsor-logo {
-    min-height: 130px;
+    height: 120px;
+    min-height: 120px;
 
     img {
-      max-height: 120px;
-      max-width: 310px;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .saf-sponsor-name {
+      width: 100%;
+      margin: 0;
+      text-align: center;
+      color: #555;
+      font-size: 15px;
+      font-weight: 600;
+      line-height: 1.35;
+      word-break: keep-all;
+    }
+  }
+
+  // 클릭 시 해당 기관 website(새 탭)로 이동 — 팝업 없음
+  .saf-supporter-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.15s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+    }
+
+    &:focus-visible {
+      outline: 2px solid #6b4ff2;
+      outline-offset: 4px;
+      border-radius: 4px;
     }
   }
 }
@@ -1904,5 +1956,209 @@
 @media (max-width: 480px) {
   .saf-supporters-page .saf-renewal-logo-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+/* ===== Sponsor 상세 팝업 (공개 Sponsors) ===== */
+.saf-sponsors-page .saf-renewal-sponsor-logo.is-clickable {
+  cursor: pointer;
+  transition: transform 0.15s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #6b4ff2;
+    outline-offset: 4px;
+    border-radius: 4px;
+  }
+}
+
+.saf-sponsor-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: rgba(20, 18, 40, 0.55);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 48px 20px;
+  overflow-y: auto;
+}
+
+.saf-sponsor-modal {
+  position: relative;
+  width: min(100%, 860px);
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 24px 60px rgba(20, 18, 40, 0.32);
+  overflow: hidden;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.saf-sponsor-modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 2;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: #9b97b3;
+  cursor: pointer;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: #2a2559;
+  }
+}
+
+// 라벤더 헤더 바 (festival 보라 바 톤 → 우리 라벤더)
+.saf-sponsor-modal-tier {
+  background: #e9e3ff;
+  color: #463c86;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  padding: 16px 56px;
+}
+
+.saf-sponsor-modal-body {
+  padding: 30px 40px 36px;
+}
+
+.saf-sponsor-modal-head {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  margin-bottom: 22px;
+}
+
+.saf-sponsor-modal-logo {
+  flex: 0 0 auto;
+  width: 150px;
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
+}
+
+.saf-sponsor-modal-name {
+  margin: 0;
+  color: #1f1c33;
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.4px;
+}
+
+.saf-sponsor-modal-desc {
+  color: #333;
+  font-size: 15px;
+  line-height: 1.75;
+
+  p {
+    margin: 0 0 14px;
+  }
+
+  p:last-child {
+    margin-bottom: 0;
+  }
+
+  strong {
+    font-weight: 700;
+  }
+}
+
+.saf-sponsor-modal-remarks {
+  margin-top: 32px;
+
+  h3 {
+    margin: 0 0 18px;
+    text-align: center;
+    color: #1f1c33;
+    font-size: 22px;
+    font-weight: 800;
+  }
+}
+
+.saf-sponsor-modal-remarks-body {
+  color: #333;
+  font-size: 15px;
+  line-height: 1.75;
+
+  p {
+    margin: 0 0 14px;
+  }
+
+  img {
+    display: block;
+    max-width: 100%;
+    margin: 0 auto;
+  }
+
+  video,
+  iframe {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    height: auto;
+    border: 0;
+    border-radius: 8px;
+  }
+}
+
+.saf-sponsor-modal-footer {
+  margin-top: 28px;
+  text-align: right;
+}
+
+.saf-sponsor-modal-link {
+  color: #1f1c33;
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: #6b4ff2;
+  }
+}
+
+@media (max-width: 680px) {
+  .saf-sponsor-modal-overlay {
+    padding: 20px 12px;
+  }
+
+  .saf-sponsor-modal-tier {
+    font-size: 16px;
+    padding: 14px 48px;
+  }
+
+  .saf-sponsor-modal-body {
+    padding: 22px 22px 26px;
+  }
+
+  .saf-sponsor-modal-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .saf-sponsor-modal-name {
+    font-size: 22px;
   }
 }

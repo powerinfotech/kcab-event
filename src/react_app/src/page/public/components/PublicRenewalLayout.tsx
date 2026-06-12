@@ -25,7 +25,7 @@ const createNavItems = (officialEventPath: string, officialEventChildren: NavIte
     href: '/organizer',
     children: [
       { label: 'Organizer', href: '/organizer' },
-      { label: 'Sponsors', href: '/sponsors-2025' },
+      { label: 'Sponsors', href: '/sponsors' },
       { label: 'Supporters', href: '/supporters' },
       { label: 'Media Partners', href: '/media-partners' },
     ],

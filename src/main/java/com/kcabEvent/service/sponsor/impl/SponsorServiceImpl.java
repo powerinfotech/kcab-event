@@ -55,6 +55,21 @@ public class SponsorServiceImpl extends EgovAbstractServiceImpl implements Spons
     }
 
     @Override
+    public List<SponsorListDto> selectPublicSponsorList(Integer year, String tierCd) {
+        Integer resolvedYear = year != null ? year : sponsorDao.selectLatestPublishedYear();
+        if (resolvedYear == null) {
+            return List.of();
+        }
+        SponsorSearchDto search = new SponsorSearchDto();
+        search.setEditionYear(resolvedYear);
+        search.setUseYn("Y");
+        search.setTierCd(tierCd);
+        List<SponsorListDto> sponsors = sponsorDao.selectSponsorList(search);
+        sponsors.forEach(this::applyLogoUrl);
+        return sponsors;
+    }
+
+    @Override
     @Transactional("transactionManager")
     public Long saveSponsor(SponsorSaveDto saveDto, LoginUser loginUser) {
         if (saveDto == null) {
@@ -72,6 +87,7 @@ public class SponsorServiceImpl extends EgovAbstractServiceImpl implements Spons
         entity.setLogoFileSeq(saveDto.getLogoFileSeq());
         entity.setDescription(blankToNull(saveDto.getDescription()));
         entity.setRepresentativeRemarks(blankToNull(saveDto.getRepresentativeRemarks()));
+        entity.setWebsiteUrl(blankToNull(saveDto.getWebsiteUrl()));
         entity.setSortSeq(saveDto.getSortSeq() != null ? saveDto.getSortSeq() : 0);
         entity.setUseYn(normalizeYn(saveDto.getUseYn(), "Y"));
         entity.setUptUserSeq(userSeq);

@@ -16,6 +16,9 @@ public interface SponsorService {
 
     List<SponsorTierDto> selectSponsorTiers();
 
+    /** 공개 페이지용: 게시(use_yn='Y')된 스폰서. year 미지정 시 최신 연도, tierCd 지정 시 해당 티어만. */
+    List<SponsorListDto> selectPublicSponsorList(Integer year, String tierCd);
+
     Long saveSponsor(SponsorSaveDto saveDto, LoginUser loginUser);
 
     void deleteSponsor(Long sponsorSeq, LoginUser loginUser);

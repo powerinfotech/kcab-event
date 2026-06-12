@@ -16,6 +16,9 @@ export interface SponsorListItem {
   logoFilePath?: string | null;
   logoFileUrl?: string | null;
   hasRemarks?: boolean | null;
+  description?: string | null;
+  representativeRemarks?: string | null;
+  websiteUrl?: string | null;
   sortSeq: number;
   useYn: string;
   rgstUserName?: string | null;
@@ -25,8 +28,6 @@ export interface SponsorListItem {
 }
 
 export interface SponsorDetail extends SponsorListItem {
-  description?: string | null;
-  representativeRemarks?: string | null;
   rgstUserSeq?: number | null;
   uptUserSeq?: number | null;
 }
@@ -38,6 +39,7 @@ export interface SponsorSavePayload {
   logoFileSeq?: number | null;
   description?: string | null;
   representativeRemarks?: string | null;
+  websiteUrl?: string | null;
   sortSeq: number;
   useYn: string;
 }

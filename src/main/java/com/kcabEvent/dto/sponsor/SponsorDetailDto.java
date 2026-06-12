@@ -19,6 +19,7 @@ public class SponsorDetailDto {
     private String logoFileUrl;
     private String description;
     private String representativeRemarks;
+    private String websiteUrl;
     private Integer sortSeq;
     private String useYn;
     private Long rgstUserSeq;

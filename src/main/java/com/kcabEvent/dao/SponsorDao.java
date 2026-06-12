@@ -18,6 +18,8 @@ public interface SponsorDao {
 
     List<SponsorTierDto> selectSponsorTiers();
 
+    Integer selectLatestPublishedYear();
+
     long insertSponsor(Sponsor sponsor);
 
     int updateSponsor(Sponsor sponsor);

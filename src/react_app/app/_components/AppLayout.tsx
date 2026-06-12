@@ -57,7 +57,7 @@ function getPublicShellRoute(
   if (currentPath === '/media-partners') {
     return { className: 'media-partners-page', content: <MediaPartners /> };
   }
-  if (currentPath === '/sponsors-2025') return { className: 'saf-sponsors-page', content: <SponsorsPage /> };
+  if (currentPath === '/sponsors') return { className: 'saf-sponsors-page', content: <SponsorsPage /> };
   if (currentPath === '/supporters') {
     return { className: 'saf-sponsors-page saf-supporters-page', content: <SupportersPage /> };
   }

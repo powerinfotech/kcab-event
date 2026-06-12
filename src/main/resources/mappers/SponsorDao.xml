@@ -19,6 +19,9 @@
                  AND length(btrim(s.representative_remarks)) > 0
                 THEN true ELSE false
              END AS has_remarks
+            ,s.description
+            ,s.representative_remarks
+            ,s.website_url
             ,cu.name AS rgst_user_name
             ,s.created_at AS rgst_date_time
             ,uu.name AS upt_user_name
@@ -73,6 +76,7 @@
             ,s.logo_file_seq
             ,s.description
             ,s.representative_remarks
+            ,s.website_url
             ,s.sort_seq
             ,s.use_yn
             ,s.created_by AS rgst_user_seq
@@ -115,6 +119,13 @@
         ORDER BY c.sort_seq ASC, c.com_cd ASC
     </select>
 
+    <select id="selectLatestPublishedYear" resultType="java.lang.Integer">
+        SELECT MAX(edition_year)
+        FROM event.sponsor
+        WHERE deleted_at IS NULL
+          AND use_yn = 'Y'
+    </select>
+
     <insert id="insertSponsor" parameterType="com.kcabEvent.domain.Sponsor"
             useGeneratedKeys="true" keyProperty="sponsorSeq">
         INSERT INTO event.sponsor
@@ -125,6 +136,7 @@
             ,logo_file_seq
             ,description
             ,representative_remarks
+            ,website_url
             ,sort_seq
             ,use_yn
             ,created_by
@@ -138,6 +150,7 @@
             ,#{logoFileSeq,jdbcType=BIGINT}
             ,#{description,jdbcType=VARCHAR}
             ,#{representativeRemarks,jdbcType=VARCHAR}
+            ,#{websiteUrl,jdbcType=VARCHAR}
             ,COALESCE(#{sortSeq,jdbcType=INTEGER}, 0)
             ,COALESCE(#{useYn,jdbcType=CHAR}, 'Y')
             ,#{rgstUserSeq,jdbcType=BIGINT}
@@ -153,6 +166,7 @@
             ,logo_file_seq          = #{logoFileSeq,jdbcType=BIGINT}
             ,description            = #{description,jdbcType=VARCHAR}
             ,representative_remarks = #{representativeRemarks,jdbcType=VARCHAR}
+            ,website_url            = #{websiteUrl,jdbcType=VARCHAR}
             ,sort_seq               = COALESCE(#{sortSeq,jdbcType=INTEGER}, 0)
             ,use_yn                 = COALESCE(#{useYn,jdbcType=CHAR}, use_yn)
             ,updated_by             = #{uptUserSeq,jdbcType=BIGINT}

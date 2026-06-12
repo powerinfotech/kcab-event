@@ -19,6 +19,10 @@ public class SponsorListDto {
     private String logoFilePath;
     private String logoFileUrl;
     private Boolean hasRemarks;
+    /** 팝업용 상세 (공개 리스트에서 함께 내려준다) */
+    private String description;
+    private String representativeRemarks;
+    private String websiteUrl;
     private Integer sortSeq;
     private String useYn;
     private String rgstUserName;

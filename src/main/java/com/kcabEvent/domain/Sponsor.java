@@ -20,6 +20,8 @@ public class Sponsor {
     private String description;
     /** Representative's Remarks (HTML, 선택) */
     private String representativeRemarks;
+    /** 기업 웹사이트 URL (선택) */
+    private String websiteUrl;
     private Integer sortSeq;
     private String useYn;
     /** DB: event.sponsor.created_by */

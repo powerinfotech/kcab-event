@@ -22,6 +22,7 @@ public class SponsorSaveDto {
     private Long logoFileSeq;
     private String description;
     private String representativeRemarks;
+    private String websiteUrl;
     private Integer sortSeq;
     private String useYn;
 }

@@ -1,21 +1,35 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import HeroImage from '../../assets/images/saf-renewal/media-partners/hero.png';
 import BlobGraphic from '../../assets/images/saf-renewal/media-partners/blob.svg';
 import HomeIcon from '../../assets/images/saf-renewal/media-partners/home.svg';
-import LogoAblj from '../../assets/images/saf-renewal/media-partners/logo-ablj.png';
-import LogoHankyung from '../../assets/images/saf-renewal/media-partners/logo-hankyung.png';
+import { callGetPublicSponsors } from '@api/sponsor/SponsorApi';
+import { SponsorListItem } from '@interface/admin/Sponsor';
 
 const assetSrc = (asset: string | { src?: string }) => (typeof asset === 'string' ? asset : asset.src ?? '');
 
-const mediaPartners = [
-  { name: 'Asia Business Law Journal', image: LogoAblj },
-  { name: 'Hankyung Media Group', image: LogoHankyung },
-];
+/* Media Partners 는 SPONSOR_TIER 의 'MEDIA_PARTNERS' 티어로 관리한다.
+   설명/팝업 없이 로고 + 외부 website 링크만(클릭 시 새 탭). */
+const MediaPartners: React.FC = () => {
+  const [partners, setPartners] = useState<SponsorListItem[]>([]);
 
-const MediaPartners: React.FC = () => (
-  <main className="mp-main">
+  useEffect(() => {
+    let active = true;
+    callGetPublicSponsors(undefined, 'MEDIA_PARTNERS')
+      .then((res) => {
+        if (active) setPartners(res?.item ?? []);
+      })
+      .catch(() => {
+        if (active) setPartners([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  return (
+    <main className="mp-main">
       <section
         className="mp-hero"
         style={{ backgroundImage: `url(${assetSrc(HeroImage)})` }}
@@ -38,20 +52,37 @@ const MediaPartners: React.FC = () => (
         <div className="saf-renewal-shell">
           <h2 className="mp-heading">Media Partners</h2>
 
-          <div className="saf-renewal-sponsor-title">
-            <span>Supporting Organization</span>
-          </div>
-
           <div className="mp-logos">
-            {mediaPartners.map((partner) => (
-              <figure className="mp-logo" key={partner.name}>
-                <img src={assetSrc(partner.image)} alt={partner.name} loading="lazy" />
-              </figure>
-            ))}
+            {partners.map((partner) => {
+              const inner = partner.logoFileUrl ? (
+                <img src={partner.logoFileUrl} alt={partner.companyName} loading="lazy" />
+              ) : (
+                <figcaption className="saf-sponsor-name">{partner.companyName}</figcaption>
+              );
+              return (
+                <figure className="mp-logo" key={partner.sponsorSeq}>
+                  {partner.websiteUrl ? (
+                    <a
+                      className="mp-logo-link"
+                      href={partner.websiteUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={partner.companyName}
+                      title={partner.companyName}
+                    >
+                      {inner}
+                    </a>
+                  ) : (
+                    inner
+                  )}
+                </figure>
+              );
+            })}
           </div>
         </div>
       </div>
     </main>
-);
+  );
+};
 
 export default MediaPartners;
