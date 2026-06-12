@@ -2645,6 +2645,13 @@ function PastEditionDetail({
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    const initialHash = window.location.hash.replace('#', '');
+    if (initialHash) {
+      window.requestAnimationFrame(() => {
+        document.getElementById(initialHash)?.scrollIntoView({ block: 'start' });
+      });
+      return;
+    }
     window.scrollTo(0, 0);
   }, []);
 
@@ -2695,6 +2702,15 @@ function PastEditionDetail({
               <span className="mp-breadcrumb-current">SAF {year}</span>
             </nav>
             <h1 className="mp-hero-title">{theme}</h1>
+            <div className="saf-archive-hero-actions">
+              <a
+                className="saf-archive-hero-back-button"
+                href="/past-editions"
+                onClick={handleBackToArchives}
+              >
+                Past Editions
+              </a>
+            </div>
           </div>
         </section>
 
@@ -2720,21 +2736,30 @@ function PastEditionDetail({
                 </div>
               </div>
             </div>
-            <nav
-              className={`saf-archive-day-nav saf-archive-day-nav--${days.length}`}
-              aria-label={`SAF ${year} days`}
-            >
-              {days.map((day) => (
-                <a
-                  key={day.label}
-                  href={`#${safArchiveDayId(year, day.label)}`}
-                  onClick={(e) => handleDayJump(e, day.label)}
-                >
-                  <strong>{day.label}</strong>
-                  <span>{archiveNavDateLabel(year, day.date, days.length)}</span>
-                </a>
-              ))}
-            </nav>
+            <div className="saf-archive-nav-dock">
+              <a
+                className="saf-archive-return-button"
+                href="/past-editions"
+                onClick={handleBackToArchives}
+              >
+                Past Editions
+              </a>
+              <nav
+                className={`saf-archive-day-nav saf-archive-day-nav--${days.length}`}
+                aria-label={`SAF ${year} days`}
+              >
+                {days.map((day) => (
+                  <a
+                    key={day.label}
+                    href={`#${safArchiveDayId(year, day.label)}`}
+                    onClick={(e) => handleDayJump(e, day.label)}
+                  >
+                    <strong>{day.label}</strong>
+                    <span>{archiveNavDateLabel(year, day.date, days.length)}</span>
+                  </a>
+                ))}
+              </nav>
+            </div>
 
             <div className="saf-archive-timeline">
               {days.map((day) => (
