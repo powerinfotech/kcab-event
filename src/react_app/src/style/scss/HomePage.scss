@@ -1096,6 +1096,7 @@
     color: #1c1c62;
     font-size: 17px;
     font-weight: 600;
+    line-height: 20px;
     letter-spacing: -0.33px;
     white-space: nowrap;
   }
@@ -1743,12 +1744,8 @@
 }
 
 .saf-sponsors-list .saf-sponsors-intro {
-  // Figma sub01: 문단 라인박스 하단 → 첫 등급 라벨 라인박스 상단 117px
-  // (Figma 박스 간격 78px + 문단 박스 하단 슬랙 19px + 행 프레임 내 라벨 오프셋 20px)
   margin-bottom: 117px;
 
-  // 헤딩 글꼴/크기/색은 공통 .mp-heading (media-partners 와 동일) — 여기선 간격만.
-  // Figma 베이스라인→문단 78px; h2 라인박스(59px)의 베이스라인 아래 ~14px를 빼면 64px
   h2 {
     margin: 0 0 64px;
   }
@@ -1778,22 +1775,51 @@
 
 /* Sponsors 전용: Figma sub01_Sponsors 2열 그리드 + 큰 로고 (Supporters 3열은 그대로 둠) */
 .saf-sponsors-page:not(.saf-supporters-page) {
-  .saf-renewal-logo-grid {
-    // Figma sub01_Sponsors: 2열 컬럼 중심 간격 468px(셀 폭 468), 그룹 중앙 정렬
-    grid-template-columns: repeat(2, minmax(0, 468px));
-    justify-content: center;
-    gap: 30px 0; // supporters 와 동일한 행 리듬
-    margin-top: 8px;
+  .mp-hero-content,
+  .saf-sponsors-list.mp-body .saf-renewal-shell {
+    width: min(100% - 48px, 1170px);
   }
 
-  // 로고 크기는 데이터의 대각선 정규화 값(SponsorsPage.tsx size, 대각선 ≈300px 균등)이 인라인으로 지정 —
-  // 여기서는 셀 리듬(min-height 150: 최고 로고 높이 140 + 여유)과 안전 캡만 둔다.
+  .saf-sponsors-list.mp-body {
+    padding-bottom: 150px;
+  }
+
+  .saf-sponsors-intro {
+    margin-bottom: 97px;
+
+    h2 {
+      margin-bottom: 48px;
+    }
+  }
+
+  .saf-renewal-sponsor-row + .saf-renewal-sponsor-row {
+    margin-top: 120px;
+  }
+
+  .saf-renewal-sponsor-title {
+    margin-bottom: 50px;
+  }
+
+  .saf-sponsors-intro + .saf-renewal-sponsor-row .saf-renewal-sponsor-title {
+    margin-bottom: 57px;
+  }
+
+  .saf-renewal-logo-grid {
+    grid-template-columns: repeat(2, 408px);
+    justify-content: center;
+    gap: 30px 60px;
+    margin-top: 0;
+  }
+
   .saf-renewal-sponsor-logo {
-    min-height: 150px;
+    width: 408px;
+    height: 130px;
+    min-height: 130px;
+    overflow: hidden;
 
     img {
       max-width: 100%;
-      max-height: none; // 홈 로고월 베이스 캡(64px) 해제 — max-* 는 인라인 크기보다 우선한다
+      max-height: none;
       object-fit: contain;
     }
   }
@@ -1802,6 +1828,7 @@
   .saf-renewal-sponsor-logo:only-child {
     grid-column: 1 / -1;
     justify-self: center;
+    width: 600px;
   }
 }
 
@@ -1822,12 +1849,21 @@
   }
 
   .saf-sponsors-page:not(.saf-supporters-page) .saf-renewal-sponsor-logo {
+    width: 100%;
+    height: 88px;
     min-height: 88px;
+    overflow: visible;
 
     img {
+      width: auto !important;
+      height: auto !important;
       max-height: 56px;
       max-width: 140px;
     }
+  }
+
+  .saf-sponsors-page:not(.saf-supporters-page) .saf-renewal-sponsor-logo:only-child {
+    width: 100%;
   }
 }
 
