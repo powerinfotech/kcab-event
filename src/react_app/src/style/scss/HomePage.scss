@@ -327,72 +327,69 @@
 }
 
 .saf-renewal-sunset-meta {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  display: block;
   margin-top: 42px;                // Figma: 배지(y548) → 페이저(y590)
-  color: rgba(255, 255, 255, 0.95);
+  color: #fff;
   font-family: 'Onest', 'Montserrat', 'Noto Sans KR', sans-serif;   // Figma: Onest
   font-size: 26px;
+  line-height: 36.4px;
   font-weight: 500;                // Figma: 500
   letter-spacing: -0.78px;         // Figma: -0.78px
   text-shadow: 0 2px 6px rgba(20, 16, 46, 0.45);
 }
 
-.saf-renewal-sunset-arrow {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 28px;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: rgba(255, 255, 255, 0.95);
-  cursor: pointer;
-  font: inherit;
-  line-height: 1;
-
-  &:hover {
-    color: var(--saf-menu-yellow);
-  }
-}
-
-.saf-renewal-sunset-pager-num {
+.saf-renewal-sunset-pager-text {
+  display: inline-block;
+  width: 125px;
+  height: 36px;
+  letter-spacing: -0.78px;
   font-variant-numeric: tabular-nums;
-}
-
-.saf-renewal-sunset-pager-sep {
-  color: rgba(255, 255, 255, 0.72);
-  margin: 0 2px;
+  white-space: nowrap;
 }
 
 // Figma main01 'Link': 180×54 필, 그라데이션 #1a2678 → #5f3ed8(50%) → #bf71ff, 페이저 아래 36px
 .saf-renewal-hero-readmore {
   display: inline-flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 17px;
   width: 180px;
   height: 54px;
   margin-top: 36px;
   padding: 0 22px 0 32px;
   border-radius: 999px;
-  background: linear-gradient(165deg, #1a2678 0%, #5f3ed8 50%, #bf71ff 100%);
+  background:
+    linear-gradient(0deg, #6825db, #6825db),
+    linear-gradient(102.68deg, #1a2678 0%, #5f3ed8 50%, #bf71ff 100%);
+  box-shadow: 0 20px 60px -20px rgba(35, 35, 120, 0.35);
+  box-sizing: border-box;
   color: #fff;
   font-size: 14px;
+  line-height: 20px;
   font-weight: 700;
   letter-spacing: 0.7px;
   text-decoration: none;
+  white-space: nowrap;
 }
 
 // 흰색 2px 스트로크 체브론(›) — Figma chevron-right
 .saf-renewal-hero-readmore-chevron {
-  width: 9px;
-  height: 9px;
-  border-top: 2px solid #fff;
-  border-right: 2px solid #fff;
-  transform: rotate(45deg);
+  position: relative;
+  width: 24px;
+  height: 24px;
   flex: none;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 6px;
+    width: 7px;
+    height: 7px;
+    border-top: 2px solid #fff;
+    border-right: 2px solid #fff;
+    transform: rotate(45deg);
+  }
 }
 
 .saf-renewal-hero {
@@ -786,53 +783,66 @@
 }
 
 .saf-renewal-recap-card {
-  min-height: 282px;
-  padding: 64px 40px 42px;
+  position: relative;
+  min-height: 287px;
+  padding: 0 40px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: flex-start;
+  overflow: hidden;
   border-radius: 0;
-  // Figma main01 (1:13680): 베이스 #dfdfff + 장식 그라데이션 블롭, 텍스트 모두 #222222
-  background:
-    radial-gradient(ellipse 55% 80% at 84% 70%, rgba(124, 106, 255, 0.30) 0%, rgba(124, 106, 255, 0.06) 62%, transparent 72%),
-    radial-gradient(ellipse 34% 42% at 10% 72%, rgba(231, 250, 174, 0.55) 0%, rgba(231, 250, 174, 0.05) 64%, transparent 74%),
-    #dfdfff;
+  // Figma main01 (1:13680): 배경 벡터는 Figma Mask group을 PNG asset으로 export해 사용.
+  background-color: #dfdfff;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
   box-shadow: none;
   color: #222222;
+
+  > * {
+    position: relative;
+    z-index: 1;
+  }
 
   > span {
     color: #222222;            // Figma: 10px/400 #222
     font-size: 10px;
+    line-height: 15px;
     font-weight: 400;
-    letter-spacing: 2px;
+    letter-spacing: 4px;
+    opacity: 0.8;
     text-transform: uppercase;
   }
 
   strong {
     display: block;
-    margin-top: 22px;
+    margin-top: 12px;
     color: #222222;            // Figma: 30px/700 #222
     font-size: 30px;
-    line-height: 1.12;
+    line-height: 38px;
     font-weight: 700;
     text-transform: uppercase;
   }
 
   a {
     display: inline-flex;
-    min-height: 31px;          // Figma Border 프레임 180×31
+    width: 180px;              // Figma Border 프레임 180×31
+    height: 31px;
     align-items: center;
     justify-content: center;
-    margin-top: 22px;
-    padding: 0 18px;
-    border: 1px solid rgba(34, 34, 34, 0.45);
+    margin-top: 21px;
+    padding: 8px 17px;
+    border: 1px solid rgba(34, 34, 34, 0.5);
+    box-sizing: border-box;
     color: #222222;            // Figma: 10px/700 #222
     font-size: 10px;
+    line-height: 15px;
     font-weight: 700;
-    letter-spacing: 2px;
+    letter-spacing: 2.5px;
     text-decoration: none;
     text-transform: uppercase;
+    white-space: nowrap;
 
     &:hover {
       background: rgba(255, 255, 255, 0.35);
@@ -1012,7 +1022,7 @@
   // 홈 'Our 2025 Sponsors' 전용 — sponsors/supporters 페이지의 .mp-heading 은 제외
   h2:not(.mp-heading) {
     max-width: 760px;
-    margin: 0 auto 44px;
+    margin: 0 auto 59px;
     color: var(--saf-ink);
     font-size: 40px;           // Figma main01 (1:13701): 40px / 700 / lh48 / ls -0.8
     line-height: 1.2;
@@ -1055,14 +1065,18 @@
 }
 
 .saf-renewal-sponsor-row {
-  padding: 0 0 42px;
+  padding: 0;
+}
+
+.saf-renewal-sponsor-row + .saf-renewal-sponsor-row {
+  margin-top: 60px;
 }
 
 /* 섹션 제목 — Home/Organizer/Media Partners/Sponsors/Supporters 공통 단일 디자인.
    Figma sub01: 17px/600, #1C1C62, 자간 -0.33, 아래 전체폭 보라 그라데이션 구분선. */
 .saf-renewal-sponsor-title {
   display: block;
-  margin-bottom: 28px;
+  margin-bottom: 30px;
 
   span {
     display: block;
@@ -1079,7 +1093,7 @@
     display: block;
     width: 100%;
     height: 1px;
-    margin-top: 14px;
+    margin-top: 9px;
     background: linear-gradient(90deg, #a581ff 0%, #bd84ff 100%);
   }
 }
@@ -1092,38 +1106,66 @@
 
 .saf-renewal-logo-grid {
   display: grid;
-  // 한 줄당 로고 수는 --logo-cols 로 등급별 제어 (홈: Gold 5×2, Silver 6×1 등).
-  // Figma main01: 로고는 content 폭으로 가로 중앙 정렬된 그룹 (가득 채우지 않음).
-  grid-template-columns: repeat(var(--logo-cols, 4), auto);
-  // Figma 엣지 간격은 ~90–127px이지만 로고 캡(140px)과 함께 최악 행(Silver 6열)이
-  // 셸 1170px을 넘지 않도록 60px (6×140+5×60=1140 ≤ 1170)
-  gap: 40px 60px;
+  grid-template-columns: repeat(var(--logo-cols, 4), 230px);
+  gap: 20px;
   align-items: center;
   justify-content: center;
+
+  &.is-gold {
+    width: 100%;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    column-gap: 0;
+    row-gap: 20px;
+  }
+
+  &.is-silver {
+    width: 100%;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    column-gap: 5px;
+  }
+
+  &.is-special {
+    grid-template-columns: 323px;
+  }
 }
 
 .saf-renewal-sponsor-logo {
-  min-height: 56px;
+  width: 230px;
+  height: 50px;
   margin: 0;
   display: flex;
   align-items: center;
   justify-content: center;
 
   img {
-    // Figma main01 실측 기반(다중 등급 대부분 ≤150×82) + Silver 6열이 셸을 넘지 않는 상한
-    max-width: 140px;
-    max-height: 64px;
-    width: auto;
-    height: auto;
+    width: var(--logo-width, auto);
+    height: var(--logo-height, auto);
+    max-width: 100%;
+    max-height: none;
     display: block;
     object-fit: contain;
   }
 
-  // 단일 로고 등급 — Figma: Special 243×56, Welcome 229×50, Organized 162×64
   &:only-child img {
-    max-width: 245px;
-    max-height: 64px;
+    max-width: 100%;
   }
+}
+
+.saf-renewal-sponsor-row:first-of-type .saf-renewal-sponsor-logo {
+  height: 64px;
+}
+
+.saf-renewal-logo-grid.is-gold .saf-renewal-sponsor-logo {
+  width: auto;
+}
+
+.saf-renewal-logo-grid.is-silver .saf-renewal-sponsor-logo {
+  width: auto;
+}
+
+.saf-renewal-logo-grid.is-special .saf-renewal-sponsor-logo {
+  width: 323px;
+  height: 70px;
 }
 
 .saf-renewal-footer {

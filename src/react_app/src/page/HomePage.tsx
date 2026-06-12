@@ -10,6 +10,7 @@ import MainPopupOverlay from '@component/popup/MainPopupOverlay';
 import HeroSeoulImage from '../assets/images/saf-renewal/hero-seoul-figma.jpg';
 import StatementPhotoImage from '../assets/images/saf-renewal/main01/statement-photo.jpg';
 import ExpectBandImage from '../assets/images/saf-renewal/main01/statement-photo2.png';
+import RecapCardBgImage from '../assets/images/saf-renewal/main01/recap-card-bg-figma.png';
 import GalleryConferenceImage from '../assets/images/saf-renewal/gallery-conference.jpg';
 import GalleryReceptionImage from '../assets/images/saf-renewal/gallery-reception.jpg';
 import GalleryNetworkImage from '../assets/images/saf-renewal/gallery-network.jpg';
@@ -124,67 +125,72 @@ const journeyCards = [
 const sponsorGroups = [
   {
     title: 'Organized',
-    logos: [{ name: 'KCAB International', image: SponsorKcabLogo }],
+    logos: [{ name: 'KCAB International', image: SponsorKcabLogo, width: 162, height: 64 }],
   },
   {
     title: 'In Association With',
     logos: [
-      { name: 'United Nations UNCITRAL', image: SponsorUncitralLogo },
-      { name: 'Ministry of Justice', image: SponsorMinistryJusticeLogo },
-      { name: 'ICC Dispute Resolution Services', image: SponsorIccLogo },
+      { name: 'United Nations UNCITRAL', image: SponsorUncitralLogo, width: 159, height: 36 },
+      { name: 'Ministry of Justice', image: SponsorMinistryJusticeLogo, width: 152, height: 40 },
+      { name: 'ICC Dispute Resolution Services', image: SponsorIccLogo, width: 106, height: 44 },
     ],
   },
   {
     title: 'Media Partners',
     logos: [
-      { name: 'Asia Business Law Journal', image: SponsorAsiaBusinessLawJournalLogo },
-      { name: 'Hankyung Media Group', image: SponsorHankyungLogo },
+      { name: 'Asia Business Law Journal', image: SponsorAsiaBusinessLawJournalLogo, width: 141, height: 82 },
+      { name: 'Hankyung Media Group', image: SponsorHankyungLogo, width: 131, height: 31 },
     ],
   },
   {
     title: 'Welcome Reception Sponsor',
-    logos: [{ name: 'Jipyong', image: SponsorJipyongLogo }],
+    logos: [{ name: 'Jipyong', image: SponsorJipyongLogo, width: 229, height: 50 }],
   },
   {
     title: 'Platinum',
     logos: [
-      { name: 'Bae, Kim & Lee', image: SponsorBaeKimLeeLogo },
-      { name: 'Kim & Chang', image: SponsorKimChangLogo },
-      { name: 'LITIG', image: SponsorLitigLogo },
-      { name: 'Peter & Kim', image: SponsorPeterKimLogo },
+      { name: 'Bae, Kim & Lee', image: SponsorBaeKimLeeLogo, width: 146, height: 63 },
+      { name: 'Kim & Chang', image: SponsorKimChangLogo, width: 147, height: 16 },
+      { name: 'LITIG', image: SponsorLitigLogo, width: 153, height: 57 },
+      { name: 'Peter & Kim', image: SponsorPeterKimLogo, width: 146, height: 60 },
     ],
   },
   {
     title: 'Gold',
     cols: 5,
+    variant: 'gold',
     logos: [
-      { name: 'Analysis Group', image: SponsorAnalysisGroupLogo },
-      { name: 'Baker McKenzie', image: SponsorBakerMckenzieLogo },
-      { name: 'DIAC', image: SponsorDiacLogo },
-      { name: 'HFW', image: SponsorHfwLogo },
-      { name: 'Lee & Ko', image: SponsorLeeKoLogo },
-      { name: 'Quinn Emanuel', image: SponsorQuinnEmanuelLogo },
-      { name: 'Shin & Kim', image: SponsorShinKimLogo },
-      { name: 'Yendall Hunter', image: SponsorYendallHunterLogo },
-      { name: 'Yoon & Yang', image: SponsorYoonYangLogo },
-      { name: 'Yulchon', image: SponsorYulchonLogo },
+      { name: 'Analysis Group', image: SponsorAnalysisGroupLogo, width: 199, height: 27 },
+      { name: 'Baker McKenzie', image: SponsorBakerMckenzieLogo, width: 85, height: 35 },
+      { name: 'DIAC', image: SponsorDiacLogo, width: 132, height: 49 },
+      { name: 'HFW', image: SponsorHfwLogo, width: 94, height: 67 },
+      { name: 'Lee & Ko', image: SponsorLeeKoLogo, width: 84, height: 56 },
+      { name: 'Quinn Emanuel', image: SponsorQuinnEmanuelLogo, width: 147, height: 17 },
+      { name: 'Shin & Kim', image: SponsorShinKimLogo, width: 104, height: 69 },
+      { name: 'Yendall Hunter', image: SponsorYendallHunterLogo, width: 163, height: 21 },
+      { name: 'Yoon & Yang', image: SponsorYoonYangLogo, width: 112, height: 37 },
+      { name: 'Yulchon', image: SponsorYulchonLogo, width: 135, height: 45 },
     ],
   },
   {
     title: 'Silver',
     cols: 6,
+    variant: 'silver',
     logos: [
-      { name: 'Herbert Smith Freehills Kramer', image: SponsorHerbertSmithLogo },
-      { name: 'Secretariat', image: SponsorSecretariatLogo },
-      { name: 'Steptoe', image: SponsorSteptoeLogo },
-      { name: 'Stevenson Wong & Co.', image: SponsorStevensonWongLogo },
-      { name: 'Jus Mundi', image: SponsorJusMundiLogo },
-      { name: 'Vanguard', image: SponsorVanguardLogo },
+      { name: 'Herbert Smith Freehills Kramer', image: SponsorHerbertSmithLogo, width: 113, height: 113 },
+      { name: 'Secretariat', image: SponsorSecretariatLogo, width: 118, height: 26 },
+      { name: 'Steptoe', image: SponsorSteptoeLogo, width: 76, height: 26 },
+      { name: 'Stevenson Wong & Co.', image: SponsorStevensonWongLogo, width: 118, height: 34 },
+      { name: 'Jus Mundi', image: SponsorJusMundiLogo, width: 95, height: 35 },
+      { name: 'Vanguard', image: SponsorVanguardLogo, width: 62, height: 52 },
     ],
   },
   {
     title: 'Special',
-    logos: [{ name: 'Seoul Metropolitan Government', image: SponsorSeoulMetropolitanLogo }],
+    variant: 'special',
+    logos: [
+      { name: 'Seoul Metropolitan Government', image: SponsorSeoulMetropolitanLogo, width: 243, height: 56 },
+    ],
   },
 ];
 
@@ -255,7 +261,7 @@ export default function HomePage() {
                 height="48"
                 viewBox="0 0 346 48"
                 role="img"
-                aria-label="26 \u2013 30 October 2026"
+                aria-label="26-30 October 2026"
               >
                 <defs>
                   <linearGradient id="safHeroDateGold" x1="0" y1="0.5" x2="1" y2="0.5">
@@ -276,22 +282,16 @@ export default function HomePage() {
                       letterSpacing="0"
                       fill="#000"
                     >
-                      {'26 \u2013 30 October 2026'}
+                      {'26-30 October 2026'}
                     </text>
                   </mask>
                 </defs>
                 <rect width="346" height="48" fill="url(#safHeroDateGold)" mask="url(#safHeroDateCut)" />
               </svg>
-              <div className="saf-renewal-sunset-meta">
-                <button type="button" className="saf-renewal-sunset-arrow" aria-label="Previous hero slide">
-                  {'\u2190'}
-                </button>
-                <span className="saf-renewal-sunset-pager-num">01</span>
-                <span className="saf-renewal-sunset-pager-sep">/</span>
-                <span className="saf-renewal-sunset-pager-num">03</span>
-                <button type="button" className="saf-renewal-sunset-arrow" aria-label="Next hero slide">
-                  {'\u2192'}
-                </button>
+              <div className="saf-renewal-sunset-meta" aria-label="Hero slide 1 of 3">
+                <span className="saf-renewal-sunset-pager-text" aria-hidden="true">
+                  {'\u2190 01\u00a0/\u00a003\u2192'}
+                </span>
               </div>
               <a className="saf-renewal-hero-readmore" href="#program">
                 Read More
@@ -379,7 +379,10 @@ export default function HomePage() {
               </h2>
             </div>
             <div className="saf-renewal-recap-grid">
-              <article className="saf-renewal-recap-card">
+              <article
+                className="saf-renewal-recap-card"
+                style={{ backgroundImage: `url(${assetSrc(RecapCardBgImage)})` }}
+              >
                 <span>Recap</span>
                 <strong>Seoul ADR Festival 2025</strong>
                 <a href="/past-editions/2025" onClick={(e) => handleNavClick(e, '/past-editions/2025')}>
@@ -449,11 +452,20 @@ export default function HomePage() {
                   <span>{group.title}</span>
                 </div>
                 <div
-                  className="saf-renewal-logo-grid"
+                  className={`saf-renewal-logo-grid${group.variant ? ` is-${group.variant}` : ''}`}
                   style={{ '--logo-cols': group.cols ?? group.logos.length } as React.CSSProperties}
                 >
                   {group.logos.map((logo) => (
-                    <figure className="saf-renewal-sponsor-logo" key={logo.name}>
+                    <figure
+                      className="saf-renewal-sponsor-logo"
+                      key={logo.name}
+                      style={
+                        {
+                          '--logo-width': `${logo.width}px`,
+                          '--logo-height': `${logo.height}px`,
+                        } as React.CSSProperties
+                      }
+                    >
                       <img src={assetSrc(logo.image)} alt={logo.name} loading="lazy" />
                     </figure>
                   ))}
