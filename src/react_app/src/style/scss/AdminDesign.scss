@@ -1795,6 +1795,24 @@
   }
 }
 
+// Settings 소트순서 컬럼 — 좁은 폭 + 중앙 정렬 숫자 입력
+.saf-settings-sort-col {
+  width: 68px;
+  text-align: center;
+}
+
+.saf-settings-sort-input {
+  width: 52px !important;
+  text-align: center;
+  -moz-appearance: textfield;
+
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
+
 .saf-settings-grade-table {
   td:first-child {
     strong,

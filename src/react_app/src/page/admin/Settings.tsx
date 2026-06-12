@@ -101,8 +101,16 @@ export default function Settings() {
     }
   };
 
+  const normalizeFieldValue = (key: string, value: string): string | number => {
+    if (key === 'sortSeq') {
+      const digits = value.replace(/[^0-9]/g, '');
+      return digits === '' ? 0 : parseInt(digits, 10);
+    }
+    return value;
+  };
+
   const updateGroup = (target: SettingsGroup, key: keyof SettingsGroup, value: string) => {
-    const normalizedValue = key === 'comGrpCd' ? value.toUpperCase() : value;
+    const normalizedValue = key === 'comGrpCd' ? value.toUpperCase() : normalizeFieldValue(key, value);
     setGroups((prev) => prev.map((item) => (
       item.comGrpCdSeq === target.comGrpCdSeq
         ? markGroupChanged({ ...item, [key]: normalizedValue })
@@ -112,7 +120,7 @@ export default function Settings() {
   };
 
   const updateCode = (target: SettingsCode, key: keyof SettingsCode, value: string) => {
-    const normalizedValue = key === 'comCd' ? value.toUpperCase() : value;
+    const normalizedValue = key === 'comCd' ? value.toUpperCase() : normalizeFieldValue(key, value);
     setSettingCodes((prev) => prev.map((item) => (
       item.comCdSeq === target.comCdSeq
         ? markCodeChanged({ ...item, [key]: normalizedValue })
@@ -341,6 +349,7 @@ export default function Settings() {
             <table className="saf-table saf-settings-grade-table">
               <thead>
                 <tr>
+                  <th className="saf-settings-sort-col">Sort</th>
                   <th><RequiredHeader>Group Code</RequiredHeader></th>
                   <th><RequiredHeader>Group Name</RequiredHeader></th>
                   <th>Ref 01</th>
@@ -355,6 +364,16 @@ export default function Settings() {
                     className={item.comGrpCdSeq === selectedSettingGroup?.comGrpCdSeq ? 'is-selected' : ''}
                     onClick={() => handleSelectGroup(item)}
                   >
+                    <td className="saf-settings-sort-col">
+                      <input
+                        type="number"
+                        min={0}
+                        className="saf-settings-sort-input"
+                        value={item.sortSeq ?? 0}
+                        onClick={(event) => event.stopPropagation()}
+                        onChange={(event) => updateGroup(item, 'sortSeq', event.target.value)}
+                      />
+                    </td>
                     <td>
                       <input
                         value={item.comGrpCd}
@@ -394,7 +413,7 @@ export default function Settings() {
                 ))}
                 {!visibleGroups.length && (
                   <tr>
-                    <td colSpan={5} className="saf-settings-empty">
+                    <td colSpan={6} className="saf-settings-empty">
                       <SettingOutlined />
                       <span>{loading ? 'Loading...' : 'No setting groups found.'}</span>
                     </td>
@@ -426,6 +445,7 @@ export default function Settings() {
             <table className="saf-table saf-settings-limit-table">
               <thead>
                 <tr>
+                  <th className="saf-settings-sort-col">Sort</th>
                   <th><RequiredHeader>Code</RequiredHeader></th>
                   <th><RequiredHeader>Name</RequiredHeader></th>
                   <th>{refHeaders[0]}</th>
@@ -440,6 +460,16 @@ export default function Settings() {
                     className={item.comCdSeq === selectedCodeSeq ? 'is-selected' : ''}
                     onClick={() => setSelectedCodeSeq(item.comCdSeq)}
                   >
+                    <td className="saf-settings-sort-col">
+                      <input
+                        type="number"
+                        min={0}
+                        className="saf-settings-sort-input"
+                        value={item.sortSeq ?? 0}
+                        onClick={(event) => event.stopPropagation()}
+                        onChange={(event) => updateCode(item, 'sortSeq', event.target.value)}
+                      />
+                    </td>
                     <td>
                       <input
                         value={item.comCd}
@@ -479,7 +509,7 @@ export default function Settings() {
                 ))}
                 {!visibleCodes.length && (
                   <tr>
-                    <td colSpan={5} className="saf-settings-empty">
+                    <td colSpan={6} className="saf-settings-empty">
                       <SettingOutlined />
                       <span>{loading ? 'Loading...' : 'No common codes found.'}</span>
                     </td>
