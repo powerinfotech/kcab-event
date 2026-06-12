@@ -414,16 +414,6 @@ export const PublicEventPageView: React.FC<PublicEventPageViewProps> = ({
           Register
         </button>
       )}
-      {showFloatingActions && (
-        <button
-          type="button"
-          className={`pub-event-scroll-top${showRegistrationCta ? ' has-register-button' : ''}`}
-          aria-label="Back to top"
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-        >
-          <span aria-hidden="true">{'\u2191'}</span>
-        </button>
-      )}
     </>
   );
 };

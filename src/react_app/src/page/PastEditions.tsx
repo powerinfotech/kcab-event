@@ -2629,24 +2629,11 @@ function PastEditionDetail({
   days,
 }: PastEditionDetailProps) {
   const setCurrentPath = useSetAtom(currentPathAtom);
-  const [showScrollTop, setShowScrollTop] = useState(false);
   const totalEvents = days.reduce((sum, day) => sum + day.events.length, 0);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
     window.scrollTo(0, 0);
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const handleScroll = () => {
-      setShowScrollTop(window.scrollY > 720);
-    };
-
-    handleScroll();
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
@@ -2670,11 +2657,6 @@ function PastEditionDetail({
 
     target.scrollIntoView({ behavior: 'smooth', block: 'start' });
     window.history.replaceState(null, '', `#${id}`);
-  };
-
-  const handleScrollTop = () => {
-    if (typeof window === 'undefined') return;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -2873,14 +2855,6 @@ function PastEditionDetail({
         </section>
       </main>
 
-      <button
-        type="button"
-        className={`saf-archive-scroll-top ${showScrollTop ? 'is-visible' : ''}`}
-        onClick={handleScrollTop}
-        aria-label="Back to top"
-      >
-        TOP
-      </button>
     </>
   );
 }

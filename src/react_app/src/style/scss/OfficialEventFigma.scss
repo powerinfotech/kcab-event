@@ -1595,43 +1595,6 @@
     text-transform: uppercase;
   }
 
-  .pub-event-scroll-top {
-    position: fixed;
-    right: 32px;
-    bottom: 32px;
-    z-index: 51;
-    display: inline-flex;
-    width: 56px;
-    height: 56px;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid rgba(255, 255, 255, 0.48);
-    border-radius: 50%;
-    color: #565a6d;
-    background: rgba(238, 238, 244, 0.78);
-    box-shadow: 0 18px 42px rgba(32, 30, 58, 0.14);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    cursor: pointer;
-    transition: transform 0.18s ease, background-color 0.18s ease;
-  }
-
-  .pub-event-scroll-top.has-register-button {
-    bottom: 32px;
-  }
-
-  .pub-event-scroll-top:hover,
-  .pub-event-scroll-top:focus-visible {
-    background: rgba(246, 246, 250, 0.92);
-    transform: translateY(-2px);
-  }
-
-  .pub-event-scroll-top span {
-    font-size: 24px;
-    font-weight: 700;
-    line-height: 1;
-  }
-
   @media (max-width: 1200px) {
     .saf-event-detail-hero-copy .hero-title {
       font-size: 54px;
@@ -1820,11 +1783,5 @@
       bottom: 92px;
     }
 
-    .pub-event-scroll-top {
-      right: 20px;
-      bottom: 24px;
-      width: 50px;
-      height: 50px;
-    }
   }
 }

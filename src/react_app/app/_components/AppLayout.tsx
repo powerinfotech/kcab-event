@@ -16,6 +16,7 @@ import SponsorsPage from '@page/public/SponsorsPage';
 import SupportersPage from '@page/public/SupportersPage';
 import HomePage from '@page/HomePage';
 import PublicRenewalLayout from '@page/public/components/PublicRenewalLayout';
+import PublicBackToTopButton from '@component/navigation/PublicBackToTopButton';
 import { getUserLoginInfo } from '@api/CommonApi';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { sessionInfoAtom } from '@atom/sessionInfoAtom';
@@ -215,16 +216,45 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     const publicShellRoute = getPublicShellRoute(currentPath);
     if (publicShellRoute) {
       return (
-        <PublicRenewalLayout className={publicShellRoute.className}>
-          {publicShellRoute.content}
-        </PublicRenewalLayout>
+        <>
+          <PublicRenewalLayout className={publicShellRoute.className}>
+            {publicShellRoute.content}
+          </PublicRenewalLayout>
+          <PublicBackToTopButton />
+        </>
       );
     }
-    if (currentPath === '/notice') return <PublicNotice />;
-    if (currentPath === '/faq') return <PublicFaq />;
-    if (currentPath === '/saf/signup') return <SafSignup />;
+    if (currentPath === '/notice') {
+      return (
+        <>
+          <PublicNotice />
+          <PublicBackToTopButton />
+        </>
+      );
+    }
+    if (currentPath === '/faq') {
+      return (
+        <>
+          <PublicFaq />
+          <PublicBackToTopButton />
+        </>
+      );
+    }
+    if (currentPath === '/saf/signup') {
+      return (
+        <>
+          <SafSignup />
+          <PublicBackToTopButton />
+        </>
+      );
+    }
     // 알 수 없는 공개 경로는 홈으로 fallback
-    return <>{children}</>;
+    return (
+      <>
+        {children}
+        <PublicBackToTopButton />
+      </>
+    );
   }
 
   if (shouldDenyAccess) {

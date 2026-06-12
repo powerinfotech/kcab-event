@@ -14,6 +14,62 @@ $pub-max-width: 1280px;
 $pub-header-height-desktop: 80px;
 $pub-header-height-mobile: 60px;
 
+.saf-public-scroll-top {
+  position: fixed;
+  right: 28px;
+  bottom: 28px;
+  z-index: 80;
+  width: 58px;
+  height: 58px;
+  border: 0;
+  border-radius: 50%;
+  background: #7e4adb;
+  color: #fff;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 1;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(12px);
+  transition: opacity 0.18s ease, transform 0.18s ease, background 0.18s ease;
+  box-shadow: 0 16px 32px rgba(126, 74, 219, 0.22);
+
+  &::before {
+    content: '';
+    display: block;
+    width: 9px;
+    height: 9px;
+    margin: 0 auto 5px;
+    border-top: 2px solid currentColor;
+    border-left: 2px solid currentColor;
+    transform: rotate(45deg);
+  }
+
+  &.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  &:hover,
+  &:focus-visible {
+    background: #6f3ed0;
+    transform: translateY(-2px);
+  }
+}
+
+@media (max-width: 640px) {
+  .saf-public-scroll-top {
+    right: 18px;
+    bottom: 18px;
+    width: 52px;
+    height: 52px;
+    font-size: 11px;
+  }
+}
+
 // ============================================
 // Public Layout
 // ============================================
