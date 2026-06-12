@@ -869,11 +869,15 @@ backdrop-filter: blur(2px);
 .rich-editor-content {
     padding: 12px;
     overflow-y: auto;
+    cursor: text;
+    caret-color: #151340;
     .tiptap {
         outline: none;
         min-height: inherit;
         word-break: break-word;
         overflow-wrap: anywhere;
+        cursor: text;
+        caret-color: #151340;
     }
     .tiptap p { margin: 0 0 0.5em; }
     .tiptap strong { font-weight: 700; }

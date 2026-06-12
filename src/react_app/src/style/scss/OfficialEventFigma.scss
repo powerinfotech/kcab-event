@@ -160,9 +160,14 @@
   }
 
   .saf-event-detail-hero-cta-arrow {
-    display: block;
+    display: inline-flex;
     width: 24px;
     height: 24px;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    font-weight: 500;
+    line-height: 1;
     object-fit: contain;
   }
 

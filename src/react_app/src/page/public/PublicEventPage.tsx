@@ -19,7 +19,6 @@ import {
 import HeroSeoulImage from '../../assets/images/saf-renewal/official-events-hero-wide-figma.png';
 import VenueFigmaImage from '../../assets/images/saf-renewal/official-events-venue-figma.png';
 import RibbonFigmaImage from '../../assets/images/saf-renewal/official-events-ribbon-large-figma.png';
-import ChevronRightImage from '../../assets/images/saf-renewal/chevron-right.png';
 import { usePublicNavigate } from '@hook/usePublicNavigate';
 
 declare global {
@@ -367,12 +366,12 @@ export const PublicEventPageView: React.FC<PublicEventPageViewProps> = ({
                   onClick={(event) => onSectionNavigate?.(event, primarySection)}
                 >
                   <span>{primarySectionLabel}</span>
-                  <img
+                  <span
                     className="saf-event-detail-hero-cta-arrow"
-                    src={assetSrc(ChevronRightImage)}
-                    alt=""
                     aria-hidden="true"
-                  />
+                  >
+                    {'\u203a'}
+                  </span>
                 </a>
               )}
             </div>
