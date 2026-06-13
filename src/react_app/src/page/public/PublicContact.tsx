@@ -42,7 +42,7 @@ export default function PublicContact() {
             <div className="saf-contact-map">
               <iframe
                 title="SAF Secretariat map"
-                src="https://www.google.com/maps?q=KCAB%20International%20Trade%20Tower%20Seoul&output=embed"
+                src="https://www.google.com/maps?q=Trade%20Tower%2C%20511%20Yeongdong-daero%2C%20Gangnam-gu%2C%20Seoul&z=16&hl=en&output=embed"
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
               />

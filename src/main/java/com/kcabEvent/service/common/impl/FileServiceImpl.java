@@ -106,7 +106,7 @@ public class FileServiceImpl implements FileService {
             String savedFileName = UUID.randomUUID() + "_" + sanitizeFileName(originalFileName);
 
             Path destinationPath = buildDestinationPath(uploadContext, savedFileName, false);
-            String filePath = destinationPath.toString();
+            String filePath = toRelativePath(destinationPath);
             try {
                 // 폴더 없을시 폴더 생성
                 File destinationFile = destinationPath.toFile();
@@ -189,7 +189,7 @@ public class FileServiceImpl implements FileService {
     public ResponseEntity<org.springframework.core.io.Resource> downloadFile(String filePath){
         // 경로 탈출 방지: 정규화 후 uploadDir 하위인지 검증
         Path uploadDirPath = Paths.get(uploadDir).toAbsolutePath().normalize();
-        Path normalizedPath = Paths.get(filePath).toAbsolutePath().normalize();
+        Path normalizedPath = resolveStoredPath(filePath, uploadDirPath);
         if (!normalizedPath.startsWith(uploadDirPath)) {
             return ResponseEntity.badRequest().build();
         }
@@ -257,7 +257,7 @@ public class FileServiceImpl implements FileService {
         }
         String savedFileName = UUID.randomUUID() + "_" + sanitizeFileName(originalFileName);
         Path destinationPath = buildDestinationPath(uploadContext, savedFileName, true);
-        String filePath = destinationPath.toString();
+        String filePath = toRelativePath(destinationPath);
 
         try {
             File destination = destinationPath.toFile();
@@ -301,7 +301,7 @@ public class FileServiceImpl implements FileService {
             return ResponseEntity.notFound().build();
         }
         Path uploadDirPath = Paths.get(uploadDir).toAbsolutePath().normalize();
-        Path normalizedPath = Paths.get(detail.getFilePath()).toAbsolutePath().normalize();
+        Path normalizedPath = resolveStoredPath(detail.getFilePath(), uploadDirPath);
         if (!normalizedPath.startsWith(uploadDirPath)) {
             return ResponseEntity.badRequest().build();
         }
@@ -334,7 +334,7 @@ public class FileServiceImpl implements FileService {
         }
 
         Path uploadDirPath = Paths.get(uploadDir).toAbsolutePath().normalize();
-        Path normalizedPath = Paths.get(detail.getFilePath()).toAbsolutePath().normalize();
+        Path normalizedPath = resolveStoredPath(detail.getFilePath(), uploadDirPath);
         if (!normalizedPath.startsWith(uploadDirPath)) {
             return ResponseEntity.badRequest().build();
         }
@@ -457,6 +457,19 @@ public class FileServiceImpl implements FileService {
             throw new com.kcabEvent.exception.custom.BusinessException("잘못된 업로드 경로입니다.");
         }
         return destinationPath;
+    }
+
+    // 저장 시 업로드 루트(file.path.dir) 기준 상대경로만 DB에 남긴다 (환경 이동 시 포터블, 구분자 '/').
+    private String toRelativePath(Path destination) {
+        Path base = Paths.get(uploadDir).toAbsolutePath().normalize();
+        Path abs = destination.toAbsolutePath().normalize();
+        return base.relativize(abs).toString().replace('\\', '/');
+    }
+
+    // DB 저장 경로(상대 권장, 레거시 절대도 허용)를 실제 파일 경로로 해석한다.
+    private Path resolveStoredPath(String storedPath, Path uploadDirPath) {
+        Path p = Paths.get(storedPath);
+        return (p.isAbsolute() ? p : uploadDirPath.resolve(storedPath)).toAbsolutePath().normalize();
     }
 
     private String resolveUploadSubDirectory(String uploadContext, boolean inlineImage) {

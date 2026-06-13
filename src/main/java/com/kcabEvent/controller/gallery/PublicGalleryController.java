@@ -42,7 +42,8 @@ public class PublicGalleryController {
     @GetMapping("/image")
     public ResponseEntity<org.springframework.core.io.Resource> viewImage(@RequestParam String filePath) {
         Path uploadDirPath = Paths.get(uploadDir).toAbsolutePath().normalize();
-        Path normalizedPath = Paths.get(filePath).toAbsolutePath().normalize();
+        Path stored = Paths.get(filePath);
+        Path normalizedPath = (stored.isAbsolute() ? stored : uploadDirPath.resolve(filePath)).toAbsolutePath().normalize();
         if (!normalizedPath.startsWith(uploadDirPath)) {
             return ResponseEntity.badRequest().build();
         }

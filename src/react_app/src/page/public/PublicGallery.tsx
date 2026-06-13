@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { callGetPublicGalleryList, resolveGalleryImageUrl } from '@api/gallery/GalleryApi';
-import { GalleryImage, GalleryListItem } from '@interface/admin/Gallery';
+import { GalleryListItem } from '@interface/admin/Gallery';
 import PublicSubPageHero from './components/PublicSubPageHero';
 import HeroImage from '../../assets/images/saf-renewal/0612/hero-gallery.png';
 import FallbackOne from '../../assets/images/saf-renewal/gallery-conference.jpg';
@@ -9,16 +9,22 @@ import FallbackThree from '../../assets/images/saf-renewal/gallery-audience.jpg'
 
 interface SelectedImage {
   gallery: GalleryListItem;
-  image: GalleryImage;
+  index: number;
 }
 
 const fallbackImages = [FallbackOne, FallbackTwo, FallbackThree];
 const assetSrc = (asset: string | { src?: string }) => (typeof asset === 'string' ? asset : asset.src ?? '');
 
+// 정렬용 연도: 타이틀의 4자리 숫자 → 없으면 galleryYear.
+function yearFromTitle(item: GalleryListItem) {
+  const matched = (item.title ?? '').match(/\d{4}/);
+  return matched ? Number(matched[0]) : item.galleryYear ?? 0;
+}
+
 export default function PublicGallery() {
   const [items, setItems] = useState<GalleryListItem[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<SelectedImage | null>(null);
+  const [selected, setSelected] = useState<SelectedImage | null>(null);
 
   useEffect(() => {
     setLoading(true);
@@ -27,19 +33,35 @@ export default function PublicGallery() {
       .finally(() => setLoading(false));
   }, []);
 
-  const grouped = useMemo(() => {
-    return items.reduce<Record<number, GalleryListItem[]>>((acc, item) => {
-      if (!item.images?.length) return acc;
-      if (!acc[item.galleryYear]) acc[item.galleryYear] = [];
-      acc[item.galleryYear].push(item);
-      return acc;
-    }, {});
-  }, [items]);
-
-  const years = useMemo(
-    () => Object.keys(grouped).map(Number).sort((a, b) => b - a),
-    [grouped],
+  // 이미지가 있는 앨범만, 타이틀 연도 내림차순 — 최신부터 (2024 → 2019).
+  const galleries = useMemo(
+    () => items.filter((item) => item.images?.length).sort((a, b) => yearFromTitle(b) - yearFromTitle(a)),
+    [items],
   );
+
+  const selectedImages = selected ? selected.gallery.images ?? [] : [];
+  const currentImage = selected ? selectedImages[selected.index] : null;
+
+  const close = useCallback(() => setSelected(null), []);
+  const step = useCallback((delta: number) => {
+    setSelected((prev) => {
+      if (!prev) return prev;
+      const list = prev.gallery.images ?? [];
+      if (!list.length) return prev;
+      return { gallery: prev.gallery, index: (prev.index + delta + list.length) % list.length };
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!selected) return undefined;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') close();
+      else if (event.key === 'ArrowLeft') step(-1);
+      else if (event.key === 'ArrowRight') step(1);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [selected, close, step]);
 
   return (
     <main className="saf-subpage saf-gallery-page">
@@ -58,48 +80,69 @@ export default function PublicGallery() {
           </div>
 
           {loading && <div className="saf-subpage-empty">Loading gallery...</div>}
-          {!loading && !years.length && <GalleryFallback />}
+          {!loading && !galleries.length && <GalleryFallback />}
 
-          {years.map((year) => (
-            <section key={year} className="saf-gallery-year-section">
-              <h3>SAF {year}</h3>
-              {grouped[year].map((gallery) => (
-                <article key={gallery.gallerySeq} className="saf-gallery-album">
-                  {gallery.description && <p>{gallery.description}</p>}
-                  <div className="saf-gallery-mosaic">
-                    {(gallery.images ?? []).map((image, index) => (
-                      <button
-                        key={image.fileDtlSeq}
-                        type="button"
-                        className={index % 7 === 0 ? 'is-wide' : ''}
-                        onClick={() => setSelectedImage({ gallery, image })}
-                      >
-                        <img src={resolveGalleryImageUrl(image)} alt={image.fileNm || gallery.title} />
-                      </button>
-                    ))}
-                  </div>
-                </article>
-              ))}
+          {galleries.map((gallery) => (
+            <section key={gallery.gallerySeq} className="saf-gallery-year-section">
+              <h3>{gallery.title}</h3>
+              {gallery.description && <p className="saf-gallery-album-desc">{gallery.description}</p>}
+              <div className="saf-gallery-mosaic">
+                {(gallery.images ?? []).map((image, index) => (
+                  <button
+                    key={image.fileDtlSeq}
+                    type="button"
+                    className={index % 7 === 0 ? 'is-wide' : ''}
+                    onClick={() => setSelected({ gallery, index })}
+                  >
+                    <img src={resolveGalleryImageUrl(image)} alt={image.fileNm || gallery.title} loading="lazy" />
+                  </button>
+                ))}
+              </div>
             </section>
           ))}
         </div>
       </section>
 
-      {selectedImage && (
-        <div className="saf-gallery-lightbox" onClick={() => setSelectedImage(null)}>
-          <button type="button" className="saf-gallery-lightbox-close" onClick={() => setSelectedImage(null)}>
+      {selected && currentImage && (
+        <div className="saf-gallery-lightbox" onClick={close}>
+          <button type="button" className="saf-gallery-lightbox-close" aria-label="Close" onClick={close}>
             Close
           </button>
+          {selectedImages.length > 1 && (
+            <button
+              type="button"
+              className="saf-gallery-lightbox-nav is-prev"
+              aria-label="Previous image"
+              onClick={(event) => {
+                event.stopPropagation();
+                step(-1);
+              }}
+            >
+              ‹
+            </button>
+          )}
           <figure onClick={(event) => event.stopPropagation()}>
-            <img
-              src={resolveGalleryImageUrl(selectedImage.image)}
-              alt={selectedImage.image.fileNm || selectedImage.gallery.title}
-            />
+            <img src={resolveGalleryImageUrl(currentImage)} alt={currentImage.fileNm || selected.gallery.title} />
             <figcaption>
-              <strong>{selectedImage.gallery.title}</strong>
-              <span>{selectedImage.image.fileNm}</span>
+              <strong>{selected.gallery.title}</strong>
+              <span>
+                {selected.index + 1} / {selectedImages.length}
+              </span>
             </figcaption>
           </figure>
+          {selectedImages.length > 1 && (
+            <button
+              type="button"
+              className="saf-gallery-lightbox-nav is-next"
+              aria-label="Next image"
+              onClick={(event) => {
+                event.stopPropagation();
+                step(1);
+              }}
+            >
+              ›
+            </button>
+          )}
         </div>
       )}
     </main>

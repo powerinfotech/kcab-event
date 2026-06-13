@@ -22,7 +22,10 @@ export default function PublicCalendar() {
   const [events, setEvents] = useState<EventListItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [view, setView] = useState<CalendarView>('weekly');
-  const [activeDateKey, setActiveDateKey] = useState('');
+  // Weekly 뷰가 표시하는 주의 월요일. 첫 진입은 오늘이 속한 주.
+  const [anchorMonday, setAnchorMonday] = useState(() => mondayOf(new Date()));
+  // 선택된 요일. 첫 진입은 오늘, 주를 바꾸면 그 주 월요일.
+  const [activeDateKey, setActiveDateKey] = useState(() => toLocalKey(new Date()));
   const [detail, setDetail] = useState<EventDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
 
@@ -34,20 +37,46 @@ export default function PublicCalendar() {
   }, []);
 
   const grouped = useMemo(() => groupEventsByDate(events), [events]);
-  // Weekly 뷰: 오늘이 속한 주(월~일) 7일을 항상 표시 (이벤트 유무와 무관).
-  const weekKeys = useMemo(() => currentWeekKeys(), []);
+
+  // Weekly 뷰: anchorMonday 기준 월~일 7일.
+  const weekKeys = useMemo(() => weekDaysFrom(anchorMonday), [anchorMonday]);
+  // 년/월 드롭다운 컨텍스트는 그 주 목요일이 속한 달 기준(ISO식) — 월 경계 모호성 제거.
+  const thursday = addDays(anchorMonday, 3);
+  const viewYear = thursday.getFullYear();
+  const viewMonth = thursday.getMonth();
+  const weeksInMonth = useMemo(() => weeksOfMonth(viewYear, viewMonth), [viewYear, viewMonth]);
+  const weekIndex = weeksInMonth.findIndex((m) => toLocalKey(m) === toLocalKey(anchorMonday));
+  const yearOptions = useMemo(() => {
+    const ys = new Set<number>([new Date().getFullYear(), viewYear]);
+    events.forEach((e) => {
+      const d = new Date(e.eventStartDt);
+      if (!Number.isNaN(d.getTime())) ys.add(d.getFullYear());
+    });
+    return Array.from(ys).sort((a, b) => a - b);
+  }, [events, viewYear]);
+
   // List 뷰: 등록된 이벤트가 있는 날짜 전체 (없으면 기본 행사일).
   const dayKeys = useMemo(() => {
     const keys = Object.keys(grouped).sort();
     return keys.length ? keys : DEFAULT_DAYS.map((day) => toDateKey(day));
   }, [grouped]);
 
-  useEffect(() => {
-    if (!activeDateKey && weekKeys.length) {
-      const todayKey = toLocalKey(new Date());
-      setActiveDateKey(weekKeys.includes(todayKey) ? todayKey : weekKeys[0]);
-    }
-  }, [activeDateKey, weekKeys]);
+  // 주 이동 시 그 주 월요일을 선택일로 (즉시 조회).
+  const goToWeek = (monday: Date) => {
+    setAnchorMonday(monday);
+    setActiveDateKey(toLocalKey(monday));
+  };
+  const handleYearChange = (y: number) => {
+    const ws = weeksOfMonth(y, viewMonth);
+    goToWeek(ws[Math.min(Math.max(weekIndex, 0), ws.length - 1)]);
+  };
+  const handleMonthChange = (m: number) => {
+    const ws = weeksOfMonth(viewYear, m);
+    goToWeek(ws[Math.min(Math.max(weekIndex, 0), ws.length - 1)]);
+  };
+  const handleWeekChange = (i: number) => goToWeek(weeksInMonth[i]);
+  const goPrevWeek = () => goToWeek(addDays(anchorMonday, -7));
+  const goNextWeek = () => goToWeek(addDays(anchorMonday, 7));
 
   const activeEvents = activeDateKey ? grouped[activeDateKey] ?? [] : [];
 
@@ -92,9 +121,28 @@ export default function PublicCalendar() {
                     onClick={() => setActiveDateKey(dateKey)}
                   >
                     <strong>{formatWeekday(dateKey)}</strong>
-                    <span>{formatCalendarDay(dateKey)}</span>
+                    <span>{formatMonthDay(dateKey)}<br />{formatYearOf(dateKey)}</span>
                   </button>
                 ))}
+              </div>
+              <div className="saf-week-nav">
+                <button type="button" className="saf-week-nav-arrow" aria-label="이전 주" onClick={goPrevWeek}>‹</button>
+                <select aria-label="연도" value={viewYear} onChange={(e) => handleYearChange(Number(e.target.value))}>
+                  {yearOptions.map((y) => (
+                    <option key={y} value={y}>{y}</option>
+                  ))}
+                </select>
+                <select aria-label="월" value={viewMonth} onChange={(e) => handleMonthChange(Number(e.target.value))}>
+                  {MONTH_NAMES.map((name, i) => (
+                    <option key={name} value={i}>{name}</option>
+                  ))}
+                </select>
+                <select aria-label="주차" value={weekIndex} onChange={(e) => handleWeekChange(Number(e.target.value))}>
+                  {weeksInMonth.map((m, i) => (
+                    <option key={toLocalKey(m)} value={i}>{weekRangeLabel(i, m)}</option>
+                  ))}
+                </select>
+                <button type="button" className="saf-week-nav-arrow" aria-label="다음 주" onClick={goNextWeek}>›</button>
               </div>
               <div className="saf-calendar-event-list">
                 {loading && <div className="saf-subpage-empty">Loading side events...</div>}
@@ -261,13 +309,42 @@ function toDateKey(value?: string | null) {
   return toLocalKey(date);
 }
 
-// 오늘이 속한 주(월요일 시작)의 7일 날짜 키를 반환한다.
-function currentWeekKeys() {
-  const today = new Date();
-  const offsetToMonday = (today.getDay() + 6) % 7;
-  return Array.from({ length: 7 }, (_, i) =>
-    toLocalKey(new Date(today.getFullYear(), today.getMonth(), today.getDate() - offsetToMonday + i)),
-  );
+const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+// 주어진 날짜가 속한 주의 월요일.
+function mondayOf(date: Date) {
+  const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+  return d;
+}
+
+function addDays(date: Date, days: number) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate() + days);
+}
+
+// 월요일 기준 월~일 7일치 날짜 키.
+function weekDaysFrom(monday: Date) {
+  return Array.from({ length: 7 }, (_, i) => toLocalKey(addDays(monday, i)));
+}
+
+// 해당 월의 주(월요일 시작) 목록 — 목요일이 그 달에 속하는 주 = N주차 (월 경계 모호성 제거).
+function weeksOfMonth(year: number, month: number) {
+  const weeks: Date[] = [];
+  let monday = mondayOf(new Date(year, month, 1));
+  for (let guard = 0; guard < 7; guard += 1) {
+    const thu = addDays(monday, 3);
+    if (thu.getFullYear() > year || (thu.getFullYear() === year && thu.getMonth() > month)) break;
+    if (thu.getFullYear() === year && thu.getMonth() === month) weeks.push(monday);
+    monday = addDays(monday, 7);
+  }
+  return weeks;
+}
+
+// "N주차 · MM.DD–MM.DD"
+function weekRangeLabel(index: number, monday: Date) {
+  const sunday = addDays(monday, 6);
+  const f = (d: Date) => `${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
+  return `Week ${index + 1} · ${f(monday)}–${f(sunday)}`;
 }
 
 function formatTimeRange(start?: string | null, end?: string | null) {
@@ -291,12 +368,12 @@ function formatShortWeekday(value: string) {
   return new Date(value).toLocaleDateString('en-US', { weekday: 'short' }).replace('.', '');
 }
 
-function formatCalendarDay(dateKey: string) {
-  return new Date(`${dateKey}T00:00:00`).toLocaleDateString('en-US', {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric',
-  });
+function formatMonthDay(dateKey: string) {
+  return new Date(`${dateKey}T00:00:00`).toLocaleDateString('en-US', { day: '2-digit', month: 'long' });
+}
+
+function formatYearOf(dateKey: string) {
+  return new Date(`${dateKey}T00:00:00`).getFullYear();
 }
 
 function formatLongDate(dateKey: string) {
