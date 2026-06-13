@@ -13,6 +13,7 @@ export interface EventListItem {
   rgstDateTime: string;
   eventType: string;
   organizationName: string | null;
+  organizationImageUrl: string | null;
   maxParticipants: number | null;
   registrationCount: number;
 }

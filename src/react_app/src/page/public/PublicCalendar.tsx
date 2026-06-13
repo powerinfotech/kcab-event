@@ -34,16 +34,20 @@ export default function PublicCalendar() {
   }, []);
 
   const grouped = useMemo(() => groupEventsByDate(events), [events]);
+  // Weekly 뷰: 오늘이 속한 주(월~일) 7일을 항상 표시 (이벤트 유무와 무관).
+  const weekKeys = useMemo(() => currentWeekKeys(), []);
+  // List 뷰: 등록된 이벤트가 있는 날짜 전체 (없으면 기본 행사일).
   const dayKeys = useMemo(() => {
     const keys = Object.keys(grouped).sort();
     return keys.length ? keys : DEFAULT_DAYS.map((day) => toDateKey(day));
   }, [grouped]);
 
   useEffect(() => {
-    if (!activeDateKey && dayKeys.length) {
-      setActiveDateKey(dayKeys[0]);
+    if (!activeDateKey && weekKeys.length) {
+      const todayKey = toLocalKey(new Date());
+      setActiveDateKey(weekKeys.includes(todayKey) ? todayKey : weekKeys[0]);
     }
-  }, [activeDateKey, dayKeys]);
+  }, [activeDateKey, weekKeys]);
 
   const activeEvents = activeDateKey ? grouped[activeDateKey] ?? [] : [];
 
@@ -80,7 +84,7 @@ export default function PublicCalendar() {
           {view === 'weekly' ? (
             <>
               <div className="saf-weekly-days" aria-label="Event days">
-                {dayKeys.map((dateKey) => (
+                {weekKeys.map((dateKey) => (
                   <button
                     type="button"
                     key={dateKey}
@@ -152,7 +156,7 @@ function CalendarEventRow({ event, onOpen }: { event: EventListItem; onOpen: () 
         <span>Side Event</span>
       </div>
       <div className="saf-calendar-logo">
-        <img src={assetSrc(KcabLogo)} alt={event.organizationName || 'Organizer'} />
+        <img src={event.organizationImageUrl || assetSrc(KcabLogo)} alt={event.organizationName || 'Organizer'} />
       </div>
       <div className="saf-calendar-event-copy">
         <p>{event.organizationName || 'Seoul ADR Festival'}</p>
@@ -177,7 +181,7 @@ function CalendarEventCard({ event, onOpen }: { event: EventListItem; onOpen: ()
         <span>Side Event</span>
       </div>
       <div className="saf-calendar-logo">
-        <img src={assetSrc(KcabLogo)} alt={event.organizationName || 'Organizer'} />
+        <img src={event.organizationImageUrl || assetSrc(KcabLogo)} alt={event.organizationName || 'Organizer'} />
       </div>
       <div className="saf-calendar-event-copy">
         <p>{event.organizationName || 'Seoul ADR Festival'}</p>
@@ -243,11 +247,27 @@ function groupEventsByDate(items: EventListItem[]) {
   }, {});
 }
 
+function toLocalKey(date: Date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
 function toDateKey(value?: string | null) {
   if (!value) return '';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value.slice(0, 10);
-  return date.toISOString().slice(0, 10);
+  return toLocalKey(date);
+}
+
+// 오늘이 속한 주(월요일 시작)의 7일 날짜 키를 반환한다.
+function currentWeekKeys() {
+  const today = new Date();
+  const offsetToMonday = (today.getDay() + 6) % 7;
+  return Array.from({ length: 7 }, (_, i) =>
+    toLocalKey(new Date(today.getFullYear(), today.getMonth(), today.getDate() - offsetToMonday + i)),
+  );
 }
 
 function formatTimeRange(start?: string | null, end?: string | null) {

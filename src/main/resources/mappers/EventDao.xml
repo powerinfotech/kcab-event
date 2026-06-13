@@ -94,6 +94,14 @@
             ,e.created_at AS rgst_date_time
             ,e.event_type
             ,o.name AS organization_name
+            ,(
+                SELECT '/api/public/file-image/' || d.file_dtl_seq
+                FROM event.tb_file_dtl d
+                WHERE d.file_seq = o.image_file_seq
+                  AND d.del_yn = 'N'
+                ORDER BY d.sort_seq ASC, d.file_dtl_seq ASC
+                LIMIT 1
+            ) AS organization_image_url
             ,e.max_participants
             ,COALESCE(rc.registration_count, 0) AS registration_count
         FROM event.events e

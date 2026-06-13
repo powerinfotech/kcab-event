@@ -25,6 +25,8 @@ public class EventListDto {
     private String eventType;
     /** 주최 기관명 (events.organization_seq → organizations.name) */
     private String organizationName;
+    /** 주최 기관 이미지 URL (organizations.image_file_seq → tb_file_dtl) */
+    private String organizationImageUrl;
     /** 정원 (events.max_participants) */
     private Integer maxParticipants;
     /** 신청자 수 (registrations 테이블 count) */

@@ -201,15 +201,15 @@ $saf-line: rgba(42, 37, 89, 0.12);
 
 .saf-weekly-days {
   display: grid;
-  grid-template-columns: repeat(6, 165px);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   justify-content: space-between;
-  gap: 36px;
+  gap: 16px;
   margin: 4px 0 70px;
   border-top: 1px solid #ebebeb;
   padding-top: 40px;
 
   button {
-    width: 165px;
+    width: 100%;
     height: 236px;
     border-radius: 999px;
     display: grid;
