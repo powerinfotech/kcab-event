@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { callGetPublicEventDetail, callGetPublicEventList } from '@api/event/EventApi';
 import { EventDetail, EventListItem } from '@interface/event/EventManagement';
 import PublicSubPageHero from './components/PublicSubPageHero';
@@ -6,15 +6,6 @@ import HeroImage from '../../assets/images/saf-renewal/0612/hero-calendar.png';
 import KcabLogo from '../../assets/images/saf-renewal/sponsors/kcab-international.png';
 
 type CalendarView = 'weekly' | 'list';
-
-const DEFAULT_DAYS = [
-  '2026-10-25T00:00:00',
-  '2026-10-26T00:00:00',
-  '2026-10-27T00:00:00',
-  '2026-10-28T00:00:00',
-  '2026-10-29T00:00:00',
-  '2026-10-30T00:00:00',
-];
 
 const assetSrc = (asset: string | { src?: string }) => (typeof asset === 'string' ? asset : asset.src ?? '');
 
@@ -28,6 +19,9 @@ export default function PublicCalendar() {
   const [activeDateKey, setActiveDateKey] = useState(() => toLocalKey(new Date()));
   const [detail, setDetail] = useState<EventDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
+  // List 뷰: 현재 활성(스크롤 위치) 요일 + 각 요일 섹션 ref (scroll-spy / 점프용).
+  const [activeListDay, setActiveListDay] = useState('');
+  const dayRefs = useRef<Record<string, HTMLElement | null>>({});
 
   useEffect(() => {
     setLoading(true);
@@ -55,12 +49,6 @@ export default function PublicCalendar() {
     return Array.from(ys).sort((a, b) => a - b);
   }, [events, viewYear]);
 
-  // List 뷰: 등록된 이벤트가 있는 날짜 전체 (없으면 기본 행사일).
-  const dayKeys = useMemo(() => {
-    const keys = Object.keys(grouped).sort();
-    return keys.length ? keys : DEFAULT_DAYS.map((day) => toDateKey(day));
-  }, [grouped]);
-
   // 주 이동 시 그 주 월요일을 선택일로 (즉시 조회).
   const goToWeek = (monday: Date) => {
     setAnchorMonday(monday);
@@ -78,6 +66,37 @@ export default function PublicCalendar() {
   const goPrevWeek = () => goToWeek(addDays(anchorMonday, -7));
   const goNextWeek = () => goToWeek(addDays(anchorMonday, 7));
 
+  // List 뷰 진입/주 변경 시 활성 요일을 주 범위 안으로 (없으면 월요일).
+  useEffect(() => {
+    if (view !== 'list') return;
+    setActiveListDay((prev) => (weekKeys.includes(prev) ? prev : weekKeys[0]));
+  }, [view, weekKeys]);
+
+  // scroll-spy: 화면 상단 밴드에 들어온 요일 섹션을 활성으로.
+  useEffect(() => {
+    if (view !== 'list') return undefined;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        const key = visible[0]?.target.getAttribute('data-daykey');
+        if (key) setActiveListDay(key);
+      },
+      { rootMargin: '-25% 0px -65% 0px' },
+    );
+    weekKeys.forEach((dateKey) => {
+      const element = dayRefs.current[dateKey];
+      if (element) observer.observe(element);
+    });
+    return () => observer.disconnect();
+  }, [view, weekKeys, events]);
+
+  const scrollToDay = (dateKey: string) => {
+    setActiveListDay(dateKey);
+    dayRefs.current[dateKey]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   const activeEvents = activeDateKey ? grouped[activeDateKey] ?? [] : [];
 
   const openDetail = (eventSeq: number) => {
@@ -86,6 +105,29 @@ export default function PublicCalendar() {
       .then((res) => setDetail(res?.item ?? null))
       .finally(() => setDetailLoading(false));
   };
+
+  // 주 네비게이터(‹ › + 년/월/주차) — Weekly·List 두 뷰가 공유.
+  const weekNav = (
+    <div className="saf-week-nav">
+      <button type="button" className="saf-week-nav-arrow" aria-label="이전 주" onClick={goPrevWeek}>‹</button>
+      <select aria-label="연도" value={viewYear} onChange={(e) => handleYearChange(Number(e.target.value))}>
+        {yearOptions.map((y) => (
+          <option key={y} value={y}>{y}</option>
+        ))}
+      </select>
+      <select aria-label="월" value={viewMonth} onChange={(e) => handleMonthChange(Number(e.target.value))}>
+        {MONTH_NAMES.map((name, i) => (
+          <option key={name} value={i}>{name}</option>
+        ))}
+      </select>
+      <select aria-label="주차" value={weekIndex} onChange={(e) => handleWeekChange(Number(e.target.value))}>
+        {weeksInMonth.map((m, i) => (
+          <option key={toLocalKey(m)} value={i}>{weekRangeLabel(i, m)}</option>
+        ))}
+      </select>
+      <button type="button" className="saf-week-nav-arrow" aria-label="다음 주" onClick={goNextWeek}>›</button>
+    </div>
+  );
 
   return (
     <main className="saf-subpage saf-calendar-page">
@@ -125,25 +167,7 @@ export default function PublicCalendar() {
                   </button>
                 ))}
               </div>
-              <div className="saf-week-nav">
-                <button type="button" className="saf-week-nav-arrow" aria-label="이전 주" onClick={goPrevWeek}>‹</button>
-                <select aria-label="연도" value={viewYear} onChange={(e) => handleYearChange(Number(e.target.value))}>
-                  {yearOptions.map((y) => (
-                    <option key={y} value={y}>{y}</option>
-                  ))}
-                </select>
-                <select aria-label="월" value={viewMonth} onChange={(e) => handleMonthChange(Number(e.target.value))}>
-                  {MONTH_NAMES.map((name, i) => (
-                    <option key={name} value={i}>{name}</option>
-                  ))}
-                </select>
-                <select aria-label="주차" value={weekIndex} onChange={(e) => handleWeekChange(Number(e.target.value))}>
-                  {weeksInMonth.map((m, i) => (
-                    <option key={toLocalKey(m)} value={i}>{weekRangeLabel(i, m)}</option>
-                  ))}
-                </select>
-                <button type="button" className="saf-week-nav-arrow" aria-label="다음 주" onClick={goNextWeek}>›</button>
-              </div>
+              {weekNav}
               <div className="saf-calendar-event-list">
                 {loading && <div className="saf-subpage-empty">Loading side events...</div>}
                 {!loading && activeEvents.length === 0 && (
@@ -155,24 +179,53 @@ export default function PublicCalendar() {
               </div>
             </>
           ) : (
-            <div className="saf-calendar-list-groups">
-              {loading && <div className="saf-subpage-empty">Loading side events...</div>}
-              {!loading && events.length === 0 && <div className="saf-subpage-empty">No side events have been published yet.</div>}
-              {dayKeys.map((dateKey) => {
-                const dateEvents = grouped[dateKey] ?? [];
-                if (!dateEvents.length) return null;
-                return (
-                  <section className="saf-calendar-day-group" key={dateKey}>
-                    <div className="saf-calendar-date-divider">
-                      <span>{formatLongDate(dateKey)}</span>
-                    </div>
-                    {dateEvents.map((event) => (
-                      <CalendarEventCard key={event.eventSeq} event={event} onOpen={() => openDetail(event.eventSeq)} />
-                    ))}
-                  </section>
-                );
-              })}
-            </div>
+            <>
+              {weekNav}
+              <div className="saf-calendar-list">
+                <nav className="saf-calendar-daynav" aria-label="Jump to day">
+                  {weekKeys.map((dateKey) => (
+                    <button
+                      type="button"
+                      key={dateKey}
+                      className={dateKey === activeListDay ? 'is-active' : ''}
+                      onClick={() => scrollToDay(dateKey)}
+                    >
+                      <span>{formatWeekday(dateKey)}</span>
+                      <strong>{dayOfMonth(dateKey)}</strong>
+                      <small>{monthShort(dateKey)}</small>
+                    </button>
+                  ))}
+                </nav>
+                <div className="saf-calendar-list-main">
+                  {loading && <div className="saf-subpage-empty">Loading side events...</div>}
+                  {!loading &&
+                    weekKeys.map((dateKey) => {
+                      const dateEvents = grouped[dateKey] ?? [];
+                      return (
+                        <section
+                          className="saf-calendar-day-group"
+                          key={dateKey}
+                          data-daykey={dateKey}
+                          ref={(element) => {
+                            dayRefs.current[dateKey] = element;
+                          }}
+                        >
+                          <div className="saf-calendar-date-divider">
+                            <span>{formatLongDate(dateKey)}</span>
+                          </div>
+                          {dateEvents.length === 0 ? (
+                            <div className="saf-subpage-empty saf-calendar-day-empty">No side events on this day.</div>
+                          ) : (
+                            dateEvents.map((event) => (
+                              <CalendarEventCard key={event.eventSeq} event={event} onOpen={() => openDetail(event.eventSeq)} />
+                            ))
+                          )}
+                        </section>
+                      );
+                    })}
+                </div>
+              </div>
+            </>
           )}
         </div>
       </section>
@@ -345,6 +398,15 @@ function weekRangeLabel(index: number, monday: Date) {
   const sunday = addDays(monday, 6);
   const f = (d: Date) => `${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
   return `Week ${index + 1} · ${f(monday)}–${f(sunday)}`;
+}
+
+// 요일 네비용: 일(日) 숫자 / 월 약어.
+function dayOfMonth(dateKey: string) {
+  return new Date(`${dateKey}T00:00:00`).getDate();
+}
+
+function monthShort(dateKey: string) {
+  return new Date(`${dateKey}T00:00:00`).toLocaleDateString('en-US', { month: 'short' });
 }
 
 function formatTimeRange(start?: string | null, end?: string | null) {

@@ -1,9 +1,6 @@
 import React, { useState } from 'react';
 import PublicSubPageHero from './components/PublicSubPageHero';
 import HeroImage from '../../assets/images/saf-renewal/0612/hero-side-event.png';
-import CrowdImage from '../../assets/images/saf-renewal/0612/sponsorship-apply-band.png';
-
-const assetSrc = (asset: string | { src?: string }) => (typeof asset === 'string' ? asset : asset.src ?? '');
 
 const gains = [
   {
@@ -113,7 +110,6 @@ export default function PublicSideEvent() {
               </p>
               <a href="#side-event-application">Find More</a>
             </div>
-            <img src={assetSrc(CrowdImage)} alt="" aria-hidden="true" />
           </section>
 
           <section id="side-event-application" className="saf-side-form-section">
