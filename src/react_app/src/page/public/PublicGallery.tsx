@@ -1,20 +1,24 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { callGetPublicGalleryList, resolveGalleryImageUrl } from '@api/gallery/GalleryApi';
 import { GalleryImage, GalleryListItem } from '@interface/admin/Gallery';
-import PublicFooter from './components/PublicFooter';
-import PublicHeader from './components/PublicHeader';
-import { usePublicNavigate } from '@hook/usePublicNavigate';
+import PublicSubPageHero from './components/PublicSubPageHero';
+import HeroImage from '../../assets/images/saf-renewal/0612/hero-gallery.png';
+import FallbackOne from '../../assets/images/saf-renewal/gallery-conference.jpg';
+import FallbackTwo from '../../assets/images/saf-renewal/gallery-reception.jpg';
+import FallbackThree from '../../assets/images/saf-renewal/gallery-audience.jpg';
 
 interface SelectedImage {
   gallery: GalleryListItem;
   image: GalleryImage;
 }
 
+const fallbackImages = [FallbackOne, FallbackTwo, FallbackThree];
+const assetSrc = (asset: string | { src?: string }) => (typeof asset === 'string' ? asset : asset.src ?? '');
+
 export default function PublicGallery() {
   const [items, setItems] = useState<GalleryListItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedImage, setSelectedImage] = useState<SelectedImage | null>(null);
-  const handleNavigate = usePublicNavigate();
 
   useEffect(() => {
     setLoading(true);
@@ -38,59 +42,55 @@ export default function PublicGallery() {
   );
 
   return (
-    <div className="pub-layout">
-      <PublicHeader currentUrl="/gallery" onNavigate={handleNavigate} />
-      <main className="pub-page-content pub-gallery-page">
-        <section
-          className="pub-section section-hero size-small"
-          style={{ background: 'linear-gradient(135deg, #0f1b3d 0%, #294DC7 100%)' }}
-        >
-          <div className="hero-content">
-            <h2 className="hero-title">Gallery</h2>
-            <p className="hero-subtitle">Scenes from the Seoul ADR Festival</p>
-          </div>
-        </section>
+    <main className="saf-subpage saf-gallery-page">
+      <PublicSubPageHero
+        title="Archives"
+        section="Archives"
+        current="Gallery"
+        backgroundImage={HeroImage}
+        className="saf-gallery-hero"
+      />
 
-        <section className="pub-section section-text size-medium">
-          <div className="pub-section-inner">
-            {years.map((year) => (
-              <section key={year} className="pub-gallery-year-section">
-                <h3 className="pub-gallery-year">SAF {year}</h3>
-                {grouped[year].map((gallery) => (
-                  <div key={gallery.gallerySeq} className="pub-gallery-album">
-                    <div className="pub-gallery-album-head">
-                      <h4>{gallery.title}</h4>
-                      {gallery.description && <p>{gallery.description}</p>}
-                    </div>
-                    <div className="pub-gallery-grid">
-                      {(gallery.images ?? []).map((image) => (
-                        <button
-                          key={image.fileDtlSeq}
-                          type="button"
-                          className="pub-gallery-photo"
-                          onClick={() => setSelectedImage({ gallery, image })}
-                        >
-                          <img src={resolveGalleryImageUrl(image)} alt={image.fileNm || gallery.title} />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </section>
-            ))}
-            {!years.length && (
-              <div className="pub-gallery-empty">
-                {loading ? 'Loading gallery...' : 'No gallery images have been published yet.'}
-              </div>
-            )}
+      <section className="saf-subpage-section saf-gallery-section">
+        <div className="saf-renewal-shell">
+          <div className="saf-section-lead">
+            <span>Archives</span>
+            <div className="saf-section-lead-row">
+              <h2>Gallery</h2>
+            </div>
           </div>
-        </section>
-      </main>
-      <PublicFooter />
+
+          {loading && <div className="saf-subpage-empty">Loading gallery...</div>}
+          {!loading && !years.length && <GalleryFallback />}
+
+          {years.map((year) => (
+            <section key={year} className="saf-gallery-year-section">
+              <h3>SAF {year}</h3>
+              {grouped[year].map((gallery) => (
+                <article key={gallery.gallerySeq} className="saf-gallery-album">
+                  {gallery.description && <p>{gallery.description}</p>}
+                  <div className="saf-gallery-mosaic">
+                    {(gallery.images ?? []).map((image, index) => (
+                      <button
+                        key={image.fileDtlSeq}
+                        type="button"
+                        className={index % 7 === 0 ? 'is-wide' : ''}
+                        onClick={() => setSelectedImage({ gallery, image })}
+                      >
+                        <img src={resolveGalleryImageUrl(image)} alt={image.fileNm || gallery.title} />
+                      </button>
+                    ))}
+                  </div>
+                </article>
+              ))}
+            </section>
+          ))}
+        </div>
+      </section>
 
       {selectedImage && (
-        <div className="pub-gallery-lightbox" onClick={() => setSelectedImage(null)}>
-          <button type="button" className="pub-gallery-lightbox-close" onClick={() => setSelectedImage(null)}>
+        <div className="saf-gallery-lightbox" onClick={() => setSelectedImage(null)}>
+          <button type="button" className="saf-gallery-lightbox-close" onClick={() => setSelectedImage(null)}>
             Close
           </button>
           <figure onClick={(event) => event.stopPropagation()}>
@@ -105,6 +105,22 @@ export default function PublicGallery() {
           </figure>
         </div>
       )}
-    </div>
+    </main>
+  );
+}
+
+function GalleryFallback() {
+  return (
+    <section className="saf-gallery-year-section">
+      <h3>SAF 2025</h3>
+      <div className="saf-gallery-mosaic">
+        {fallbackImages.map((image, index) => (
+          <span key={assetSrc(image)} className={index === 0 ? 'is-wide' : ''}>
+            <img src={assetSrc(image)} alt={`SAF gallery sample ${index + 1}`} />
+          </span>
+        ))}
+      </div>
+      <div className="saf-subpage-empty">No gallery images have been published yet.</div>
+    </section>
   );
 }

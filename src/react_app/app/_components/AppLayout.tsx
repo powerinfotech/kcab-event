@@ -7,6 +7,12 @@ import Footer from '@layout/Footer';
 import PublicNotice from '@page/public/PublicNotice';
 import PublicFaq from '@page/public/PublicFaq';
 import PublicEvents from '@page/public/PublicEvents';
+import PublicCalendar from '@page/public/PublicCalendar';
+import PublicContact from '@page/public/PublicContact';
+import PublicGallery from '@page/public/PublicGallery';
+import PublicSideEvent from '@page/public/PublicSideEvent';
+import PublicSponsorship from '@page/public/PublicSponsorship';
+import PublicVisitSeoul from '@page/public/PublicVisitSeoul';
 import Organizer from '@page/public/Organizer';
 import MediaPartners from '@page/public/MediaPartners';
 import PublicEventPage, { PublicEventRegistrationPage } from '@page/public/PublicEventPage';
@@ -44,7 +50,7 @@ function getAdminMenuPath(path: string): string {
  * Public SPA shell routing. Every renewal public route renders inside ONE persistent
  * <PublicRenewalLayout> (shared header navigator + footer) so that navigating between
  * these pages swaps only the inner content while the header/footer stay mounted.
- * Returns null for non-shell public routes (notice/faq/saf-signup), which keep
+ * Returns null for non-shell public routes (faq/saf-signup), which keep
  * rendering their own markup.
  */
 function getPublicShellRoute(
@@ -59,11 +65,25 @@ function getPublicShellRoute(
     return { className: 'media-partners-page', content: <MediaPartners /> };
   }
   if (currentPath === '/sponsors') return { className: 'saf-sponsors-page', content: <SponsorsPage /> };
+  if (currentPath === '/sponsorship') return { className: 'saf-subpage-shell saf-sponsorship-shell', content: <PublicSponsorship /> };
   if (currentPath === '/supporters') {
     return { className: 'saf-sponsors-page saf-supporters-page', content: <SupportersPage /> };
   }
   if (currentPath === '/my-events') return { className: 'saf-myevents-page', content: <MyEventsPage /> };
   if (currentPath === '/events') return { className: 'official-events-page', content: <PublicEvents /> };
+  if (currentPath === '/calendar') return { className: 'saf-subpage-shell saf-calendar-shell', content: <PublicCalendar /> };
+  if (currentPath === '/visit-seoul') return { className: 'saf-subpage-shell saf-visit-shell', content: <PublicVisitSeoul /> };
+  if (currentPath === '/gallery') return { className: 'saf-subpage-shell saf-gallery-shell', content: <PublicGallery /> };
+  if (currentPath === '/contact') return { className: 'saf-subpage-shell saf-contact-shell', content: <PublicContact /> };
+  if (currentPath === '/side-event') return { className: 'saf-subpage-shell saf-side-event-shell', content: <PublicSideEvent /> };
+  if (currentPath === '/notice') return { className: 'saf-subpage-shell saf-notice-shell', content: <PublicNotice /> };
+  if (currentPath.startsWith('/notice/')) {
+    const noticeNewsSeq = Number(decodeURIComponent(currentPath.replace(/^\/notice\//, '').split('/')[0] ?? ''));
+    return {
+      className: 'saf-subpage-shell saf-notice-shell',
+      content: <PublicNotice noticeNewsSeq={Number.isFinite(noticeNewsSeq) ? noticeNewsSeq : null} />,
+    };
+  }
   if (currentPath.startsWith('/event/')) {
     const eventPathParts = currentPath.replace(/^\/event\//, '').split('/');
     const urlSlug = decodeURIComponent(eventPathParts[0] ?? '');
@@ -113,7 +133,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [browserPath, setBrowserPath] = useState(
     typeof window !== 'undefined' ? window.location.pathname : '',
   );
-  const currentPath = browserPath || pathname || atomCurrentPath;
+  const currentPath = typeof window !== 'undefined'
+    ? window.location.pathname
+    : (browserPath || pathname || atomCurrentPath);
   const [isLogin, setIsLogin] = useState<boolean | undefined>(undefined);
   const [sidebarSubpanelOpen, setSidebarSubpanelOpen] = useState(false);
   const redirectingRef = useRef(false);
@@ -222,14 +244,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <PublicRenewalLayout className={publicShellRoute.className}>
             {publicShellRoute.content}
           </PublicRenewalLayout>
-          <PublicBackToTopButton />
-        </>
-      );
-    }
-    if (currentPath === '/notice') {
-      return (
-        <>
-          <PublicNotice />
           <PublicBackToTopButton />
         </>
       );

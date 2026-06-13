@@ -38,24 +38,26 @@ const createNavItems = (officialEventPath: string, officialEventChildren: NavIte
     // 목록이 비면 hasChildren 가드로 드롭다운 없이 일반 링크로 동작한다.
     children: officialEventChildren,
   },
-  { label: 'Calendar', href: '#program' },
-  { label: 'Visit Seoul', href: '#visit-seoul' },
+  { label: 'Calendar', href: '/calendar' },
+  { label: 'Visit Seoul', href: '/visit-seoul' },
   {
     label: 'Archives',
     href: '/past-editions',
     children: [
-      { label: 'Gallery', href: '#', disabled: true },
+      { label: 'Gallery', href: '/gallery' },
       { label: 'Past Editions', href: '/past-editions' },
     ],
   },
   {
     label: 'Contact',
-    href: '#contact',
+    href: '/contact',
     children: [
       { label: 'Notice & News', href: '/notice' },
-      { label: 'Contact us', href: '#contact' },
+      { label: 'Contact us', href: '/contact' },
     ],
   },
+  { label: 'Side Event', href: '/side-event' },
+  { label: 'Sponsorship', href: '/sponsorship' },
   { label: 'My Events', href: '/my-events' },
 ];
 

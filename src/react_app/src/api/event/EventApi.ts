@@ -95,9 +95,10 @@ export const callSaveEventPageBuilder = async (saveDto: PublicEventPage) => {
   return data;
 };
 
-export const callGetPublicEventList = async (status?: string) => {
+export const callGetPublicEventList = async (param: string | EventListSearchParam = {}) => {
+  const params = typeof param === 'string' ? { status: param } : param;
   const { data } = await axios.get<ApiResponse<EventListItem[]>>('/api/public/event/list', {
-    params: { status },
+    params,
     headers: { showLoading: false },
   });
   return data;

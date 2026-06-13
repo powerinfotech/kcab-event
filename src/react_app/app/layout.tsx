@@ -16,7 +16,17 @@ function getExpectedRouteRootSelector(path) {
   if (path === '/login' || path === '/admin/login') return '.saf-login-page';
   if (path === '/admin/signup') return '.saf-signup-page';
   if (path.indexOf('/event/') === 0) return '.pub-event-renewal';
-  if (path === '/notice' || path === '/faq' || path === '/gallery') return '.pub-layout';
+  if (path === '/faq') return '.pub-layout';
+  if (
+    path === '/notice' ||
+    path.indexOf('/notice/') === 0 ||
+    path === '/gallery' ||
+    path === '/calendar' ||
+    path === '/visit-seoul' ||
+    path === '/contact' ||
+    path === '/side-event' ||
+    path === '/sponsorship'
+  ) return '.saf-renewal-home';
   if (path === '/events') return '.official-events-page';
   if (path === '/sponsors') return '.saf-sponsors-page';
   if (path === '/my-events') return '.saf-myevents-page';
