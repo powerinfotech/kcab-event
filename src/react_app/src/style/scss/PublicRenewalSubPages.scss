@@ -1236,6 +1236,7 @@ $saf-line: rgba(42, 37, 89, 0.12);
     font-size: 12px;
     font-weight: 400;
     text-transform: uppercase;
+    white-space: nowrap;
   }
 
   figcaption {
@@ -1280,6 +1281,84 @@ $saf-line: rgba(42, 37, 89, 0.12);
     color: #222;
     font-size: 16px;
     line-height: 1.3;
+  }
+}
+
+.saf-visit-hotel-body {
+  h4 {
+    margin: 28px 0 12px;
+    color: #222;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.15px;
+  }
+}
+
+.saf-visit-hotel-divider {
+  margin: 26px 0 0;
+  border: 0;
+  border-top: 1px solid #ebebeb;
+}
+
+.saf-visit-rate-text,
+.saf-visit-reservation {
+  color: #555;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.saf-visit-reservation + .saf-visit-reservation {
+  margin-top: 12px;
+}
+
+.saf-visit-rate-note {
+  margin-top: 12px;
+  color: #888;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+
+.saf-visit-footnote {
+  margin-top: 18px;
+  color: #a198ae;
+  font-size: 12px;
+}
+
+.saf-visit-tax-note {
+  margin-top: 40px;
+  color: #a198ae;
+  font-size: 12px;
+}
+
+.saf-visit-rate-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 4px;
+
+  th {
+    padding: 10px 12px 10px 0;
+    border-bottom: 1px solid #ebebeb;
+    color: #888;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 13px 12px 13px 0;
+    border-bottom: 1px solid #ebebeb;
+    color: #222;
+    font-size: 15px;
+    line-height: 1.4;
+    vertical-align: top;
+  }
+
+  th:not(:first-child),
+  td:not(:first-child) {
+    padding-left: 16px;
   }
 }
 
