@@ -35,6 +35,11 @@ const formRows = [
   ['Logo of the Organizer(s)'],
 ];
 
+const fieldStartIndex = formRows.reduce<number[]>((acc, _row, i) => {
+  acc.push(i === 0 ? 0 : acc[i - 1] + formRows[i - 1].length);
+  return acc;
+}, []);
+
 export default function PublicSideEvent() {
   const [submitted, setSubmitted] = useState(false);
 
@@ -94,6 +99,18 @@ export default function PublicSideEvent() {
                 After reviewing your event details, a confirmation email will be sent to you to confirm that your
                 event has been successfully registered as part of SAF 2026.
               </p>
+              <p
+                style={{
+                  marginTop: 24,
+                  paddingTop: 24,
+                  borderTop: '1px solid rgba(255, 255, 255, 0.13)',
+                  fontSize: 14,
+                  lineHeight: 1.3,
+                  color: 'rgba(255, 255, 255, 0.67)',
+                }}
+              >
+                For side event hosting guidelines, click the button and refer to the requirements.
+              </p>
               <a href="#side-event-application">Find More</a>
             </div>
             <img src={assetSrc(CrowdImage)} alt="" aria-hidden="true" />
@@ -103,6 +120,7 @@ export default function PublicSideEvent() {
             <aside>
               <span>Section 03</span>
               <h3>Side Event Application Form</h3>
+              <i className="saf-side-form-divider" aria-hidden="true" />
               <p>All fields marked are required for review by the SAF Secretariat.</p>
             </aside>
             <form
@@ -114,9 +132,12 @@ export default function PublicSideEvent() {
             >
               {formRows.map((row, index) => (
                 <div className={`saf-side-form-row${row.length === 1 ? ' is-full' : ''}`} key={`${row.join('-')}-${index}`}>
-                  {row.map((label) => (
+                  {row.map((label, colIndex) => (
                     <label key={label}>
                       <span>{label}</span>
+                      <em className="saf-side-field-index" aria-hidden="true">
+                        {String(fieldStartIndex[index] + colIndex + 1).padStart(2, '0')}
+                      </em>
                       {label.includes('Description') || label === 'Speakers' ? (
                         <textarea placeholder={label === 'Speakers' ? 'name / affiliation / position' : ''} />
                       ) : label.includes('Logo') ? (

@@ -55,9 +55,6 @@ export default function PublicGallery() {
         <div className="saf-renewal-shell">
           <div className="saf-section-lead">
             <span>Archives</span>
-            <div className="saf-section-lead-row">
-              <h2>Gallery</h2>
-            </div>
           </div>
 
           {loading && <div className="saf-subpage-empty">Loading gallery...</div>}
